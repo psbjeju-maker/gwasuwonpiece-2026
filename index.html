@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a2135">
+<link rel="icon" href="icons2/nav_treasure.png">
+<link rel="apple-touch-icon" href="icons2/nav_treasure.png">
+<title>황금 귤을 찾아라</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="net" id="netBadge">연결 대기중</div>
+
+<div class="app">
+
+  <!-- ══ 1. 인트로 / 등록 ══ -->
+  <section class="screen on" id="scIntro">
+    <div class="bunting" aria-hidden="true"></div>
+    <div class="intro-hero">
+      <img class="mark" src="gold.png" alt="황금 귤">
+      <h1 id="introTitle">황금 귤을 찾아라</h1>
+      <p id="introSub">과수원피스 · 2026.10.31</p>
+    </div>
+
+    <div class="rules">
+      <ol>
+        <li>행사장 곳곳에 숨은 QR을 찾아 카메라로 찍습니다.</li>
+        <li>퀴즈를 맞히면 <b>단서 한 글자</b>를 얻습니다.</li>
+        <li>글자를 모아 조합하면 마지막 답이 나옵니다.</li>
+        <li>답을 맞히면 <b>황금 귤</b>이 열립니다.</li>
+      </ol>
+    </div>
+
+    <div class="field">
+      <label for="inNick">닉네임</label>
+      <input id="inNick" type="text" placeholder="게임에서 쓸 이름" autocomplete="nickname" maxlength="12">
+    </div>
+    <div class="field">
+      <label for="inName">이름</label>
+      <input id="inName" type="text" placeholder="보상 확인용" autocomplete="name" maxlength="20">
+    </div>
+    <div class="field">
+      <label for="inPhone">전화번호</label>
+      <input id="inPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
+    </div>
+    <p class="privacy">
+      이름과 전화번호는 <b>보상 지급 확인 목적으로만</b> 사용하며,
+      행사 종료 후 7일 이내에 삭제합니다.
+    </p>
+
+    <button class="btn gold" id="btnJoin">항해 시작하기</button>
+    <button class="btn ghost" id="btnRestore">이미 참가했어요 (전화번호로 이어하기)</button>
+  </section>
+
+  <!-- ══ 2. 홈(허브) ══ -->
+  <section class="screen" id="scHome">
+
+    <!-- 항해사 HUD -->
+    <div class="hud">
+      <div class="hud-crest" id="hudCrest"></div>
+      <div class="hud-body">
+        <div class="hud-rank">항해사</div>
+        <div class="hud-name" id="hudName">—</div>
+        <div class="hud-meta">
+          <i class="coin" aria-hidden="true"></i>
+          <span id="hudMeta">항해 준비 중</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 현재 퀘스트 -->
+    <div class="questbar">
+      <img class="qb-art" src="gold.png" alt="" aria-hidden="true">
+      <span class="qb-tag">진행 중인 퀘스트</span>
+      <h2 class="qb-title" id="qbTitle">황금 귤을 찾아라</h2>
+      <p class="qb-sub" id="qbSub">단서를 모아 최종 보물을 찾아라!</p>
+      <div class="bar"><i id="qbBar"></i></div>
+      <div class="qb-foot">
+        <span id="qbFoot">단서 0 / 0</span>
+        <b id="qbPct">0%</b>
+      </div>
+    </div>
+
+    <h3 class="secttl">오늘 타임테이블</h3>
+    <div class="ttable" id="timetable"></div>
+
+    <h3 class="secttl">실시간 투표</h3>
+    <div class="votecards" id="voteCards"></div>
+
+    <h3 class="secttl">행사 한눈에 보기</h3>
+    <div class="expgrid" id="expgrid"></div>
+
+    <h3 class="secttl">지도</h3>
+    <div class="mapbox mapbox-mini" id="homeMapBox"></div>
+
+    <button class="btn gold" id="btnGoProgress" style="margin-top:20px">내 진행 상황 보기</button>
+  </section>
+
+  <!-- ══ 2-1. 진행상황: 미션 ══ -->
+  <section class="screen" id="scMissions">
+    <div class="tabbar" id="tabbar1">
+      <span class="tabind" id="tabInd1"></span>
+      <button class="tabbtn on" id="tabMission">미션</button>
+      <button class="tabbtn" id="tabTreasure">보물찾기</button>
+    </div>
+    <div class="progress">
+      <div class="row">
+        <span class="lbl">완료한 미션</span>
+        <span class="cnt"><b id="mNow">0</b> / <span id="mAll">11</span></span>
+      </div>
+      <div class="bar"><i id="mBar"></i></div>
+    </div>
+    <p class="maphint" style="margin-bottom:14px">미션 완료 확인은 <b>스태프</b>가 현장에서 체크합니다</p>
+    <div class="mlist" id="mlist"></div>
+  </section>
+
+  <!-- ══ 3. 보물찾기 ══ -->
+  <section class="screen" id="scMain">
+    <div class="tabbar" id="tabbar2">
+      <span class="tabind" id="tabInd2"></span>
+      <button class="tabbtn" id="tabMission2">미션</button>
+      <button class="tabbtn on" id="tabTreasure2">보물찾기</button>
+    </div>
+    <div class="progress">
+      <div class="row">
+        <span class="lbl">모은 단서</span>
+        <span class="cnt"><b id="pgNow">0</b> / <span id="pgAll">0</span></span>
+      </div>
+      <div class="bar"><i id="pgBar"></i></div>
+    </div>
+
+    <div class="mapbox" id="mapBox"></div>
+    <p class="maphint" id="mapHint"><b>X</b> 표시된 곳 근처에 QR이 있습니다</p>
+
+    <div class="pouch">
+      <div class="cap">단서 주머니 <span id="shardCnt"></span></div>
+      <div class="chips" id="pouch"></div>
+    </div>
+
+    <div style="margin-top:22px">
+      <button class="btn gold" id="btnFinal">모은 글자로 답 맞히기</button>
+      <button class="btn ghost" id="btnHowScan">QR은 어떻게 찍나요?</button>
+    </div>
+
+    <p class="footnote">찾은 QR <b id="foundCnt">0</b>개 · 참가자 <span id="whoAmI"></span></p>
+  </section>
+
+  <!-- ══ 2-2. 실시간 투표 ══ -->
+  <section class="screen" id="scVote">
+    <h1 style="font-size:20px;color:var(--gold);margin:6px 0 4px" id="voteTitle">투표</h1>
+    <p style="color:#9fb6d0;font-size:13px;margin:0 0 18px" id="voteWhen"></p>
+    <div id="voteBody"></div>
+    <div style="margin-top:18px">
+      <button class="btn ghost" id="btnVoteBack">홈으로</button>
+    </div>
+  </section>
+
+  <!-- ══ 3. 퀴즈 ══ -->
+  <section class="screen" id="scQuiz">
+    <div class="qcard" id="qCard">
+      <div class="qid"><span id="qZone"></span><span id="qCode"></span></div>
+      <h2 id="qText"></h2>
+      <input id="qInput" type="text" placeholder="답을 입력하세요" autocomplete="off"
+             autocapitalize="off" spellcheck="false" enterkeyhint="done">
+      <button class="btn gold" id="btnAnswer">제출</button>
+      <p class="wrongmsg" id="qWrong"></p>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn ghost" id="btnQuizBack">나중에 풀기</button>
+    </div>
+  </section>
+
+  <!-- ══ 4. 정답 연출 ══ -->
+  <section class="screen" id="scResult">
+    <div class="result">
+      <div class="burst" id="rsBurst">QUEST CLEAR</div>
+      <div class="big" id="rsBig">글</div>
+      <h2 id="rsTitle"></h2>
+      <p id="rsDesc"></p>
+      <div class="acts">
+        <button class="btn gold" id="btnResultOk">지도로 돌아가기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 5. 최종 도전 ══ -->
+  <section class="screen" id="scFinal">
+    <div style="padding-top:26px">
+      <h1 style="font-size:26px;color:var(--gold);text-align:center">마지막 문제</h1>
+      <p style="text-align:center;color:#9fb6d0;font-size:13.5px;margin-top:6px" id="fnQ"></p>
+
+      <div class="final-hint">
+        <div class="chips" id="fnChips"></div>
+        <p id="fnCount"></p>
+      </div>
+
+      <div class="qcard">
+        <input id="fnInput" type="text" placeholder="조합한 답을 입력하세요" autocomplete="off"
+               autocapitalize="off" spellcheck="false" enterkeyhint="done">
+        <button class="btn gold" id="btnFinalAnswer">제출</button>
+        <p class="wrongmsg" id="fnWrong"></p>
+      </div>
+
+      <div style="margin-top:16px">
+        <button class="btn ghost" id="btnFinalBack">더 모으러 가기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 6. 황금 귤 개봉 ══ -->
+  <section class="screen" id="scOpen">
+    <div class="opening">
+      <div class="tangerine" id="tangerine">
+        <div class="glow"></div>
+        <div class="half top"></div>
+        <div class="half bot"></div>
+      </div>
+      <p class="tapme" id="tapMe">화면을 눌러 열어보세요</p>
+    </div>
+  </section>
+
+  <!-- ══ 7. 쿠폰 ══ -->
+  <section class="screen" id="scCoupon">
+    <div style="padding-top:16px">
+      <h1 style="font-size:24px;color:var(--gold);text-align:center;margin-bottom:4px">황금 귤을 찾았다!</h1>
+      <p style="text-align:center;color:#9fb6d0;font-size:13.5px" id="cpAnswer"></p>
+
+      <div class="coupon" id="couponCard">
+        <div class="stamp">수령 완료</div>
+        <div class="kind" id="cpKind">GOLD TICKET</div>
+        <h2 id="cpTitle">골드 티켓</h2>
+        <div class="who" id="cpWho"></div>
+        <div class="line"></div>
+        <div class="no" id="cpNo"></div>
+        <div class="at" id="cpAt"></div>
+        <p class="note" id="cpNote"></p>
+      </div>
+
+      <div style="margin-top:20px">
+        <button class="btn ghost" id="btnCouponBack">지도 다시 보기</button>
+      </div>
+      <p class="footnote">이 화면을 스태프에게 보여주세요. 1인 1회만 지급됩니다.</p>
+    </div>
+  </section>
+
+  <!-- ══ 8. 내 보상 ══ -->
+  <section class="screen" id="scRewards">
+    <h1 style="font-size:22px;color:var(--gold);text-align:center;margin:10px 0 20px">내 보상</h1>
+
+    <div class="rewardcard">
+      <div class="rc-top">
+        <span class="rc-icon" aria-hidden="true"></span>
+        <div>
+          <h3>응모티켓</h3>
+          <p>미션을 완료할수록 응모티켓을 더 받아요 (그날 추첨용)</p>
+        </div>
+      </div>
+      <div class="bar"><i id="rwMissionBar"></i></div>
+      <p class="rc-status" id="rwMissionStatus">미션 0 / 11 완료</p>
+      <div class="tierladder" id="rwTierLadder"></div>
+    </div>
+
+    <div class="rewardcard">
+      <div class="rc-top">
+        <img class="rc-icon-img" src="gold.png" alt="">
+        <div>
+          <h3>골드 티켓</h3>
+          <p>보물찾기 완주 시 해적왕 트로피 + 다음 행사 응모권</p>
+        </div>
+      </div>
+      <p class="rc-status" id="rwTreasureStatus">아직 진행중이에요</p>
+      <button class="btn gold" id="btnRewardCoupon" style="margin-top:10px;display:none">골드 티켓 보기</button>
+      <button class="btn ghost" id="btnRewardGo" style="margin-top:10px">보물찾기 하러 가기</button>
+    </div>
+  </section>
+
+  <!-- ══ 9. 반응속도게임 (미션) ══ -->
+  <section class="screen" id="scReaction">
+    <div style="padding-top:20px;text-align:center">
+      <h1 style="font-size:22px;color:var(--gold)">반응속도게임</h1>
+      <p style="color:#9fb6d0;font-size:13px;margin:6px 0 20px" id="reactRound">라운드 1 / 3</p>
+      <div class="reactpad wait" id="reactPad"><span id="reactPadTxt">준비하세요</span></div>
+      <div id="reactDoneBox" style="display:none;margin-top:18px">
+        <p style="color:var(--gold);font-weight:700" id="reactAvg"></p>
+        <button class="btn gold" id="btnReactFinish">미션 완료 처리</button>
+      </div>
+      <div style="margin-top:22px">
+        <button class="btn ghost" id="btnReactBack">미션 목록으로</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 10. 관리자(숨김) ══ -->
+  <section class="screen" id="scAdmin">
+    <div style="padding-top:16px">
+      <h1 style="font-size:20px;color:var(--gold);text-align:center;margin-bottom:4px">관리자</h1>
+      <p style="text-align:center;color:#9fb6d0;font-size:12px;margin:0 0 16px">이 기기에 저장된 기록만 보입니다 (다른 참가자 폰과 자동 동기화되지 않음)</p>
+
+      <h3 class="secttl">투표 후보 관리</h3>
+      <div id="adminVotes"></div>
+
+      <h3 class="secttl">참가자 (이 기기 기준)</h3>
+      <div id="adminPlayers"></div>
+
+      <div style="margin-top:24px">
+        <button class="btn ghost" id="btnAdminWipe">이 기기 데이터 전체 삭제</button>
+        <button class="btn ghost" id="btnAdminBack" style="margin-top:10px">닫기</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<nav class="navbar" id="navbar">
+  <button class="navbtn" data-nav="scHome"><img src="icons2/t_house.png" alt="">홈</button>
+  <button class="navbtn" data-nav="scMissions"><img src="icons2/t_scroll.png" alt="">진행상황</button>
+  <button class="navbtn" data-nav="scRewards"><img src="icons2/t_ticket.png" alt="">내 보상</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="store.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
