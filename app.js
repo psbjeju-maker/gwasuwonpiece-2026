@@ -5,15 +5,16 @@
 
   var D  = Store.loadContent();     // 콘텐츠 (관리자 수정분 우선)
   var S  = null;                    // 내 진행 상태
-  var CUR = null;                   // 지금 풀고 있는 QR
+  var CUR = null;                   // 지금 풀고 있는 GPS 지점
   var wrongCount = 0;
 
   var LETTERS = [];                 // 최종 정답을 한 글자씩 쪼갠 배열
 
   /* ---------- 도우미 ---------- */
   function $(id) { return document.getElementById(id); }
-  function qrById(id) {
-    for (var i = 0; i < D.qrcodes.length; i++) if (D.qrcodes[i].id === id) return D.qrcodes[i];
+  function pointById(id) {
+    var list = D.gpsPoints || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
     return null;
   }
   function norm(s) {
@@ -27,6 +28,80 @@
     var t = $("toast");
     t.textContent = msg; t.classList.add("on");
     clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("on"); }, 2400);
+  }
+
+  /* ---------- 퀘스트 대화 ----------
+     questLine(text, opts): opts.choices가 있으면 선택형(결과는 재미 요소일 뿐 진행에 영향 없음),
+     없으면 확인 버튼으로 닫는 단문형. opts.onOk는 확인 버튼을 눌렀을 때 호출된다. */
+  function questLine(text, opts) {
+    opts = opts || {};
+    $("questWho").textContent = opts.who || (D.settings && D.settings.questWho) || "귤선장";
+    var av = $("questAvatar");
+    var avatarSrc = opts.avatar || (D.settings && D.settings.questAvatar) || "";
+    var card = av.parentNode.parentNode; /* .quest-card */
+    if (avatarSrc) { av.src = avatarSrc; card.classList.remove("no-avatar"); }
+    else { av.removeAttribute("src"); card.classList.add("no-avatar"); }
+    $("questText").textContent = text;
+    var choicesEl = $("questChoices");
+    choicesEl.innerHTML = "";
+    var okBtn = $("questOk");
+    if (opts.choices && opts.choices.length) {
+      okBtn.style.display = "none";
+      opts.choices.forEach(function (c) {
+        var b = document.createElement("button");
+        b.className = "btn ghost";
+        b.textContent = c.label;
+        b.addEventListener("click", function () { if (c.onPick) c.onPick(); else closeQuest(); });
+        choicesEl.appendChild(b);
+      });
+    } else {
+      okBtn.style.display = "";
+      okBtn.onclick = function () { closeQuest(); if (opts.onOk) opts.onOk(); };
+    }
+    $("questOverlay").classList.add("on");
+  }
+  function closeQuest() { $("questOverlay").classList.remove("on"); }
+
+  /* 미션 완료·시간대 이벤트처럼 "확인만 누르면 되는" 짧은 대사용 헬퍼 */
+  function showQuestLine(text, avatar) {
+    if (!text) return;
+    questLine(text, { avatar: avatar });
+  }
+
+  function runIntroQuest() {
+    var q = D.introQuest;
+    if (!q || !q.line || S.seenIntroQuest) return;
+    questLine(q.line, {
+      avatar: q.avatar,
+      choices: (q.choices || []).map(function (c) {
+        return {
+          label: c.label,
+          onPick: function () {
+            questLine(c.next, {
+              avatar: c.avatar,
+              onOk: function () { S.seenIntroQuest = true; Store.saveMe(S); }
+            });
+          }
+        };
+      })
+    });
+  }
+
+  function checkScheduleQuests() {
+    var list = D.scheduleQuests || [];
+    if (!list.length) return;
+    S.seenSchedule = S.seenSchedule || [];
+    var nm = nowMin(), changed = false, toShow = null, toShowAvatar = null;
+    list.forEach(function (q) {
+      if (S.seenSchedule.indexOf(q.id) >= 0) return;
+      if (nm >= timeToMin(q.time)) {
+        S.seenSchedule.push(q.id);
+        changed = true;
+        if (!toShow) { toShow = q.line; toShowAvatar = q.avatar; } /* 한 번에 여러 개가 밀려있어도 한 개씩만 보여준다 */
+      }
+    });
+    if (changed) Store.saveMe(S);
+    if (toShow) showQuestLine(toShow, toShowAvatar);
   }
   var NAV_SCREENS = { scHome: 1, scMissions: 1, scMain: 1, scRewards: 1 };
   var NAV_ORDER   = { scHome: 0, scMissions: 1, scMain: 1.5, scRewards: 2 };
@@ -89,112 +164,160 @@
     return Object.keys(seen).length;
   }
 
-  /* ---------- 지도 ---------- */
-  function mapSVG() {
-    var z = D.zones, s = "";
-    s += '<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="행사장 지도">';
-    s += '<defs>';
-    s += '<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1">';
-    s += '<stop offset="0" stop-color="#16405f"/><stop offset="1" stop-color="#0d2a45"/></linearGradient>';
-    s += '<pattern id="tree" width="16" height="16" patternUnits="userSpaceOnUse">';
-    s += '<circle cx="8" cy="8" r="3.4" fill="#2f6b4a" opacity=".85"/></pattern>';
-    s += '</defs>';
-    s += '<rect width="400" height="300" fill="url(#gr)"/>';
-
-    /* 감귤밭 (E·F 구역) */
-    s += '<path d="M232 4 H396 V132 Q320 118 262 78 Q236 58 232 4 Z" fill="#1c4a38" opacity=".9"/>';
-    s += '<path d="M232 4 H396 V132 Q320 118 262 78 Q236 58 232 4 Z" fill="url(#tree)" opacity=".55"/>';
-    /* 꽃길 (F) */
-    s += '<path d="M330 8 Q368 22 392 16" stroke="#c9713f" stroke-width="9" fill="none" opacity=".75" stroke-linecap="round"/>';
-    /* 산책로 */
-    s += '<path d="M212 214 Q252 168 288 122 Q318 82 356 44" stroke="#e0cba0" stroke-width="7" fill="none" opacity=".5" stroke-linecap="round" stroke-dasharray="1 11"/>';
-    /* 광장 D */
-    s += '<ellipse cx="256" cy="141" rx="52" ry="34" fill="#1d4666" opacity=".95"/>';
-    /* 마켓 텐트 C */
-    for (var i = 0; i < 5; i++) {
-      var tx = 160 + i * 24;
-      s += '<path d="M' + tx + ' 214 l14 -18 l14 18 Z" fill="#2b6ea8" opacity=".9"/>';
-    }
-    s += '<rect x="158" y="212" width="122" height="6" rx="2" fill="#22557f" opacity=".9"/>';
-    /* 본관 B */
-    s += '<rect x="76" y="140" width="66" height="42" rx="5" fill="#c9762e" opacity=".92"/>';
-    s += '<rect x="76" y="140" width="66" height="12" rx="5" fill="#e0913f" opacity=".95"/>';
-    /* 비닐하우스 G */
-    s += '<path d="M126 100 h60 a30 30 0 0 0 -60 0 Z" fill="#3a4a57" opacity=".95"/>';
-    s += '<rect x="126" y="99" width="60" height="26" rx="3" fill="#33424e" opacity=".95"/>';
-    /* 과수원피스 로고 A */
-    s += '<circle cx="74" cy="232" r="30" fill="#1d4666" opacity=".95"/>';
-    s += '<path d="M68 244 v-20 a6 6 0 0 1 12 0 v20 Z" fill="#9aa7b3" opacity=".9"/>';
-    s += '<circle cx="74" cy="216" r="7" fill="#9aa7b3" opacity=".9"/>';
-    /* 입구 */
-    s += '<path d="M28 276 h44" stroke="#d9a441" stroke-width="4" stroke-linecap="round"/>';
-    s += '<text x="50" y="292" fill="#d9a441" font-size="11" text-anchor="middle" font-family="sans-serif">입구</text>';
-
-    /* 구역 라벨 */
-    Object.keys(z).forEach(function (k) {
-      var Z = z[k], x = Z.x * 4, y = Z.y * 3;
-      s += '<text x="' + x + '" y="' + (y - 20) + '" fill="#7fa0bd" font-size="10.5" ' +
-           'text-anchor="middle" font-family="sans-serif" letter-spacing="1">' + k + ' · ' + Z.name + '</text>';
-    });
-
-    s += '</svg>';
-    return s;
-  }
-
+  /* ---------- 지도(홈 화면 미리보기용 — 행사장 사진만 보여준다) ---------- */
   function mapBase() {
-    return D.settings.mapImage
-      ? '<img src="' + D.settings.mapImage + '" alt="행사장 지도">'
-      : mapSVG();
+    return D.settings.mapImage ? '<img src="' + D.settings.mapImage + '" alt="행사장 지도">' : "";
   }
 
-  function renderMap() {
-    var box = $("mapBox");
-    var html = mapBase();
+  /* ---------- GPS 나침반 ----------
+     지도 X마커 대신, 아직 못 찾은 지점 중 가장 가까운 곳을 나침반이 가리킨다.
+     도착 인정 반경 안에 들어오면 자동으로 그 지점의 퀴즈가 뜬다. */
+  var GEO = {
+    watchId: null, tracking: false,
+    pos: null,            // { lat, lng, accuracy }
+    heading: null, hasHeading: false,
+    arrivedId: null        // 마지막으로 자동 트리거된 지점(중복 팝업 방지)
+  };
 
-    /* 찾은 곳 */
-    for (var i = 0; i < S.found.length; i++) {
-      var q = qrById(S.found[i]);
-      if (!q) continue;
-      html += '<div class="pin found" style="left:' + q.x + '%;top:' + q.y + '%">🍊</div>';
-    }
-    /* X 표시 */
-    for (var j = 0; j < S.marks.length; j++) {
-      var m = qrById(S.marks[j]);
-      if (!m || S.found.indexOf(m.id) >= 0) continue;
-      html += '<div class="pin mark" style="left:' + m.x + '%;top:' + m.y + '%">✕</div>';
-    }
-    box.innerHTML = html;
+  function toRad(d) { return d * Math.PI / 180; }
+  function toDeg(r) { return r * 180 / Math.PI; }
+  function haversineDistance(lat1, lon1, lat2, lon2) {
+    var R = 6371000;
+    var dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+  function bearingTo(lat1, lon1, lat2, lon2) {
+    var phi1 = toRad(lat1), phi2 = toRad(lat2), dLam = toRad(lon2 - lon1);
+    var y = Math.sin(dLam) * Math.cos(phi2);
+    var x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLam);
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+  }
+  function radiusFor(p) { return p.radius || D.settings.gpsRadius || 15; }
 
-    var live = S.marks.filter(function (id) { return S.found.indexOf(id) < 0; });
-    $("mapHint").innerHTML = live.length
-      ? '<b>X</b> 표시된 곳 근처에 QR이 있습니다'
-      : 'QR을 하나 찾아 찍으면 다음 위치가 표시됩니다';
+  /* 아직 못 찾았고 좌표가 설정된 지점 중 하나를 무작위로 골라 계속 가리킨다.
+     한 번 고른 지점(S.nextTargetId)은 참가자별로 고정되고, 그 지점을 찾으면
+     (또는 관리자가 수동 지급해서 이미 찾은 상태가 되면) 다음 호출에서 새로 무작위 배정한다. */
+  function pickNewTarget() {
+    var pts = (D.gpsPoints || []).filter(function (p) {
+      return !hasLetter(p.li) && p.lat != null && p.lng != null;
+    });
+    if (!pts.length) { S.nextTargetId = null; return null; }
+    var pick = pts[Math.floor(Math.random() * pts.length)];
+    S.nextTargetId = pick.id;
+    Store.saveMe(S);
+    return pick;
+  }
+  function nextTarget() {
+    if (S.nextTargetId) {
+      var cur = pointById(S.nextTargetId);
+      if (cur && !hasLetter(cur.li) && cur.lat != null && cur.lng != null) return cur;
+    }
+    return pickNewTarget();
   }
 
-  /* 다음에 안내할 QR 3곳 — 같은 구역 먼저, 그다음 인접 구역 */
-  function nearbyFor(q) {
-    var zone = D.zones[q.zone];
-    var order = [q.zone].concat(zone ? zone.near : []);
-    var picked = [];
-    for (var z = 0; z < order.length && picked.length < 3; z++) {
-      var pool = D.qrcodes.filter(function (c) {
-        return c.zone === order[z] && c.id !== q.id &&
-               S.found.indexOf(c.id) < 0 && picked.indexOf(c.id) < 0;
-      });
-      /* 섞기 */
-      for (var i = pool.length - 1; i > 0; i--) {
-        var r = Math.floor(Math.random() * (i + 1));
-        var t = pool[i]; pool[i] = pool[r]; pool[r] = t;
+  function unsetPointCount() {
+    return (D.gpsPoints || []).filter(function (p) { return p.lat == null || p.lng == null; }).length;
+  }
+
+  function onOrientation(e) {
+    var heading = null;
+    if (typeof e.webkitCompassHeading === "number") heading = e.webkitCompassHeading;
+    else if (e.absolute === true && typeof e.alpha === "number") heading = (360 - e.alpha) % 360;
+    else if (e.type === "deviceorientationabsolute" && typeof e.alpha === "number") heading = (360 - e.alpha) % 360;
+    if (heading !== null && !isNaN(heading)) {
+      GEO.heading = heading; GEO.hasHeading = true;
+      updateCompass();
+    }
+  }
+
+  function renderCompassGate() {
+    var gate = $("compassGate"), wrap = $("compassWrap");
+    if (!gate) return;
+    var started = GEO.tracking;
+    gate.style.display = started ? "none" : "";
+    wrap.style.display = started ? "" : "none";
+  }
+
+  function startCompass() {
+    if (GEO.tracking) return;
+    if (!navigator.geolocation) {
+      toast("이 기기는 위치 확인을 지원하지 않아요");
+      return;
+    }
+    var beginWatch = function () {
+      GEO.tracking = true;
+      renderCompassGate();
+      GEO.watchId = navigator.geolocation.watchPosition(function (pos) {
+        GEO.pos = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+        updateCompass();
+      }, function (err) {
+        $("compassStatus") && ($("compassStatus").textContent = "위치 확인 오류: " + err.message);
+      }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 2000 });
+      window.addEventListener("deviceorientationabsolute", onOrientation);
+      window.addEventListener("deviceorientation", onOrientation);
+      updateCompass();
+    };
+    var needsIOSPerm = typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function";
+    if (needsIOSPerm) {
+      DeviceOrientationEvent.requestPermission().then(beginWatch).catch(beginWatch);
+    } else {
+      beginWatch();
+    }
+  }
+
+  function updateCompass() {
+    if (!$("compassDist")) return;
+    var target = nextTarget();
+    var needle = $("compassNeedle"), dial = $("compassDial");
+
+    if (!target) {
+      $("compassDist").textContent = "—";
+      var doneAll = uniqueLetterCount() >= LETTERS.length && LETTERS.length > 0;
+      var unset = unsetPointCount();
+      $("compassStatus").textContent = doneAll
+        ? "글자를 전부 모았습니다!"
+        : (unset ? ("아직 위치가 설정되지 않은 단서가 " + unset + "개 있습니다. 스태프에게 문의하세요")
+                 : "안내할 단서가 없습니다. 스태프에게 문의하세요");
+      dial.classList.remove("arrived");
+      return;
+    }
+
+    if (!GEO.pos) {
+      $("compassDist").textContent = "—";
+      $("compassStatus").textContent = "위치 확인 중…";
+      return;
+    }
+
+    var dist = haversineDistance(GEO.pos.lat, GEO.pos.lng, target.lat, target.lng);
+    var brg = bearingTo(GEO.pos.lat, GEO.pos.lng, target.lat, target.lng);
+    var r = radiusFor(target);
+
+    $("compassDist").textContent = dist < 1000 ? (Math.round(dist) + "m") : ((dist / 1000).toFixed(2) + "km");
+
+    if (GEO.hasHeading) {
+      needle.style.transform = "rotate(" + ((brg - GEO.heading + 360) % 360) + "deg)";
+    }
+
+    if (dist <= r) {
+      dial.classList.add("arrived");
+      var onMain = $("scMain").classList.contains("on");
+      if (onMain && GEO.arrivedId !== target.id && D.settings.gameOpen !== false) {
+        GEO.arrivedId = target.id;
+        openPointQuiz(target);
       }
-      for (var k = 0; k < pool.length && picked.length < 3; k++) picked.push(pool[k].id);
+      $("compassStatus").textContent = "도착! 잠시 후 퀴즈가 뜹니다";
+    } else {
+      dial.classList.remove("arrived");
+      if (GEO.arrivedId === target.id) GEO.arrivedId = null;
+      var accNote = (GEO.pos.accuracy && GEO.pos.accuracy > 30)
+        ? (" · GPS 오차 약 ±" + Math.round(GEO.pos.accuracy) + "m") : "";
+      $("compassStatus").textContent = GEO.hasHeading
+        ? ("나침반을 따라가세요" + accNote)
+        : ("방향 센서를 찾지 못했어요. 목표까지 방위 " + Math.round(brg) + "°" + accNote);
     }
-    if (picked.length < 3) {
-      var rest = D.qrcodes.filter(function (c) {
-        return S.found.indexOf(c.id) < 0 && picked.indexOf(c.id) < 0;
-      });
-      for (var m = 0; m < rest.length && picked.length < 3; m++) picked.push(rest[m].id);
-    }
-    return picked;
   }
 
   /* ---------- 홈(허브) ---------- */
@@ -216,7 +339,7 @@
       var earned = (m.auto === "treasureClear") ? !!S.cleared
         : (m.auto.indexOf("vote:") === 0) ? !!S.votes[m.auto.slice(5)]
         : false;
-      if (earned && !already) { S.missionsDone.push(m.id); changed = true; }
+      if (earned && !already) { S.missionsDone.push(m.id); changed = true; if (m.line) showQuestLine(m.line, m.avatar); }
     });
     if (changed) Store.saveMe(S);
   }
@@ -322,6 +445,8 @@
     if ($("homeTitle")) $("homeTitle").textContent = D.settings.title || "황금 귤을 찾아라";
     if ($("homeSub")) $("homeSub").textContent = D.settings.subtitle || "";
     renderHud();
+    if (!S.seenIntroQuest) runIntroQuest();
+    else checkScheduleQuests();
 
     var now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
     var list = D.timetable || [], liveIdx = -1;
@@ -455,12 +580,18 @@
   function claimReaction() {
     if (!reactState) return;
     S.missionsDone = S.missionsDone || [];
-    if (S.missionsDone.indexOf(reactState.mid) < 0) S.missionsDone.push(reactState.mid);
+    var isNew = S.missionsDone.indexOf(reactState.mid) < 0;
+    if (isNew) S.missionsDone.push(reactState.mid);
     Store.saveMe(S);
+    var mid = reactState.mid;
     reactState = null;
     toast("반응속도게임 완료!");
     renderMissions();
     showTab("scMissions");
+    if (isNew) {
+      var m = (D.missions || []).filter(function (x) { return x.id === mid; })[0];
+      if (m && m.line) showQuestLine(m.line, m.avatar);
+    }
   }
 
   /* ---------- 관리자(숨김 진입) ----------
@@ -552,7 +683,6 @@
     $("pgBar").style.transform = "scaleX(" + (all ? (got / all) : 0) + ")";
     $("foundCnt").textContent = S.found.length;
     $("whoAmI").textContent = S.nickname || "";
-    $("shardCnt").textContent = S.shards ? "황금 조각 " + S.shards + "개" : "";
 
     var pouch = $("pouch"), html = "";
     for (var i = 0; i < S.letters.length; i++) {
@@ -565,23 +695,22 @@
       ? "골드 티켓 다시 보기"
       : ((got >= all && all > 0) ? "글자를 다 모았다! 답 맞히기" : "모은 글자로 답 맞히기");
 
-    renderMap();
+    renderCompassGate();
+    updateCompass();
   }
 
   /* ---------- 퀴즈 ---------- */
-  function openQuiz(id) {
-    var q = qrById(id);
-    if (!q) { toast("알 수 없는 QR입니다"); showTab("scMain"); return; }
+  function openPointQuiz(p) {
+    if (!p) { toast("알 수 없는 지점입니다"); showTab("scMain"); return; }
     if (D.settings.gameOpen === false) { toast("게임이 잠시 중단되었습니다"); showTab("scMain"); return; }
-
-    if (S.found.indexOf(id) >= 0) {
+    if (hasLetter(p.li)) {
       toast("이미 찾은 곳입니다");
       renderMain(); showTab("scMain"); return;
     }
-    CUR = q; wrongCount = 0;
-    var quiz = D.quizzes[q.q] || { qn: "(문제가 아직 등록되지 않았습니다)", a: [] };
-    $("qZone").textContent = (D.zones[q.zone] ? D.zones[q.zone].name : q.zone);
-    $("qCode").textContent = q.id;
+    CUR = p; wrongCount = 0;
+    var quiz = D.quizzes[p.q] || { qn: "(문제가 아직 등록되지 않았습니다)", a: [] };
+    $("qZone").textContent = p.flavor || "";
+    $("qCode").textContent = p.id;
     $("qText").textContent = quiz.qn;
     $("qInput").value = "";
     $("qWrong").textContent = "";
@@ -611,66 +740,22 @@
   }
 
   /* ---------- 보상 지급 ---------- */
-  function grant(q) {
-    S.found.push(q.id);
-    var big = "", burst = "QUEST CLEAR", title = "", desc = "", isEvent = false;
-
-    if (q.type === "letter" || q.type === "duplicate") {
-      if (hasLetter(q.li)) {
-        /* 이미 가진 글자 — 중복 QR을 만난 경우 */
-        S.shards++;
-        isEvent = true;
-        big = "✨"; burst = "이미 찾은 글자";
-        title = "「" + LETTERS[q.li] + "」 은 이미 가지고 있어요";
-        desc = "대신 황금 귤 조각을 하나 얻었습니다. (총 " + S.shards + "개)";
-      } else {
-        S.letters.push({ li: q.li, char: LETTERS[q.li], at: Date.now() });
-        big = LETTERS[q.li];
-        title = "단서 「" + LETTERS[q.li] + "」 획득!";
-        var left = LETTERS.length - uniqueLetterCount();
-        desc = left > 0 ? "남은 글자 " + left + "개" : "글자를 전부 모았습니다!";
-      }
-    } else {
-      isEvent = true;
-      var ev = D.events[q.ev] || { name: "이벤트", icon: "✨", text: "" };
-      big = ev.icon;
-      burst = "이벤트";
-      title = ev.name;
-      desc = q.evText || ev.text || "";
-      S.events.push(q.id);
-
-      if (q.ev === "lucky") {
-        var missing = [];
-        for (var i = 0; i < LETTERS.length; i++) if (!hasLetter(i)) missing.push(i);
-        if (missing.length) {
-          var pick = missing[Math.floor(Math.random() * missing.length)];
-          S.letters.push({ li: pick, char: LETTERS[pick], at: Date.now() });
-          big = LETTERS[pick]; isEvent = false;
-          title = "행운의 감귤 — 「" + LETTERS[pick] + "」 획득!";
-          desc = "남은 글자 " + (LETTERS.length - uniqueLetterCount()) + "개";
-        } else {
-          S.shards++;
-          desc = "이미 글자를 다 모았네요. 황금 귤 조각을 드립니다.";
-        }
-      } else if (q.ev === "shard") {
-        S.shards++;
-        desc = (desc ? desc + " " : "") + "(총 " + S.shards + "개)";
-      }
-    }
-
-    S.marks = nearbyFor(q);
+  function grant(p) {
+    S.found.push(p.id);
+    S.letters.push({ li: p.li, char: LETTERS[p.li], at: Date.now() });
     Store.saveMe(S);
 
-    $("rsBurst").textContent = burst;
-    $("rsBig").textContent = big;
-    $("rsBig").className = "big" + (isEvent ? " ev" : "");
-    $("rsTitle").textContent = title;
-    $("rsDesc").textContent = desc;
+    var left = LETTERS.length - uniqueLetterCount();
+    $("rsBurst").textContent = "QUEST CLEAR";
+    $("rsBig").textContent = LETTERS[p.li];
+    $("rsBig").className = "big";
+    $("rsTitle").textContent = "단서 「" + LETTERS[p.li] + "」 획득!";
+    $("rsDesc").textContent = left > 0 ? "남은 글자 " + left + "개" : "글자를 전부 모았습니다!";
     show("scResult");
 
     /* 글자를 다 모았으면 결과 버튼을 최종 도전으로 */
     var done = uniqueLetterCount() >= LETTERS.length && LETTERS.length > 0;
-    $("btnResultOk").textContent = done ? "마지막 문제 풀러 가기" : "지도로 돌아가기";
+    $("btnResultOk").textContent = done ? "마지막 문제 풀러 가기" : "나침반으로 돌아가기";
     $("btnResultOk").dataset.go = done ? "final" : "main";
   }
 
@@ -697,7 +782,7 @@
     $("rsBig").textContent = "✓";
     $("rsBig").className = "big ev";
     $("rsTitle").textContent = m.name + " 완료!";
-    $("rsDesc").textContent = m.desc || "";
+    $("rsDesc").textContent = m.line || m.desc || "";
     show("scResult");
     $("btnResultOk").textContent = "미션 목록으로";
     $("btnResultOk").dataset.go = "missions";
@@ -784,23 +869,23 @@
 
     S = Store.me();
     var params = new URLSearchParams(location.search);
-    var qid = (params.get("q") || "").toUpperCase();
     var mcode = (params.get("m") || "").toUpperCase();
 
     if (!Store.isOnline()) $("netBadge").classList.add("show");
 
     if (!S) {
-      if (qid) sessionStorage.setItem("ggg_pending", qid);
       if (mcode) sessionStorage.setItem("ggg_pending_m", mcode);
       show("scIntro");
       return;
     }
     if (!S.missionsDone) S.missionsDone = []; // 이전 버전 참가자 호환
     renderMain();
-    if (qid) { openQuiz(qid); }
-    else if (mcode) { openMissionQR(mcode); }
+    if (mcode) { openMissionQR(mcode); }
     else { renderHome(); show("scHome"); }
   }
+
+  /* 홈 화면을 계속 안 들어가도 시간대 대사는 놓치지 않도록 1분마다 확인(등록 전이면 조용히 건너뜀) */
+  setInterval(function () { if (S) checkScheduleQuests(); }, 60000);
 
   /* ---------- 이벤트 연결 ---------- */
   $("btnJoin").addEventListener("click", function () {
@@ -813,12 +898,9 @@
 
     S = Store.register(nick, name, phone);
     renderMain();
-    var pending = sessionStorage.getItem("ggg_pending");
     var pendingM = sessionStorage.getItem("ggg_pending_m");
-    sessionStorage.removeItem("ggg_pending");
     sessionStorage.removeItem("ggg_pending_m");
-    if (pending) { openQuiz(pending); }
-    else if (pendingM) { openMissionQR(pendingM); }
+    if (pendingM) { openMissionQR(pendingM); }
     else { renderHome(); show("scHome"); toast("항해를 시작합니다"); }
   });
 
@@ -829,12 +911,9 @@
     if (!found) { toast("이 기기에 저장된 기록이 없습니다"); return; }
     S = found; if (!S.missionsDone) S.missionsDone = [];
     renderMain();
-    var pending = sessionStorage.getItem("ggg_pending");
     var pendingM = sessionStorage.getItem("ggg_pending_m");
-    sessionStorage.removeItem("ggg_pending");
     sessionStorage.removeItem("ggg_pending_m");
-    if (pending) { openQuiz(pending); }
-    else if (pendingM) { openMissionQR(pendingM); }
+    if (pendingM) { openMissionQR(pendingM); }
     else { renderHome(); show("scHome"); toast("이어서 진행합니다"); }
   });
 
@@ -887,8 +966,9 @@
   $("btnCouponBack").addEventListener("click", function () { renderMain(); showTab("scMain"); });
 
   $("btnHowScan").addEventListener("click", function () {
-    toast("휴대폰 카메라 앱으로 QR을 비추면 바로 열립니다");
+    toast("나침반이 가리키는 방향으로 걸어가면, 도착했을 때 자동으로 퀴즈가 뜹니다");
   });
+  $("btnCompassStart") && $("btnCompassStart").addEventListener("click", startCompass);
 
   $("reactPad").addEventListener("click", tapReactPad);
   $("btnReactFinish").addEventListener("click", claimReaction);
@@ -908,7 +988,7 @@
         crestTaps = 0;
         var pin = window.prompt("관리자 PIN");
         if (pin === null) return;
-        if (pin === (D.settings.adminPin || "")) { renderAdmin(); show("scAdmin"); }
+        if (pin === (D.settings.adminPin || "6842")) { renderAdmin(); show("scAdmin"); }
         else toast("PIN이 올바르지 않습니다");
       }
     });

@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>운영자 · 황금 귤을 찾아라</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#f1f4f7;--card:#fff;--ink:#16202c;--ink-2:#4a5765;--ink-3:#7b8794;
+  --line:#d8dee6;--line-soft:#e7ecf1;--cobalt:#1E5AA8;--cobalt-soft:#e6eef8;
+  --green:#2f7a4d;--green-soft:#e4f2ea;--alert:#a83232;--alert-soft:#f8e8e8;
+  --gold:#a8811f;--gold-soft:#f7efd8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans KR","Malgun Gothic",sans-serif;font-size:14.5px;line-height:1.65}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px 80px}
+header{border-bottom:2px solid var(--ink);padding:32px 0 14px;margin-bottom:26px;
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+header h1{font-size:22px;margin:0;font-weight:600}
+header .tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--cobalt)}
+header .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:24px;border-bottom:1px solid var(--line)}
+nav button{background:none;border:none;padding:9px 15px;cursor:pointer;font:inherit;
+  color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button.on{color:var(--cobalt);border-bottom-color:var(--cobalt);font-weight:600}
+
+.tab{display:none}.tab.on{display:block}
+h2{font-size:17px;margin:0 0 12px;font-weight:600}
+h3{font-size:14px;margin:24px 0 8px;font-weight:600;color:var(--ink-2)}
+p.help{color:var(--ink-3);font-size:13px;margin:0 0 16px;max-width:70ch}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin-bottom:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+label{display:block;font-size:12px;color:var(--ink-3);margin-bottom:4px}
+input[type=text],textarea,select{width:100%;padding:9px 11px;border:1px solid var(--line);
+  border-radius:6px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:64px;resize:vertical;font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+input:focus,textarea:focus{outline:2px solid var(--cobalt);outline-offset:1px;border-color:transparent}
+
+button.b{border:1px solid var(--line);background:#fff;border-radius:6px;padding:8px 14px;
+  font:inherit;cursor:pointer;color:var(--ink)}
+button.b:hover{background:var(--line-soft)}
+button.b.pri{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+button.b.dan{background:var(--alert-soft);border-color:#e2c4c4;color:var(--alert)}
+button.b.sm{padding:4px 10px;font-size:12.5px}
+
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;background:var(--line-soft);white-space:nowrap}
+td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+
+.pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  padding:2px 7px;border-radius:3px;white-space:nowrap}
+.pill.ok{background:var(--green-soft);color:var(--green)}
+.pill.wait{background:var(--gold-soft);color:var(--gold)}
+.pill.no{background:var(--line-soft);color:var(--ink-3)}
+.pill.let{background:var(--cobalt-soft);color:var(--cobalt)}
+.pill.ev{background:var(--gold-soft);color:var(--gold)}
+.pill.dup{background:var(--line-soft);color:var(--ink-3)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.stat .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+  font-family:"IBM Plex Mono",monospace}
+.stat .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
+
+.gate{max-width:320px;margin:90px auto;text-align:center}
+.gate input{text-align:center;font-size:22px;letter-spacing:.5em;font-family:"IBM Plex Mono",monospace}
+.hidden{display:none}
+.note{background:var(--cobalt-soft);border-left:3px solid var(--cobalt);padding:12px 16px;
+  border-radius:0 6px 6px 0;font-size:13px;margin-bottom:16px}
+.note.warn{background:var(--alert-soft);border-left-color:var(--alert)}
+.qlist{display:grid;grid-template-columns:1fr;gap:10px}
+.qitem{border:1px solid var(--line);border-radius:7px;padding:12px 14px;background:#fff}
+.qitem .top{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.qitem .top .id{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3)}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <h1 style="font-size:19px;margin-bottom:6px">운영자 화면</h1>
+  <p style="color:var(--ink-3);font-size:13px;margin-bottom:18px">PIN을 입력하세요</p>
+  <input type="text" id="pin" inputmode="numeric" maxlength="4" placeholder="····">
+  <button class="b pri" style="width:100%;margin-top:12px" id="btnPin">열기</button>
+</div>
+
+<div class="wrap hidden" id="main">
+<header>
+  <h1>황금 귤을 찾아라</h1>
+  <span class="tag">운영자 화면</span>
+  <div class="right">
+    <span id="openState"></span>
+    <button class="b sm" id="btnToggleOpen">게임 일시중지</button>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1">진행 현황</button>
+  <button data-tab="t2">최종 정답</button>
+  <button data-tab="t3">퀴즈</button>
+  <button data-tab="t4">GPS 지점</button>
+  <button data-tab="t6">투표</button>
+  <button data-tab="t7">퀘스트 대사</button>
+  <button data-tab="t5">데이터</button>
+</nav>
+
+<!-- ═══ 진행 현황 ═══ -->
+<section class="tab on" id="t1">
+  <div class="stats" id="stats"></div>
+  <div class="row" style="margin-bottom:12px">
+    <button class="b sm" id="btnReload">새로고침</button>
+    <span style="color:var(--ink-3);font-size:12.5px" id="syncNote"></span>
+  </div>
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>닉네임</th><th>이름</th><th>연락처</th><th>단서</th><th>찾은 QR</th><th>미션</th>
+        <th>상태</th><th>보상</th><th></th>
+      </tr></thead>
+      <tbody id="players"></tbody>
+    </table>
+  </div>
+  <h3>단서 수동 지급</h3>
+  <p class="help">QR이 훼손됐을 때 스태프가 직접 글자를 줍니다. 참가자를 고르고 글자를 선택하세요.</p>
+  <div class="card">
+    <div class="row">
+      <div style="flex:1;min-width:180px"><label>참가자</label><select id="giveWho"></select></div>
+      <div style="flex:1;min-width:180px"><label>지급할 글자</label><select id="giveWhat"></select></div>
+      <button class="b pri" id="btnGive" style="align-self:flex-end">지급</button>
+    </div>
+  </div>
+
+  <h3>미션 완료 체크</h3>
+  <p class="help">참가자가 미션을 완료하면 스태프가 눌러서 체크합니다. 다시 누르면 취소됩니다.</p>
+  <div class="card">
+    <div class="row" style="margin-bottom:12px">
+      <div style="flex:1;min-width:220px"><label>참가자</label><select id="missionWho"></select></div>
+    </div>
+    <div class="qlist" id="missionCheck"></div>
+  </div>
+</section>
+
+<!-- ═══ 최종 정답 ═══ -->
+<section class="tab" id="t2">
+  <div class="note">
+    정답 문자열을 바꾸면 <b>글자가 자동으로 분해되어</b> 글자 QR에 순서대로 배정됩니다.
+    글자 수가 QR 수보다 많으면 남는 글자는 배정되지 않으니, 아래 배정표를 확인하세요.
+  </div>
+  <div class="card">
+    <div class="field" style="margin-bottom:14px">
+      <label>최종 정답 (12~18자 권장)</label>
+      <input type="text" id="fAns">
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>인정할 다른 표기 (줄바꿈으로 구분 — 띄어쓰기·다른 표기)</label>
+      <textarea id="fAlias"></textarea>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>최종 화면에 보여줄 질문 문구 (모은 글자와 별개로, 힌트처럼 보여주는 문장)</label>
+      <input type="text" id="fFinalQn" placeholder="예: 루피가 먹은 열매의 진짜 이름은?">
+    </div>
+    <div class="row">
+      <div style="flex:1;min-width:160px"><label>게임 제목</label><input type="text" id="fTitle"></div>
+      <div style="flex:1;min-width:160px"><label>부제</label><input type="text" id="fSub"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div style="flex:1;min-width:160px"><label>보상 이름</label><input type="text" id="fRw"></div>
+      <div style="flex:2;min-width:200px"><label>보상 안내 문구</label><input type="text" id="fRwDesc"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div style="flex:1;min-width:160px"><label>지도 이미지 파일명 (비우면 내장 개념도)</label><input type="text" id="fMap" placeholder="map.jpg"></div>
+      <div style="flex:1;min-width:120px"><label>운영자 PIN</label><input type="text" id="fPin" maxlength="4"></div>
+    </div>
+    <button class="b pri" style="margin-top:16px" id="btnSaveSettings">저장</button>
+  </div>
+  <h3>글자 배정표</h3>
+  <div class="note">
+    글자 수와 GPS 지점 수가 다르면 "배정 없음"이 뜹니다. 정답을 확정한 뒤 지점 수를 맞춰야 합니다
+    (data.js의 <code>gpsPoints</code> 배열 — 지금은 관리자 화면에서 직접 늘리고 줄일 수 없습니다).
+  </div>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>글자</th><th>GPS 지점</th><th>좌표</th></tr></thead>
+    <tbody id="letterMap"></tbody>
+  </table></div>
+</section>
+
+<!-- ═══ 퀴즈 ═══ -->
+<section class="tab" id="t3">
+  <p class="help">문제당 <b>정답 별칭을 3~5개</b> 적어두세요. 채점은 공백·특수문자를 지우고 비교하므로
+    "고죠 사토루"와 "고죠사토루"는 같은 답으로 처리됩니다.</p>
+  <div class="row" style="margin-bottom:14px">
+    <button class="b pri" id="btnSaveQuiz">퀴즈 전체 저장</button>
+    <span style="color:var(--ink-3);font-size:12.5px">별칭은 쉼표로 구분</span>
+  </div>
+  <div class="qlist" id="quizList"></div>
+</section>
+
+<!-- ═══ GPS 지점 ═══ -->
+<section class="tab" id="t4">
+  <div class="note">
+    참가자는 QR을 찍지 않습니다. 앱의 나침반이 가장 가까운 미발견 지점을 가리키고,
+    도착 반경 안에 들어오면 자동으로 퀴즈가 뜹니다. 아래 좌표는 <b>현장 답사 때</b>
+    <code>gps_picker.html</code>을 폰으로 열어 각 지점에 직접 가서 찍은 뒤,
+    나온 값을 <code>data.js</code>의 <code>gpsPoints</code>에 붙여넣어야 채워집니다.
+  </div>
+  <div class="card">
+    <label>미션 QR용 기준 주소 (아래 미션 QR에만 사용)</label>
+    <div class="row">
+      <input type="text" id="baseUrl" style="flex:1;min-width:240px" placeholder="https://내주소.web.app/">
+      <button class="b" id="btnCopyAll">좌표 목록 복사</button>
+      <button class="b" id="btnCsv">CSV 내려받기</button>
+    </div>
+  </div>
+  <div class="scroll"><table>
+    <thead><tr><th>ID</th><th>글자</th><th>퀴즈</th><th>좌표(lat, lng)</th><th>도착 반경</th></tr></thead>
+    <tbody id="qrList"></tbody>
+  </table></div>
+
+  <h3>미션 완료 QR (스태프 명찰용)</h3>
+  <p class="help">부스마다 이 QR을 인쇄해서 스태프가 들고 있다가, 참가자가 미션을 완료하면 보여주고 자기 폰으로 찍게 하세요. 찍는 즉시 완료 처리됩니다.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>코드</th><th>미션</th><th>URL</th></tr></thead>
+    <tbody id="missionQrList"></tbody>
+  </table></div>
+</section>
+
+<!-- ═══ 투표 ═══ -->
+<section class="tab" id="t6">
+  <div class="note">
+    후보를 등록해두면 참가자 화면에 곧바로 뜬다. 투표 시작 전이면 참가자에게는 카운트다운만 보이고,
+    시작 시각이 지나면 자동으로 투표창이 열린다.
+  </div>
+  <div id="voteAdminList"></div>
+</section>
+
+<!-- ═══ 퀘스트 대사 ═══ -->
+<section class="tab" id="t7">
+  <div class="note">
+    귤선장이 참가자에게 거는 대사입니다. 캐릭터 표정은 <code>captain/</code> 폴더의 이미지 중 하나를 고를 수 있습니다.
+    저장하면 이 기기에서 즉시 반영되고, [데이터] 탭에서 <b>data.js를 내려받아 파일을 덮어써야</b> 모든 기기에 반영됩니다.
+  </div>
+
+  <h3 style="margin-top:0">인트로 대사 (앱 첫 실행 시 1회)</h3>
+  <div class="card">
+    <label>첫 대사</label>
+    <textarea id="iqLine" style="min-height:80px"></textarea>
+    <div class="row" style="margin-top:8px">
+      <div style="flex:1;min-width:160px"><label>표정</label><select id="iqAvatar"></select></div>
+    </div>
+    <h3>선택지 1</h3>
+    <div class="row">
+      <div style="flex:1;min-width:160px"><label>버튼 문구</label><input type="text" id="iqC1Label"></div>
+      <div style="flex:1;min-width:160px"><label>응답 표정</label><select id="iqC1Avatar"></select></div>
+    </div>
+    <label style="margin-top:8px">응답 대사</label>
+    <textarea id="iqC1Next"></textarea>
+    <h3>선택지 2</h3>
+    <div class="row">
+      <div style="flex:1;min-width:160px"><label>버튼 문구</label><input type="text" id="iqC2Label"></div>
+      <div style="flex:1;min-width:160px"><label>응답 표정</label><select id="iqC2Avatar"></select></div>
+    </div>
+    <label style="margin-top:8px">응답 대사</label>
+    <textarea id="iqC2Next"></textarea>
+    <button class="b pri" style="margin-top:14px" id="btnSaveIntro">인트로 대사 저장</button>
+  </div>
+
+  <h3>시간대별 대사</h3>
+  <p class="help">설정한 시각이 지나면 홈 화면에서 참가자별로 1회 자동으로 뜹니다.</p>
+  <div class="qlist" id="scheduleQuestList"></div>
+  <button class="b pri" style="margin-top:10px" id="btnSaveSchedule">시간대별 대사 저장</button>
+
+  <h3>미션 완료 대사</h3>
+  <div class="qlist" id="missionQuestList"></div>
+  <button class="b pri" style="margin-top:10px" id="btnSaveMissionLines">미션 대사 저장</button>
+</section>
+
+<!-- ═══ 데이터 ═══ -->
+<section class="tab" id="t5">
+  <div class="note warn">
+    <b>행사가 끝나면 참가자 데이터를 삭제하세요.</b> 이름·전화번호가 저장되어 있습니다.
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">콘텐츠 내보내기</h3>
+    <p class="help">지금 화면에서 수정한 내용을 <code>data.js</code> 파일로 받습니다. 받은 파일로 기존 파일을 덮어쓰면 모든 기기에 반영됩니다.</p>
+    <button class="b pri" id="btnExport">data.js 내려받기</button>
+    <button class="b" id="btnResetContent">수정 내용 되돌리기</button>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">참가자 데이터</h3>
+    <p class="help">이 기기에 저장된 참가자 기록입니다. Firebase를 붙이기 전에는 기기마다 따로 저장됩니다.</p>
+    <button class="b" id="btnExportPlayers">참가자 CSV 내려받기</button>
+    <button class="b dan" id="btnWipe">전체 참가자 데이터 삭제</button>
+  </div>
+</section>
+
+</div>
+
+<script src="data.js"></script>
+<script src="store.js"></script>
+<script>
+(function(){
+  if(new URLSearchParams(location.search).get("reset")==="1"){
+    Store.resetContent();
+    alert("이 브라우저에 저장돼 있던 수정 내용을 초기화했습니다. data.js 기본값으로 다시 시작합니다.");
+  }
+  var D = Store.loadContent();
+  var $ = function(id){return document.getElementById(id)};
+
+  /* ── PIN ── */
+  function unlock(){
+    $("gate").classList.add("hidden");
+    $("main").classList.remove("hidden");
+    renderAll();
+  }
+  $("btnPin").addEventListener("click",function(){
+    if($("pin").value === (D.settings.adminPin||"6842")) unlock();
+    else { $("pin").value=""; $("pin").placeholder="다시"; }
+  });
+  $("pin").addEventListener("keydown",function(e){ if(e.key==="Enter") $("btnPin").click(); });
+
+  /* ── 탭 ── */
+  document.querySelectorAll("nav button").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("on")});
+      document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("on")});
+      b.classList.add("on"); $(b.dataset.tab).classList.add("on");
+    });
+  });
+
+  /* ── 공용 ── */
+  function letters(){ return String(D.settings.finalAnswer||"").split(""); }
+  function pointOf(li){
+    var list = (D.gpsPoints||[]).filter(function(p){return p.li===li});
+    return list[0] || null;
+  }
+  function download(name, text, mime){
+    var blob = new Blob(["﻿"+text], {type:(mime||"text/plain")+";charset=utf-8"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  /* ── 진행 현황 ── */
+  function renderPlayers(){
+    var list = Store.players(), L = letters().length;
+    var cleared=0, issued=0, letterSum=0;
+    var html = "";
+    list.forEach(function(p){
+      var uniq = {};
+      (p.letters||[]).forEach(function(x){uniq[x.li]=1});
+      var n = Object.keys(uniq).length;
+      letterSum += n;
+      if(p.cleared) cleared++;
+      if(p.rewardIssued) issued++;
+      html += "<tr>"+
+        "<td><b>"+esc(p.nickname)+"</b></td>"+
+        "<td>"+esc(p.name)+"</td>"+
+        "<td class='n'>····"+String(p.phone||"").slice(-4)+"</td>"+
+        "<td class='n'>"+n+" / "+L+"</td>"+
+        "<td class='n'>"+(p.found||[]).length+"</td>"+
+        "<td class='n'>"+(p.missionsDone||[]).length+" / "+D.missions.length+"</td>"+
+        "<td>"+(p.cleared?"<span class='pill ok'>클리어</span>":"<span class='pill no'>진행중</span>")+"</td>"+
+        "<td>"+(p.rewardIssued?"<span class='pill ok'>지급완료</span>":
+                (p.cleared?"<span class='pill wait'>지급대기</span>":"<span class='pill no'>—</span>"))+"</td>"+
+        "<td class='n'>"+
+          (p.cleared && !p.rewardIssued ? "<button class='b sm' data-give='"+p.phone+"'>지급</button> " : "")+
+          "<button class='b sm dan' data-del='"+p.phone+"'>초기화</button>"+
+        "</td></tr>";
+    });
+    $("players").innerHTML = html || "<tr><td colspan='9' style='color:var(--ink-3)'>참가자가 없습니다</td></tr>";
+
+    $("stats").innerHTML =
+      stat("참가자", list.length) +
+      stat("클리어", cleared) +
+      stat("보상 지급", issued) +
+      stat("평균 단서", list.length ? (letterSum/list.length).toFixed(1) : "0") +
+      stat("GPS 지점", (D.gpsPoints||[]).length) +
+      stat("좌표 미설정", (D.gpsPoints||[]).filter(function(p){return p.lat==null||p.lng==null}).length);
+
+    $("syncNote").textContent = Store.hasServer()
+      ? "서버 동기화 켜짐" : "이 기기에 저장된 기록만 보입니다 (Firebase 미연결)";
+
+    $("players").querySelectorAll("[data-give]").forEach(function(b){
+      b.addEventListener("click",function(){
+        var all = Store.players();
+        for(var i=0;i<all.length;i++) if(all[i].phone===b.dataset.give){
+          all[i].rewardIssued = true;
+          all[i].rewardIssuedAt = Date.now();
+          Store.updatePlayer(all[i]);
+          break;
+        }
+        renderPlayers();
+      });
+    });
+    $("players").querySelectorAll("[data-del]").forEach(function(b){
+      b.addEventListener("click",function(){
+        if(!confirm("이 참가자의 기록을 지웁니다. 계속할까요?")) return;
+        Store.removePlayer(b.dataset.del); renderPlayers(); fillGive(); fillMissionWho();
+      });
+    });
+  }
+  function stat(k,v){ return "<div class='stat'><div class='k'>"+k+"</div><div class='v'>"+v+"</div></div>"; }
+  function esc(s){ return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]}); }
+
+  function fillGive(){
+    var list = Store.players();
+    $("giveWho").innerHTML = list.map(function(p){
+      return "<option value='"+p.phone+"'>"+esc(p.nickname)+" ("+esc(p.name)+")</option>";
+    }).join("") || "<option value=''>참가자 없음</option>";
+    $("giveWhat").innerHTML = letters().map(function(c,i){
+      return "<option value='"+i+"'>"+(i+1)+"번째 — "+c+"</option>";
+    }).join("");
+  }
+  $("btnGive").addEventListener("click",function(){
+    var phone = $("giveWho").value, li = parseInt($("giveWhat").value,10);
+    if(!phone) return;
+    var all = Store.players();
+    for(var i=0;i<all.length;i++) if(all[i].phone===phone){
+      var p = all[i];
+      var has = (p.letters||[]).some(function(x){return x.li===li});
+      if(has){ alert("이미 가지고 있는 글자입니다."); return; }
+      p.letters = p.letters||[];
+      p.letters.push({li:li,char:letters()[li],at:Date.now()});
+      Store.updatePlayer(p);
+      alert("「"+letters()[li]+"」 지급 완료");
+      renderPlayers();
+      return;
+    }
+  });
+  $("btnReload").addEventListener("click",function(){ renderPlayers(); fillGive(); fillMissionWho(); renderVoteAdmin(); });
+
+  /* ── 미션 완료 체크 ── */
+  function fillMissionWho(){
+    var list = Store.players();
+    var cur = $("missionWho").value;
+    $("missionWho").innerHTML = list.map(function(p){
+      return "<option value='"+p.phone+"'>"+esc(p.nickname)+" ("+esc(p.name)+")</option>";
+    }).join("") || "<option value=''>참가자 없음</option>";
+    if(cur) $("missionWho").value = cur;
+    renderMissionCheck();
+  }
+  function renderMissionCheck(){
+    var phone = $("missionWho").value;
+    var all = Store.players();
+    var p = null;
+    for(var i=0;i<all.length;i++) if(all[i].phone===phone){ p = all[i]; break; }
+    if(!p){ $("missionCheck").innerHTML = "<p class='help' style='margin:0'>참가자를 선택하세요</p>"; return; }
+    var done = p.missionsDone||[];
+    $("missionCheck").innerHTML = D.missions.map(function(m){
+      var ok = done.indexOf(m.id)>=0;
+      return "<div class='qitem' data-mid='"+m.id+"' style='cursor:pointer;display:flex;gap:10px;align-items:center'>"+
+        "<span style='font-size:18px'>"+(ok?"✅":"⬜")+"</span>"+
+        "<div><b>"+esc(m.name)+"</b><div style='color:var(--ink-3);font-size:12.5px'>"+esc(m.desc)+"</div></div></div>";
+    }).join("");
+    $("missionCheck").querySelectorAll("[data-mid]").forEach(function(el){
+      el.addEventListener("click",function(){
+        var mid = el.dataset.mid;
+        var all2 = Store.players();
+        for(var i=0;i<all2.length;i++) if(all2[i].phone===phone){
+          var pp = all2[i]; pp.missionsDone = pp.missionsDone||[];
+          var idx = pp.missionsDone.indexOf(mid);
+          if(idx>=0) pp.missionsDone.splice(idx,1); else pp.missionsDone.push(mid);
+          Store.updatePlayer(pp);
+          break;
+        }
+        renderMissionCheck(); renderPlayers();
+      });
+    });
+  }
+  $("missionWho").addEventListener("change", renderMissionCheck);
+
+  /* ── 게임 열림/중지 ── */
+  function renderOpen(){
+    var on = D.settings.gameOpen !== false;
+    $("openState").innerHTML = on ? "<span class='pill ok'>진행중</span>" : "<span class='pill no'>중단</span>";
+    $("btnToggleOpen").textContent = on ? "게임 일시중지" : "게임 재개";
+  }
+  $("btnToggleOpen").addEventListener("click",function(){
+    D.settings.gameOpen = (D.settings.gameOpen === false);
+    Store.saveContent(D); renderOpen();
+  });
+
+  /* ── 최종 정답 ── */
+  function renderSettings(){
+    var s = D.settings;
+    $("fAns").value = s.finalAnswer||"";
+    $("fAlias").value = (s.finalAliases||[]).join("\n");
+    $("fTitle").value = s.title||"";
+    $("fSub").value = s.subtitle||"";
+    $("fRw").value = s.rewardTitle||"";
+    $("fRwDesc").value = s.rewardDesc||"";
+    $("fFinalQn").value = (D.quizzes && D.quizzes.final && D.quizzes.final.qn) || "";
+    $("fMap").value = s.mapImage||"";
+    $("fPin").value = s.adminPin||"";
+    renderLetterMap();
+  }
+  function renderLetterMap(){
+    var L = letters(), html="";
+    L.forEach(function(c,i){
+      var p = pointOf(i);
+      var idCell = p ? p.id : "<span class='pill no'>배정 없음</span>";
+      var coordCell = !p ? "—"
+        : (p.lat!=null && p.lng!=null) ? "<span class='pill ok'>설정됨</span>"
+        : "<span class='pill wait'>미설정</span>";
+      html += "<tr><td class='n'>"+(i+1)+"</td><td style='font-size:17px'><b>"+c+"</b></td>"+
+        "<td class='n'>"+idCell+"</td>"+
+        "<td class='n'>"+coordCell+"</td></tr>";
+    });
+    $("letterMap").innerHTML = html;
+  }
+  $("btnSaveSettings").addEventListener("click",function(){
+    var s = D.settings;
+    s.finalAnswer = $("fAns").value.trim();
+    s.finalAliases = $("fAlias").value.split("\n").map(function(x){return x.trim()}).filter(Boolean);
+    s.title = $("fTitle").value.trim();
+    s.subtitle = $("fSub").value.trim();
+    s.rewardTitle = $("fRw").value.trim();
+    s.rewardDesc = $("fRwDesc").value.trim();
+    D.quizzes = D.quizzes || {};
+    D.quizzes.final = D.quizzes.final || { a: [] };
+    D.quizzes.final.qn = $("fFinalQn").value.trim();
+    s.mapImage = $("fMap").value.trim();
+    s.adminPin = $("fPin").value.trim() || "6842";
+    Store.saveContent(D);
+    renderLetterMap(); fillGive();
+    alert("저장했습니다. 참가자 화면을 새로고침하면 반영됩니다.");
+  });
+
+  /* ── 퀴즈 ── */
+  function renderQuiz(){
+    var html = "";
+    (D.gpsPoints||[]).forEach(function(p){
+      var z = D.quizzes[p.q] || {qn:"",a:[]};
+      html += "<div class='qitem'>"+
+        "<div class='top'><span class='id'>"+p.id+" · "+p.q+"</span><span class='pill let'>글자 "+(p.li+1)+"</span></div>"+
+        "<input type='text' data-q='"+p.q+"' data-f='qn' value=\""+esc(z.qn).replace(/"/g,'&quot;')+"\" placeholder='문제'>"+
+        "<input type='text' style='margin-top:6px' data-q='"+p.q+"' data-f='a' value=\""+
+          esc((z.a||[]).join(", ")).replace(/"/g,'&quot;')+"\" placeholder='정답 별칭 (쉼표로 구분)'>"+
+        "</div>";
+    });
+    $("quizList").innerHTML = html;
+  }
+  $("btnSaveQuiz").addEventListener("click",function(){
+    $("quizList").querySelectorAll("[data-q]").forEach(function(el){
+      var id = el.dataset.q;
+      if(!D.quizzes[id]) D.quizzes[id] = {qn:"",a:[]};
+      if(el.dataset.f==="qn") D.quizzes[id].qn = el.value.trim();
+      else D.quizzes[id].a = el.value.split(",").map(function(x){return x.trim()}).filter(Boolean);
+    });
+    Store.saveContent(D);
+    alert("퀴즈를 저장했습니다.");
+  });
+
+  /* ── GPS 지점 목록 ── */
+  function baseUrl(){
+    var v = $("baseUrl").value.trim();
+    if(!v) v = location.href.replace(/admin\.html.*$/,"");
+    if(!/\/$/.test(v)) v += "/";
+    return v;
+  }
+  function renderQr(){
+    var L = letters(), html="";
+    (D.gpsPoints||[]).forEach(function(p){
+      var set = p.lat!=null && p.lng!=null;
+      html += "<tr><td class='n'><b>"+p.id+"</b></td>"+
+        "<td class='n'>"+(p.li!=null&&L[p.li]?L[p.li]:"—")+"</td>"+
+        "<td class='n'>"+(p.q||"")+"</td>"+
+        "<td class='n'>"+(set ? (p.lat.toFixed(6)+", "+p.lng.toFixed(6)) : "<span class='pill wait'>미설정</span>")+"</td>"+
+        "<td class='n'>"+(p.radius||D.settings.gpsRadius||15)+"m</td></tr>";
+    });
+    $("qrList").innerHTML = html;
+    renderMissionQr();
+  }
+  function renderMissionQr(){
+    var html = (D.missions||[]).filter(function(m){return m.qr}).map(function(m){
+      return "<tr><td class='n'><b>"+m.qr+"</b></td><td>"+esc(m.name)+"</td>"+
+        "<td class='n' style='font-size:12px'>"+baseUrl()+"?m="+m.qr+"</td></tr>";
+    }).join("");
+    $("missionQrList").innerHTML = html || "<tr><td colspan='3' style='color:var(--ink-3)'>QR이 있는 미션이 없습니다</td></tr>";
+  }
+  $("baseUrl").addEventListener("input",renderMissionQr);
+  $("btnCopyAll").addEventListener("click",function(){
+    var txt = (D.gpsPoints||[]).map(function(p){
+      return p.id+"\t"+(p.lat!=null?p.lat+","+p.lng:"미설정");
+    }).join("\n");
+    navigator.clipboard.writeText(txt).then(function(){ alert("좌표 목록을 복사했습니다."); },
+      function(){ prompt("복사해서 쓰세요", txt); });
+  });
+  $("btnCsv").addEventListener("click",function(){
+    var L = letters();
+    var rows = [["id","letter","quiz","lat","lng","radius_m"]];
+    (D.gpsPoints||[]).forEach(function(p){
+      rows.push([p.id,(p.li!=null&&L[p.li])?L[p.li]:"",p.q||"",
+        p.lat!=null?p.lat:"", p.lng!=null?p.lng:"", p.radius||D.settings.gpsRadius||15]);
+    });
+    download("gps_points.csv", rows.map(function(r){return r.join(",")}).join("\n"),"text/csv");
+  });
+
+  /* ── 데이터 ── */
+  $("btnExport").addEventListener("click",function(){
+    var head = "/* 황금 귤을 찾아라 — 콘텐츠 데이터 (운영자 화면에서 내보냄) */\n\nwindow.GAME_DATA = ";
+    download("data.js", head + JSON.stringify(D, null, 2) + ";\n", "text/javascript");
+  });
+  $("btnResetContent").addEventListener("click",function(){
+    if(!confirm("이 화면에서 수정한 내용을 모두 버리고 원래 data.js 로 되돌립니다.")) return;
+    Store.resetContent(); location.reload();
+  });
+  $("btnExportPlayers").addEventListener("click",function(){
+    var L = letters().length;
+    var rows = [["닉네임","이름","전화번호","단서수","전체","찾은QR","클리어","보상지급","쿠폰번호","클리어시각"]];
+    Store.players().forEach(function(p){
+      var uniq={}; (p.letters||[]).forEach(function(x){uniq[x.li]=1});
+      rows.push([p.nickname,p.name,p.phone,Object.keys(uniq).length,L,(p.found||[]).length,
+        p.cleared?"O":"", p.rewardIssued?"O":"", p.rewardNo||"",
+        p.clearedAt? new Date(p.clearedAt).toLocaleString("ko-KR"):""]);
+    });
+    download("players.csv", rows.map(function(r){return r.join(",")}).join("\n"),"text/csv");
+  });
+  $("btnWipe").addEventListener("click",function(){
+    if(!confirm("참가자 데이터를 전부 삭제합니다. 되돌릴 수 없습니다.")) return;
+    if(!confirm("정말 삭제할까요?")) return;
+    Store.wipePlayers(); renderPlayers(); fillGive();
+    alert("삭제했습니다.");
+  });
+
+  /* ── 투표 관리 ── */
+  function candLabel(id){ return "cand"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+  function renderVoteAdmin(){
+    var players = Store.players();
+    var html = "";
+    Object.keys(D.votes||{}).forEach(function(sid){
+      var v = D.votes[sid];
+      var tally = {};
+      (v.candidates||[]).forEach(function(c){ tally[c.id]=0; });
+      players.forEach(function(p){ var pick=(p.votes||{})[sid]; if(pick!=null && tally[pick]!=null) tally[pick]++; });
+      var totalVotes = Object.keys(tally).reduce(function(a,k){return a+tally[k]},0);
+
+      html += "<div class='card'>"+
+        "<h3 style='margin-top:0'>"+esc(v.title)+" <span class='pill "+
+          (v.mode==='number'?'dup':'let')+"'>"+(v.mode==='number'?'번호':'닉네임')+"</span></h3>"+
+        "<div class='row' style='margin-bottom:12px'>"+
+          "<div style='flex:1;min-width:140px'><label>시작 시각</label><input type='text' data-vfield='opensAt' data-vs='"+sid+"' value='"+v.opensAt+"'></div>"+
+          "<div style='flex:1;min-width:140px'><label>종료 시각</label><input type='text' data-vfield='closesAt' data-vs='"+sid+"' value='"+v.closesAt+"'></div>"+
+          "<div style='flex:2;min-width:200px'><label>새 후보 "+(v.mode==='number'?'(번호)':'(닉네임)')+"</label>"+
+            "<div class='row'><input type='text' id='newcand_"+sid+"' placeholder='"+(v.mode==='number'?'예: 7':'예: 항해사닉네임')+"'>"+
+            "<button class='b pri sm' data-addcand='"+sid+"'>추가</button></div></div>"+
+        "</div>"+
+        "<div class='scroll'><table><thead><tr><th>후보</th><th>득표</th><th></th></tr></thead><tbody>"+
+        (v.candidates||[]).map(function(c){
+          var pct = totalVotes ? Math.round(tally[c.id]/totalVotes*100) : 0;
+          return "<tr><td><b>"+esc(c.label)+"</b></td>"+
+            "<td class='n'>"+tally[c.id]+"표 ("+pct+"%)</td>"+
+            "<td><button class='b sm dan' data-delcand='"+sid+"|"+c.id+"'>삭제</button></td></tr>";
+        }).join("") +
+        (!(v.candidates||[]).length ? "<tr><td colspan='3' style='color:var(--ink-3)'>등록된 후보 없음</td></tr>" : "") +
+        "</tbody></table></div>"+
+        "<p class='help' style='margin:10px 0 0'>총 투표수: "+totalVotes+"표</p>"+
+      "</div>";
+    });
+    $("voteAdminList").innerHTML = html;
+
+    $("voteAdminList").querySelectorAll("[data-vfield]").forEach(function(el){
+      el.addEventListener("change",function(){
+        D.votes[el.dataset.vs][el.dataset.vfield] = el.value.trim();
+        Store.saveContent(D);
+      });
+    });
+    $("voteAdminList").querySelectorAll("[data-addcand]").forEach(function(btn){
+      btn.addEventListener("click",function(){
+        var sid = btn.dataset.addcand;
+        var inp = $("newcand_"+sid);
+        var label = inp.value.trim();
+        if(!label) return;
+        D.votes[sid].candidates = D.votes[sid].candidates||[];
+        D.votes[sid].candidates.push({id:candLabel(), label:label});
+        Store.saveContent(D);
+        inp.value = "";
+        renderVoteAdmin();
+      });
+    });
+    $("voteAdminList").querySelectorAll("[data-delcand]").forEach(function(btn){
+      btn.addEventListener("click",function(){
+        var parts = btn.dataset.delcand.split("|"), sid=parts[0], cid=parts[1];
+        D.votes[sid].candidates = (D.votes[sid].candidates||[]).filter(function(c){return c.id!==cid});
+        Store.saveContent(D);
+        renderVoteAdmin();
+      });
+    });
+  }
+
+  /* ── 퀘스트 대사 ── */
+  var AVATAR_OPTIONS = [
+    { v: "captain/exp_default.jpg", label: "기본 (잔잔한 미소)" },
+    { v: "captain/exp_happy.jpg", label: "기쁨 / 활짝 웃음" },
+    { v: "captain/exp_smile.jpg", label: "부드러운 미소" },
+    { v: "captain/exp_wink.jpg", label: "윙크 / 반가움" },
+    { v: "captain/exp_think.jpg", label: "생각 중…" },
+    { v: "captain/exp_fighting.jpg", label: "화이팅!" },
+    { v: "captain/exp_found.jpg", label: "발견! (반짝)" },
+    { v: "captain/exp_surprise.jpg", label: "놀람 (!!)" },
+    { v: "captain/exp_search.jpg", label: "탐색 (망원경)" },
+    { v: "captain/exp_tease.jpg", label: "장난 (메롱)" },
+    { v: "captain/exp_sulk.jpg", label: "시무룩" },
+    { v: "captain/exp_warn.jpg", label: "경고 / 화남" }
+  ];
+  function avatarSelectHtml(id, current){
+    return "<select id='"+id+"'>" + AVATAR_OPTIONS.map(function(o){
+      return "<option value='"+o.v+"'"+(o.v===current?" selected":"")+">"+o.label+"</option>";
+    }).join("") + "</select>";
+  }
+  function fillAvatarSelect(el, current){
+    el.innerHTML = AVATAR_OPTIONS.map(function(o){
+      return "<option value='"+o.v+"'"+(o.v===current?" selected":"")+">"+o.label+"</option>";
+    }).join("");
+  }
+
+  function renderIntroQuest(){
+    var q = D.introQuest || {};
+    $("iqLine").value = q.line || "";
+    fillAvatarSelect($("iqAvatar"), q.avatar || "");
+    var choices = q.choices || [];
+    var c1 = choices[0] || {}, c2 = choices[1] || {};
+    $("iqC1Label").value = c1.label || "";
+    $("iqC1Next").value = c1.next || "";
+    fillAvatarSelect($("iqC1Avatar"), c1.avatar || "");
+    $("iqC2Label").value = c2.label || "";
+    $("iqC2Next").value = c2.next || "";
+    fillAvatarSelect($("iqC2Avatar"), c2.avatar || "");
+  }
+  $("btnSaveIntro").addEventListener("click",function(){
+    D.introQuest = D.introQuest || {};
+    D.introQuest.line = $("iqLine").value.trim();
+    D.introQuest.avatar = $("iqAvatar").value;
+    D.introQuest.choices = [
+      { label: $("iqC1Label").value.trim(), next: $("iqC1Next").value.trim(), avatar: $("iqC1Avatar").value },
+      { label: $("iqC2Label").value.trim(), next: $("iqC2Next").value.trim(), avatar: $("iqC2Avatar").value }
+    ];
+    Store.saveContent(D);
+    alert("인트로 대사를 저장했습니다.");
+  });
+
+  function renderScheduleQuests(){
+    var list = D.scheduleQuests || [];
+    $("scheduleQuestList").innerHTML = list.map(function(q, i){
+      return "<div class='qitem' data-sqi='"+i+"'>"+
+        "<div class='top'><span class='id'>"+q.id+"</span>"+
+        "<span style='width:90px'><label style='margin:0 6px 0 0;display:inline'>시각</label>"+
+        "<input type='text' data-sqf='time' value='"+esc(q.time||"")+"' style='width:70px;display:inline-block'></span></div>"+
+        "<label>표정</label>" + avatarSelectHtml("sq_av_"+i, q.avatar||"") +
+        "<label style='margin-top:6px'>대사</label>"+
+        "<textarea data-sqf='line'>"+esc(q.line||"")+"</textarea>"+
+        "</div>";
+    }).join("");
+  }
+  $("btnSaveSchedule").addEventListener("click",function(){
+    var list = D.scheduleQuests || [];
+    $("scheduleQuestList").querySelectorAll("[data-sqi]").forEach(function(el){
+      var i = parseInt(el.dataset.sqi,10);
+      var timeEl = el.querySelector("[data-sqf='time']");
+      var lineEl = el.querySelector("[data-sqf='line']");
+      var avEl = $("sq_av_"+i);
+      if(list[i]){
+        list[i].time = timeEl.value.trim();
+        list[i].line = lineEl.value.trim();
+        list[i].avatar = avEl.value;
+      }
+    });
+    Store.saveContent(D);
+    alert("시간대별 대사를 저장했습니다.");
+  });
+
+  function renderMissionQuest(){
+    var list = D.missions || [];
+    $("missionQuestList").innerHTML = list.map(function(m, i){
+      return "<div class='qitem' data-mqi='"+i+"'>"+
+        "<div class='top'><span class='id'>"+m.id+"</span><b>"+esc(m.name)+"</b></div>"+
+        "<label>표정</label>" + avatarSelectHtml("mq_av_"+i, m.avatar||"") +
+        "<label style='margin-top:6px'>완료 대사</label>"+
+        "<textarea data-mqf='line'>"+esc(m.line||"")+"</textarea>"+
+        "</div>";
+    }).join("");
+  }
+  $("btnSaveMissionLines").addEventListener("click",function(){
+    var list = D.missions || [];
+    $("missionQuestList").querySelectorAll("[data-mqi]").forEach(function(el){
+      var i = parseInt(el.dataset.mqi,10);
+      var lineEl = el.querySelector("[data-mqf='line']");
+      var avEl = $("mq_av_"+i);
+      if(list[i]){
+        list[i].line = lineEl.value.trim();
+        list[i].avatar = avEl.value;
+      }
+    });
+    Store.saveContent(D);
+    alert("미션 대사를 저장했습니다.");
+  });
+
+  function renderAll(){
+    renderOpen(); renderPlayers(); fillGive(); fillMissionWho(); renderSettings(); renderQuiz(); renderVoteAdmin();
+    renderIntroQuest(); renderScheduleQuests(); renderMissionQuest();
+    $("baseUrl").value = location.href.replace(/admin\.html.*$/,"");
+    renderQr();
+  }
+})();
+</script>
+</body>
+</html>

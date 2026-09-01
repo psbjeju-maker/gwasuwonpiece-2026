@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-황금 귤을 찾아라 — QR 인쇄 시트 만들기
+황금 귤을 찾아라 — 미션 QR 인쇄 시트 만들기
+(2026-08-29: 보물찾기는 QR→GPS 나침반으로 전면 교체됨. 이 스크립트는
+ 스태프 명찰용 "미션 완료 QR"만 만든다. 보물찾기 좌표는 gps_picker.html로 찍는다.)
 
 사용법:
     python make_qr.py https://내주소.web.app/
 
-  - data.js 에서 QR 목록을 읽어 40장을 만든다
+  - data.js 에서 미션 QR 목록을 읽어 인쇄용 카드를 만든다
   - A4 6장씩(2x3) 배치한 인쇄용 PNG 를 out/ 에 저장한다
-  - 낱장 PNG 도 out/qr/ 에 따로 저장한다 (부분 재인쇄용)
+  - 낱장 PNG 도 out/missions/ 에 따로 저장한다 (부분 재인쇄용)
 """
 import io, os, re, json, sys
 import qrcode
@@ -19,10 +21,8 @@ BASE = sys.argv[1] if len(sys.argv) > 1 else "https://example.web.app/"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT  = os.path.join(HERE, "out")
-OUTQ = os.path.join(OUT, "qr")
-os.makedirs(OUTQ, exist_ok=True)
 
-# ── data.js 에서 qrcodes / zones 읽기 ────────────────────────────
+# ── data.js 에서 missions 읽기 ────────────────────────────
 src = io.open(os.path.join(HERE, "data.js"), encoding="utf-8").read()
 
 def block(name):
@@ -49,8 +49,6 @@ def jsonify(s):
     s = re.sub(r",(\s*[}\]])", r"\1", s)
     return json.loads(s)
 
-qrcodes  = jsonify(block("qrcodes"))
-zones    = jsonify(block("zones"))
 missions = jsonify(block("missions"))
 
 # ── 폰트 ────────────────────────────────────────────────────────
@@ -61,72 +59,17 @@ def font(sz, bold=False):
             return ImageFont.truetype(p, sz)
     return ImageFont.load_default()
 
-# ── 카드 1장 ────────────────────────────────────────────────────
+# ── 카드 공용 치수 ────────────────────────────────────────────────
 CARD_W, CARD_H = 1150, 1080
 GOLD, INK, GREY = (168, 129, 31), (32, 28, 20), (130, 130, 130)
 
-def make_card(q):
-    img = Image.new("RGB", (CARD_W, CARD_H), "white")
-    d = ImageDraw.Draw(img)
-
-    # 오려내는 선
-    d.rectangle([6, 6, CARD_W-7, CARD_H-7], outline=(200, 200, 200), width=3)
-    d.rectangle([26, 26, CARD_W-27, CARD_H-27], outline=GOLD, width=5)
-
-    # 머리
-    f_t = font(52, True)
-    d.text((CARD_W//2, 86), "황금 귤을 찾아라", font=f_t, fill=GOLD, anchor="mm")
-    f_z = font(34)
-    zn = zones.get(q["zone"], {}).get("name", q["zone"])
-    d.text((CARD_W//2, 146), "%s · %s" % (q["zone"], zn), font=f_z, fill=GREY, anchor="mm")
-
-    # QR
-    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_H,
-                       box_size=10, border=2)
-    qr.add_data(BASE + "?q=" + q["id"])
-    qr.make(fit=True)
-    qim = qr.make_image(fill_color="black", back_color="white").convert("RGB")
-    qim = qim.resize((620, 620), Image.NEAREST)
-    img.paste(qim, ((CARD_W-620)//2, 200))
-
-    # 안내
-    f_m = font(44, True)
-    d.text((CARD_W//2, 880), "휴대폰 카메라로 찍으세요", font=f_m, fill=INK, anchor="mm")
-    f_s = font(30)
-    d.text((CARD_W//2, 936), "안 열리면 가까운 스태프에게 말씀해 주세요", font=f_s, fill=GREY, anchor="mm")
-
-    # 식별 코드 (스태프용)
-    f_i = font(30, True)
-    d.text((CARD_W-52, CARD_H-52), q["id"], font=f_i, fill=(190, 190, 190), anchor="rs")
-    return img
-
-# ── A4 시트 ─────────────────────────────────────────────────────
+# ── A4 시트 배치 상수 ─────────────────────────────────────────────
 A4 = (2480, 3508)
 COLS, ROWS = 2, 3
 MX, MY = 60, 110
 GX = (A4[0] - MX*2 - CARD_W*COLS) // max(COLS-1, 1)
 GY = (A4[1] - MY*2 - CARD_H*ROWS) // max(ROWS-1, 1)
-
-sheets, cards = [], [make_card(q) for q in qrcodes]
-for q, c in zip(qrcodes, cards):
-    c.save(os.path.join(OUTQ, "%s.png" % q["id"]))
-
 per = COLS * ROWS
-for s in range(0, len(cards), per):
-    sheet = Image.new("RGB", A4, "white")
-    for i, c in enumerate(cards[s:s+per]):
-        r, col = divmod(i, COLS)
-        sheet.paste(c, (MX + col*(CARD_W+GX), MY + r*(CARD_H+GY)))
-    n = s//per + 1
-    p = os.path.join(OUT, "인쇄시트_%02d.png" % n)
-    sheet.save(p, dpi=(300, 300))
-    sheets.append(p)
-
-print("기준 주소:", BASE)
-print("QR %d장 → %s" % (len(cards), OUTQ))
-print("인쇄 시트 %d장 → %s" % (len(sheets), OUT))
-for p in sheets:
-    print("  ", os.path.basename(p))
 
 # ── 미션 완료 QR (스태프 명찰용) ──────────────────────────────────
 OUTM = os.path.join(OUT, "missions")

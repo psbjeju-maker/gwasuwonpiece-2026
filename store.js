@@ -33,9 +33,9 @@ window.Store = (function () {
 
   /* ---------- 콘텐츠 (관리자 수정분이 있으면 그걸 우선) ---------- */
   /* 관리자 화면에서 실제로 편집 가능한 항목만 저장된 값을 쓴다.
-     timetable/experiences/missions/zones/events/qrcodes는 편집 UI가 아예 없으므로,
+     timetable/experiences/missions/gpsPoints는 편집 UI가 아예 없으므로,
      브라우저에 예전 전체 스냅샷이 남아있어도 항상 최신 data.js 값을 그대로 쓴다. */
-  var EDITABLE_KEYS = ["settings", "quizzes", "votes"];
+  var EDITABLE_KEYS = ["settings", "quizzes", "votes", "introQuest", "scheduleQuests", "missions"];
   function loadContent() {
     var base = JSON.parse(JSON.stringify(window.GAME_DATA));
     var edited = read(KEY_DATA, null);
@@ -60,8 +60,8 @@ window.Store = (function () {
     return {
       pid: newId(), nickname: "", name: "", phone: "",
       createdAt: Date.now(),
-      found: [], letters: [], events: [], shards: 0,
-      marks: [], cleared: false, clearedAt: 0,
+      found: [], letters: [], nextTargetId: null,
+      cleared: false, clearedAt: 0,
       rewardIssued: false, rewardNo: "",
       missionsDone: [],
       votes: {}

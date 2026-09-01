@@ -246,22 +246,47 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
   content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(115% 95% at 50% 40%,transparent 52%,rgba(2,12,20,.72) 100%);
 }
-.pin{
-  position:absolute;transform:translate(-50%,-50%);
-  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
-  font-size:16px;pointer-events:none;z-index:2;
-}
-.pin.found{filter:drop-shadow(0 2px 4px rgba(0,0,0,.7));}
-.pin.mark{
-  color:transparent;font-size:0;
-  background:var(--ic-x) center/contain no-repeat;
-  filter:drop-shadow(0 0 7px rgba(255,90,71,.85));
-  animation:pulse 1.7s ease-in-out infinite;
-}
-@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}
-  50%{transform:translate(-50%,-50%) scale(1.24);opacity:.72}}
 .maphint{font-size:12.5px;color:var(--dim);text-align:center;margin:11px 0 0;}
 .maphint b{color:var(--coral);font-weight:700;}
+
+/* ══════════ GPS 나침반 ══════════ */
+.compass-gate{
+  text-align:center;padding:26px 18px;border-radius:14px;
+  background:var(--panel);box-shadow:var(--brass-frame),var(--lift);
+}
+.compass-gate p{color:var(--dim);font-size:13.5px;margin:0 0 14px;line-height:1.6;}
+.compass-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.compass-dial{
+  position:relative;width:min(66vw,260px);aspect-ratio:1/1;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.6));
+}
+.compass-dial svg{width:100%;height:100%;display:block;}
+.compass-fwd{
+  position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+  font-size:10.5px;letter-spacing:.14em;color:var(--dim-2);
+  background:var(--abyss);padding:0 7px;z-index:1;
+}
+#compassNeedle{
+  transform-origin:150px 150px;
+  transition:transform .25s cubic-bezier(.2,.6,.2,1);
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.55));
+}
+.compass-dial.arrived #compassNeedle{animation:compassBob 1.1s ease-in-out infinite;}
+@keyframes compassBob{
+  0%,100%{filter:drop-shadow(0 0 8px rgba(255,201,74,.45))}
+  50%{filter:drop-shadow(0 0 20px rgba(255,201,74,.85))}
+}
+.compass-dist{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.compass-dist .num{
+  font-family:"SCDream",sans-serif;font-weight:700;font-size:38px;
+  color:var(--cream);font-variant-numeric:tabular-nums;
+}
+.compass-dial.arrived ~ .compass-dist .num{color:var(--gold);}
+.compass-dist .cap{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim-2);}
+.qflavor{
+  font-style:italic;color:var(--ink-2);font-size:13px;line-height:1.55;
+  margin:0 0 14px;padding-bottom:12px;border-bottom:1px dashed rgba(60,42,16,.25);
+}
 
 /* ══════════ 단서 주머니 ══════════ */
 .pouch{margin-top:20px;}
@@ -903,6 +928,50 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
   box-shadow:0 10px 28px -10px rgba(0,0,0,.9);
 }
 .toast.on{opacity:1;transform:translateX(-50%);}
+
+/* ══════════ 퀘스트 대화 오버레이 ══════════ */
+.quest-overlay{
+  position:fixed;inset:0;z-index:70;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 16px calc(18px + env(safe-area-inset-bottom));
+  background:rgba(4,10,16,0);pointer-events:none;transition:background .25s ease;
+}
+.quest-overlay.on{background:rgba(4,10,16,.62);pointer-events:auto;}
+.quest-card{
+  width:100%;max-width:440px;border-radius:16px;padding:20px 20px 18px;
+  margin-top:84px; /* 위로 솟은 선장 초상화 자리 */
+  transform:translateY(24px);opacity:0;transition:transform .28s cubic-bezier(.2,.9,.3,1),opacity .28s ease;
+}
+.quest-overlay.on .quest-card{transform:translateY(0);opacity:1;}
+.quest-head{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  margin:0 0 14px;
+}
+.quest-avatar{
+  width:148px;height:148px;border-radius:50%;object-fit:cover;flex:none;
+  margin-top:-96px; /* 카드 위로 얼굴이 올라와 시선을 잡는다 */
+  border:4px solid var(--gold);background:#fff;
+  box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 3px rgba(10,10,10,.55);
+  display:none;transform:scale(.82) translateY(10px);
+  transition:transform .34s cubic-bezier(.18,1.05,.3,1);
+}
+.quest-avatar[src]{display:block}
+.quest-overlay.on .quest-avatar{transform:scale(1) translateY(0);}
+/* 아바타가 없을 때는 카드를 끌어올려 빈 공간을 없앤다 (app.js가 클래스를 붙인다) */
+.quest-card.no-avatar{margin-top:0}
+.quest-who{
+  font-family:"SCDream",sans-serif;font-weight:700;font-size:16px;letter-spacing:.06em;
+  color:var(--ink-2);
+  padding:3px 14px;border-radius:999px;
+  border:1px solid rgba(60,42,16,.34);
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0));
+}
+.quest-text{
+  font-size:15.5px;line-height:1.7;white-space:pre-line;margin-bottom:16px;color:var(--ink);
+  text-align:center;
+}
+.quest-choices{display:flex;flex-direction:column;gap:8px}
+.quest-choices .btn{margin-top:0}
+#questOk{margin-top:0}
 
 @media (prefers-reduced-motion: reduce){
   *{animation:none!important;transition-duration:.01ms!important;}

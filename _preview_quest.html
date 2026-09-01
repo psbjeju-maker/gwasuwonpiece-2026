@@ -1,0 +1,137 @@
+<title>귤선장 대화창 미리보기</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── 미리보기 전용 ── */
+html,body{background:#0a1622;color:var(--cream);
+  font-family:"IBM Plex Sans KR",system-ui,sans-serif;}
+.pv-wrap{max-width:1120px;margin:0 auto;padding:28px 20px 60px;
+  display:grid;grid-template-columns:minmax(320px,360px) 1fr;gap:36px;align-items:start;}
+@media (max-width:820px){.pv-wrap{grid-template-columns:1fr}}
+.pv-title{font-family:"SCDream",sans-serif;font-weight:800;font-size:22px;
+  letter-spacing:.02em;color:var(--gold-l);margin:0 0 4px;}
+.pv-sub{font-size:13.5px;line-height:1.7;color:var(--dim);margin:0 0 22px;max-width:62ch;}
+.pv-head{max-width:1120px;margin:0 auto;padding:34px 20px 0;}
+/* 폰 프레임 */
+.phone{position:relative;width:100%;aspect-ratio:9/17;border-radius:32px;overflow:hidden;
+  background-image:var(--tx-chart),linear-gradient(175deg,var(--sea-1),var(--abyss));
+  box-shadow:0 0 0 2px var(--brass-d),0 0 0 10px #10161d,0 26px 50px -20px #000;}
+.phone .quest-overlay{position:absolute;}
+.pv-label{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--brass);font-weight:700;margin:0 0 12px;}
+.pv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:12px;}
+.pv-pick{display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 6px 12px;
+  border-radius:14px;cursor:pointer;border:1px solid transparent;background:rgba(255,255,255,.03);
+  transition:background .15s ease,border-color .15s ease,transform .1s ease;}
+.pv-pick:hover{background:rgba(255,201,74,.09);}
+.pv-pick:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+.pv-pick img{width:66px;height:66px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--brass-d);background:#fff;}
+.pv-pick span{font-size:11.5px;color:var(--dim);text-align:center;line-height:1.35;}
+.pv-pick[aria-pressed="true"]{border-color:var(--gold);background:rgba(255,201,74,.13);}
+.pv-pick[aria-pressed="true"] img{border-color:var(--gold);}
+.pv-pick[aria-pressed="true"] span{color:var(--gold-l);}
+.pv-note{margin-top:26px;font-size:12.5px;line-height:1.75;color:var(--dim-2);
+  border-left:2px solid var(--brass-d);padding-left:14px;max-width:60ch;}
+.pv-note b{color:var(--dim);font-weight:600;}
+.pv-toggle{margin:16px 0 0;display:flex;gap:10px;flex-wrap:wrap;}
+.pv-toggle button{font:inherit;font-size:12.5px;font-weight:600;color:var(--cream);
+  padding:8px 14px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--panel-line);background:rgba(255,255,255,.04);}
+.pv-toggle button[aria-pressed="true"]{background:var(--brass-d);border-color:var(--brass);}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+
+<div class="pv-head">
+  <h1 class="pv-title">귤선장 대화창 미리보기</h1>
+  <p class="pv-sub">캐릭터 초상화를 92px에서 <b>148px</b>로 키우고 대화창 위로 솟아오르게 바꾼 결과입니다.
+  아래 표정을 눌러 12종을 전부 확인할 수 있습니다.</p>
+</div>
+
+<div class="pv-wrap">
+  <div>
+    <p class="pv-label">실제 화면 비율</p>
+    <div class="phone">
+      <div class="quest-overlay on" id="ov">
+        <div class="scroll-paper quest-card" id="card">
+          <div class="quest-head">
+            <img class="quest-avatar" id="av" alt="">
+            <div class="quest-who">귤선장</div>
+          </div>
+          <div class="quest-text" id="tx"></div>
+          <div class="quest-choices" id="ch"></div>
+          <button class="btn ghost" id="ok">확인</button>
+        </div>
+      </div>
+    </div>
+    <div class="pv-toggle">
+      <button id="bIntro" aria-pressed="true">인트로 (선택형)</button>
+      <button id="bShort" aria-pressed="false">미션 완료 (단문형)</button>
+      <button id="bNone" aria-pressed="false">초상화 없음</button>
+    </div>
+  </div>
+
+  <div>
+    <p class="pv-label">표정 12종</p>
+    <div class="pv-grid" id="grid"></div>
+    <p class="pv-note">
+      새 시트를 4×3 그리드 <b>점선 라인 실측</b>으로 잘랐습니다(균등분할 아님 — 셀이 377×328이라 어긋납니다).
+      기존 6종은 <b>파일명을 그대로 유지</b>해서 대사별 표정 배정은 손대지 않았고,
+      새로 늘어난 6종은 관리자 화면 표정 목록에 추가했습니다.
+      캡틴 이미지가 서비스워커 캐시에서 빠져 있어 12장 전부 넣고 <b>ggg-v8</b>로 올렸습니다.
+    </p>
+  </div>
+</div>
+
+<script>
+
+var EXPS = [["exp_default", "기본"], ["exp_happy", "활짝 웃음"], ["exp_smile", "부드러운 미소"], ["exp_wink", "윙크"], ["exp_think", "생각 중"], ["exp_fighting", "화이팅"], ["exp_found", "발견 (반짝)"], ["exp_surprise", "놀람 (!!)"], ["exp_search", "탐색 (망원경)"], ["exp_tease", "장난 (메롱)"], ["exp_sulk", "시무룩"], ["exp_warn", "경고 / 화남"]];
+var cur = "exp_default", mode = "intro";
+var av=document.getElementById("av"), tx=document.getElementById("tx"),
+    ch=document.getElementById("ch"), ok=document.getElementById("ok"),
+    card=document.getElementById("card"), grid=document.getElementById("grid");
+
+EXPS.forEach(function(e){
+  var b=document.createElement("button");
+  b.className="pv-pick"; b.type="button"; b.setAttribute("aria-pressed", e[0]===cur);
+  b.innerHTML='<img src="'+"captain/"+e[0]+".jpg"+'" alt=""><span>'+e[1]+'</span>';
+  b.addEventListener("click", function(){ cur=e[0]; if(mode==="none") setMode("intro"); render(); });
+  grid.appendChild(b);
+});
+
+function setMode(m){
+  mode=m;
+  [["bIntro","intro"],["bShort","short"],["bNone","none"]].forEach(function(p){
+    document.getElementById(p[0]).setAttribute("aria-pressed", p[1]===m);
+  });
+  render();
+}
+["bIntro","bShort","bNone"].forEach(function(id,i){
+  document.getElementById(id).addEventListener("click", function(){ setMode(["intro","short","none"][i]); });
+});
+
+function render(){
+  Array.prototype.forEach.call(grid.children, function(b,i){
+    b.setAttribute("aria-pressed", EXPS[i][0]===cur && mode!=="none");
+  });
+  if(mode==="none"){ av.removeAttribute("src"); card.classList.add("no-avatar"); }
+  else { av.src="captain/"+cur+".jpg"; card.classList.remove("no-avatar"); }
+
+  ch.innerHTML="";
+  if(mode==="intro"){
+    tx.textContent="이보게, 나는 이 과수원 바다를 떠도는 귤선장일세.
+황금 귤을 찾아 나설 동료를 구하고 있다네. 함께 가지 않겠나?";
+    ok.style.display="none";
+    ["좋다, 나도 껴주지 않겠나!","일단 구경부터 하겠소."].forEach(function(t){
+      var b=document.createElement("button"); b.className="btn ghost"; b.type="button"; b.textContent=t;
+      ch.appendChild(b);
+    });
+  } else {
+    tx.textContent="활 솜씨 한번 매섭구먼! 해적단에 들어올 생각 없나?";
+    ok.style.display="";
+  }
+  /* 초상화 팝 애니메이션 재생 */
+  var ov=document.getElementById("ov");
+  ov.classList.remove("on"); void ov.offsetWidth; ov.classList.add("on");
+}
+render();
+</script>

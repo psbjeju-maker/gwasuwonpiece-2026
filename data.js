@@ -13,56 +13,83 @@ window.GAME_DATA = {
     subtitle: "과수원피스 · 2026.10.31",
     /* 최종 정답 (12~18자). 이 문자열을 바꾸면 글자가 자동 분해되어
        아래 letter QR에 순서대로 배정된다. */
-    finalAnswer: "제주에서제일달콤한황금감귤",
-    /* 정답 인정 별칭 — 띄어쓰기·표기 흔들림 대비 */
+    finalAnswer: "사람사람열매모델태양신니카",
+    /* 정답 인정 별칭 — 띄어쓰기·표기 흔들림, 짧은 표기 둘 다 인정 */
     finalAliases: [
-      "제주에서 제일 달콤한 황금감귤",
-      "제주에서제일달콤한황금귤"
+      "사람사람열매 모델 태양신니카",
+      "사람사람열매 모델: 태양신 니카",
+      "사람사람열매",
+      "태양신니카",
+      "태양신 니카"
     ],
     /* 행사장 지도 이미지. 비워두면 내장 개념도(map.svg)를 쓴다.
        현장 위성사진이 준비되면 여기에 파일명을 넣는다. */
     mapImage: "map.jpg",
     gameOpen: true,
     adminPin: "6842",
+    /* GPS 보물찾기 — 도착 인정 반경(미터). 지점 간 실제 간격이 좁으면 줄이고,
+       GPS 오차가 크게 나오는 현장이면 늘린다. 지점별로 다르게 주고 싶으면
+       gpsPoints의 개별 항목에 radius를 넣으면 그게 우선한다. */
+    gpsRadius: 5,
     /* 보물찾기 최종 보상 — 해적왕 트로피(모바일) + 다음 메이커앤하비 행사 경품 응모권 */
     rewardTitle: "골드 티켓",
-    rewardDesc: "해적왕 트로피 획득! 다음 메이커앤하비 행사 경품 응모에 사용할 수 있는 티켓입니다. 스태프에게 이 화면을 보여주세요"
+    rewardDesc: "해적왕 트로피 획득! 다음 메이커앤하비 행사 경품 응모에 사용할 수 있는 티켓입니다. 스태프에게 이 화면을 보여주세요",
+    /* 퀘스트 대화에 등장하는 화자 이름표. 미션 완료/시간대 대사 카드 상단에 표시된다. */
+    questWho: "귤선장",
+    /* 화자 기본 아바타(표정 이미지). 대사별로 avatar 필드를 따로 주면 그게 우선한다. */
+    questAvatar: "captain/exp_default.jpg"
   },
 
-  /* ---------- 구역 ---------- */
-  zones: {
-    A: { name: "과수원피스 로고", x: 20, y: 76, near: ["B", "C"] },
-    B: { name: "본관",             x: 26, y: 52, near: ["A", "C", "G"] },
-    C: { name: "마켓 텐트존",      x: 48, y: 66, near: ["A", "B", "D", "G"] },
-    D: { name: "야외 오픈 광장",   x: 64, y: 47, near: ["C", "E", "G"] },
-    E: { name: "감귤밭 산책로",    x: 74, y: 27, near: ["D", "F"] },
-    F: { name: "댑싸리 꽃길",      x: 87, y: 11, near: ["E"] },
-    G: { name: "비닐하우스 홀",    x: 38, y: 38, near: ["B", "C", "D"] }
+  /* ---------- 인트로 퀘스트 (앱 첫 실행 시 1회) ----------
+     line: 처음 뜨는 대사(줄바꿈은 \n\n). choices: 선택은 재미 요소일 뿐, 보상에는 영향 없음.
+     한 번 본 참가자에게는 다시 뜨지 않는다(S.seenIntroQuest, 기기 로컬 저장). */
+  introQuest: {
+    avatar: "captain/exp_default.jpg",
+    line: "어이, 거기 자네! 오늘 이 과수원에 발을 들였다는 건... 황금 귤 이야기를 들었다는 뜻이겠지? 🍊\n\n이 몸은 귤선장. 벌써 몇 년째 이 귤밭을 뒤지고 있다네. 자네도 한번 찾아보지 않겠나?",
+    choices: [
+      { label: "좋다, 나도 껴주지 않겠나!", next: "하하, 배짱 한번 좋군! 나침반 따라가면 실마리가 하나둘 나타날 걸세. 행운을 비네, 동료여.", avatar: "captain/exp_happy.jpg" },
+      { label: "일단 구경부터 하겠소.", next: "그것도 나쁘지 않지. 마음이 동하면 언제든 나침반을 켜게나. 귤은 도망가지 않는다네.", avatar: "captain/exp_think.jpg" }
+    ]
   },
 
-  /* ---------- 이벤트 종류 ---------- */
-  events: {
-    lucky: {
-      name: "행운의 감귤",
-      icon: "🍊",
-      text: "나무에서 잘 익은 감귤 하나가 툭 떨어졌다. 아직 못 찾은 단서 한 글자를 그냥 준다."
-    },
-    shard: {
-      name: "황금 귤 조각",
-      icon: "✨",
-      text: "황금빛 껍질 조각을 주웠다. 모을수록 마지막 순간이 화려해진다."
-    },
-    photo: {
-      name: "포토 미션",
-      icon: "📸",
-      text: ""   // 개별 QR에서 지정
-    },
-    cheer: {
-      name: "항해사의 응원",
-      icon: "⚓",
-      text: ""   // 개별 QR에서 지정
-    }
-  },
+  /* ---------- 시간대별 퀘스트 대사 ----------
+     time을 지나면(기기 시각 기준) 홈 화면에서 1회 자동으로 뜬다. 참가자별로 한 번만.
+     타임테이블(§timetable)과 연동되는 이벤트만 골라 넣었다 — 전부 다 넣으면 번잡스럽다. */
+  scheduleQuests: [
+    { id: "sq01", time: "11:00", avatar: "captain/exp_fighting.jpg", line: "이보게, 곧 가위바위보 한판이 열린다는군. 승부욕 있으면 가보지 않겠나?" },
+    { id: "sq02", time: "13:00", avatar: "captain/exp_fighting.jpg", line: "오타쿠 퀴즈 대회가 시작됐다네. 아는 게 힘이지, 안 그런가?" },
+    { id: "sq03", time: "14:00", avatar: "captain/exp_fighting.jpg", line: "무대 위에서 노래와 춤판이 벌어진다는군. 구경만 해도 즐겁다네." },
+    { id: "sq04", time: "15:00", avatar: "captain/exp_fighting.jpg", line: "랜덤 플레이 댄스 시간일세. 몸이 근질거리면 뛰어들어보게나." },
+    { id: "sq05", time: "15:20", avatar: "captain/exp_think.jpg", line: "슬슬 최종 추첨 시간이 다가오는군. 그동안 모은 티켓, 운을 걸어볼 텐가?" }
+  ],
+
+  /* ---------- GPS 보물 지점 (2026-08-29: QR 40개 방식 폐기, GPS 나침반으로 전면 교체) ----------
+     참가자는 QR을 찍지 않는다. 앱 화면의 나침반이 "아직 못 찾은 지점 중 가장 가까운 곳"을 가리키고,
+     도착 인정 반경(settings.gpsRadius, 기본 15m) 안에 들어오면 자동으로 퀴즈가 뜬다.
+     정답을 맞히면 그 지점에 배정된 글자(li)를 얻는다.
+
+     lat/lng: 실제 위경도. 현장 답사 때 gps_picker.html로 각 지점에 가서 찍어 채운다.
+       아직 null이면 그 지점은 "미설정" 상태로 취급되어 나침반이 안내하지 않는다.
+     flavor: 도착했을 때 결과 화면에 뜨는 해적 내레이션 한두 줄. 나중에 캐릭터 이미지를
+       붙이고 싶으면 앱단(scResult)의 캐릭터 자리에 이미지 파일명만 추가하면 된다.
+
+     지점 수는 finalAnswer 글자 수와 반드시 같아야 한다(지금은 13개, 임시 정답 기준).
+     정답 문장을 바꿔서 글자 수가 달라지면 이 배열도 그만큼 늘리거나 줄여야 한다. */
+  gpsPoints: [
+    { id:"L01", li:0,  q:"q01", lat:33.4892681, lng:126.4738334, flavor:"낡은 나침반이 파르르 떨린다. 항해가 시작됐다." },
+    { id:"L02", li:1,  q:"q02", lat:33.489114, lng:126.4736991, flavor:"발자국 하나가 땅에 남아있다. 누군가 먼저 다녀갔군." },
+    { id:"L03", li:2,  q:"q03", lat:33.4891635, lng:126.4738029, flavor:"바람이 방향을 바꾼다. 코를 킁킁대던 갈매기가 날아간다." },
+    { id:"L04", li:3,  q:"q04", lat:null, lng:null, flavor:"돌 틈에 조그만 표식이 새겨져 있다. 먼저 온 항해사의 흔적." },
+    { id:"L05", li:4,  q:"q05", lat:null, lng:null, flavor:"멀리서 파도 소리 대신 웃음소리가 들린다. 사람이 많은 걸 보니 제대로 왔다." },
+    { id:"L06", li:5,  q:"q06", lat:null, lng:null, flavor:"나뭇잎 사이로 햇살이 쏟아진다. 절반쯤 왔을까." },
+    { id:"L07", li:6,  q:"q07", lat:null, lng:null, flavor:"낯선 깃발이 펄럭인다. 이 구역의 주인은 따로 있는 듯하다." },
+    { id:"L08", li:7,  q:"q08", lat:null, lng:null, flavor:"땅에 그려진 지도 조각 — 정답까지 얼마 남지 않았다는 뜻일까." },
+    { id:"L09", li:8,  q:"q09", lat:null, lng:null, flavor:"산책로 끝에서 오래된 노래가 흘러나온다. 누군가 흥얼거리고 있다." },
+    { id:"L10", li:9,  q:"q10", lat:null, lng:null, flavor:"바람에 실려 온 꽃향기. 여기가 맞다, 계속 가자." },
+    { id:"L11", li:10, q:"q11", lat:null, lng:null, flavor:"저 앞에 낯익은 깃발이 보인다. 거의 다 왔다." },
+    { id:"L12", li:11, q:"q12", lat:null, lng:null, flavor:"황금빛이 스치듯 반짝인다. 착각이 아니길." },
+    { id:"L13", li:12, q:"q13", lat:null, lng:null, flavor:"발밑이 뜨겁다. 보물은 늘 마지막 한 걸음 전에 가장 멀게 느껴지는 법." }
+  ],
 
   /* ---------- 타임테이블 (홈 화면 표시용) ---------- */
   timetable: [
@@ -82,7 +109,7 @@ window.GAME_DATA = {
   experiences: [
     { icon: "icons2/t_cart.png",   title: "마켓",        desc: "피규어 · 굿즈 · 음식 부스 자유 이용", link: "guide.html" },
     { icon: "icons2/t_swords.png",  title: "미션 11종",   desc: "5개부터 응모티켓 지급", link: "tab:scMissions" },
-    { icon: "icons2/t_chest.png", title: "보물찾기",     desc: "QR을 모아 황금 귤을 찾아라 · 완주 시 골드 티켓", link: "tab:scMain" },
+    { icon: "icons2/t_chest.png", title: "보물찾기",     desc: "나침반을 따라가 단서를 모아라 · 완주 시 골드 티켓", link: "tab:scMain" },
     { icon: "icons2/t_crown.png",  title: "코스프레 체험", desc: "의상 대여 · 촬영", link: "guide.html" },
     { icon: "icons2/t_camera.png",    title: "포토존",       desc: "과수원피스 로고 등 곳곳에 배치", link: "guide.html" },
     { icon: "icons2/t_trophy.png",    title: "무대 이벤트",   desc: "댄스 · 퀴즈 · 노래방 대회", link: "guide.html#schedule" }
@@ -94,17 +121,17 @@ window.GAME_DATA = {
        auto : 앱이 스스로 아는 상태로 자동 완료 (보물찾기 클리어, 반응속도 게임, 투표 참여). (4종)
      qr/auto가 둘 다 없으면 관리자 화면에서 스태프가 수동으로 체크한다(예비 수단). */
   missions: [
-    { id: "m01", name: "코스프레하기",          desc: "오늘 하루, 캐릭터가 되어보세요", qr: "M01" },
-    { id: "m02", name: "코스어와 사진찍기",      desc: "코스프레 참가자와 함께 사진을 남겨보세요", qr: "M02" },
-    { id: "m03", name: "황금 귤 찾기 완료",       desc: "보물찾기 게임 최종 정답을 맞히면 자동 완료", auto: "treasureClear" },
-    { id: "m04", name: "양궁미션",              desc: "양궁 미션 부스에 도전하세요", qr: "M04" },
-    { id: "m05", name: "사격미션",              desc: "사격 미션 부스에 도전하세요", qr: "M05" },
-    { id: "m07", name: "고리던지기",             desc: "고리던지기 미션 부스에 도전하세요", qr: "M07" },
-    { id: "m09", name: "반응속도게임",           desc: "앱 안에서 바로 도전! 신호가 오면 화면을 터치하세요", auto: "reaction" },
-    { id: "m10", name: "물품구매하기",           desc: "마켓에서 물품을 구매해보세요", qr: "M10" },
-    { id: "m11", name: "SNS게시하기",           desc: "행사 사진을 SNS에 올리고 스태프에게 보여주세요", qr: "M11" },
-    { id: "m12", name: "노래&댄스 무대 투표하기", desc: "무대 투표에 참여하면 자동 완료", auto: "vote:singdance" },
-    { id: "m13", name: "랜덤 플레이 댄스 투표하기", desc: "랜덤 플레이 댄스 투표에 참여하면 자동 완료", auto: "vote:randomdance" }
+    { id: "m01", name: "코스프레하기",          desc: "오늘 하루, 캐릭터가 되어보세요", qr: "M01", avatar: "captain/exp_happy.jpg", line: "오호, 그 옷차림 제법이군! 오늘만큼은 자네도 이 바다의 주인공일세." },
+    { id: "m02", name: "코스어와 사진찍기",      desc: "코스프레 참가자와 함께 사진을 남겨보세요", qr: "M02", avatar: "captain/exp_happy.jpg", line: "동료를 하나 더 만들었군. 항해는 혼자 하는 게 아니라네." },
+    { id: "m03", name: "황금 귤 찾기 완료",       desc: "보물찾기 게임 최종 정답을 맞히면 자동 완료", auto: "treasureClear", avatar: "captain/exp_found.jpg", line: "허, 정말 찾아내다니... 자네, 보통내기가 아니군." },
+    { id: "m04", name: "양궁미션",              desc: "양궁 미션 부스에 도전하세요", qr: "M04", avatar: "captain/exp_fighting.jpg", line: "활 솜씨 한번 매섭구먼! 해적단에 들어올 생각 없나?" },
+    { id: "m05", name: "사격미션",              desc: "사격 미션 부스에 도전하세요", qr: "M05", avatar: "captain/exp_fighting.jpg", line: "명중일세! 대포보다 정확한 눈이로군." },
+    { id: "m07", name: "고리던지기",             desc: "고리던지기 미션 부스에 도전하세요", qr: "M07", avatar: "captain/exp_fighting.jpg", line: "그 손목, 갈고리 다루던 솜씨 아닌가? 예사롭지 않구먼." },
+    { id: "m09", name: "반응속도게임",           desc: "앱 안에서 바로 도전! 신호가 오면 화면을 터치하세요", auto: "reaction", avatar: "captain/exp_happy.jpg", line: "그 속도, 폭풍우 속에서도 살아남겠군!" },
+    { id: "m10", name: "물품구매하기",           desc: "마켓에서 물품을 구매해보세요", qr: "M10", avatar: "captain/exp_happy.jpg", line: "장사꾼들 물건 좀 봤나? 이 바다엔 보물만 있는 게 아니라네." },
+    { id: "m11", name: "SNS게시하기",           desc: "행사 사진을 SNS에 올리고 스태프에게 보여주세요", qr: "M11", avatar: "captain/exp_happy.jpg", line: "소문은 빠를수록 좋지. 자네 덕에 이 섬 이야기가 퍼지겠군." },
+    { id: "m12", name: "노래&댄스 무대 투표하기", desc: "무대 투표에 참여하면 자동 완료", auto: "vote:singdance", avatar: "captain/exp_found.jpg", line: "그대의 한 표, 무대 위 승부를 가를지도 모르지." },
+    { id: "m13", name: "랜덤 플레이 댄스 투표하기", desc: "랜덤 플레이 댄스 투표에 참여하면 자동 완료", auto: "vote:randomdance", avatar: "captain/exp_found.jpg", line: "춤판에 한 표라... 재밌는 선택이었네." }
   ],
 
   /* ---------- 응모티켓 단계 (완료한 미션 개수 기준, 총 11종) ---------- */
@@ -134,69 +161,6 @@ window.GAME_DATA = {
       candidates: []
     }
   },
-
-  /* ---------- QR 40개 ----------
-     type: letter(고유 글자) / duplicate(백업 사본) / event
-     li  : 몇 번째 글자인지 (0부터)
-     x,y : 지도 이미지상 % 좌표
-     q   : 퀴즈 id
-  */
-  qrcodes: [
-    { id:"A01", zone:"A", type:"letter",    li:0,  q:"q01", x:15, y:80 },
-    { id:"A02", zone:"A", type:"event", ev:"shard", q:"q02", x:23, y:83 },
-    { id:"A03", zone:"A", type:"letter",    li:1,  q:"q03", x:18, y:70 },
-    { id:"A04", zone:"A", type:"duplicate", li:10, q:"q04", x:26, y:74 },
-    { id:"A05", zone:"A", type:"duplicate", li:8,  q:"q05", x:12, y:72 },
-    { id:"A06", zone:"A", type:"duplicate", li:9,  q:"q06", x:27, y:66 },
-
-    { id:"B01", zone:"B", type:"letter",    li:2,  q:"q07", x:22, y:55 },
-    { id:"B02", zone:"B", type:"event", ev:"shard", q:"q08", x:31, y:57 },
-    { id:"B03", zone:"B", type:"event", ev:"photo", q:"q09", x:26, y:47,
-      evText:"본관 발코니 앞에서 오늘의 코스프레를 한 장 남기세요." },
-    { id:"B04", zone:"B", type:"letter",    li:3,  q:"q10", x:19, y:46 },
-    { id:"B05", zone:"B", type:"duplicate", li:11, q:"q11", x:33, y:50 },
-
-    { id:"C01", zone:"C", type:"event", ev:"lucky", q:"q12", x:42, y:70 },
-    { id:"C02", zone:"C", type:"letter",    li:4,  q:"q13", x:50, y:72 },
-    { id:"C03", zone:"C", type:"event", ev:"shard", q:"q14", x:56, y:68 },
-    { id:"C04", zone:"C", type:"duplicate", li:12, q:"q15", x:44, y:62 },
-    { id:"C05", zone:"C", type:"letter",    li:5,  q:"q16", x:52, y:60 },
-    { id:"C06", zone:"C", type:"event", ev:"photo", q:"q17", x:58, y:74,
-      evText:"마켓에서 제일 마음에 든 부스 앞에서 한 장!" },
-    { id:"C07", zone:"C", type:"duplicate", li:0, q:"q18", x:40, y:76 },
-    { id:"C08", zone:"C", type:"duplicate", li:2, q:"q19", x:60, y:62 },
-
-    { id:"D01", zone:"D", type:"letter",    li:6,  q:"q20", x:62, y:50 },
-    { id:"D02", zone:"D", type:"event", ev:"shard", q:"q21", x:69, y:52 },
-    { id:"D03", zone:"D", type:"duplicate", li:4,  q:"q22", x:58, y:44 },
-    { id:"D04", zone:"D", type:"letter",    li:7,  q:"q23", x:67, y:42 },
-    { id:"D05", zone:"D", type:"duplicate", li:5, q:"q24", x:72, y:48 },
-    { id:"D06", zone:"D", type:"duplicate", li:1,  q:"q25", x:61, y:38 },
-
-    { id:"E01", zone:"E", type:"letter",    li:8,  q:"q26", x:70, y:31 },
-    { id:"E02", zone:"E", type:"event", ev:"cheer", q:"q27", x:77, y:33,
-      evText:"돌담 사이로 바람이 지나간다. 절반은 지났다, 항해사." },
-    { id:"E03", zone:"E", type:"event", ev:"lucky", q:"q28", x:73, y:24 },
-    { id:"E04", zone:"E", type:"letter",    li:9,  q:"q29", x:80, y:27 },
-    { id:"E05", zone:"E", type:"event", ev:"shard", q:"q30", x:68, y:23 },
-    { id:"E06", zone:"E", type:"letter",    li:10, q:"q31", x:78, y:20 },
-    { id:"E07", zone:"E", type:"event", ev:"cheer", q:"q32", x:83, y:31,
-      evText:"여기까지 온 사람은 많지 않다. 조금만 더." },
-
-    { id:"F01", zone:"F", type:"event", ev:"photo", q:"q33", x:84, y:15,
-      evText:"꽃길 한가운데서 한 장. 오늘 제일 예쁘게 나오는 자리입니다." },
-    { id:"F02", zone:"F", type:"letter",    li:11, q:"q34", x:90, y:10 },
-    { id:"F03", zone:"F", type:"event", ev:"shard", q:"q35", x:86, y:7 },
-    { id:"F04", zone:"F", type:"event", ev:"cheer", q:"q36", x:92, y:15,
-      evText:"과수원 끝까지 걸어온 당신에게. 황금 귤이 멀지 않았다." },
-
-    { id:"G01", zone:"G", type:"letter",    li:12, q:"q37", x:36, y:40 },
-    { id:"G02", zone:"G", type:"event", ev:"lucky", q:"q38", x:42, y:36 },
-    { id:"G03", zone:"G", type:"event", ev:"photo", q:"q39", x:34, y:34,
-      evText:"'혼저옵서예' 현수막 아래에서 한 장 찍고 가세요." },
-    { id:"G04", zone:"G", type:"event", ev:"cheer", q:"q40", x:40, y:43,
-      evText:"비가 와도 여긴 안전하다. 잠시 쉬었다 가도 좋다." }
-  ],
 
   /* ---------- 퀴즈 41문제 ----------
      a : 정답 별칭 배열. 채점은 공백·특수문자 제거 후 비교한다.
@@ -284,6 +248,6 @@ window.GAME_DATA = {
            a:["몬스터볼","포켓볼","pokeball","monsterball"] },
 
     /* 최종 문제는 settings.finalAnswer 를 정답으로 쓴다 */
-    final: { qn:"모은 글자를 전부 조합하면 무슨 말이 될까요?", a:[] }
+    final: { qn:"루피가 먹은 열매의 진짜 이름은?", a:[] }
   }
 };

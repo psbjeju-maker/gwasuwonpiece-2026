@@ -26,10 +26,10 @@
 
     <div class="rules">
       <ol>
-        <li>행사장 곳곳에 숨은 QR을 찾아 카메라로 찍습니다.</li>
+        <li>보물찾기 화면을 열면 <b>나침반</b>이 다음 단서 방향을 가리킵니다.</li>
+        <li>화살표를 따라가 도착하면 퀴즈가 뜹니다.</li>
         <li>퀴즈를 맞히면 <b>단서 한 글자</b>를 얻습니다.</li>
-        <li>글자를 모아 조합하면 마지막 답이 나옵니다.</li>
-        <li>답을 맞히면 <b>황금 귤</b>이 열립니다.</li>
+        <li>글자를 모아 조합하면 마지막 답이 나오고, <b>황금 귤</b>이 열립니다.</li>
       </ol>
     </div>
 
@@ -131,17 +131,53 @@
       <div class="bar"><i id="pgBar"></i></div>
     </div>
 
-    <div class="mapbox" id="mapBox"></div>
-    <p class="maphint" id="mapHint"><b>X</b> 표시된 곳 근처에 QR이 있습니다</p>
+    <div class="compass-gate" id="compassGate">
+      <p>나침반을 쓰려면 위치·방향 센서 권한이 필요합니다.</p>
+      <button class="btn gold" id="btnCompassStart">추적 시작</button>
+    </div>
+
+    <div class="compass-wrap" id="compassWrap" style="display:none">
+      <div class="compass-dial" id="compassDial">
+        <span class="compass-fwd">정면</span>
+        <svg viewBox="0 0 300 300" aria-hidden="true">
+          <circle cx="150" cy="150" r="138" fill="none" stroke="var(--brass)" stroke-width="2" opacity=".6"/>
+          <circle cx="150" cy="150" r="112" fill="none" stroke="var(--panel-line)" stroke-width="1"/>
+          <g stroke="var(--dim-2)" stroke-width="2">
+            <line x1="150" y1="12" x2="150" y2="28" transform="rotate(0 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="24" transform="rotate(30 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="24" transform="rotate(60 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="28" transform="rotate(90 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="24" transform="rotate(120 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="24" transform="rotate(150 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="28" transform="rotate(180 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="24" transform="rotate(210 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="24" transform="rotate(240 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="28" transform="rotate(270 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="24" transform="rotate(300 150 150)"/>
+            <line x1="150" y1="12" x2="150" y2="24" transform="rotate(330 150 150)"/>
+          </g>
+          <polygon points="140,4 160,4 150,20" fill="var(--dim-2)"/>
+          <g id="compassNeedle">
+            <path d="M150,50 L169,158 L150,141 L131,158 Z" fill="var(--gold)"/>
+            <circle cx="150" cy="150" r="10" fill="var(--brass)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="compass-dist">
+        <span class="num" id="compassDist">—</span>
+        <span class="cap">다음 단서까지</span>
+      </div>
+      <p class="maphint" id="compassStatus">위치 확인 중…</p>
+    </div>
 
     <div class="pouch">
-      <div class="cap">단서 주머니 <span id="shardCnt"></span></div>
+      <div class="cap">단서 주머니</div>
       <div class="chips" id="pouch"></div>
     </div>
 
     <div style="margin-top:22px">
       <button class="btn gold" id="btnFinal">모은 글자로 답 맞히기</button>
-      <button class="btn ghost" id="btnHowScan">QR은 어떻게 찍나요?</button>
+      <button class="btn ghost" id="btnHowScan">나침반은 어떻게 쓰나요?</button>
     </div>
 
     <p class="footnote">찾은 QR <b id="foundCnt">0</b>개 · 참가자 <span id="whoAmI"></span></p>
@@ -160,7 +196,8 @@
   <!-- ══ 3. 퀴즈 ══ -->
   <section class="screen" id="scQuiz">
     <div class="qcard" id="qCard">
-      <div class="qid"><span id="qZone"></span><span id="qCode"></span></div>
+      <div class="qid"><span>도착</span><span id="qCode"></span></div>
+      <p class="qflavor" id="qZone"></p>
       <h2 id="qText"></h2>
       <input id="qInput" type="text" placeholder="답을 입력하세요" autocomplete="off"
              autocapitalize="off" spellcheck="false" enterkeyhint="done">
@@ -180,7 +217,7 @@
       <h2 id="rsTitle"></h2>
       <p id="rsDesc"></p>
       <div class="acts">
-        <button class="btn gold" id="btnResultOk">지도로 돌아가기</button>
+        <button class="btn gold" id="btnResultOk">나침반으로 돌아가기</button>
       </div>
     </div>
   </section>
@@ -239,7 +276,7 @@
       </div>
 
       <div style="margin-top:20px">
-        <button class="btn ghost" id="btnCouponBack">지도 다시 보기</button>
+        <button class="btn ghost" id="btnCouponBack">나침반 다시 보기</button>
       </div>
       <p class="footnote">이 화면을 스태프에게 보여주세요. 1인 1회만 지급됩니다.</p>
     </div>
@@ -320,6 +357,18 @@
 </nav>
 
 <div class="toast" id="toast"></div>
+
+<div class="quest-overlay" id="questOverlay">
+  <div class="scroll-paper quest-card">
+    <div class="quest-head">
+      <img class="quest-avatar" id="questAvatar" alt="">
+      <div class="quest-who" id="questWho">귤선장</div>
+    </div>
+    <div class="quest-text" id="questText"></div>
+    <div class="quest-choices" id="questChoices"></div>
+    <button class="btn ghost" id="questOk">확인</button>
+  </div>
+</div>
 
 <script src="data.js"></script>
 <script src="store.js"></script>

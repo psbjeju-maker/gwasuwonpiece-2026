@@ -1,9 +1,9 @@
 # internal / not for public deploy
 out/
-admin.html
 artifact_build.html
 build_artifact.py
 map_picker.html
+gps_picker.html
 _skull_urls.txt
 __pycache__/
 *.pyc
