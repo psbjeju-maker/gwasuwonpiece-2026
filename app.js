@@ -972,13 +972,11 @@
   /* ---------- 이벤트 연결 ---------- */
   $("btnJoin").addEventListener("click", function () {
     var nick  = $("inNick").value.trim();
-    var name  = $("inName").value.trim();
     var phone = $("inPhone").value.trim();
     if (!nick)  { toast("닉네임을 입력해 주세요"); $("inNick").focus(); return; }
-    if (!name)  { toast("이름을 입력해 주세요");   $("inName").focus(); return; }
     if (Store.normPhone(phone).length < 10) { toast("전화번호를 정확히 입력해 주세요"); $("inPhone").focus(); return; }
 
-    S = Store.register(nick, name, phone);
+    S = Store.register(nick, phone);
     Sound.want("ocean");
     renderMain();
     var pendingM = sessionStorage.getItem("ggg_pending_m");

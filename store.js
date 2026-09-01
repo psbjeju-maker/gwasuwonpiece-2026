@@ -58,7 +58,7 @@ window.Store = (function () {
 
   function blank() {
     return {
-      pid: newId(), nickname: "", name: "", phone: "",
+      pid: newId(), nickname: "", phone: "",
       createdAt: Date.now(),
       found: [], letters: [], nextTargetId: null,
       cleared: false, clearedAt: 0,
@@ -72,9 +72,9 @@ window.Store = (function () {
   function saveMe(s)   { write(KEY_ME, s); syncOne(s); return s; }
   function clearMe()   { try { localStorage.removeItem(KEY_ME); } catch (e) {} }
 
-  function register(nick, name, phone) {
+  function register(nick, phone) {
     var s = blank();
-    s.nickname = nick; s.name = name; s.phone = normPhone(phone);
+    s.nickname = nick; s.phone = normPhone(phone);
     saveMe(s);
     return s;
   }

@@ -121,7 +121,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   <div class="scroll">
     <table>
       <thead><tr>
-        <th>닉네임</th><th>이름</th><th>연락처</th><th>단서</th><th>찾은 지점</th><th>미션</th>
+        <th>닉네임</th><th>연락처</th><th>단서</th><th>찾은 지점</th><th>미션</th>
         <th>상태</th><th>보상</th><th></th>
       </tr></thead>
       <tbody id="players"></tbody>
@@ -372,7 +372,6 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
       if(p.rewardIssued) issued++;
       html += "<tr>"+
         "<td><b>"+esc(p.nickname)+"</b></td>"+
-        "<td>"+esc(p.name)+"</td>"+
         "<td class='n'>····"+String(p.phone||"").slice(-4)+"</td>"+
         "<td class='n'>"+n+" / "+L+"</td>"+
         "<td class='n'>"+(p.found||[]).length+"</td>"+
@@ -423,7 +422,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   function fillGive(){
     var list = Store.players();
     $("giveWho").innerHTML = list.map(function(p){
-      return "<option value='"+p.phone+"'>"+esc(p.nickname)+" ("+esc(p.name)+")</option>";
+      return "<option value='"+p.phone+"'>"+esc(p.nickname)+"</option>";
     }).join("") || "<option value=''>참가자 없음</option>";
     $("giveWhat").innerHTML = letters().map(function(c,i){
       return "<option value='"+i+"'>"+(i+1)+"번째 — "+c+"</option>";
@@ -452,7 +451,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     var list = Store.players();
     var cur = $("missionWho").value;
     $("missionWho").innerHTML = list.map(function(p){
-      return "<option value='"+p.phone+"'>"+esc(p.nickname)+" ("+esc(p.name)+")</option>";
+      return "<option value='"+p.phone+"'>"+esc(p.nickname)+"</option>";
     }).join("") || "<option value=''>참가자 없음</option>";
     if(cur) $("missionWho").value = cur;
     renderMissionCheck();
@@ -631,10 +630,10 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   });
   $("btnExportPlayers").addEventListener("click",function(){
     var L = letters().length;
-    var rows = [["닉네임","이름","전화번호","단서수","전체","찾은지점","클리어","보상지급","쿠폰번호","클리어시각"]];
+    var rows = [["닉네임","전화번호","단서수","전체","찾은지점","클리어","보상지급","쿠폰번호","클리어시각"]];
     Store.players().forEach(function(p){
       var uniq={}; (p.letters||[]).forEach(function(x){uniq[x.li]=1});
-      rows.push([p.nickname,p.name,p.phone,Object.keys(uniq).length,L,(p.found||[]).length,
+      rows.push([p.nickname,p.phone,Object.keys(uniq).length,L,(p.found||[]).length,
         p.cleared?"O":"", p.rewardIssued?"O":"", p.rewardNo||"",
         p.clearedAt? new Date(p.clearedAt).toLocaleString("ko-KR"):""]);
     });
