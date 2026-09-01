@@ -1020,7 +1020,20 @@
     if (t.classList.contains("open")) return;
     t.classList.add("open");
     $("tapMe").style.display = "none";
-    setTimeout(renderCoupon, 950);
+    setTimeout(function () { playFinalReveal(renderCoupon); }, 950);
+  }
+
+  /* 황금 귤을 연 직후, 쿠폰 화면으로 가기 전에 귤선장의 정체를 밝히는 짧은 연출을 보여준다.
+     data.js의 finalReveal 배열을 순서대로 questLine으로 넘기고, 다 보면 onDone(renderCoupon)을 부른다. */
+  function playFinalReveal(onDone) {
+    var steps = D.finalReveal || [];
+    var i = 0;
+    function next() {
+      if (i >= steps.length) { onDone(); return; }
+      var st = steps[i]; i++;
+      questLine(st.line, { avatar: st.avatar, onOk: next });
+    }
+    next();
   }
 
   function renderCoupon() {
