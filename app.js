@@ -108,8 +108,14 @@
   var Cinema = (function () {
     var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var pickedPath = null;
-    var typing = null;
+    var typing = null;   // 지금 타이핑 중인 조각(있으면 탭 시 즉시 완성)
+    var pager = null;    // 다음 조각으로 넘길 수 있는 핸들(있으면 탭 시 다음으로)
     var started = false;
+
+    /* 대사를 빈 줄(\n\n) 기준으로 조각낸다 — 관리자 화면에서 문장 사이에 빈 줄만 넣으면 페이지가 나뉜다 */
+    function splitPages(text) {
+      return String(text || "").split(/\n\s*\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    }
 
     function typeInto(el, text, onDone) {
       if (typing) typing.skip();
@@ -135,6 +141,27 @@
       step();
     }
 
+    /* 조각을 하나씩 타이핑 -> 다 치면 "▼" 표시 -> 탭하면 다음 조각.
+       마지막 조각까지 다 보여준 뒤에만 onAllDone을 부른다(선택지/다음버튼 노출 시점). */
+    function playPages(el, text, onAllDone) {
+      var pages = splitPages(text);
+      var idx = 0;
+      function playCurrent() {
+        el.classList.remove("more");
+        typeInto(el, pages[idx], function () {
+          idx++;
+          if (idx < pages.length) el.classList.add("more");
+          else { pager = null; if (onAllDone) onAllDone(); }
+        });
+      }
+      if (!pages.length) { pager = null; if (onAllDone) onAllDone(); return; }
+      pager = { tapAdvance: function () {
+        if (typing) { typing.skip(); return; }
+        if (idx < pages.length) playCurrent();
+      } };
+      playCurrent();
+    }
+
     function showChoices(list) {
       var choicesEl = $("cineChoices");
       choicesEl.innerHTML = "";
@@ -152,11 +179,12 @@
       $("cineChoices").innerHTML = "";
       var cap = $("cineCap");
       cap.classList.remove("react"); void cap.offsetWidth; cap.classList.add("react");
-      typeInto($("cineText"), c.next || "", function () { $("cineNext").style.display = ""; });
+      playPages($("cineText"), c.next || "", function () { $("cineNext").style.display = ""; });
     }
 
     function finish() {
       if (typing) typing.skip();
+      pager = null;
       var el = $("cine");
       el.classList.add("hide");
       $("introForm").classList.add("show");
@@ -170,11 +198,11 @@
       if (!q || !q.line) { finish(); return; }
       $("cineChoices").innerHTML = "";
       $("cineNext").style.display = "none";
-      typeInto($("cineText"), q.line, function () { showChoices(q.choices); });
+      playPages($("cineText"), q.line, function () { showChoices(q.choices); });
 
       $("cine").addEventListener("click", function (e) {
         if (e.target.closest("#cineSkip, #cineNext, .cine-choices")) return;
-        if (typing) typing.skip();
+        if (pager) pager.tapAdvance();
       });
       $("cineNext").addEventListener("click", finish);
       $("cineSkip").addEventListener("click", finish);

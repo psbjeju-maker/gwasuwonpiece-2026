@@ -1054,6 +1054,12 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
   margin-left:2px;vertical-align:-2px;animation:cursorBlink .8s step-end infinite;
 }
 @keyframes cursorBlink{50%{opacity:0}}
+/* 대사가 여러 조각으로 나뉘었을 때, 한 조각을 다 보여준 뒤 다음으로 넘어가라는 표시 */
+.cine-text.more::after{
+  content:"▼";display:inline-block;margin-left:7px;color:var(--brass);font-size:12px;
+  animation:moreBounce 1s ease-in-out infinite;
+}
+@keyframes moreBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
 .cine-choices{display:flex;flex-direction:column;gap:8px;margin-bottom:0}
 .cine-choices .btn{margin-top:0}
 .cine-next{display:none}
