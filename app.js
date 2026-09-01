@@ -628,39 +628,35 @@
     $("timetable").innerHTML = th;
 
     renderVoteCards();
-
-    var eh = "";
-    (D.experiences || []).forEach(function (e, i) {
-      var ic = /^data:image\//.test(e.icon) || /\.(png|jpg|jpeg|webp|svg)$/i.test(e.icon)
-        ? '<img class="ic" src="' + e.icon + '" alt="">'
-        : '<span class="ic">' + e.icon + '</span>';
-      var isTab = e.link && e.link.indexOf("tab:") === 0;
-      var goLabel = isTab ? "바로 가기 →" : "자세히 보기 →";
-      /* tab: 내부 이동은 버튼(JS로 화면 전환), 외부 링크는 진짜 <a href>로 렌더링한다.
-         아티팩트 샌드박스는 window.open() 팝업은 막지만 <a target="_blank"> 클릭은 프레임이 가로채서 새 탭으로 잘 열어준다. */
-      var goEl = "";
-      if (e.link) {
-        if (isTab) {
-          goEl = '<button type="button" class="expcard-go" data-link="' + e.link + '">' + goLabel + '</button>';
-        } else {
-          goEl = '<a class="expcard-go" href="' + e.link + '" target="_blank" rel="noopener">' + goLabel + '</a>';
-        }
-      }
-      eh += '<div class="expcard" data-idx="' + i + '">' +
-        ic + '<h4>' + e.title + '</h4><p>' + e.desc + '</p>' + goEl +
-      '</div>';
-    });
-    $("expgrid").innerHTML = eh;
-    $("expgrid").querySelectorAll("button.expcard-go").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var target = btn.dataset.link.slice(4);
-        if (target === "scMissions") { renderMissions(); showTab("scMissions"); }
-        else if (target === "scMain") { renderMain(); showTab("scMain"); }
-      });
-    });
+    renderNextUp();
 
     $("homeMapBox").innerHTML = mapBase();
+  }
+
+  /* 홈 화면 상단 "귤선장 추천" — 등록 시 고른 경로(orderedMissions) 순서대로
+     아직 안 한 미션 중 첫 번째를 추천한다. "다음에 뭘 해야 하지"를 없애기 위함. */
+  function renderNextUp() {
+    var el = $("nextup");
+    if (!el) return;
+    var list = orderedMissions();
+    var done = S.missionsDone || [];
+    var next = null;
+    for (var i = 0; i < list.length; i++) {
+      if (done.indexOf(list[i].id) < 0) { next = list[i]; break; }
+    }
+    if (!next) {
+      el.classList.add("done");
+      $("nextupAv").src = "captain/exp_found.jpg";
+      $("nextupText").textContent = "미션을 전부 끝냈군! 이제 느긋하게 즐기다 가게나.";
+      return;
+    }
+    el.classList.remove("done");
+    $("nextupAv").src = next.avatar || "captain/exp_default.jpg";
+    $("nextupText").textContent = "이번엔 “" + next.name + "” 어때?";
+    $("nextupGo").onclick = function () {
+      if (next.id === "m03") { renderMain(); showTab("scMain"); }
+      else { renderMissions(); showTab("scMissions"); }
+    };
   }
 
   /* ---------- 미션 ---------- */

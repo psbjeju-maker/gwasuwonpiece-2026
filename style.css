@@ -664,48 +664,6 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
 .trow:nth-child(9){animation-delay:.26s}.trow:nth-child(10){animation-delay:.29s}
 .trow:nth-child(11){animation-delay:.32s}
 
-/* ══════════ 행사 타일 — 갑판 위 나무 타일 ══════════ */
-.expgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-@media (min-width:640px){ .expgrid{grid-template-columns:repeat(3,1fr);} }
-
-.expcard{
-  position:relative;border-radius:13px;padding:16px 11px 13px;text-align:center;overflow:hidden;
-  background-image:var(--tx-plank),linear-gradient(178deg,var(--wood-l),var(--wood) 32%,var(--wood-d));
-  box-shadow:var(--brass-frame),var(--lift);
-  animation:cardIn .45s cubic-bezier(.25,1.2,.35,1) backwards;
-  transition:transform .14s ease,box-shadow .14s ease;
-}
-/* 상단 황동 레일 */
-.expcard::before{
-  content:"";position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--card-accent,var(--gold)),transparent);
-  opacity:.85;
-}
-.expcard:nth-child(odd){--card-accent:var(--gold);}
-.expcard:nth-child(even){--card-accent:var(--teal);}
-.expcard:active{transform:translateY(2px);box-shadow:var(--brass-frame),0 4px 10px -6px rgba(0,0,0,.8);}
-.expcard:nth-child(1){animation-delay:.03s}.expcard:nth-child(2){animation-delay:.08s}
-.expcard:nth-child(3){animation-delay:.13s}.expcard:nth-child(4){animation-delay:.18s}
-.expcard:nth-child(5){animation-delay:.23s}.expcard:nth-child(6){animation-delay:.28s}
-.expcard .ic{font-size:28px;display:block;margin-bottom:7px;}
-.expcard img.ic{
-  width:54px;height:54px;margin:0 auto 7px;object-fit:contain;
-  filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));
-}
-.expcard h4{
-  font-family:"SCDream",sans-serif;font-weight:700;font-size:15px;
-  color:var(--gold-l);margin:0 0 4px;text-shadow:0 1px 3px rgba(0,0,0,.75);
-}
-.expcard p{font-size:11px;color:#D8C4A2;margin:0;line-height:1.45;}
-.expcard-go{
-  display:inline-block;margin:9px auto 0;border:none;cursor:pointer;text-decoration:none;
-  background:linear-gradient(180deg,rgba(255,228,154,.2),rgba(255,201,74,.08));
-  color:var(--gold);font-size:11px;font-weight:700;
-  padding:4px 11px;border-radius:20px;
-  box-shadow:0 0 0 1px rgba(255,201,74,.4);
-}
-.expcard-go:active{background:rgba(255,201,74,.3);}
-
 .mapbox-mini{max-height:230px;}
 .mapbox-mini img,.mapbox-mini svg{max-height:230px;object-fit:cover;object-position:top;}
 
@@ -1085,3 +1043,34 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
 @media (prefers-reduced-motion:reduce){
   .cp-whisper{animation:none!important;opacity:.85}
 }
+
+/* ══════════ 홈 — 다음 행동 추천 ══════════ */
+.nextup{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 12px;border-radius:13px;margin-bottom:6px;
+  background-image:var(--tx-plank),linear-gradient(180deg,var(--wood-l),var(--wood) 55%,var(--wood-d));
+  box-shadow:0 0 0 1px var(--brass-d),0 1px 0 rgba(255,228,154,.22) inset,var(--lift);
+  animation:hudIn .45s .1s cubic-bezier(.2,.9,.3,1) backwards;
+}
+.nextup-av{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;
+  border:2px solid var(--gold);background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.4);
+}
+.nextup-body{flex:1;min-width:0}
+.nextup-tag{
+  font-family:"SCDream",sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.08em;
+  color:var(--gold-l);text-transform:uppercase;margin-bottom:2px;
+}
+.nextup-text{
+  font-size:13.5px;line-height:1.4;color:#F0DDBE;
+  overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.nextup-go{
+  flex:none;border:none;border-radius:9px;padding:9px 13px;
+  background:linear-gradient(180deg,var(--gold-l),var(--gold-d));color:#2b1c02;
+  font-family:"SCDream",sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;
+  box-shadow:0 3px 8px -3px rgba(0,0,0,.6);
+}
+.nextup-go:active{transform:translateY(1px)}
+.nextup.done{background-image:none;background:linear-gradient(180deg,#173a24,#0f2a1a);box-shadow:0 0 0 1px rgba(120,200,150,.4),var(--lift);}
+.nextup.done .nextup-go{display:none}

@@ -151,17 +151,6 @@ window.GAME_DATA = {
     { time: "16:00", title: "폐장" }
   ],
 
-  /* ---------- 체험 한눈에 보기 (홈 화면 카드) ---------- */
-  /* link: "tab:scMain" 처럼 tab: 접두어 → 앱 내 화면 전환. 그 외 값은 새 탭으로 열 URL(안내 페이지 등). */
-  experiences: [
-    { icon: "icons2/t_cart.png",   title: "마켓",        desc: "피규어 · 굿즈 · 음식 부스 자유 이용", link: "guide.html" },
-    { icon: "icons2/t_swords.png",  title: "미션 11종",   desc: "5개부터 응모티켓 지급", link: "tab:scMissions" },
-    { icon: "icons2/t_chest.png", title: "보물찾기",     desc: "나침반을 따라가 단서를 모아라 · 완주 시 골드 티켓", link: "tab:scMain" },
-    { icon: "icons2/t_crown.png",  title: "코스프레 체험", desc: "의상 대여 · 촬영", link: "guide.html" },
-    { icon: "icons2/t_camera.png",    title: "포토존",       desc: "과수원피스 로고 등 곳곳에 배치", link: "guide.html" },
-    { icon: "icons2/t_trophy.png",    title: "무대 이벤트",   desc: "댄스 · 퀴즈 · 노래방 대회", link: "guide.html#schedule" }
-  ],
-
   /* ---------- 미션 11종 (2026-08-27 개정: 주사위던지기·공기놀이 삭제, 반응속도게임은 모바일 자동판정으로 전환) ----------
      완료 처리는 세 가지 방식 중 하나다.
        qr   : 스태프가 완료를 확인한 뒤 명찰의 QR을 보여주고, 참가자가 자기 폰으로 찍으면 즉시 완료. (7종)
