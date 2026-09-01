@@ -118,8 +118,7 @@ function render(){
 
   ch.innerHTML="";
   if(mode==="intro"){
-    tx.textContent="이보게, 나는 이 과수원 바다를 떠도는 귤선장일세.
-황금 귤을 찾아 나설 동료를 구하고 있다네. 함께 가지 않겠나?";
+    tx.textContent="이보게, 나는 이 과수원 바다를 떠도는 귤선장일세." + String.fromCharCode(10) + "황금 귤을 찾아 나설 동료를 구하고 있다네. 함께 가지 않겠나?";
     ok.style.display="none";
     ["좋다, 나도 껴주지 않겠나!","일단 구경부터 하겠소."].forEach(function(t){
       var b=document.createElement("button"); b.className="btn ghost"; b.type="button"; b.textContent=t;

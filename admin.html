@@ -150,8 +150,10 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 <!-- ═══ 최종 정답 ═══ -->
 <section class="tab" id="t2">
   <div class="note">
-    정답 문자열을 바꾸면 <b>글자가 자동으로 분해되어</b> GPS 지점(L01~)에 순서대로 배정됩니다.
-    글자 수가 GPS 지점 수보다 많으면 남는 글자는 배정되지 않으니, 아래 배정표를 확인하세요.
+<b>지점에 뿌려지는 단서는 '질문' 글자입니다.</b> 아래 <b>질문 문구</b>를 바꾸면 공백·물음표를 뺀 글자가
+    자동으로 분해되어 GPS 지점(L01~)에 순서대로 배정됩니다. 참가자는 그 글자를 모아 질문을 완성하고, <b>답</b>을 입력합니다.<br>
+    <b>최종 정답</b>은 배정 대상이 아니라 마지막 입력을 채점할 때만 씁니다.
+    질문 글자 수가 GPS 지점 수보다 많으면 남는 글자는 배정되지 않으니, 아래 배정표를 확인하세요.
   </div>
   <div class="card">
     <div class="field" style="margin-bottom:14px">
@@ -163,7 +165,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
       <textarea id="fAlias"></textarea>
     </div>
     <div class="field" style="margin-bottom:14px">
-      <label>최종 화면에 보여줄 질문 문구 (모은 글자와 별개로, 힌트처럼 보여주는 문장)</label>
+      <label>최종 질문 — <b>이 글자들이 지점에 뿌려집니다</b> (공백·물음표 제외한 글자 수 = GPS 지점 수)</label>
       <input type="text" id="fFinalQn" placeholder="예: 루피가 먹은 열매의 진짜 이름은?">
     </div>
     <div class="row">
@@ -182,14 +184,15 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   </div>
   <h3>글자 배정표</h3>
   <div class="note">
-    참가자는 <b>지점에 도착 → 그 지점의 퀴즈를 풀면 글자 한 개</b>를 받습니다.
-    글자를 다 모아 조합한 것이 최종 정답입니다. 아래 표는 <b>글자 · 지점 · 퀴즈</b>가 어떻게 짝지어져 있는지 보여줍니다.
+참가자는 <b>지점에 도착 → 그 지점의 퀴즈를 풀면 질문 글자 한 개</b>를 받습니다.
+    글자를 다 모으면 질문이 완성되고, 그 <b>답</b>을 입력해야 클리어입니다.
+    아래 표는 <b>질문 글자 · 지점 · 퀴즈</b>가 어떻게 짝지어져 있는지 보여줍니다.
     퀴즈 문구를 고치려면 <b>퀴즈</b> 탭에서 하세요.<br>
-    글자 수와 GPS 지점 수가 다르면 "배정 없음"이 뜹니다. 정답을 확정한 뒤 지점 수를 맞춰야 합니다
+    질문 글자 수와 GPS 지점 수가 다르면 "배정 없음"이 뜹니다. 질문을 확정한 뒤 지점 수를 맞춰야 합니다
     (data.js의 <code>gpsPoints</code> 배열 — 지금은 관리자 화면에서 직접 늘리고 줄일 수 없습니다).
   </div>
   <div class="scroll"><table>
-    <thead><tr><th>#</th><th>글자</th><th>GPS 지점</th><th>이 지점에서 낼 퀴즈</th><th>정답</th><th>좌표</th></tr></thead>
+    <thead><tr><th>#</th><th>질문 글자</th><th>GPS 지점</th><th>이 지점에서 낼 퀴즈</th><th>정답</th><th>좌표</th></tr></thead>
     <tbody id="letterMap"></tbody>
   </table></div>
 </section>
@@ -338,7 +341,11 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   });
 
   /* ── 공용 ── */
-  function letters(){ return String(D.settings.finalAnswer||"").split(""); }
+  /* 지점에 뿌리는 단서 글자 = 최종 '질문'에서 공백·문장부호를 뺀 글자들 (정답이 아니다) */
+  function letters(){
+    var q = (D.quizzes && D.quizzes.final && D.quizzes.final.qn) || "";
+    return q.replace(/[\s?!.,·:;"'()\-—‘’“”]/g, "").split("");
+  }
   function pointOf(li){
     var list = (D.gpsPoints||[]).filter(function(p){return p.li===li});
     return list[0] || null;

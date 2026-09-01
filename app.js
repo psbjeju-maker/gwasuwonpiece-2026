@@ -8,7 +8,7 @@
   var CUR = null;                   // 지금 풀고 있는 GPS 지점
   var wrongCount = 0;
 
-  var LETTERS = [];                 // 최종 정답을 한 글자씩 쪼갠 배열
+  var LETTERS = [];                 // 최종 '질문'을 한 글자씩 쪼갠 배열 (모으면 질문이 완성된다)
 
   /* ---------- 도우미 ---------- */
   function $(id) { return document.getElementById(id); }
@@ -434,7 +434,7 @@
     $("qbTitle").textContent = D.settings.title || "황금 귤을 찾아라";
     $("qbSub").textContent = S.cleared
       ? "보물을 손에 넣었다! 보상을 받아가라"
-      : "숨은 QR을 찾아 단서를 모아라";
+      : "나침반을 따라가 단서를 모아라";
     var pct = all ? got / all : 0;
     $("qbBar").style.transform = "scaleX(" + pct + ")";
     $("qbFoot").textContent = "단서 " + got + " / " + all;
@@ -788,10 +788,18 @@
     $("btnResultOk").dataset.go = "missions";
   }
 
+  /* 단서로 뿌릴 글자 = 최종 '질문'에서 공백·문장부호를 뺀 글자들.
+     참가자는 지점을 돌며 질문 글자를 모으고, 완성된 질문의 '답'을 입력한다.
+     그래서 지점 수는 정답 글자 수가 아니라 이 질문 글자 수와 같아야 한다. */
+  function clueChars() {
+    var q = (D.quizzes && D.quizzes.final && D.quizzes.final.qn) || "";
+    return q.replace(/[\s?!.,·:;"'()\-—‘’“”]/g, "").split("");
+  }
+
   /* ---------- 최종 ---------- */
   function openFinal() {
-    var fq = D.quizzes.final || {};
-    $("fnQ").textContent = fq.qn || "모은 글자를 조합하면?";
+    /* 질문 자체가 수집 대상이므로 여기서 질문을 그대로 띄우지 않는다 */
+    $("fnQ").textContent = "모은 글자를 조합하면 질문이 됩니다. 그 질문의 답을 적어주세요.";
     var chips = "", shuffled = S.letters.slice();
     for (var i = 0; i < shuffled.length; i++) chips += '<div class="chip">' + shuffled[i].char + '</div>';
     if (!shuffled.length) chips = '<p style="color:#9fb6d0;font-size:13px;margin:0">아직 모은 글자가 없습니다</p>';
@@ -861,7 +869,7 @@
 
   /* ---------- 시작 ---------- */
   function boot() {
-    LETTERS = String(D.settings.finalAnswer || "").split("");
+    LETTERS = clueChars();
 
     $("introTitle").textContent = D.settings.title || "황금 귤을 찾아라";
     $("introSub").textContent = D.settings.subtitle || "";
