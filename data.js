@@ -45,27 +45,51 @@ window.GAME_DATA = {
      등록 화면 자체가 첫 실행에만 뜨므로(재방문·이어하기는 §boot()에서 곧장 scHome으로 감) 이 연출도 자연히 1회만 보인다. */
   introQuest: {
     avatar: "captain/exp_default.jpg",
-    line: "자네! 황금 귤 이야기 들어봤는가? 🍊\n\n이 몸은 귤선장. 벌써 몇 년째 황금 귤을 찾아 과수원피스를 뒤지고 있다네\n\n자네, 이번 기회에 나랑 보물을 같이 찾아 다니지 않겠는가?",
+    line: "어라? 자네, 황금 귤 찾으러 왔어?\n\n난 귤선장!\n이 귤밭을 몇 년째 뒤지고 있지. 🍊\n\n혼자 찾기는 심심한데…\n같이 찾아줄래?",
     /* choices의 path가 missionPaths(아래)의 키와 짝지어져, 등록 직후 진행상황 화면의 미션 순서를 바꾼다.
        미션 종류·개수는 그대로다 — 안내받는 순서만 다르다. */
     choices: [
       { label: "재미있겠네요!", path: "action",
-        next: "하하, 그 패기 마음에 드는군! 지금 이 순간부터 자네는 어엿한 해적일세. 몸부터 풀어보고 싶다면 양궁이나 사격부터 가보게나.",
+        next: "좋아! 그럼 오늘부터 우리 해적단이야! 🍊\n자, 어디부터 가볼까?",
         avatar: "captain/exp_happy.jpg" },
-      { label: "해적이 된다니... 너무 무서워요. 안 할래요.", path: "social",
-        next: "허허, 무섭다니 그것 참 오해일세! 칼싸움 같은 건 없다네 — 그저 이 귤밭 곳곳을 걸으며 보물을 찾아다니는 것뿐이야.\n\n장터도 구경하고, 사진도 찍고, 천천히 둘러보다 보면 자네도 모르게 진짜 해적이 되어 있을 걸세. 나와 함께 가보지 않겠나?",
+      { label: "해적이라니… 무서워요.", path: "social",
+        next: "에이, 무서운 거 없어!\n그냥 같이 놀면서 찾는 거야.\n\n천천히 해.\n내가 옆에 있을게.",
         avatar: "captain/exp_think.jpg" }
     ]
   },
 
   /* 최종 정답을 맞혀 황금 귤이 열린 뒤 — 쿠폰 화면 직전에 나오는 반전 연출.
-     귤선장의 정체 공개. 확인 버튼을 누를 때마다 다음 줄로 넘어가고, 마지막 줄 확인 후 쿠폰 화면으로 간다. */
+     귤선장의 정체 공개. 확인 버튼을 누를 때마다 다음 줄로 넘어가고, 마지막 줄(사라짐) 확인 후
+     app.js가 약간의 정적(딜레이)을 두고서 쿠폰 화면으로 간다 — playFinalReveal() 참고. */
   finalReveal: [
-    { line: "...이럴 수가. 정말... 정말 찾아냈구먼, 자네가.", avatar: "captain/exp_surprise.jpg" },
-    { line: "사실을 말해야겠군. 나는... 몇 해 전 이 귤밭에서 숨을 거둔 혼일세. 미련이 남아 이곳을 떠나지 못하고 계속 헤매고 있었지.", avatar: "captain/exp_think.jpg" },
-    { line: "자네가 찾아준 이 황금 귤 안에... 내가 그토록 찾아 헤매던 마지막 마음이 담겨 있었다네. 이제야 이 굴레를 벗을 수 있겠어.", avatar: "captain/exp_found.jpg" },
-    { line: "고맙네, 진심으로. 부디 오래도록 행복하게 지내게나.\n\n잘 있게, 나의 마지막 동료여 — 언젠가 이 귤밭이 생각나거든, 그때 다시 만나세.", avatar: "captain/exp_smile.jpg" }
+    { line: "...찾았네.", avatar: "captain/exp_surprise.jpg" },
+    { line: "정말 찾았구나.", avatar: "captain/exp_surprise.jpg" },
+    { line: "이상하지?", avatar: "captain/exp_think.jpg" },
+    { line: "난 이걸…\n아주 오래 찾았거든.", avatar: "captain/exp_think.jpg" },
+    { line: "그런데 오늘은\n자네가 찾아줬네.", avatar: "captain/exp_think.jpg" },
+    { line: "사실 나도 몰랐어.", avatar: "captain/exp_think.jpg" },
+    { line: "왜 계속\n이곳을 떠돌고 있었는지.", avatar: "captain/exp_think.jpg" },
+    { line: "이제 알 것 같아.", avatar: "captain/exp_sulk.jpg" },
+    { line: "난…\n아직 떠나지 못했던 거야.", avatar: "captain/exp_sulk.jpg" },
+    { line: "몇 년 전,\n나도 이곳에서 마지막으로 귤을 하나 찾고 있었거든.", avatar: "captain/exp_surprise.jpg" },
+    { line: "그런데…", avatar: "captain/exp_surprise.jpg" },
+    { line: "끝내 못 찾았어.", avatar: "captain/exp_surprise.jpg" },
+    { line: "그게 내 미련이었나 봐.", avatar: "captain/exp_smile.jpg" },
+    { line: "그런데 자네가 찾아줬네.", avatar: "captain/exp_found.jpg" },
+    { line: "내가 못 찾은 걸.", avatar: "captain/exp_found.jpg" },
+    { line: "...고마워.", avatar: "captain/exp_found.jpg" },
+    { line: "이제 가야겠다.", avatar: "captain/exp_smile.jpg" },
+    { line: "자네 덕분에\n드디어 갈 수 있을 것 같아.", avatar: "captain/exp_smile.jpg" },
+    { line: "다음에 이곳에 오면…", avatar: "captain/exp_smile.jpg" },
+    { line: "보물 찾지 말고\n그냥 실컷 놀다 가.", avatar: "captain/exp_smile.jpg" },
+    { line: "그게 더 좋으니까.", avatar: "captain/exp_smile.jpg" },
+    { line: "잘 가, 내 해적.", avatar: "captain/exp_smile.jpg" },
+    { line: "...정말 고마웠어.", avatar: "captain/exp_smile.jpg" }
   ],
+
+  /* 반전 연출이 끝나고 쿠폰 화면으로 넘어갈 때, 화면 위쪽에 아주 작게 뜨는 마지막 속삭임.
+     scCoupon 안 #cpWhisper에 그대로 들어간다(renderCoupon() 참고). */
+  finalWhisper: "황금 귤은…\n자네한테 맡길게. 🍊",
 
   /* introQuest 선택지의 path별 미션 안내 순서. 미션 id는 missions 배열과 동일해야 한다.
      빠진 id가 있으면 renderMissions()가 나머지를 뒤에 그대로 이어붙인다. */
@@ -99,19 +123,19 @@ window.GAME_DATA = {
      (지금은 "루피가 먹은 열매의 진짜 이름은?" = 13자 → 지점 13개).
      정답 문장을 바꿔서 글자 수가 달라지면 이 배열도 그만큼 늘리거나 줄여야 한다. */
   gpsPoints: [
-    { id:"L01", li:0,  q:"q01", lat:33.4892681, lng:126.4738334, flavor:"낡은 나침반이 파르르 떨린다. 항해가 시작됐다." },
-    { id:"L02", li:1,  q:"q02", lat:33.489114, lng:126.4736991, flavor:"발자국 하나가 땅에 남아있다. 누군가 먼저 다녀갔군." },
-    { id:"L03", li:2,  q:"q03", lat:33.4891635, lng:126.4738029, flavor:"바람이 방향을 바꾼다. 코를 킁킁대던 갈매기가 날아간다." },
-    { id:"L04", li:3,  q:"q04", lat:null, lng:null, flavor:"돌 틈에 조그만 표식이 새겨져 있다. 먼저 온 해적의 흔적." },
-    { id:"L05", li:4,  q:"q05", lat:null, lng:null, flavor:"멀리서 파도 소리 대신 웃음소리가 들린다. 사람이 많은 걸 보니 제대로 왔다." },
-    { id:"L06", li:5,  q:"q06", lat:null, lng:null, flavor:"나뭇잎 사이로 햇살이 쏟아진다. 절반쯤 왔을까." },
-    { id:"L07", li:6,  q:"q07", lat:null, lng:null, flavor:"낯선 깃발이 펄럭인다. 이 구역의 주인은 따로 있는 듯하다." },
-    { id:"L08", li:7,  q:"q08", lat:null, lng:null, flavor:"땅에 그려진 지도 조각 — 정답까지 얼마 남지 않았다는 뜻일까." },
-    { id:"L09", li:8,  q:"q09", lat:null, lng:null, flavor:"산책로 끝에서 오래된 노래가 흘러나온다. 누군가 흥얼거리고 있다." },
-    { id:"L10", li:9,  q:"q10", lat:null, lng:null, flavor:"바람에 실려 온 꽃향기. 여기가 맞다, 계속 가자." },
-    { id:"L11", li:10, q:"q11", lat:null, lng:null, flavor:"저 앞에 낯익은 깃발이 보인다. 거의 다 왔다." },
-    { id:"L12", li:11, q:"q12", lat:null, lng:null, flavor:"황금빛이 스치듯 반짝인다. 착각이 아니길." },
-    { id:"L13", li:12, q:"q13", lat:null, lng:null, flavor:"발밑이 뜨겁다. 보물은 늘 마지막 한 걸음 전에 가장 멀게 느껴지는 법." }
+    { id:"L01", li:0,  q:"q01", lat:33.4892681, lng:126.4738334, flavor:"나침반이 움직인다. 드디어 시작이다." },
+    { id:"L02", li:1,  q:"q02", lat:33.489114, lng:126.4736991, flavor:"발자국 하나. 누가 먼저 왔을까?" },
+    { id:"L03", li:2,  q:"q03", lat:33.4891635, lng:126.4738029, flavor:"바람이 분다. 저쪽인가?" },
+    { id:"L04", li:3,  q:"q04", lat:null, lng:null, flavor:"작은 흔적 하나를 발견했다." },
+    { id:"L05", li:4,  q:"q05", lat:null, lng:null, flavor:"웃음소리가 들린다. 사람이 있나 보다." },
+    { id:"L06", li:5,  q:"q06", lat:null, lng:null, flavor:"따뜻한 햇살이 내린다." },
+    { id:"L07", li:6,  q:"q07", lat:null, lng:null, flavor:"낯선 깃발이 보인다." },
+    { id:"L08", li:7,  q:"q08", lat:null, lng:null, flavor:"지도 한 조각을 찾았다." },
+    { id:"L09", li:8,  q:"q09", lat:null, lng:null, flavor:"어디선가 노랫소리가 들려온다." },
+    { id:"L10", li:9,  q:"q10", lat:null, lng:null, flavor:"귤꽃 향기가 난다." },
+    { id:"L11", li:10, q:"q11", lat:null, lng:null, flavor:"저기다. 거의 다 왔다." },
+    { id:"L12", li:11, q:"q12", lat:null, lng:null, flavor:"황금빛이 반짝인다." },
+    { id:"L13", li:12, q:"q13", lat:null, lng:null, flavor:"마지막 한 걸음." }
   ],
 
   /* ---------- 타임테이블 (홈 화면 표시용) ---------- */
@@ -144,17 +168,17 @@ window.GAME_DATA = {
        auto : 앱이 스스로 아는 상태로 자동 완료 (보물찾기 클리어, 반응속도 게임, 투표 참여). (4종)
      qr/auto가 둘 다 없으면 관리자 화면에서 스태프가 수동으로 체크한다(예비 수단). */
   missions: [
-    { id: "m01", name: "코스프레하기",          desc: "오늘 하루, 캐릭터가 되어보세요", qr: "M01", avatar: "captain/exp_happy.jpg", line: "오호, 그 옷차림 제법이군! 오늘만큼은 자네도 이 바다의 주인공일세." },
-    { id: "m02", name: "코스어와 사진찍기",      desc: "코스프레 참가자와 함께 사진을 남겨보세요", qr: "M02", avatar: "captain/exp_happy.jpg", line: "동료를 하나 더 만들었군. 항해는 혼자 하는 게 아니라네." },
-    { id: "m03", name: "황금 귤 찾기 완료",       desc: "보물찾기 게임 최종 정답을 맞히면 자동 완료", auto: "treasureClear", avatar: "captain/exp_found.jpg", line: "허, 정말 찾아내다니... 자네, 보통내기가 아니군." },
-    { id: "m04", name: "양궁미션",              desc: "양궁 미션 부스에 도전하세요", qr: "M04", avatar: "captain/exp_fighting.jpg", line: "활 솜씨 한번 매섭구먼! 해적단에 들어올 생각 없나?" },
-    { id: "m05", name: "사격미션",              desc: "사격 미션 부스에 도전하세요", qr: "M05", avatar: "captain/exp_fighting.jpg", line: "명중일세! 대포보다 정확한 눈이로군." },
-    { id: "m07", name: "고리던지기",             desc: "고리던지기 미션 부스에 도전하세요", qr: "M07", avatar: "captain/exp_fighting.jpg", line: "그 손목, 갈고리 다루던 솜씨 아닌가? 예사롭지 않구먼." },
-    { id: "m09", name: "반응속도게임",           desc: "앱 안에서 바로 도전! 신호가 오면 화면을 터치하세요", auto: "reaction", avatar: "captain/exp_happy.jpg", line: "그 속도, 폭풍우 속에서도 살아남겠군!" },
-    { id: "m10", name: "물품구매하기",           desc: "마켓에서 물품을 구매해보세요", qr: "M10", avatar: "captain/exp_happy.jpg", line: "장사꾼들 물건 좀 봤나? 이 바다엔 보물만 있는 게 아니라네." },
-    { id: "m11", name: "SNS게시하기",           desc: "행사 사진을 SNS에 올리고 스태프에게 보여주세요", qr: "M11", avatar: "captain/exp_happy.jpg", line: "소문은 빠를수록 좋지. 자네 덕에 이 섬 이야기가 퍼지겠군." },
-    { id: "m12", name: "노래&댄스 무대 투표하기", desc: "무대 투표에 참여하면 자동 완료", auto: "vote:singdance", avatar: "captain/exp_found.jpg", line: "그대의 한 표, 무대 위 승부를 가를지도 모르지." },
-    { id: "m13", name: "랜덤 플레이 댄스 투표하기", desc: "랜덤 플레이 댄스 투표에 참여하면 자동 완료", auto: "vote:randomdance", avatar: "captain/exp_found.jpg", line: "춤판에 한 표라... 재밌는 선택이었네." }
+    { id: "m01", name: "코스프레하기",          desc: "오늘 하루, 캐릭터가 되어보세요", qr: "M01", avatar: "captain/exp_happy.jpg", line: "오~ 제법인데? 오늘은 자네가 주인공이야!" },
+    { id: "m02", name: "코스어와 사진찍기",      desc: "코스프레 참가자와 함께 사진을 남겨보세요", qr: "M02", avatar: "captain/exp_happy.jpg", line: "좋아! 동료가 하나 늘었네!" },
+    { id: "m03", name: "황금 귤 찾기 완료",       desc: "보물찾기 게임 최종 정답을 맞히면 자동 완료", auto: "treasureClear", avatar: "captain/exp_found.jpg", line: "찾았다고?! 진짜?!" },
+    { id: "m04", name: "양궁미션",              desc: "양궁 미션 부스에 도전하세요", qr: "M04", avatar: "captain/exp_fighting.jpg", line: "오, 잘 쏘는데? 해적 자질이 있는데?" },
+    { id: "m05", name: "사격미션",              desc: "사격 미션 부스에 도전하세요", qr: "M05", avatar: "captain/exp_fighting.jpg", line: "명중! 완전 멋진데?" },
+    { id: "m07", name: "고리던지기",             desc: "고리던지기 미션 부스에 도전하세요", qr: "M07", avatar: "captain/exp_fighting.jpg", line: "오호~ 손재주 좋은데?" },
+    { id: "m09", name: "반응속도게임",           desc: "앱 안에서 바로 도전! 신호가 오면 화면을 터치하세요", auto: "reaction", avatar: "captain/exp_happy.jpg", line: "빠르다! 나보다 빠른 거 아냐?" },
+    { id: "m10", name: "물품구매하기",           desc: "마켓에서 물품을 구매해보세요", qr: "M10", avatar: "captain/exp_happy.jpg", line: "보물은 잘 골랐어?" },
+    { id: "m11", name: "SNS게시하기",           desc: "행사 사진을 SNS에 올리고 스태프에게 보여주세요", qr: "M11", avatar: "captain/exp_happy.jpg", line: "좋아! 이제 소문 좀 내볼까?" },
+    { id: "m12", name: "노래&댄스 무대 투표하기", desc: "무대 투표에 참여하면 자동 완료", auto: "vote:singdance", avatar: "captain/exp_found.jpg", line: "좋은 선택이야!" },
+    { id: "m13", name: "랜덤 플레이 댄스 투표하기", desc: "랜덤 플레이 댄스 투표에 참여하면 자동 완료", auto: "vote:randomdance", avatar: "captain/exp_found.jpg", line: "하하, 재밌는 걸 골랐네!" }
   ],
 
   /* ---------- 응모티켓 단계 (완료한 미션 개수 기준, 총 11종) ---------- */

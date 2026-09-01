@@ -1029,7 +1029,12 @@
     var steps = D.finalReveal || [];
     var i = 0;
     function next() {
-      if (i >= steps.length) { onDone(); return; }
+      if (i >= steps.length) {
+        /* 귤선장이 "사라지는" 마지막 순간 — 대화창이 닫히는 연출(약 0.28초)이
+           끝날 때까지 정적을 두고서 쿠폰 화면으로 넘어간다. */
+        setTimeout(onDone, 550);
+        return;
+      }
       var st = steps[i]; i++;
       questLine(st.line, { avatar: st.avatar, onOk: next });
     }
@@ -1038,6 +1043,7 @@
 
   function renderCoupon() {
     var st = D.settings;
+    $("cpWhisper").textContent = D.finalWhisper || "";
     $("cpAnswer").textContent = "정답 — " + st.finalAnswer;
     $("cpTitle").textContent = st.rewardTitle || "골드 티켓";
     $("cpWho").textContent = S.nickname + " 해적";

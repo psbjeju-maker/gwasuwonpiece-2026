@@ -1069,3 +1069,19 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
   .cine-box{animation:none!important;opacity:1;transform:none}
   .cine-cap.react{animation:none!important}
 }
+
+/* ══════════ 쿠폰 화면 — 마지막 속삭임 ══════════ */
+.cp-whisper{
+  text-align:center;font-size:12px;font-style:italic;line-height:1.6;
+  color:var(--dim-2);white-space:pre-line;margin:0 0 10px;letter-spacing:.01em;
+  opacity:0;animation:whisperIn 1.1s ease .25s both;
+}
+@keyframes whisperIn{
+  0%{opacity:0;transform:translateY(4px)}
+  40%{opacity:0}
+  100%{opacity:.85;transform:translateY(0)}
+}
+.cp-whisper:empty{display:none}
+@media (prefers-reduced-motion:reduce){
+  .cp-whisper{animation:none!important;opacity:.85}
+}
