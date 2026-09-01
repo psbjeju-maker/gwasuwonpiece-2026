@@ -491,14 +491,14 @@
     toast("투표했습니다!");
     openVote(sessionId);
   }
-  /* 항해사 HUD + 현재 퀘스트 배너 — 홈을 게임 화면처럼 만든다 */
+  /* 해적 HUD + 현재 퀘스트 배너 — 홈을 게임 화면처럼 만든다 */
   function renderHud() {
     if (!$("hudName")) return;
     syncAutoMissions();
     var got = uniqueLetterCount(), all = LETTERS.length;
     var mDone = (S.missionsDone || []).length, mAll = (D.missions || []).length;
 
-    $("hudName").textContent = S.nickname || "이름 없는 항해사";
+    $("hudName").textContent = S.nickname || "이름 없는 해적";
     $("hudMeta").textContent = "미션 " + mDone + " / " + mAll
       + " · 응모티켓 " + ticketsEarned(mDone) + "장";
 
@@ -922,7 +922,7 @@
     var st = D.settings;
     $("cpAnswer").textContent = "정답 — " + st.finalAnswer;
     $("cpTitle").textContent = st.rewardTitle || "골드 티켓";
-    $("cpWho").textContent = S.nickname + " 항해사";
+    $("cpWho").textContent = S.nickname + " 해적";
     $("cpNo").textContent = "No. " + (S.rewardNo || "------");
     var d = new Date(S.clearedAt || Date.now());
     $("cpAt").textContent =

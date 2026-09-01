@@ -80,7 +80,7 @@ window.GAME_DATA = {
     { id:"L01", li:0,  q:"q01", lat:33.4892681, lng:126.4738334, flavor:"낡은 나침반이 파르르 떨린다. 항해가 시작됐다." },
     { id:"L02", li:1,  q:"q02", lat:33.489114, lng:126.4736991, flavor:"발자국 하나가 땅에 남아있다. 누군가 먼저 다녀갔군." },
     { id:"L03", li:2,  q:"q03", lat:33.4891635, lng:126.4738029, flavor:"바람이 방향을 바꾼다. 코를 킁킁대던 갈매기가 날아간다." },
-    { id:"L04", li:3,  q:"q04", lat:null, lng:null, flavor:"돌 틈에 조그만 표식이 새겨져 있다. 먼저 온 항해사의 흔적." },
+    { id:"L04", li:3,  q:"q04", lat:null, lng:null, flavor:"돌 틈에 조그만 표식이 새겨져 있다. 먼저 온 해적의 흔적." },
     { id:"L05", li:4,  q:"q05", lat:null, lng:null, flavor:"멀리서 파도 소리 대신 웃음소리가 들린다. 사람이 많은 걸 보니 제대로 왔다." },
     { id:"L06", li:5,  q:"q06", lat:null, lng:null, flavor:"나뭇잎 사이로 햇살이 쏟아진다. 절반쯤 왔을까." },
     { id:"L07", li:6,  q:"q07", lat:null, lng:null, flavor:"낯선 깃발이 펄럭인다. 이 구역의 주인은 따로 있는 듯하다." },
