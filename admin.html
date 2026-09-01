@@ -182,11 +182,14 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   </div>
   <h3>글자 배정표</h3>
   <div class="note">
+    참가자는 <b>지점에 도착 → 그 지점의 퀴즈를 풀면 글자 한 개</b>를 받습니다.
+    글자를 다 모아 조합한 것이 최종 정답입니다. 아래 표는 <b>글자 · 지점 · 퀴즈</b>가 어떻게 짝지어져 있는지 보여줍니다.
+    퀴즈 문구를 고치려면 <b>퀴즈</b> 탭에서 하세요.<br>
     글자 수와 GPS 지점 수가 다르면 "배정 없음"이 뜹니다. 정답을 확정한 뒤 지점 수를 맞춰야 합니다
     (data.js의 <code>gpsPoints</code> 배열 — 지금은 관리자 화면에서 직접 늘리고 줄일 수 없습니다).
   </div>
   <div class="scroll"><table>
-    <thead><tr><th>#</th><th>글자</th><th>GPS 지점</th><th>좌표</th></tr></thead>
+    <thead><tr><th>#</th><th>글자</th><th>GPS 지점</th><th>이 지점에서 낼 퀴즈</th><th>정답</th><th>좌표</th></tr></thead>
     <tbody id="letterMap"></tbody>
   </table></div>
 </section>
@@ -510,8 +513,14 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
       var coordCell = !p ? "—"
         : (p.lat!=null && p.lng!=null) ? "<span class='pill ok'>설정됨</span>"
         : "<span class='pill wait'>미설정</span>";
-      html += "<tr><td class='n'>"+(i+1)+"</td><td style='font-size:17px'><b>"+c+"</b></td>"+
+      var qz = (p && D.quizzes) ? D.quizzes[p.q] : null;
+      var qnCell = qz ? esc(qz.qn)
+        : (p ? "<span class='pill no'>퀴즈 없음 ("+esc(p.q||"미지정")+")</span>" : "—");
+      var ansCell = qz ? "<span class='pill ok'>"+esc((qz.a||[])[0]||"")+"</span>" : "—";
+      html += "<tr><td class='n'>"+(i+1)+"</td><td style='font-size:17px'><b>"+esc(c)+"</b></td>"+
         "<td class='n'>"+idCell+"</td>"+
+        "<td style='font-size:13px;line-height:1.5'>"+qnCell+"</td>"+
+        "<td class='n'>"+ansCell+"</td>"+
         "<td class='n'>"+coordCell+"</td></tr>";
     });
     $("letterMap").innerHTML = html;
