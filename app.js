@@ -179,7 +179,7 @@
       $("cineChoices").innerHTML = "";
       var cap = $("cineCap");
       cap.classList.remove("react"); void cap.offsetWidth; cap.classList.add("react");
-      playPages($("cineText"), c.next || "", function () { $("cineNext").style.display = ""; });
+      playPages($("cineText"), c.next || "", function () { $("cineNext").style.display = "block"; });
     }
 
     function finish() {
