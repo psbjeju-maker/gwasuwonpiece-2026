@@ -121,14 +121,14 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   <div class="scroll">
     <table>
       <thead><tr>
-        <th>닉네임</th><th>이름</th><th>연락처</th><th>단서</th><th>찾은 QR</th><th>미션</th>
+        <th>닉네임</th><th>이름</th><th>연락처</th><th>단서</th><th>찾은 지점</th><th>미션</th>
         <th>상태</th><th>보상</th><th></th>
       </tr></thead>
       <tbody id="players"></tbody>
     </table>
   </div>
   <h3>단서 수동 지급</h3>
-  <p class="help">QR이 훼손됐을 때 스태프가 직접 글자를 줍니다. 참가자를 고르고 글자를 선택하세요.</p>
+  <p class="help">GPS가 안 잡히거나 지점을 못 찾을 때 스태프가 직접 글자를 줍니다. 참가자를 고르고 글자를 선택하세요.</p>
   <div class="card">
     <div class="row">
       <div style="flex:1;min-width:180px"><label>참가자</label><select id="giveWho"></select></div>
@@ -150,8 +150,8 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 <!-- ═══ 최종 정답 ═══ -->
 <section class="tab" id="t2">
   <div class="note">
-    정답 문자열을 바꾸면 <b>글자가 자동으로 분해되어</b> 글자 QR에 순서대로 배정됩니다.
-    글자 수가 QR 수보다 많으면 남는 글자는 배정되지 않으니, 아래 배정표를 확인하세요.
+    정답 문자열을 바꾸면 <b>글자가 자동으로 분해되어</b> GPS 지점(L01~)에 순서대로 배정됩니다.
+    글자 수가 GPS 지점 수보다 많으면 남는 글자는 배정되지 않으니, 아래 배정표를 확인하세요.
   </div>
   <div class="card">
     <div class="field" style="margin-bottom:14px">
@@ -624,7 +624,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   });
   $("btnExportPlayers").addEventListener("click",function(){
     var L = letters().length;
-    var rows = [["닉네임","이름","전화번호","단서수","전체","찾은QR","클리어","보상지급","쿠폰번호","클리어시각"]];
+    var rows = [["닉네임","이름","전화번호","단서수","전체","찾은지점","클리어","보상지급","쿠폰번호","클리어시각"]];
     Store.players().forEach(function(p){
       var uniq={}; (p.letters||[]).forEach(function(x){uniq[x.li]=1});
       rows.push([p.nickname,p.name,p.phone,Object.keys(uniq).length,L,(p.found||[]).length,
