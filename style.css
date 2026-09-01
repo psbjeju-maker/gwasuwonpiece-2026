@@ -977,3 +977,14 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
   *{animation:none!important;transition-duration:.01ms!important;}
 }
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+/* ══════════ 사운드 토글 ══════════ */
+.soundtoggle{
+  position:fixed;top:calc(9px + env(safe-area-inset-top));left:13px;z-index:60;
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--brass-d);
+  background:rgba(4,17,28,.94);color:var(--gold-l);font-size:15px;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);transition:opacity .15s ease,transform .1s ease;
+}
+.soundtoggle:active{transform:scale(.92)}
+.soundtoggle[aria-pressed="false"]{color:var(--dim);opacity:.75}

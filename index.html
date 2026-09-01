@@ -12,6 +12,7 @@
 <body>
 
 <div class="net" id="netBadge">연결 대기중</div>
+<button class="soundtoggle" id="soundToggle" type="button" aria-label="소리 켜기/끄기" aria-pressed="true">🔊</button>
 
 <div class="app">
 
@@ -369,6 +370,9 @@
     <button class="btn ghost" id="questOk">확인</button>
   </div>
 </div>
+
+<audio id="bgmOpening" src="audio/opening.mp3" loop preload="none"></audio>
+<audio id="bgmOcean" src="audio/ocean.mp3" loop preload="none"></audio>
 
 <script src="data.js"></script>
 <script src="store.js"></script>

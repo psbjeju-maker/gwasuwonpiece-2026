@@ -30,6 +30,77 @@
     clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("on"); }, 2400);
   }
 
+  /* ---------- 배경음악 ----------
+     오프닝(선술집풍)은 등록 화면에서, 바다소리는 등록을 마치고 항해가 시작되면 흐른다.
+     iOS/크롬은 사용자 제스처 없이 오디오 재생을 막으므로, 화면 아무 곳이나 처음 터치할 때 잠금을 푼다. */
+  var Sound = (function () {
+    var KEY = "ggg_sound_on";
+    var on = true;
+    try { var saved = localStorage.getItem(KEY); if (saved !== null) on = saved === "1"; } catch (e) {}
+    var opening = $("bgmOpening"), ocean = $("bgmOcean");
+    var unlocked = false, pendingTrack = null;
+    var fadeTimers = {};
+
+    function fade(el, to, ms) {
+      if (!el) return;
+      clearInterval(fadeTimers[el.id]);
+      var from = el.volume, start = Date.now();
+      if (to > 0 && el.paused) { try { el.play().catch(function () {}); } catch (e) {} }
+      fadeTimers[el.id] = setInterval(function () {
+        var t = Math.min(1, (Date.now() - start) / ms);
+        el.volume = from + (to - from) * t;
+        if (t >= 1) {
+          clearInterval(fadeTimers[el.id]);
+          if (to === 0) el.pause();
+        }
+      }, 40);
+    }
+
+    function playTrack(which) {
+      if (!on) { pendingTrack = which; return; }
+      if (!unlocked) { pendingTrack = which; return; }
+      pendingTrack = null;
+      if (which === "opening") { fade(ocean, 0, 500); opening.volume = 0; fade(opening, 0.55, 900); }
+      else if (which === "ocean") { fade(opening, 0, 700); ocean.volume = 0; fade(ocean, 0.35, 1200); }
+      else if (which === "off") { fade(opening, 0, 500); fade(ocean, 0, 500); }
+    }
+
+    function unlock() {
+      if (unlocked) return;
+      unlocked = true;
+      if (pendingTrack) playTrack(pendingTrack);
+    }
+
+    function setToggleUI() {
+      var b = $("soundToggle");
+      if (!b) return;
+      b.textContent = on ? "🔊" : "🔇";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+
+    function toggle() {
+      on = !on;
+      try { localStorage.setItem(KEY, on ? "1" : "0"); } catch (e) {}
+      setToggleUI();
+      if (!on) { fade(opening, 0, 300); fade(ocean, 0, 300); }
+      else { unlock(); playTrack(currentIntent); }
+    }
+
+    var currentIntent = "off"; // 마지막으로 요청된 트랙(음소거 해제 시 다시 튼다)
+    function want(which) { currentIntent = which; playTrack(which); }
+
+    function init() {
+      setToggleUI();
+      ["pointerdown", "touchend", "keydown"].forEach(function (ev) {
+        document.addEventListener(ev, unlock, { once: true, passive: true });
+      });
+      var btn = $("soundToggle");
+      if (btn) btn.addEventListener("click", toggle);
+    }
+
+    return { init: init, want: want };
+  })();
+
   /* ---------- 퀘스트 대화 ----------
      questLine(text, opts): opts.choices가 있으면 선택형(결과는 재미 요소일 뿐 진행에 영향 없음),
      없으면 확인 버튼으로 닫는 단문형. opts.onOk는 확인 버튼을 눌렀을 때 호출된다. */
@@ -883,14 +954,17 @@
 
     if (!S) {
       if (mcode) sessionStorage.setItem("ggg_pending_m", mcode);
+      Sound.want("opening");
       show("scIntro");
       return;
     }
     if (!S.missionsDone) S.missionsDone = []; // 이전 버전 참가자 호환
+    Sound.want("ocean");
     renderMain();
     if (mcode) { openMissionQR(mcode); }
     else { renderHome(); show("scHome"); }
   }
+  Sound.init();
 
   /* 홈 화면을 계속 안 들어가도 시간대 대사는 놓치지 않도록 1분마다 확인(등록 전이면 조용히 건너뜀) */
   setInterval(function () { if (S) checkScheduleQuests(); }, 60000);
@@ -905,6 +979,7 @@
     if (Store.normPhone(phone).length < 10) { toast("전화번호를 정확히 입력해 주세요"); $("inPhone").focus(); return; }
 
     S = Store.register(nick, name, phone);
+    Sound.want("ocean");
     renderMain();
     var pendingM = sessionStorage.getItem("ggg_pending_m");
     sessionStorage.removeItem("ggg_pending_m");
@@ -918,6 +993,7 @@
     var found = Store.restore(phone);
     if (!found) { toast("이 기기에 저장된 기록이 없습니다"); return; }
     S = found; if (!S.missionsDone) S.missionsDone = [];
+    Sound.want("ocean");
     renderMain();
     var pendingM = sessionStorage.getItem("ggg_pending_m");
     sessionStorage.removeItem("ggg_pending_m");
