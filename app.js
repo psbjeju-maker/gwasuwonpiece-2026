@@ -101,6 +101,90 @@
     return { init: init, want: want };
   })();
 
+  /* ---------- 오프닝 시네마 (등록 전, 귤선장 전신 등장) ----------
+     introQuest.line을 타이핑 연출로 보여주고, 선택지를 고르면 그 path가
+     missionPaths(§data.js)와 짝지어져 등록 직후 미션 안내 순서를 바꾼다.
+     "건너뛰기"는 언제든 가능하고, path 없이 등록하면 기본 순서로 진행된다. */
+  var Cinema = (function () {
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var pickedPath = null;
+    var typing = null;
+    var started = false;
+
+    function typeInto(el, text, onDone) {
+      if (typing) typing.skip();
+      if (reduceMotion || !text) { el.textContent = text || ""; if (onDone) onDone(); return; }
+      el.textContent = "";
+      el.classList.add("typing");
+      var i = 0;
+      var handle = { timer: null };
+      function step() {
+        i++;
+        el.textContent = text.slice(0, i);
+        if (i >= text.length) { el.classList.remove("typing"); typing = null; if (onDone) onDone(); return; }
+        handle.timer = setTimeout(step, 24);
+      }
+      handle.skip = function () {
+        clearTimeout(handle.timer);
+        el.textContent = text;
+        el.classList.remove("typing");
+        typing = null;
+        if (onDone) onDone();
+      };
+      typing = handle;
+      step();
+    }
+
+    function showChoices(list) {
+      var choicesEl = $("cineChoices");
+      choicesEl.innerHTML = "";
+      $("cineNext").style.display = "none";
+      (list || []).forEach(function (c) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "btn ghost"; b.textContent = c.label;
+        b.addEventListener("click", function () { pick(c); });
+        choicesEl.appendChild(b);
+      });
+    }
+
+    function pick(c) {
+      pickedPath = c.path || null;
+      $("cineChoices").innerHTML = "";
+      var cap = $("cineCap");
+      cap.classList.remove("react"); void cap.offsetWidth; cap.classList.add("react");
+      typeInto($("cineText"), c.next || "", function () { $("cineNext").style.display = ""; });
+    }
+
+    function finish() {
+      if (typing) typing.skip();
+      var el = $("cine");
+      el.classList.add("hide");
+      $("introForm").classList.add("show");
+      setTimeout(function () { el.style.display = "none"; }, 550);
+    }
+
+    function start() {
+      if (started) return;
+      started = true;
+      var q = D.introQuest;
+      if (!q || !q.line) { finish(); return; }
+      $("cineChoices").innerHTML = "";
+      $("cineNext").style.display = "none";
+      typeInto($("cineText"), q.line, function () { showChoices(q.choices); });
+
+      $("cine").addEventListener("click", function (e) {
+        if (e.target.closest("#cineSkip, #cineNext, .cine-choices")) return;
+        if (typing) typing.skip();
+      });
+      $("cineNext").addEventListener("click", finish);
+      $("cineSkip").addEventListener("click", finish);
+    }
+
+    function getPath() { return pickedPath; }
+
+    return { start: start, getPath: getPath };
+  })();
+
   /* ---------- 퀘스트 대화 ----------
      questLine(text, opts): opts.choices가 있으면 선택형(결과는 재미 요소일 뿐 진행에 영향 없음),
      없으면 확인 버튼으로 닫는 단문형. opts.onOk는 확인 버튼을 눌렀을 때 호출된다. */
@@ -137,25 +221,6 @@
   function showQuestLine(text, avatar) {
     if (!text) return;
     questLine(text, { avatar: avatar });
-  }
-
-  function runIntroQuest() {
-    var q = D.introQuest;
-    if (!q || !q.line || S.seenIntroQuest) return;
-    questLine(q.line, {
-      avatar: q.avatar,
-      choices: (q.choices || []).map(function (c) {
-        return {
-          label: c.label,
-          onPick: function () {
-            questLine(c.next, {
-              avatar: c.avatar,
-              onOk: function () { S.seenIntroQuest = true; Store.saveMe(S); }
-            });
-          }
-        };
-      })
-    });
   }
 
   function checkScheduleQuests() {
@@ -516,8 +581,7 @@
     if ($("homeTitle")) $("homeTitle").textContent = D.settings.title || "황금 귤을 찾아라";
     if ($("homeSub")) $("homeSub").textContent = D.settings.subtitle || "";
     renderHud();
-    if (!S.seenIntroQuest) runIntroQuest();
-    else checkScheduleQuests();
+    checkScheduleQuests();
 
     var now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
     var list = D.timetable || [], liveIdx = -1;
@@ -572,9 +636,22 @@
   }
 
   /* ---------- 미션 ---------- */
+  /* 등록 시 고른 대화 경로(S.missionPath)에 맞춰 미션 안내 순서를 바꾼다.
+     경로에 없는 미션은 원래 순서 그대로 뒤에 붙는다 — 종류·개수는 항상 동일하다. */
+  function orderedMissions() {
+    var all = D.missions || [];
+    var order = S && S.missionPath && D.missionPaths && D.missionPaths[S.missionPath];
+    if (!order) return all;
+    var byId = {}; all.forEach(function (m) { byId[m.id] = m; });
+    var used = {}, out = [];
+    order.forEach(function (id) { if (byId[id] && !used[id]) { out.push(byId[id]); used[id] = 1; } });
+    all.forEach(function (m) { if (!used[m.id]) out.push(m); });
+    return out;
+  }
+
   function renderMissions() {
     syncAutoMissions();
-    var list = D.missions || [];
+    var list = orderedMissions();
     var done = S.missionsDone || [];
     $("mNow").textContent = done.length;
     $("mAll").textContent = list.length;
@@ -956,6 +1033,7 @@
       if (mcode) sessionStorage.setItem("ggg_pending_m", mcode);
       Sound.want("opening");
       show("scIntro");
+      Cinema.start();
       return;
     }
     if (!S.missionsDone) S.missionsDone = []; // 이전 버전 참가자 호환
@@ -977,6 +1055,7 @@
     if (Store.normPhone(phone).length < 10) { toast("전화번호를 정확히 입력해 주세요"); $("inPhone").focus(); return; }
 
     S = Store.register(nick, phone);
+    if (Cinema.getPath()) { S.missionPath = Cinema.getPath(); Store.saveMe(S); }
     Sound.want("ocean");
     renderMain();
     var pendingM = sessionStorage.getItem("ggg_pending_m");

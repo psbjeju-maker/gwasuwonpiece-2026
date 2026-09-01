@@ -988,3 +988,78 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
 }
 .soundtoggle:active{transform:scale(.92)}
 .soundtoggle[aria-pressed="false"]{color:var(--dim);opacity:.75}
+
+/* ══════════ 오프닝 시네마 (귤선장 전신 등장) ══════════ */
+.intro-form{opacity:0;transform:translateY(14px);pointer-events:none;transition:opacity .5s ease,transform .5s cubic-bezier(.2,.9,.3,1);}
+.intro-form.show{opacity:1;transform:none;pointer-events:auto;}
+
+.cine{
+  position:fixed;inset:0;z-index:55;overflow:hidden;
+  background:
+    radial-gradient(120% 70% at 50% 0%, #142c3f 0%, #061420 55%, #030c14 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  transition:opacity .5s ease,visibility .5s;
+}
+.cine.hide{opacity:0;visibility:hidden;pointer-events:none;}
+.cine-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:var(--tx-chart),
+    radial-gradient(120% 90% at 50% 100%, rgba(4,10,16,0) 0%, rgba(4,10,16,.55) 68%, rgba(4,10,16,.92) 100%);
+}
+.cine-skip{
+  position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:2;
+  background:rgba(4,17,28,.72);border:1px solid var(--brass-d);color:var(--dim);
+  font-family:"SCDream",sans-serif;font-size:12px;font-weight:600;
+  padding:7px 13px;border-radius:999px;
+}
+.cine-stage{
+  position:relative;flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;
+  min-height:0;padding-top:18vh;
+}
+.cine-cap{
+  height:82%;max-height:560px;width:auto;object-fit:contain;object-position:bottom;
+  -webkit-mask-image:radial-gradient(ellipse 66% 92% at 50% 46%, #000 52%, transparent 94%);
+          mask-image:radial-gradient(ellipse 66% 92% at 50% 46%, #000 52%, transparent 94%);
+  filter:saturate(.82) brightness(.94) contrast(1.05) drop-shadow(0 18px 30px rgba(0,0,0,.55));
+  animation:capIn 1s cubic-bezier(.18,1.05,.3,1) .15s both;
+}
+@keyframes capIn{
+  0%{opacity:0;transform:translateY(46px) scale(.94)}
+  60%{opacity:1}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+/* react는 capIn이 이미 끝난 뒤(등장 연출 아님) 붙는 클래스라, 애니메이션 이름만 바꿔치기해도
+   capIn의 마지막 프레임(opacity:1, transform:none)이 그대로 시작값이 된다 */
+.cine-cap.react{animation:capReact .4s ease both}
+@keyframes capReact{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-6px) scale(1.015)}100%{transform:translateY(0) scale(1)}}
+
+.cine-box{
+  position:relative;z-index:2;width:calc(100% - 32px);max-width:calc(var(--content-w) - 32px);
+  margin:0 0 calc(16px + env(safe-area-inset-bottom));border-radius:16px;padding:18px 19px 17px;
+  opacity:0;transform:translateY(18px);animation:boxIn .6s cubic-bezier(.2,.9,.3,1) .55s forwards;
+}
+@keyframes boxIn{to{opacity:1;transform:none}}
+.cine-who{
+  font-family:"SCDream",sans-serif;font-weight:700;font-size:15px;letter-spacing:.04em;
+  color:var(--ink-2);margin-bottom:6px;
+  display:inline-block;padding:2px 12px;border-radius:999px;
+  border:1px solid rgba(60,42,16,.3);background:rgba(255,255,255,.4);
+}
+.cine-text{
+  font-size:15px;line-height:1.7;white-space:pre-line;margin:0 0 14px;color:var(--ink);
+  min-height:1.7em;
+}
+.cine-text.typing::after{
+  content:"";display:inline-block;width:2px;height:1em;background:var(--ink);
+  margin-left:2px;vertical-align:-2px;animation:cursorBlink .8s step-end infinite;
+}
+@keyframes cursorBlink{50%{opacity:0}}
+.cine-choices{display:flex;flex-direction:column;gap:8px;margin-bottom:0}
+.cine-choices .btn{margin-top:0}
+.cine-next{display:none}
+
+@media (prefers-reduced-motion:reduce){
+  .cine-cap{animation:none!important;opacity:1;transform:none}
+  .cine-box{animation:none!important;opacity:1;transform:none}
+  .cine-cap.react{animation:none!important}
+}

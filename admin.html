@@ -249,7 +249,8 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 <!-- ═══ 퀘스트 대사 ═══ -->
 <section class="tab" id="t7">
   <div class="note">
-    귤선장이 참가자에게 거는 대사입니다. 캐릭터 표정은 <code>captain/</code> 폴더의 이미지 중 하나를 고를 수 있습니다.
+    귤선장이 등록 전 오프닝 화면에서 거는 대사입니다. 캐릭터 표정은 <code>captain/</code> 폴더의 이미지 중 하나를 고를 수 있습니다.
+    선택지의 <b>미션 안내 순서</b>는 참가자가 그 버튼을 고르면 등록 직후 진행상황 화면의 미션이 그 순서로 뜬다는 뜻입니다(종류·개수는 항상 동일, 순서만 다름).
     저장하면 이 기기에서 즉시 반영되고, [데이터] 탭에서 <b>data.js를 내려받아 파일을 덮어써야</b> 모든 기기에 반영됩니다.
   </div>
 
@@ -264,6 +265,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     <div class="row">
       <div style="flex:1;min-width:160px"><label>버튼 문구</label><input type="text" id="iqC1Label"></div>
       <div style="flex:1;min-width:160px"><label>응답 표정</label><select id="iqC1Avatar"></select></div>
+      <div style="flex:1;min-width:160px"><label>미션 안내 순서</label><select id="iqC1Path"></select></div>
     </div>
     <label style="margin-top:8px">응답 대사</label>
     <textarea id="iqC1Next"></textarea>
@@ -271,6 +273,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     <div class="row">
       <div style="flex:1;min-width:160px"><label>버튼 문구</label><input type="text" id="iqC2Label"></div>
       <div style="flex:1;min-width:160px"><label>응답 표정</label><select id="iqC2Avatar"></select></div>
+      <div style="flex:1;min-width:160px"><label>미션 안내 순서</label><select id="iqC2Path"></select></div>
     </div>
     <label style="margin-top:8px">응답 대사</label>
     <textarea id="iqC2Next"></textarea>
@@ -737,6 +740,16 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     }).join("");
   }
 
+  var MISSION_PATH_OPTIONS = [
+    { v: "", label: "(순서 안 바꿈)" },
+    { v: "action", label: "박력파 — 전투 미션부터" },
+    { v: "social", label: "사교파 — 마켓·사진부터" }
+  ];
+  function fillPathSelect(el, current){
+    el.innerHTML = MISSION_PATH_OPTIONS.map(function(o){
+      return "<option value='"+o.v+"'"+(o.v===(current||"")?" selected":"")+">"+o.label+"</option>";
+    }).join("");
+  }
   function renderIntroQuest(){
     var q = D.introQuest || {};
     $("iqLine").value = q.line || "";
@@ -746,17 +759,19 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     $("iqC1Label").value = c1.label || "";
     $("iqC1Next").value = c1.next || "";
     fillAvatarSelect($("iqC1Avatar"), c1.avatar || "");
+    fillPathSelect($("iqC1Path"), c1.path || "");
     $("iqC2Label").value = c2.label || "";
     $("iqC2Next").value = c2.next || "";
     fillAvatarSelect($("iqC2Avatar"), c2.avatar || "");
+    fillPathSelect($("iqC2Path"), c2.path || "");
   }
   $("btnSaveIntro").addEventListener("click",function(){
     D.introQuest = D.introQuest || {};
     D.introQuest.line = $("iqLine").value.trim();
     D.introQuest.avatar = $("iqAvatar").value;
     D.introQuest.choices = [
-      { label: $("iqC1Label").value.trim(), next: $("iqC1Next").value.trim(), avatar: $("iqC1Avatar").value },
-      { label: $("iqC2Label").value.trim(), next: $("iqC2Next").value.trim(), avatar: $("iqC2Avatar").value }
+      { label: $("iqC1Label").value.trim(), next: $("iqC1Next").value.trim(), avatar: $("iqC1Avatar").value, path: $("iqC1Path").value || undefined },
+      { label: $("iqC2Label").value.trim(), next: $("iqC2Next").value.trim(), avatar: $("iqC2Avatar").value, path: $("iqC2Path").value || undefined }
     ];
     Store.saveContent(D);
     alert("인트로 대사를 저장했습니다.");
