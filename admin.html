@@ -103,6 +103,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 
 <nav>
   <button class="on" data-tab="t1">진행 현황</button>
+  <button data-tab="t8">티켓 상환</button>
   <button data-tab="t2">최종 정답</button>
   <button data-tab="t3">퀴즈</button>
   <button data-tab="t4">GPS 지점</button>
@@ -145,6 +146,25 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     </div>
     <div class="qlist" id="missionCheck"></div>
   </div>
+</section>
+
+<!-- ═══ 골드 티켓 상환 (메이커앤하비 매장용) ═══ -->
+<section class="tab" id="t8">
+  <div class="note">
+    행사 당일이 아니어도, <b>이 기기에 아무 기록이 없어도</b> 씁니다.
+    전화번호로 서버(Firestore)에서 바로 조회하므로, <b>메이커앤하비 매장</b>에서 골드 티켓을
+    상환할 때 이 탭에서 확인·지급 처리하세요. (서버 미연결 시 "서버에 연결돼 있지 않습니다"가 뜹니다 — 인터넷 연결을 확인하세요.)
+  </div>
+  <div class="card">
+    <div class="row">
+      <div style="flex:1;min-width:200px">
+        <label>참가자 전화번호</label>
+        <input type="tel" id="ticketPhone" placeholder="010-0000-0000" inputmode="numeric">
+      </div>
+      <button class="b pri" id="btnTicketLookup" style="align-self:flex-end">조회</button>
+    </div>
+  </div>
+  <div id="ticketResult"></div>
 </section>
 
 <!-- ═══ 최종 정답 ═══ -->
@@ -312,6 +332,8 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="data.js"></script>
 <script src="store.js"></script>
 <script>
@@ -422,6 +444,49 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   }
   function stat(k,v){ return "<div class='stat'><div class='k'>"+k+"</div><div class='v'>"+v+"</div></div>"; }
   function esc(s){ return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]}); }
+
+  /* ── 골드 티켓 상환 (메이커앤하비 매장) ── 이 기기의 로컬 캐시와 무관하게 항상 서버로 조회한다 */
+  function renderTicketResult(p){
+    var box = $("ticketResult");
+    if (!p) { box.innerHTML = "<div class='note'>등록된 참가자를 찾을 수 없습니다.</div>"; return; }
+    var statusHtml = !p.cleared
+      ? "<span class='pill no'>아직 황금 귤을 못 찾음 — 상환 대상 아님</span>"
+      : (p.rewardIssued
+          ? "<span class='pill ok'>이미 상환 완료" + (p.rewardIssuedAt ? " · " + new Date(p.rewardIssuedAt).toLocaleString("ko-KR") : "") + "</span>"
+          : "<span class='pill wait'>상환 대기 — 지급 가능</span>");
+    box.innerHTML =
+      "<div class='card'>" +
+      "<div style='font-size:15px;font-weight:700;margin-bottom:6px'>" + esc(p.nickname || "이름없음") + " 해적</div>" +
+      "<div style='font-size:12.5px;color:var(--ink-3);margin-bottom:10px'>····" + String(p.phone||"").slice(-4) + " · 쿠폰번호 " + esc(p.rewardNo||"------") + "</div>" +
+      "<div style='margin-bottom:14px'>" + statusHtml + "</div>" +
+      (p.cleared && !p.rewardIssued ? "<button class='b pri' id='btnTicketIssue'>지급 처리</button>" : "") +
+      "</div>";
+    if (p.cleared && !p.rewardIssued) {
+      $("btnTicketIssue").addEventListener("click", function(){
+        if (!confirm(p.nickname + " 해적에게 골드 티켓을 지급 처리할까요? 되돌릴 수 없습니다.")) return;
+        var btn = this; btn.disabled = true; btn.textContent = "처리 중…";
+        Store.issueRemote(p.phone).then(function(){
+          p.rewardIssued = true; p.rewardIssuedAt = Date.now();
+          renderTicketResult(p);
+        }).catch(function(e){
+          btn.disabled = false; btn.textContent = "지급 처리";
+          alert("처리 실패: " + (e && e.message ? e.message : "알 수 없는 오류"));
+        });
+      });
+    }
+  }
+  $("btnTicketLookup").addEventListener("click", function(){
+    var phone = $("ticketPhone").value.trim();
+    if (Store.normPhone(phone).length < 10) { alert("전화번호를 정확히 입력하세요."); return; }
+    var box = $("ticketResult");
+    if (!Store.hasServer()) {
+      box.innerHTML = "<div class='note' style='border-left-color:var(--gold);background:var(--gold-soft)'>서버에 연결돼 있지 않습니다. 인터넷 연결을 확인하고 새로고침해 보세요.</div>";
+      return;
+    }
+    box.innerHTML = "<p class='help'>조회 중…</p>";
+    Store.fetchRemote(phone).then(renderTicketResult)
+      .catch(function(){ box.innerHTML = "<div class='note'>조회 중 오류가 발생했습니다.</div>"; });
+  });
 
   function fillGive(){
     var list = Store.players();
@@ -644,10 +709,19 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     download("players.csv", rows.map(function(r){return r.join(",")}).join("\n"),"text/csv");
   });
   $("btnWipe").addEventListener("click",function(){
-    if(!confirm("참가자 데이터를 전부 삭제합니다. 되돌릴 수 없습니다.")) return;
+    if(!confirm("이 기기의 참가자 데이터를 전부 삭제합니다. 되돌릴 수 없습니다.")) return;
     if(!confirm("정말 삭제할까요?")) return;
+    var known = Store.players(); // 지우기 전에 이 기기가 아는 목록을 먼저 챙겨둔다
     Store.wipePlayers(); renderPlayers(); fillGive();
-    alert("삭제했습니다.");
+    if (Store.hasServer() && known.length) {
+      Promise.all(known.map(function(p){ return Store.deleteRemote(p.phone); })).then(function(){
+        alert("삭제했습니다 (이 기기가 아는 " + known.length + "명의 서버 기록도 함께 지웠습니다).\n\n" +
+          "이 기기에서 한 번도 조회 안 한 참가자가 남아있을 수 있습니다 — 행사 완전 종료 후에는 " +
+          "Firebase 콘솔에서 gwasuwonpiece_players 컬렉션을 통째로 한 번 더 확인해 주세요.");
+      });
+    } else {
+      alert("삭제했습니다.");
+    }
   });
 
   /* ── 투표 관리 ── */

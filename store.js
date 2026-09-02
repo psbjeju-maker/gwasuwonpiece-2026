@@ -1,23 +1,42 @@
 /* ============================================================
    저장 레이어
    ------------------------------------------------------------
-   지금은 브라우저 localStorage 만 쓴다. (인터넷 없이도 동작)
-   나중에 Firebase 를 붙이려면 아래 FIREBASE 설정만 채우면 되고,
-   게임 코드(app.js)는 손대지 않아도 된다.
-   ============================================================ */
+   localStorage(기기별 저장, 오프라인에서도 항상 됨) + Firestore(서버,
+   골드 티켓을 나중에 메이커앤하비 매장에서도 확인/상환하려면 필수) 둘 다 쓴다.
+   Firestore 연결이 없거나 오프라인이면 조용히 로컬 전용으로만 동작한다
+   (게임 진행 자체는 절대 막히지 않는다 — §PRODUCT.md 오프라인 우선 원칙).
+
+   psbjeju-kuji 프로젝트를 재사용하되(이미 배포·인증 경험 있음), 컬렉션은
+   완전히 분리(gwasuwonpiece_players)해서 쿠지 데이터와 안 섞인다.
+   보안 규칙은 Desktop\쿠지시스템\firestore.rules 에 추가해뒀다 —
+   `firebase deploy --only firestore:rules`로 배포해야 실제로 열린다. */
 
 window.Store = (function () {
 
-  /* Firebase 설정을 넣으면 서버 동기화가 켜진다. 비워두면 로컬 전용. */
-  var FIREBASE = null;
-  /* 예시:
-     var FIREBASE = {
-       apiKey: "...", authDomain: "...", projectId: "...", appId: "..."
-     };
-  */
+  var FIREBASE = {
+    apiKey: "AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",
+    authDomain: "psbjeju-kuji.firebaseapp.com",
+    projectId: "psbjeju-kuji",
+    storageBucket: "psbjeju-kuji.firebasestorage.app",
+    messagingSenderId: "627012765686",
+    appId: "1:627012765686:web:41178983d00eb37fd029d7"
+  };
+  var COL = "gwasuwonpiece_players"; // 참가자 문서 ID = 정규화된 전화번호
+
+  /* index.html/admin.html이 firebase-app-compat.js + firebase-firestore-compat.js를
+     먼저 로드해줘야 window.firebase가 있다. 스크립트 로딩이 실패하거나(오프라인 등)
+     설정이 비어있으면 db는 null로 남고, 아래 모든 서버 동기화 코드는 조용히 스킵된다. */
+  var db = null;
+  try {
+    if (FIREBASE && window.firebase && window.firebase.initializeApp) {
+      var fbApp = window.firebase.apps && window.firebase.apps.length
+        ? window.firebase.app() : window.firebase.initializeApp(FIREBASE);
+      db = window.firebase.firestore(fbApp);
+    }
+  } catch (e) { db = null; }
 
   var KEY_ME    = "ggg_me";        // 내 진행 상태
-  var KEY_ALL   = "ggg_players";   // 참가자 전체 (로컬 테스트/관리자용)
+  var KEY_ALL   = "ggg_players";   // 참가자 전체 (로컬 캐시 — 이 기기에서 본 사람만)
   var KEY_DATA  = "ggg_content";   // 관리자가 수정한 콘텐츠
   var queue     = [];              // 서버 전송 대기열
 
@@ -94,7 +113,7 @@ window.Store = (function () {
     var all = read(KEY_ALL, {});
     all[s.phone] = s;
     write(KEY_ALL, all);
-    if (!FIREBASE) return;
+    if (!db) return;
     queue.push(s);
     flush();
   }
@@ -133,20 +152,68 @@ window.Store = (function () {
     if (typeof window.onNetChange === "function") window.onNetChange(online, queue.length);
   }
   function flush() {
-    if (!FIREBASE || !online || !queue.length) return;
-    /* Firebase 를 붙이는 자리.
-       여기서 queue 를 Firestore 로 보내고 성공하면 비운다.
-       지금은 설정이 없으므로 아무것도 하지 않는다. */
+    if (!db || !online || !queue.length) return;
+    var batch = queue; queue = [];
+    notify();
+    batch.forEach(function (s) {
+      db.collection(COL).doc(s.phone).set(s, { merge: true }).catch(function () {
+        queue.push(s); // 실패(오프라인 전환 등) 시 다음 flush 때 재시도
+      });
+    });
+  }
+
+  /* ---------- 서버 직접 조회 (다른 기기 — 특히 메이커앤하비 매장 PC용) ----------
+     전부 Promise. db가 없으면(오프라인/설정없음) 항상 null로 resolve한다. */
+  function fetchRemote(phone) {
+    if (!db) return Promise.resolve(null);
+    return db.collection(COL).doc(normPhone(phone)).get()
+      .then(function (doc) { return doc.exists ? doc.data() : null; })
+      .catch(function () { return null; });
+  }
+  /* 메이커앤하비에서 골드 티켓 상환 확인 시 쓴다 — 서버 문서에 바로 기록한다.
+     이 기기 로컬 캐시에 같은 참가자가 있으면 그것도 같이 갱신한다. */
+  function issueRemote(phone) {
+    if (!db) return Promise.reject(new Error("서버에 연결돼 있지 않습니다"));
+    var key = normPhone(phone);
+    var patch = { rewardIssued: true, rewardIssuedAt: Date.now() };
+    return db.collection(COL).doc(key).set(patch, { merge: true }).then(function () {
+      var all = read(KEY_ALL, {});
+      if (all[key]) {
+        all[key].rewardIssued = true; all[key].rewardIssuedAt = patch.rewardIssuedAt;
+        write(KEY_ALL, all);
+      }
+      var m = me();
+      if (m && m.phone === key) { m.rewardIssued = true; m.rewardIssuedAt = patch.rewardIssuedAt; write(KEY_ME, m); }
+    });
+  }
+  /* 행사 종료 후 개인정보 파기용(§개인정보 안내문). 이 기기가 아는 참가자만 지울 수 있다 —
+     이 기기가 한 번도 못 본 참가자(다른 스태프 폰에서만 접속한 사람)까지 완전히 지우려면
+     Firebase 콘솔이나 `firebase firestore:delete gwasuwonpiece_players -r`로 컬렉션 전체를
+     한 번 더 정리해야 한다. wipePlayers()가 로컬 캐시를 지우기 전에 이 기기가 아는 만큼만 먼저 호출한다. */
+  function deleteRemote(phone) {
+    if (!db) return Promise.resolve();
+    return db.collection(COL).doc(normPhone(phone)).delete().catch(function () {});
+  }
+  /* 이 기기에 기록이 없어도(폰을 바꿨거나 앱을 새로 깔았거나) 서버에서 복구한다.
+     동기 restore()가 실패했을 때 app.js가 이어서 호출한다. */
+  function restoreRemote(phone) {
+    return fetchRemote(phone).then(function (data) {
+      if (!data) return null;
+      write(KEY_ME, data);
+      var all = read(KEY_ALL, {}); all[data.phone] = data; write(KEY_ALL, all);
+      return data;
+    });
   }
 
   return {
-    hasServer: function () { return !!FIREBASE; },
+    hasServer: function () { return !!db; },
     isOnline:  function () { return online; },
     pending:   function () { return queue.length; },
     loadContent: loadContent, saveContent: saveContent, resetContent: resetContent,
     me: me, saveMe: saveMe, clearMe: clearMe,
-    register: register, restore: restore, normPhone: normPhone,
+    register: register, restore: restore, restoreRemote: restoreRemote, normPhone: normPhone,
     players: players, updatePlayer: updatePlayer,
-    removePlayer: removePlayer, wipePlayers: wipePlayers
+    removePlayer: removePlayer, wipePlayers: wipePlayers,
+    fetchRemote: fetchRemote, issueRemote: issueRemote, deleteRemote: deleteRemote
   };
 })();

@@ -8,3 +8,4 @@ _skull_urls.txt
 __pycache__/
 *.pyc
 .DS_Store
+firebase-debug.log

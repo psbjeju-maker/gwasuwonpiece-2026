@@ -1041,6 +1041,8 @@
     var st = D.settings;
     $("cpWhisper").textContent = D.finalWhisper || "";
     $("cpAnswer").textContent = "정답 — " + st.finalAnswer;
+    $("trophyTitle").textContent = st.trophyTitle || "황금귤 획득 트로피";
+    $("trophyDesc").textContent = st.trophyDesc || "";
     $("cpTitle").textContent = st.rewardTitle || "골드 티켓";
     $("cpWho").textContent = S.nickname + " 해적";
     $("cpNo").textContent = "No. " + (S.rewardNo || "------");
@@ -1107,11 +1109,7 @@
     else { renderHome(); show("scHome"); toast("항해를 시작합니다"); }
   });
 
-  $("btnRestore").addEventListener("click", function () {
-    var phone = $("inPhone").value.trim();
-    if (Store.normPhone(phone).length < 10) { toast("전화번호를 입력한 뒤 눌러 주세요"); $("inPhone").focus(); return; }
-    var found = Store.restore(phone);
-    if (!found) { toast("이 기기에 저장된 기록이 없습니다"); return; }
+  function enterAsRestored(found) {
     S = found; if (!S.missionsDone) S.missionsDone = [];
     Sound.want("ocean");
     renderMain();
@@ -1119,6 +1117,20 @@
     sessionStorage.removeItem("ggg_pending_m");
     if (pendingM) { openMissionQR(pendingM); }
     else { renderHome(); show("scHome"); toast("이어서 진행합니다"); }
+  }
+  $("btnRestore").addEventListener("click", function () {
+    var phone = $("inPhone").value.trim();
+    if (Store.normPhone(phone).length < 10) { toast("전화번호를 입력한 뒤 눌러 주세요"); $("inPhone").focus(); return; }
+    var found = Store.restore(phone);
+    if (found) { enterAsRestored(found); return; }
+    /* 이 기기엔 없어도 서버(다른 폰에서 등록한 기록)에 있을 수 있다 */
+    var btn = this;
+    btn.disabled = true;
+    Store.restoreRemote(phone).then(function (remote) {
+      btn.disabled = false;
+      if (remote) { enterAsRestored(remote); return; }
+      toast("등록된 기록을 찾을 수 없습니다");
+    }).catch(function () { btn.disabled = false; toast("등록된 기록을 찾을 수 없습니다"); });
   });
 
   /* ---------- 홈 / 진행상황 / 보상 내비게이션 ---------- */

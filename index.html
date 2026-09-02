@@ -287,6 +287,14 @@
       <h1 style="font-size:24px;color:var(--gold);text-align:center;margin-bottom:4px">황금 귤을 찾았다!</h1>
       <p style="text-align:center;color:#9fb6d0;font-size:13.5px" id="cpAnswer"></p>
 
+      <div class="trophy">
+        <img class="trophy-ic" src="icons2/t_trophy.png" alt="">
+        <div class="trophy-body">
+          <div class="trophy-title" id="trophyTitle">황금귤 획득 트로피</div>
+          <div class="trophy-desc" id="trophyDesc">황금 귤을 끝까지 찾아낸 걸 증명하는 기념 배지</div>
+        </div>
+      </div>
+
       <div class="coupon" id="couponCard">
         <div class="stamp">수령 완료</div>
         <div class="kind" id="cpKind">GOLD TICKET</div>
@@ -396,6 +404,10 @@
 <audio id="bgmOpening" src="audio/opening.mp3" loop preload="none"></audio>
 <audio id="bgmOcean" src="audio/ocean.mp3" loop preload="none"></audio>
 
+<!-- 골드 티켓 상환 확인을 메이커앤하비 매장에서도 하려면 서버 저장이 필요해서 붙였다.
+     로드 실패해도(오프라인 등) store.js가 조용히 로컬 전용으로 넘어간다. -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="data.js"></script>
 <script src="store.js"></script>
 <script src="app.js"></script>

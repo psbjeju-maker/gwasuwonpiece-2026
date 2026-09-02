@@ -1074,3 +1074,21 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
 .nextup-go:active{transform:translateY(1px)}
 .nextup.done{background-image:none;background:linear-gradient(180deg,#173a24,#0f2a1a);box-shadow:0 0 0 1px rgba(120,200,150,.4),var(--lift);}
 .nextup.done .nextup-go{display:none}
+
+/* ══════════ 쿠폰 화면 — 황금귤 획득 트로피 배지 ══════════ */
+.trophy{
+  display:flex;align-items:center;gap:12px;
+  margin:14px 0 4px;padding:12px 14px;border-radius:12px;
+  background:linear-gradient(155deg,#1a2f1c,#0d1c10 65%);
+  border:1px solid rgba(255,201,74,.4);
+  box-shadow:0 0 22px -10px rgba(255,201,74,.45) inset,var(--lift);
+}
+.trophy-ic{
+  width:38px;height:38px;object-fit:contain;flex:none;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.5));
+}
+.trophy-title{
+  font-family:"SCDream",sans-serif;font-weight:700;font-size:14px;
+  color:var(--gold-l);margin-bottom:2px;
+}
+.trophy-desc{font-size:11.5px;color:#B9D6C2;line-height:1.4;}
