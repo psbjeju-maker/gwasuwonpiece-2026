@@ -1,5 +1,5 @@
 /* 오프라인 대응 — 한 번 열어두면 신호가 없어도 QR이 열리고 채점까지 된다. */
-var CACHE = "ggg-v18";
+var CACHE = "ggg-v19";
 var FILES = [
   "./", "./index.html", "./style.css", "./data.js", "./store.js", "./app.js", "./gold.png", "./map.jpg",
   "./guide.html",

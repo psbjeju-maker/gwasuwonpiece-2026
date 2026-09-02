@@ -45,7 +45,7 @@ window.GAME_DATA = {
      등록 화면 자체가 첫 실행에만 뜨므로(재방문·이어하기는 §boot()에서 곧장 scHome으로 감) 이 연출도 자연히 1회만 보인다. */
   introQuest: {
     avatar: "captain/exp_default.jpg",
-    line: "어라? 자네, 황금 귤 찾으러 왔어?\n\n난 귤선장!\n이 귤밭을 몇 년째 뒤지고 있지. 🍊\n\n혼자 찾기는 심심한데…\n같이 찾아줄래?",
+    line: "어라? 너 혹시 황금 귤 찾으러 왔어?\n\n난 귤선장!\n이 귤밭을 몇 년째 뒤지고 있지. 🍊\n\n혼자 찾기는 심심한데…\n같이 찾아줄래?",
     /* choices의 path가 missionPaths(아래)의 키와 짝지어져, 등록 직후 진행상황 화면의 미션 순서를 바꾼다.
        미션 종류·개수는 그대로다 — 안내받는 순서만 다르다. */
     choices: [
@@ -62,29 +62,12 @@ window.GAME_DATA = {
      귤선장의 정체 공개. 확인 버튼을 누를 때마다 다음 줄로 넘어가고, 마지막 줄(사라짐) 확인 후
      app.js가 약간의 정적(딜레이)을 두고서 쿠폰 화면으로 간다 — playFinalReveal() 참고. */
   finalReveal: [
-    { line: "...찾았네.", avatar: "captain/exp_surprise.jpg" },
-    { line: "정말 찾았구나.", avatar: "captain/exp_surprise.jpg" },
-    { line: "이상하지?", avatar: "captain/exp_think.jpg" },
-    { line: "난 이걸…\n아주 오래 찾았거든.", avatar: "captain/exp_think.jpg" },
-    { line: "그런데 오늘은\n자네가 찾아줬네.", avatar: "captain/exp_think.jpg" },
-    { line: "사실 나도 몰랐어.", avatar: "captain/exp_think.jpg" },
-    { line: "왜 계속\n이곳을 떠돌고 있었는지.", avatar: "captain/exp_think.jpg" },
-    { line: "이제 알 것 같아.", avatar: "captain/exp_sulk.jpg" },
-    { line: "난…\n아직 떠나지 못했던 거야.", avatar: "captain/exp_sulk.jpg" },
-    { line: "몇 년 전,\n나도 이곳에서 마지막으로 귤을 하나 찾고 있었거든.", avatar: "captain/exp_surprise.jpg" },
-    { line: "그런데…", avatar: "captain/exp_surprise.jpg" },
-    { line: "끝내 못 찾았어.", avatar: "captain/exp_surprise.jpg" },
-    { line: "그게 내 미련이었나 봐.", avatar: "captain/exp_smile.jpg" },
-    { line: "그런데 자네가 찾아줬네.", avatar: "captain/exp_found.jpg" },
-    { line: "내가 못 찾은 걸.", avatar: "captain/exp_found.jpg" },
-    { line: "...고마워.", avatar: "captain/exp_found.jpg" },
-    { line: "이제 가야겠다.", avatar: "captain/exp_smile.jpg" },
-    { line: "자네 덕분에\n드디어 갈 수 있을 것 같아.", avatar: "captain/exp_smile.jpg" },
-    { line: "다음에 이곳에 오면…", avatar: "captain/exp_smile.jpg" },
-    { line: "보물 찾지 말고\n그냥 실컷 놀다 가.", avatar: "captain/exp_smile.jpg" },
-    { line: "그게 더 좋으니까.", avatar: "captain/exp_smile.jpg" },
-    { line: "잘 가, 내 해적.", avatar: "captain/exp_smile.jpg" },
-    { line: "...정말 고마웠어.", avatar: "captain/exp_smile.jpg" }
+    { line: "...찾았네.\n정말 찾았구나.", avatar: "captain/exp_surprise.jpg" },
+    { line: "이상하지? 난 이걸 아주 오래 찾았거든.\n그런데 오늘은 자네가 찾아줬네.", avatar: "captain/exp_think.jpg" },
+    { line: "사실 나도 몰랐어. 왜 계속 이곳을 떠돌고 있었는지.\n이제 알 것 같아. 난... 아직 떠나지 못했던 거야.", avatar: "captain/exp_sulk.jpg" },
+    { line: "몇 년 전, 나도 이곳에서 마지막으로 귤을 하나 찾고 있었거든.\n끝내 못 찾았어... 그게 내 미련이었나 봐.", avatar: "captain/exp_smile.jpg" },
+    { line: "그런데 자네가 찾아줬네. 내가 못 찾은 걸.\n...고마워.", avatar: "captain/exp_found.jpg" },
+    { line: "이제 가야겠다. 다음에 이곳에 오면 보물 찾지 말고 그냥 실컷 놀다 가.\n\n잘 가, 내 해적. ...정말 고마웠어.", avatar: "captain/exp_smile.jpg" }
   ],
 
   /* 반전 연출이 끝나고 쿠폰 화면으로 넘어갈 때, 화면 위쪽에 아주 작게 뜨는 마지막 속삭임.
@@ -102,11 +85,11 @@ window.GAME_DATA = {
      time을 지나면(기기 시각 기준) 홈 화면에서 1회 자동으로 뜬다. 참가자별로 한 번만.
      타임테이블(§timetable)과 연동되는 이벤트만 골라 넣었다 — 전부 다 넣으면 번잡스럽다. */
   scheduleQuests: [
-    { id: "sq01", time: "11:00", avatar: "captain/exp_fighting.jpg", line: "이보게, 곧 가위바위보 한판이 열린다는군. 승부욕 있으면 가보지 않겠나?" },
-    { id: "sq02", time: "13:00", avatar: "captain/exp_fighting.jpg", line: "오타쿠 퀴즈 대회가 시작됐다네. 아는 게 힘이지, 안 그런가?" },
-    { id: "sq03", time: "14:00", avatar: "captain/exp_fighting.jpg", line: "무대 위에서 노래와 춤판이 벌어진다는군. 구경만 해도 즐겁다네." },
-    { id: "sq04", time: "15:00", avatar: "captain/exp_fighting.jpg", line: "랜덤 플레이 댄스 시간일세. 몸이 근질거리면 뛰어들어보게나." },
-    { id: "sq05", time: "15:20", avatar: "captain/exp_think.jpg", line: "슬슬 최종 추첨 시간이 다가오는군. 그동안 모은 티켓, 운을 걸어볼 텐가?" }
+    { id: "sq01", time: "11:00", avatar: "captain/exp_fighting.jpg", line: "어이! 곧 가위바위보 한판 열린대. 승부욕 있으면 가봐!" },
+    { id: "sq02", time: "13:00", avatar: "captain/exp_fighting.jpg", line: "오타쿠 퀴즈 대회 시작됐어! 아는 게 힘이지 않겠어?" },
+    { id: "sq03", time: "14:00", avatar: "captain/exp_fighting.jpg", line: "무대에서 노래랑 춤판 벌어진대. 구경만 해도 완전 재밌을걸?" },
+    { id: "sq04", time: "15:00", avatar: "captain/exp_fighting.jpg", line: "랜덤 플레이 댄스 시간이야! 몸이 근질거리면 뛰어들어봐." },
+    { id: "sq05", time: "15:20", avatar: "captain/exp_think.jpg", line: "슬슬 최종 추첨 시간 다가온다! 모은 티켓으로 운 한번 걸어볼래?" }
   ],
 
   /* ---------- GPS 보물 지점 (2026-08-29: QR 40개 방식 폐기, GPS 나침반으로 전면 교체) ----------
