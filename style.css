@@ -1092,3 +1092,81 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
   color:var(--gold-l);margin-bottom:2px;
 }
 .trophy-desc{font-size:11.5px;color:#B9D6C2;line-height:1.4;}
+
+/* ══════════ GPS 단서 획득 — 황금 귤 개봉 연출 ══════════
+   scResult 화면에서 미션완료(.big 체크마크)와 자리를 공유한다. JS가 둘 중 하나만 보여준다. */
+.tgr{display:none;position:relative;width:190px;height:190px;margin:6px 0 2px;}
+.tgr.show{display:block;}
+.tgr-fruit{
+  position:relative;width:100%;height:100%;
+  animation:tgrFloat 2.2s ease-in-out infinite, tgrWobble 2.2s ease-in-out infinite;
+  filter:drop-shadow(0 16px 28px rgba(255,201,74,.55));
+}
+.tgr-fruit.tapped{animation:none;}
+@keyframes tgrFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes tgrWobble{0%,88%,100%{rotate:0deg}91%{rotate:-3deg}94%{rotate:3deg}97%{rotate:-1.5deg}}
+.tgr-half{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  transition:transform .55s cubic-bezier(.25,.85,.3,1.15), opacity .55s ease;
+}
+.tgr-half-l{clip-path:inset(0 50% 0 0);transform-origin:20% 55%;}
+.tgr-half-r{clip-path:inset(0 0 0 50%);transform-origin:80% 55%;}
+.tgr-fruit.opening .tgr-half-l{transform:translateX(-46px) translateY(5px) rotate(-22deg);opacity:.06;}
+.tgr-fruit.opening .tgr-half-r{transform:translateX(46px) translateY(5px) rotate(22deg);opacity:.06;}
+.tgr-crackline{
+  position:absolute;left:50%;top:8%;width:3px;height:0%;
+  background:linear-gradient(180deg,transparent,#fff 15%,var(--gold-l) 50%,#fff 85%,transparent);
+  transform:translateX(-50%);opacity:0;border-radius:3px;
+  box-shadow:0 0 14px 3px rgba(255,244,214,.9);pointer-events:none;
+}
+.tgr-fruit.crack .tgr-crackline{animation:tgrCrack .18s ease-out forwards;}
+@keyframes tgrCrack{from{height:0%;opacity:0}30%{opacity:1}to{height:84%;opacity:1}}
+.tgr-burst{
+  position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;
+  background:radial-gradient(circle,#FFFCF2 0%,rgba(255,201,74,.95) 32%,transparent 72%);
+  opacity:0;pointer-events:none;
+}
+.tgr-fruit.opening .tgr-burst{animation:tgrBurst .7s .1s cubic-bezier(.15,.7,.3,1) forwards;}
+@keyframes tgrBurst{0%{opacity:0;transform:scale(.3)}25%{opacity:1}100%{opacity:0;transform:scale(5)}}
+.tgr-paper{
+  position:absolute;left:50%;bottom:44%;width:118px;
+  transform:translateX(-50%) translateY(24px) scaleY(.12);transform-origin:50% 100%;opacity:0;
+  transition:transform .55s cubic-bezier(.2,.85,.25,1.25), opacity .4s ease;z-index:3;pointer-events:none;
+}
+.tgr-fruit.paperup .tgr-paper{opacity:1;transform:translateX(-50%) translateY(-28px) scaleY(1);}
+.tgr-paper-card{
+  position:relative;min-height:70px;border-radius:7px;padding:13px 10px 11px;
+  background-image:radial-gradient(circle at 30% 20%, rgba(255,255,255,.5), transparent 40%),
+    linear-gradient(168deg,var(--sand-l),var(--sand) 55%,var(--sand-d));
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 12px 24px -10px rgba(0,0,0,.55);
+  overflow:hidden;
+}
+.tgr-flap{
+  position:absolute;top:0;bottom:0;width:50%;
+  background-image:linear-gradient(168deg,var(--sand-l),var(--sand) 55%,var(--sand-d));
+  transform-origin:50% 50%;transition:transform .4s cubic-bezier(.3,.8,.3,1.2);
+  z-index:2;box-shadow:0 0 0 1px rgba(60,42,16,.15) inset;
+}
+.tgr-flap-l{left:0;transform-origin:0% 50%;}
+.tgr-flap-r{right:0;transform-origin:100% 50%;}
+.tgr-fruit.unfurl .tgr-flap-l{transform:rotateY(-108deg);}
+.tgr-fruit.unfurl .tgr-flap-r{transform:rotateY(108deg);}
+.tgr-text{
+  position:relative;z-index:1;text-align:center;
+  font-family:"SCDream",sans-serif;font-weight:700;font-size:22px;color:var(--ink);
+  opacity:0;transform:scale(.7);transition:opacity .3s .1s ease, transform .3s .1s cubic-bezier(.2,.9,.3,1.3);
+}
+.tgr-fruit.unfurl .tgr-text{opacity:1;transform:scale(1);}
+.tgr-fruit.glow .tgr-text{animation:tgrTextGlow 1.3s ease-in-out infinite;}
+@keyframes tgrTextGlow{
+  0%,100%{text-shadow:0 0 5px rgba(255,201,74,.25),0 1px 0 rgba(255,255,255,.4);}
+  50%{text-shadow:0 0 18px rgba(255,201,74,.9),0 0 32px rgba(255,201,74,.45),0 1px 0 rgba(255,255,255,.5);}
+}
+.tgr-spark{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--gold-l);
+  opacity:0;pointer-events:none;box-shadow:0 0 7px 2px rgba(255,222,140,.9);}
+.tgr-fruit.glow .tgr-spark{animation:tgrSpark 1.3s ease-out infinite;}
+@keyframes tgrSpark{0%{opacity:0;transform:translateY(0) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translateY(-22px) scale(1.1)}}
+@media (prefers-reduced-motion:reduce){
+  .tgr-fruit{animation:none!important}
+  .tgr-half,.tgr-paper,.tgr-flap,.tgr-text{transition-duration:.01ms!important}
+}

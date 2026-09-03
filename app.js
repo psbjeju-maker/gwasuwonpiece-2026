@@ -911,22 +911,40 @@
     grant(CUR);
   }
 
-  /* ---------- 보상 지급 ---------- */
+  /* ---------- 보상 지급 ----------
+     GPS 단서 획득 순간에만 쓰는 연출. 귤이 갈라지고 종이가 올라와 글자를 보여준다.
+     13번 반복되는 화면이라 탭 대기 없이 자동 재생, 글자 노출까지 약 1.25초로 압축했다. */
+  function playTangerineReveal(letterChar, onReveal) {
+    var fruit = $("tgrFruit");
+    fruit.className = "tgr-fruit";
+    $("tgrText").textContent = letterChar;
+    setTimeout(function () { fruit.classList.add("crack"); }, 350);
+    setTimeout(function () { fruit.classList.add("opening"); }, 530);
+    setTimeout(function () { fruit.classList.add("paperup"); }, 850);
+    setTimeout(function () { fruit.classList.add("unfurl"); if (onReveal) onReveal(); }, 1250);
+    setTimeout(function () { fruit.classList.add("glow"); }, 1400);
+  }
+
   function grant(p) {
     S.found.push(p.id);
     S.letters.push({ li: p.li, char: LETTERS[p.li], at: Date.now() });
     Store.saveMe(S);
 
     var left = LETTERS.length - uniqueLetterCount();
-    $("rsBurst").textContent = "QUEST CLEAR";
-    $("rsBig").textContent = LETTERS[p.li];
-    $("rsBig").className = "big";
-    $("rsTitle").textContent = "단서 「" + LETTERS[p.li] + "」 획득!";
-    $("rsDesc").textContent = left > 0 ? "남은 글자 " + left + "개" : "글자를 전부 모았습니다!";
+    var done = uniqueLetterCount() >= LETTERS.length && LETTERS.length > 0;
+
+    $("rsBurst").textContent = "";
+    $("rsBig").style.display = "none";
+    $("tgrBox").classList.add("show");
+    $("rsTitle").textContent = "";
+    $("rsDesc").textContent = "";
     show("scResult");
+    playTangerineReveal(LETTERS[p.li], function () {
+      $("rsTitle").textContent = "단서 「" + LETTERS[p.li] + "」 획득!";
+      $("rsDesc").textContent = left > 0 ? "남은 글자 " + left + "개" : "글자를 전부 모았습니다!";
+    });
 
     /* 글자를 다 모았으면 결과 버튼을 최종 도전으로 */
-    var done = uniqueLetterCount() >= LETTERS.length && LETTERS.length > 0;
     $("btnResultOk").textContent = done ? "마지막 문제 풀러 가기" : "나침반으로 돌아가기";
     $("btnResultOk").dataset.go = done ? "final" : "main";
   }
@@ -950,6 +968,8 @@
     S.missionsDone.push(m.id);
     Store.saveMe(S);
 
+    $("tgrBox").classList.remove("show");
+    $("rsBig").style.display = "";
     $("rsBurst").textContent = "MISSION CLEAR";
     $("rsBig").textContent = "✓";
     $("rsBig").className = "big ev";
