@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>코스프레 규정 안내 · 과수원피스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#FBF7EE;
+  --surface:#FFFFFF;
+  --surface-2:#F4EEDD;
+  --ink:#20281F;
+  --ink-2:#4A5445;
+  --muted:#6B6650;
+  --line:#E4DCC4;
+  --line-soft:#EEE8D6;
+  --accent:#D9641E;
+  --accent-2:#B34D14;
+  --accent-soft:#F7DFC4;
+  --leaf:#2E6B4F;
+  --leaf-soft:#DCEAE1;
+  --gold:#B8862A;
+  --gold-soft:#F1E3BE;
+  --danger:#B3432F;
+  --danger-soft:#F6DFD8;
+  --ink-on-accent:#FBF7EE;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#181B14; --surface:#20241B; --surface-2:#262A1E;
+    --ink:#F3EFDF; --ink-2:#C7C4AE; --muted:#8E9280;
+    --line:#33372A; --line-soft:#2B2E22;
+    --accent:#E9843C; --accent-2:#F5A25D; --accent-soft:#3A2A18;
+    --leaf:#7FBB98; --leaf-soft:#22301F;
+    --gold:#D9AE54; --gold-soft:#332B14;
+    --danger:#E8836C; --danger-soft:#3A211B;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#181B14; --surface:#20241B; --surface-2:#262A1E;
+  --ink:#F3EFDF; --ink-2:#C7C4AE; --muted:#8E9280;
+  --line:#33372A; --line-soft:#2B2E22;
+  --accent:#E9843C; --accent-2:#F5A25D; --accent-soft:#3A2A18;
+  --leaf:#7FBB98; --leaf-soft:#22301F;
+  --gold:#D9AE54; --gold-soft:#332B14;
+  --danger:#E8836C; --danger-soft:#3A211B;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans KR","Malgun Gothic",sans-serif;
+  font-weight:400;font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+  word-break:keep-all;overflow-wrap:break-word;
+}
+.wrap{max-width:640px;margin:0 auto;padding:0 20px 80px}
+h1,h2,h3{font-family:"Hahmlet","Malgun Gothic",serif;text-wrap:balance;margin:0}
+p{margin:0}
+strong{font-weight:600;color:var(--ink)}
+a{color:var(--accent)}
+
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);
+}
+
+/* ── back link ── */
+.back-bar{padding:18px 0 0}
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--muted);
+  border:1px solid var(--line);padding:7px 13px;border-radius:999px;
+  background:var(--surface);
+}
+.back-link:hover{color:var(--ink);border-color:var(--ink-2)}
+
+/* ── hero ── */
+.hero{padding:28px 0 8px}
+.hero h1{
+  font-size:clamp(28px,7vw,38px);font-weight:700;line-height:1.32;color:var(--ink);
+  margin-top:10px;
+}
+.hero p.lede{margin-top:14px;font-size:16px;color:var(--ink-2);max-width:44ch}
+.hero-note{
+  margin-top:20px;background:var(--leaf-soft);border:1px solid var(--leaf);color:var(--ink);
+  padding:14px 16px;border-radius:4px;font-size:14.5px;display:flex;gap:10px;align-items:flex-start;
+}
+.hero-note .dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--leaf);margin-top:6px}
+
+/* ── sections ── */
+section.rule{padding:30px 0;border-top:1px solid var(--line-soft)}
+section.rule:first-of-type{border-top:none}
+.rule-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.rule-num{
+  font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:700;color:var(--accent-2);
+  border:1px solid var(--accent);border-radius:50%;width:26px;height:26px;flex:none;
+  display:flex;align-items:center;justify-content:center;background:var(--accent-soft);
+}
+.rule-head h2{font-size:20px;font-weight:600;color:var(--ink)}
+
+.rule ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
+.rule li{font-size:15px;color:var(--ink-2);padding-left:18px;position:relative}
+.rule li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:6px;background:var(--accent)}
+.rule li strong{color:var(--ink)}
+
+.callout{
+  margin-top:14px;border-radius:4px;padding:13px 15px;font-size:14px;line-height:1.65;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.callout.ok{background:var(--leaf-soft);border:1px solid var(--leaf);color:var(--ink)}
+.callout.warn{background:var(--danger-soft);border:1px solid var(--danger);color:var(--ink)}
+.callout .mark{flex:none;font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:12px;
+  border-radius:999px;padding:2px 8px;margin-top:1px;white-space:nowrap}
+.callout.ok .mark{background:var(--leaf);color:#fff}
+.callout.warn .mark{background:var(--danger);color:#fff}
+
+/* ── steps (위반 시) ── */
+.steps{display:flex;flex-direction:column;gap:0;margin-top:4px}
+.step{display:flex;gap:14px;padding:14px 0}
+.step + .step{border-top:1px dashed var(--line)}
+.step-n{
+  flex:none;width:26px;height:26px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  font-weight:700;color:var(--ink-2);
+}
+.step-body p{font-size:14.5px;color:var(--ink-2)}
+.step-body strong{color:var(--ink)}
+
+/* ── closing ── */
+.closing{
+  margin-top:36px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+  padding:22px 20px;text-align:center;
+}
+.closing h3{font-size:17px;font-weight:600;margin-bottom:8px}
+.closing p{font-size:14px;color:var(--ink-2)}
+.closing a{font-weight:600;text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
+
+footer{padding:22px 0 4px;font-size:12px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="back-bar">
+    <a class="back-link" href="guide.html">← 이용 가이드로 돌아가기</a>
+  </div>
+
+  <div class="hero">
+    <p class="eyebrow">Cosplay Guide</p>
+    <h1>코스프레 규정 안내</h1>
+    <p class="lede">과수원피스에서는 코스프레를 자유롭게, 무료로 즐기실 수 있습니다. 모두가 편하게 즐길 수 있도록 몇 가지만 함께 지켜주세요.</p>
+    <div class="hero-note">
+      <span class="dot"></span>
+      <span>행사 당일 현장에는 <strong>코스프레 담당자(전문 코스어)</strong>가 상주합니다. 애매한 부분은 언제든 물어봐 주세요.</span>
+    </div>
+  </div>
+
+  <section class="rule">
+    <div class="rule-head"><span class="rule-num">1</span><h2>의상 · 노출 기준</h2></div>
+    <ul>
+      <li>가슴, 옆구리, 골반이 드러나는 의상은 <strong>비침 없는 이너웨어</strong>를 함께 착용해 주세요.</li>
+      <li>상의나 하의 중 하나만 착용하는 형태의 코스프레는 어렵습니다.</li>
+      <li>가족 단위 방문객도 함께하는 행사지만, 노출 기준을 일반적인 서브컬처 행사보다 더 엄격하게 두지는 않습니다.</li>
+    </ul>
+    <div class="callout ok">
+      <span class="mark">OK</span>
+      <span>기준이 애매하다면 현장 코스프레 담당자가 직접 안내해 드립니다.</span>
+    </div>
+  </section>
+
+  <section class="rule">
+    <div class="rule-head"><span class="rule-num">2</span><h2>캐릭터 · 복장 관련</h2></div>
+    <ul>
+      <li>실제 경찰관, 소방관, 의료진 등으로 오해될 수 있는 복장은 삼가주세요.</li>
+      <li>원피스 속 '해군'처럼 작품 속 가상의 조직·직업 캐릭터는 문제없습니다.</li>
+      <li>해적, 죄수복 등 원피스 세계관과 어울리는 테마 캐릭터는 자유롭게 코스프레하실 수 있어요.</li>
+    </ul>
+    <div class="callout warn">
+      <span class="mark">사전 안내</span>
+      <span>다소 선정적이거나 민감할 수 있는 캐릭터로 참여하실 계획이라면, 행사 전 코스프레 담당자에게 미리 알려주세요.</span>
+    </div>
+  </section>
+
+  <section class="rule">
+    <div class="rule-head"><span class="rule-num">3</span><h2>무기 · 소품</h2></div>
+    <ul>
+      <li>검, 창, 총 등 캐릭터 소품은 대부분 <strong>자유롭게 소지</strong>하고 참여하실 수 있습니다.</li>
+      <li>다만 소품을 실제로 휘두르거나 다른 사람을 향해 겨누는 행동은 삼가주세요.</li>
+      <li>금속(철제) 재질 소품은 <strong>소지만 가능</strong>합니다. 휘두르는 등의 사용은 안 됩니다.</li>
+      <li>과수원 내 나뭇가지, 농기구 등 현장 물건을 소품처럼 사용하는 것은 안전을 위해 금지합니다.</li>
+    </ul>
+    <div class="callout warn">
+      <span class="mark">즉시 제지</span>
+      <span>비비탄건 등 발사 기능이 있는 소품을 실제로 발사할 경우, 즉시 제지 대상입니다.</span>
+    </div>
+  </section>
+
+  <section class="rule">
+    <div class="rule-head"><span class="rule-num">4</span><h2>촬영 매너</h2></div>
+    <ul>
+      <li>다른 참가자를 촬영하기 전에는 먼저 <strong>촬영해도 되는지 양해</strong>를 구해주세요.</li>
+      <li>촬영을 원치 않는다는 의사를 밝히면 존중해주세요.</li>
+    </ul>
+    <div class="callout ok">
+      <span class="mark">고지</span>
+      <span>행사 중 촬영된 사진·영상은 박서방 제주점 홍보(SNS, 블로그 등)에 사용될 수 있습니다.</span>
+    </div>
+  </section>
+
+  <section class="rule">
+    <div class="rule-head"><span class="rule-num">5</span><h2>환복 · 짐 보관</h2></div>
+    <ul>
+      <li>행사장 내에 코스프레 <strong>환복 공간</strong>을 마련합니다.</li>
+      <li>소지품(캐리어, 소품 등)을 맡길 수 있는 <strong>보관 공간</strong>도 함께 준비됩니다.</li>
+    </ul>
+  </section>
+
+  <section class="rule">
+    <div class="rule-head"><span class="rule-num">6</span><h2>이동 · 날씨 안전</h2></div>
+    <ul>
+      <li>긴 소품이나 부피가 큰 의상은 이동하실 때 다른 분들과 부딪히지 않게 주의해 주세요.</li>
+      <li>비가 올 경우를 대비해, 젖으면 안 되는 소품이나 가발은 미리 준비해 오시는 걸 권해드립니다.</li>
+    </ul>
+  </section>
+
+  <section class="rule">
+    <div class="rule-head"><span class="rule-num">7</span><h2>규정을 지키지 않으면</h2></div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-n">1</span>
+        <div class="step-body"><p><strong>현장 안내</strong> — 코스프레 담당자가 직접 상황을 안내해 드립니다.</p></div>
+      </div>
+      <div class="step">
+        <span class="step-n">2</span>
+        <div class="step-body"><p><strong>시정 요청</strong> — 안내 후에도 개선되지 않으면 시정을 요청드립니다.</p></div>
+      </div>
+      <div class="step">
+        <span class="step-n">3</span>
+        <div class="step-body"><p><strong>소품 보관 · 이용 제한</strong> — 그래도 지켜지지 않을 경우 소품을 잠시 보관하거나 이용을 제한할 수 있습니다. 보관된 소품은 행사 종료 후 돌려드립니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="closing">
+    <h3>궁금한 점이 있다면</h3>
+    <p>행사 당일 코스프레 담당자에게 물어보시거나,<br>미리 <a href="https://litt.ly/psb_jeju" target="_blank" rel="noopener">박서방 제주점 SNS</a>로 문의해 주세요.</p>
+  </div>
+
+  <footer>과수원피스 · 2026.10.31 (토) 금능석물원</footer>
+
+</div>
+</body>
+</html>
