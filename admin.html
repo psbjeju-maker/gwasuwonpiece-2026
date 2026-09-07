@@ -103,6 +103,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 
 <nav>
   <button class="on" data-tab="t1">진행 현황</button>
+  <button data-tab="t10">항해 패스</button>
   <button data-tab="t8">티켓 상환</button>
   <button data-tab="t2">최종 정답</button>
   <button data-tab="t3">퀴즈</button>
@@ -147,6 +148,25 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     </div>
     <div class="qlist" id="missionCheck"></div>
   </div>
+</section>
+
+<!-- ═══ 항해 패스 (매표소 · QR을 못 찍는 참가자 구제) ═══ -->
+<section class="tab" id="t10">
+  <div class="note">
+    참가자는 매표소에서 <b>항해 패스 QR</b>을 찍어야 항해가 시작됩니다.
+    카메라가 안 되거나 QR을 못 찍는 참가자는 여기서 <b>전화번호로 직접 열어</b> 주세요.
+    (앱에서 닉네임·전화번호 등록까지는 끝낸 상태여야 조회됩니다.)
+  </div>
+  <div class="card">
+    <div class="row">
+      <div style="flex:1;min-width:200px">
+        <label>참가자 전화번호</label>
+        <input type="tel" id="passPhone" placeholder="010-0000-0000" inputmode="numeric">
+      </div>
+      <button class="b pri" id="btnPassLookup" style="align-self:flex-end">조회</button>
+    </div>
+  </div>
+  <div id="passResult"></div>
 </section>
 
 <!-- ═══ 골드 티켓 상환 (메이커앤하비 매장용) ═══ -->
@@ -478,6 +498,46 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   }
   function stat(k,v){ return "<div class='stat'><div class='k'>"+k+"</div><div class='v'>"+v+"</div></div>"; }
   function esc(s){ return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]}); }
+
+  /* ── 항해 패스 수동 개시 ── QR을 못 찍는 참가자를 스태프가 열어준다 */
+  function renderPassResult(p){
+    var box = $("passResult");
+    if (!p) { box.innerHTML = "<div class='note'>등록된 참가자를 찾을 수 없습니다. 앱에서 닉네임·전화번호 등록을 먼저 하도록 안내해 주세요.</div>"; return; }
+    box.innerHTML =
+      "<div class='card'>" +
+      "<div style='font-size:15px;font-weight:700;margin-bottom:6px'>" + esc(p.nickname || "이름없음") + " 해적</div>" +
+      "<div style='font-size:12.5px;color:var(--ink-3);margin-bottom:10px'>····" + String(p.phone||"").slice(-4) + "</div>" +
+      "<div style='margin-bottom:14px'>" + (p.pass
+        ? "<span class='pill ok'>패스 개시됨" + (p.passAt ? " · " + new Date(p.passAt).toLocaleString("ko-KR") : "") + "</span>"
+        : "<span class='pill wait'>아직 패스 없음</span>") + "</div>" +
+      (p.pass ? "" : "<button class='b pri' id='btnPassGive'>패스 열어주기</button>") +
+      "</div>";
+    if (!p.pass) {
+      $("btnPassGive").addEventListener("click", function(){
+        if (!confirm(p.nickname + " 해적의 항해 패스를 열어줍니다. 결제를 확인하셨나요?")) return;
+        var btn = this; btn.disabled = true; btn.textContent = "처리 중…";
+        Store.patchRemote(p.phone, { pass: true, passAt: Date.now() }).then(function(){
+          p.pass = true; p.passAt = Date.now();
+          renderPassResult(p);
+        }).catch(function(e){
+          btn.disabled = false; btn.textContent = "패스 열어주기";
+          alert("처리 실패: " + (e && e.message ? e.message : "알 수 없는 오류"));
+        });
+      });
+    }
+  }
+  $("btnPassLookup").addEventListener("click", function(){
+    var phone = $("passPhone").value.trim();
+    if (Store.normPhone(phone).length < 10) { alert("전화번호를 정확히 입력하세요."); return; }
+    var box = $("passResult");
+    if (!Store.hasServer()) {
+      box.innerHTML = "<div class='note' style='border-left-color:var(--gold);background:var(--gold-soft)'>서버에 연결돼 있지 않습니다. 인터넷 연결을 확인하고 새로고침해 보세요.</div>";
+      return;
+    }
+    box.innerHTML = "<p class='help'>조회 중…</p>";
+    Store.fetchRemote(phone).then(renderPassResult)
+      .catch(function(){ box.innerHTML = "<div class='note'>조회 중 오류가 발생했습니다.</div>"; });
+  });
 
   /* ── 골드 티켓 상환 (메이커앤하비 매장) ── 이 기기의 로컬 캐시와 무관하게 항상 서버로 조회한다 */
   function renderTicketResult(p){

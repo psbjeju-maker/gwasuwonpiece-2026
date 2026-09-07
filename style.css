@@ -1170,3 +1170,33 @@ h1,h2,h3{font-family:"SCDream",sans-serif;font-weight:700;margin:0;
   .tgr-fruit{animation:none!important}
   .tgr-half,.tgr-paper,.tgr-flap,.tgr-text{transition-duration:.01ms!important}
 }
+
+
+/* ══════════════ 항해 패스 대기 화면 ══════════════ */
+.pass-gate{padding:26px 0 40px;text-align:center}
+.pass-cap{
+  width:138px;height:138px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--gold);box-shadow:0 10px 30px rgba(0,0,0,.5);
+  margin-bottom:-70px;position:relative;z-index:2;
+}
+.pass-box{
+  padding:78px 20px 20px;border-radius:14px;position:relative;z-index:1;
+}
+.pass-who{
+  display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.06em;
+  background:var(--gold);color:#1b1206;border-radius:999px;padding:3px 13px;margin-bottom:9px;
+}
+.pass-line{font-size:16px;line-height:1.7;color:#3a2c14;font-weight:600;margin:0}
+.pass-title{font-size:23px;color:var(--gold);margin:26px 0 6px}
+.pass-sub{font-size:14px;color:#9fb6d0;margin:0 0 22px}
+.pass-steps{
+  text-align:left;margin:0 auto 20px;padding:18px 20px 18px 40px;max-width:420px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;
+}
+.pass-steps li{font-size:14.5px;line-height:1.75;color:#d7e4f0;margin-bottom:7px}
+.pass-steps li:last-child{margin-bottom:0}
+.pass-steps b{color:var(--gold)}
+.pass-what{
+  font-size:13.5px;line-height:1.7;color:#9fb6d0;max-width:420px;margin:0 auto 22px;
+}
+.pass-what b{color:var(--gold)}

@@ -50,6 +50,7 @@ def jsonify(s):
     return json.loads(s)
 
 missions = jsonify(block("missions"))
+settings = jsonify(block("settings"))
 
 # ── 폰트 ────────────────────────────────────────────────────────
 def font(sz, bold=False):
@@ -119,6 +120,44 @@ for s in range(0, len(mcards), per):
     p = os.path.join(OUT, "미션QR시트_%02d.png" % n)
     sheet.save(p, dpi=(300, 300))
     msheets.append(p)
+
+# ── 항해 패스 QR (매표소 스태프용) ────────────────────────────────
+# 벽에 붙이지 말 것. 결제한 사람에게만 보여주는 카드다.
+GREEN = (46, 107, 79)
+
+def make_pass_card():
+    img = Image.new("RGB", (CARD_W, CARD_H), "white")
+    d = ImageDraw.Draw(img)
+    d.rectangle([6, 6, CARD_W-7, CARD_H-7], outline=(200, 200, 200), width=3)
+    d.rectangle([26, 26, CARD_W-27, CARD_H-27], outline=GREEN, width=5)
+
+    d.text((CARD_W//2, 86), "항해 패스 개시", font=font(46, True), fill=GREEN, anchor="mm")
+    d.text((CARD_W//2, 150), settings.get("passPrice", "6,000원"),
+           font=font(40, True), fill=INK, anchor="mm")
+
+    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_H,
+                       box_size=10, border=2)
+    qr.add_data(BASE + "?p=" + settings["passCode"])
+    qr.make(fit=True)
+    qim = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    qim = qim.resize((620, 620), Image.NEAREST)
+    img.paste(qim, ((CARD_W-620)//2, 200))
+
+    d.text((CARD_W//2, 880), "결제를 받은 뒤에만 보여주세요",
+           font=font(40, True), fill=INK, anchor="mm")
+    d.text((CARD_W//2, 936), "벽에 붙이지 마세요 — 찍은 사람은 누구나 패스가 열립니다",
+           font=font(30), fill=RED, anchor="mm")
+    d.text((CARD_W-52, CARD_H-52), settings["passCode"],
+           font=font(30, True), fill=(190, 190, 190), anchor="rs")
+    return img
+
+if settings.get("passRequired", True) and settings.get("passCode"):
+    pcard = make_pass_card()
+    ppath = os.path.join(OUT, "항해패스QR.png")
+    pcard.save(ppath, dpi=(300, 300))
+    print()
+    print("항해 패스 QR → %s" % ppath)
+    print("  코드:", settings["passCode"], " (벽에 붙이지 말고 스태프가 들고 있을 것)")
 
 print()
 print("미션 QR %d장 → %s" % (len(mcards), OUTM))

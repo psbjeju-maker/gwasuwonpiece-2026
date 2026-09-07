@@ -957,6 +957,7 @@
     return null;
   }
   function openMissionQR(code) {
+    if (!hasPass()) { showPassGate(); return; }
     var m = missionByQr(code);
     if (!m) { toast("알 수 없는 미션 QR입니다"); renderHome(); show("scHome"); return; }
     S.missionsDone = S.missionsDone || [];
@@ -1075,6 +1076,34 @@
     show("scCoupon");
   }
 
+  /* ---------- 항해 패스 게이트 ----------
+     패스를 산 사람만 항해가 시작된다. 매표소 스태프가 결제한 사람에게만 QR 을
+     보여주고, 참가자가 그걸 찍으면 ?p=<코드> 로 들어와 여기서 열린다. */
+  function passRequired() { return D.settings.passRequired !== false; }
+  function hasPass()      { return !passRequired() || !!(S && S.pass); }
+
+  function activatePass(code) {
+    var want = String(D.settings.passCode || "").toUpperCase();
+    if (!want || String(code || "").toUpperCase() !== want) return false;
+    if (!S) return false;
+    if (!S.pass) { S.pass = true; S.passAt = Date.now(); Store.saveMe(S); }
+    return true;
+  }
+
+  function showPassGate() {
+    $("passSub").textContent =
+      "항해 패스 " + (D.settings.passPrice || "6,000원") + " · 미션과 보물찾기 전부 무제한";
+    $("passDesk").textContent = D.settings.passDeskName || "매표소";
+    show("scPass");
+  }
+
+  /* 등록을 마친 사람을 어디로 보낼지 한 곳에서 정한다 */
+  function enterApp(msg) {
+    if (!hasPass()) { showPassGate(); return; }
+    renderHome(); show("scHome");
+    if (msg) toast(msg);
+  }
+
   /* ---------- 네트워크 배지 ---------- */
   window.onNetChange = function (online) {
     $("netBadge").classList.toggle("show", !online);
@@ -1091,11 +1120,13 @@
     S = Store.me();
     var params = new URLSearchParams(location.search);
     var mcode = (params.get("m") || "").toUpperCase();
+    var pcode = (params.get("p") || "").toUpperCase();
 
     if (!Store.isOnline()) $("netBadge").classList.add("show");
 
     if (!S) {
       if (mcode) sessionStorage.setItem("ggg_pending_m", mcode);
+      if (pcode) sessionStorage.setItem("ggg_pending_p", pcode);
       Sound.want("opening");
       show("scIntro");
       Cinema.start();
@@ -1104,6 +1135,13 @@
     if (!S.missionsDone) S.missionsDone = []; // 이전 버전 참가자 호환
     Sound.want("ocean");
     renderMain();
+
+    /* 패스 QR 로 들어온 경우 — 등록은 이미 돼 있으니 바로 열어준다 */
+    if (pcode) {
+      if (activatePass(pcode)) { enterApp("항해 패스가 확인됐습니다"); return; }
+      toast("알 수 없는 패스 QR입니다");
+    }
+    if (!hasPass()) { showPassGate(); return; }
     if (mcode) { openMissionQR(mcode); }
     else { renderHome(); show("scHome"); }
   }
@@ -1123,6 +1161,12 @@
     if (Cinema.getPath()) { S.missionPath = Cinema.getPath(); Store.saveMe(S); }
     Sound.want("ocean");
     renderMain();
+
+    var pendingP = sessionStorage.getItem("ggg_pending_p");
+    sessionStorage.removeItem("ggg_pending_p");
+    if (pendingP) activatePass(pendingP);
+
+    if (!hasPass()) { showPassGate(); return; }
     var pendingM = sessionStorage.getItem("ggg_pending_m");
     sessionStorage.removeItem("ggg_pending_m");
     if (pendingM) { openMissionQR(pendingM); }
@@ -1133,11 +1177,39 @@
     S = found; if (!S.missionsDone) S.missionsDone = [];
     Sound.want("ocean");
     renderMain();
+
+    var pendingP = sessionStorage.getItem("ggg_pending_p");
+    sessionStorage.removeItem("ggg_pending_p");
+    if (pendingP) activatePass(pendingP);
+
+    if (!hasPass()) { showPassGate(); return; }
     var pendingM = sessionStorage.getItem("ggg_pending_m");
     sessionStorage.removeItem("ggg_pending_m");
     if (pendingM) { openMissionQR(pendingM); }
     else { renderHome(); show("scHome"); toast("이어서 진행합니다"); }
   }
+  /* 패스 대기 화면 — "이미 찍었어요". 서버에 스태프가 대신 열어준 기록이 있으면 가져온다. */
+  $("btnPassAgain").addEventListener("click", function () {
+    if (!S) { show("scIntro"); return; }
+    var btn = this;
+    var fresh = Store.me();
+    if (fresh && fresh.pass) { S = fresh; enterApp("항해 패스가 확인됐습니다"); return; }
+    if (!Store.hasServer()) { toast("아직 패스가 확인되지 않았습니다. 스태프에게 QR을 요청해 주세요"); return; }
+    btn.disabled = true; btn.textContent = "확인하는 중…";
+    Store.fetchRemote(S.phone).then(function (remote) {
+      btn.disabled = false; btn.textContent = "이미 QR을 찍었어요 (다시 확인)";
+      if (remote && remote.pass) {
+        S.pass = true; S.passAt = remote.passAt || Date.now(); Store.saveMe(S);
+        enterApp("항해 패스가 확인됐습니다");
+      } else {
+        toast("아직 패스가 확인되지 않았습니다. 스태프에게 QR을 요청해 주세요");
+      }
+    }).catch(function () {
+      btn.disabled = false; btn.textContent = "이미 QR을 찍었어요 (다시 확인)";
+      toast("확인에 실패했습니다. 잠시 뒤 다시 눌러 주세요");
+    });
+  });
+
   $("btnRestore").addEventListener("click", function () {
     var phone = $("inPhone").value.trim();
     if (Store.normPhone(phone).length < 10) { toast("전화번호를 입력한 뒤 눌러 주세요"); $("inPhone").focus(); return; }

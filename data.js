@@ -27,6 +27,16 @@ window.GAME_DATA = {
     mapImage: "map.jpg",
     gameOpen: true,
     adminPin: "6842",
+    /* ---- 항해 패스 게이트 ----
+       패스를 산 사람만 항해를 시작할 수 있게 막는다. 매표소에서 결제한 사람에게만
+       스태프가 패스 QR 을 보여주고, 참가자가 자기 폰으로 찍으면 열린다.
+       passRequired 를 false 로 두면 예전처럼 누구나 바로 시작한다(리허설용).
+       passCode 는 make_qr.py 가 만드는 QR 주소(?p=…)에 그대로 들어간다.
+       QR 은 벽에 붙이지 말고 스태프가 들고 있다가 결제한 사람에게만 보여줄 것. */
+    passRequired: true,
+    passCode: "GGG-PASS-2026",
+    passPrice: "6,000원",
+    passDeskName: "매표소",
     /* GPS 보물찾기 — 도착 인정 반경(미터). 지점 간 실제 간격이 좁으면 줄이고,
        GPS 오차가 크게 나오는 현장이면 늘린다. 지점별로 다르게 주고 싶으면
        gpsPoints의 개별 항목에 radius를 넣으면 그게 우선한다. */

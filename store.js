@@ -79,6 +79,7 @@ window.Store = (function () {
     return {
       pid: newId(), nickname: "", phone: "",
       createdAt: Date.now(),
+      pass: false, passAt: 0,      // 항해 패스 구입 확인 여부(스태프 QR)
       found: [], letters: [], nextTargetId: null,
       cleared: false, clearedAt: 0,
       rewardIssued: false, rewardNo: "",
@@ -186,6 +187,25 @@ window.Store = (function () {
       if (m && m.phone === key) { m.rewardIssued = true; m.rewardIssuedAt = patch.rewardIssuedAt; write(KEY_ME, m); }
     });
   }
+  /* 스태프가 참가자 문서의 일부 필드만 고쳐준다(항해 패스 수동 개시 등).
+     서버·로컬 캐시·내 기록을 한꺼번에 맞춘다. */
+  function patchRemote(phone, fields) {
+    if (!db) return Promise.reject(new Error("서버에 연결돼 있지 않습니다"));
+    var key = normPhone(phone);
+    return db.collection(COL).doc(key).set(fields, { merge: true }).then(function () {
+      var all = read(KEY_ALL, {});
+      if (all[key]) {
+        for (var k in fields) if (fields.hasOwnProperty(k)) all[key][k] = fields[k];
+        write(KEY_ALL, all);
+      }
+      var m = me();
+      if (m && m.phone === key) {
+        for (var k2 in fields) if (fields.hasOwnProperty(k2)) m[k2] = fields[k2];
+        write(KEY_ME, m);
+      }
+    });
+  }
+
   /* 행사 종료 후 개인정보 파기용(§개인정보 안내문). 이 기기가 아는 참가자만 지울 수 있다 —
      이 기기가 한 번도 못 본 참가자(다른 스태프 폰에서만 접속한 사람)까지 완전히 지우려면
      Firebase 콘솔이나 `firebase firestore:delete gwasuwonpiece_players -r`로 컬렉션 전체를
@@ -214,6 +234,7 @@ window.Store = (function () {
     register: register, restore: restore, restoreRemote: restoreRemote, normPhone: normPhone,
     players: players, updatePlayer: updatePlayer,
     removePlayer: removePlayer, wipePlayers: wipePlayers,
-    fetchRemote: fetchRemote, issueRemote: issueRemote, deleteRemote: deleteRemote
+    fetchRemote: fetchRemote, issueRemote: issueRemote, patchRemote: patchRemote,
+    deleteRemote: deleteRemote
   };
 })();
