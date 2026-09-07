@@ -1,0 +1,264 @@
+/* ══════════════════════════════════════════════
+   참가 신청 페이지 공통 스타일
+   apply.html / apply-booth.html / apply-stage.html
+   guide.html · cosplay.html 과 같은 라이트 에디토리얼 톤
+   ══════════════════════════════════════════════ */
+:root{
+  --bg:#FBF7EE; --surface:#FFFFFF; --surface-2:#F4EEDD;
+  --ink:#20281F; --ink-2:#4A5445; --muted:#6B6650;
+  --line:#E4DCC4; --line-soft:#EEE8D6;
+  --accent:#D9641E; --accent-2:#B34D14; --accent-soft:#F7DFC4;
+  --leaf:#2E6B4F; --leaf-soft:#DCEAE1;
+  --gold:#B8862A; --gold-soft:#F1E3BE;
+  --danger:#B3432F; --danger-soft:#F6DFD8;
+  --ink-on-accent:#FBF7EE;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#181B14; --surface:#20241B; --surface-2:#262A1E;
+    --ink:#F3EFDF; --ink-2:#C7C4AE; --muted:#8E9280;
+    --line:#33372A; --line-soft:#2B2E22;
+    --accent:#E9843C; --accent-2:#F5A25D; --accent-soft:#3A2A18;
+    --leaf:#7FBB98; --leaf-soft:#22301F;
+    --gold:#D9AE54; --gold-soft:#332B14;
+    --danger:#E8836C; --danger-soft:#3A211B;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#181B14; --surface:#20241B; --surface-2:#262A1E;
+  --ink:#F3EFDF; --ink-2:#C7C4AE; --muted:#8E9280;
+  --line:#33372A; --line-soft:#2B2E22;
+  --accent:#E9843C; --accent-2:#F5A25D; --accent-soft:#3A2A18;
+  --leaf:#7FBB98; --leaf-soft:#22301F;
+  --gold:#D9AE54; --gold-soft:#332B14;
+  --danger:#E8836C; --danger-soft:#3A211B;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans KR","Malgun Gothic",sans-serif;
+  font-weight:400;font-size:19px;line-height:1.75;-webkit-font-smoothing:antialiased;
+  word-break:keep-all;overflow-wrap:break-word;
+}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px 90px}
+h1,h2,h3{font-family:"Hahmlet","Malgun Gothic",serif;text-wrap:balance;margin:0}
+p{margin:0}
+strong{font-weight:600;color:var(--ink)}
+a{color:var(--accent)}
+.mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);
+}
+
+/* ── 돌아가기 ── */
+.back-bar{padding:18px 0 0}
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--muted);
+  border:1px solid var(--line);padding:8px 15px;border-radius:999px;background:var(--surface);
+}
+.back-link:hover{color:var(--ink);border-color:var(--ink-2)}
+
+/* ── 헤더 ── */
+.hero{padding:28px 0 6px}
+.hero h1{font-size:clamp(34px,8vw,46px);font-weight:700;line-height:1.32;margin-top:10px}
+.hero p.lede{margin-top:14px;font-size:19px;color:var(--ink-2);max-width:46ch}
+
+/* ── 종목 선택 (허브) ── */
+.picker{margin-top:30px;display:flex;flex-direction:column;gap:13px}
+.pick{
+  display:flex;gap:15px;align-items:center;text-decoration:none;
+  background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:21px 20px;
+  color:var(--ink);transition:border-color .16s,transform .16s,box-shadow .16s;
+}
+.pick:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.06)}
+.pick .ic{
+  flex:none;width:48px;height:48px;border-radius:50%;background:var(--accent-soft);border:1px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.pick .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.pick .tt{font-family:"Hahmlet",serif;font-size:21px;font-weight:600;line-height:1.4}
+.pick .ds{font-size:16px;color:var(--ink-2);line-height:1.6}
+.pick .go{margin-top:3px;font-family:"IBM Plex Mono",monospace;font-size:14.5px;font-weight:600;color:var(--accent)}
+.pick .ar{flex:none;color:var(--muted);font-size:20px}
+
+/* ── 요약 정보 ── */
+.facts{margin-top:24px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.fact{display:flex;gap:14px;padding:13px 17px;font-size:17px}
+.fact + .fact{border-top:1px solid var(--line-soft)}
+.fact dt{flex:none;width:96px;color:var(--muted);font-size:15.5px;font-family:"IBM Plex Mono",monospace;margin:0}
+.fact dd{margin:0;color:var(--ink-2);flex:1}
+.fact dd b{color:var(--ink);font-weight:600}
+
+/* ── 선착순 잔여 자리 ── */
+.slots{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px 21px}
+.slots-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.slots-lab{font-family:"IBM Plex Mono",monospace;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.slots-n{font-family:"Hahmlet",serif;font-size:30px;font-weight:700;line-height:1;color:var(--accent-2);font-variant-numeric:tabular-nums}
+.slots-of{font-size:16px;color:var(--muted)}
+.slots-state{margin-left:auto;font-size:15px;color:var(--muted)}
+.slots-bar{margin-top:13px;height:9px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.slots-fill{height:100%;width:0;background:var(--accent);transition:width .6s cubic-bezier(.2,.7,.3,1)}
+.slots-fill.full{background:var(--gold)}
+.slots-note{margin-top:11px;font-size:15.5px;color:var(--muted);line-height:1.6}
+
+/* ── 안내 박스 ── */
+.notice{
+  margin-top:16px;border-radius:4px;padding:15px 17px;font-size:16.5px;line-height:1.65;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.notice.ok{background:var(--leaf-soft);border:1px solid var(--leaf)}
+.notice.warn{background:var(--danger-soft);border:1px solid var(--danger)}
+.notice.gold{background:var(--gold-soft);border:1px solid var(--gold)}
+.notice .mark{
+  flex:none;font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:13.5px;
+  border-radius:999px;padding:2px 9px;margin-top:2px;white-space:nowrap;color:#fff;
+}
+.notice.ok .mark{background:var(--leaf)}
+.notice.warn .mark{background:var(--danger)}
+.notice.gold .mark{background:var(--gold)}
+
+/* ── 진행 단계 ── */
+.flow{margin-top:22px;display:flex;flex-direction:column}
+.flow-i{display:flex;gap:14px;padding:14px 0}
+.flow-i + .flow-i{border-top:1px dashed var(--line)}
+.flow-n{
+  flex:none;width:29px;height:29px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace;
+  font-size:14px;font-weight:700;color:var(--ink-2);
+}
+.flow-b{flex:1}
+.flow-b .ft{font-size:17.5px;font-weight:600;display:block}
+.flow-b .fd{font-size:16px;color:var(--muted);line-height:1.6;display:block}
+
+/* ── 폼 ── */
+form{margin-top:34px}
+.form-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.form-head h3{font-size:22px;font-weight:600}
+.form-head .line{flex:1;height:1px;background:var(--line)}
+
+.f{margin-bottom:20px}
+.f label{display:block;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:7px}
+.f label .req{color:var(--accent-2);margin-left:3px}
+.f label .opt{color:var(--muted);font-weight:400;font-size:14.5px;margin-left:5px}
+.f .hint{font-size:14.5px;color:var(--muted);line-height:1.55;margin-bottom:8px}
+.f input[type=text],.f input[type=tel],.f textarea,.f select{
+  width:100%;font-family:inherit;font-size:17px;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:4px;padding:12px 14px;line-height:1.5;
+  -webkit-appearance:none;appearance:none;
+}
+.f select{
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 22px,calc(100% - 14px) 22px;background-size:5px 5px,5px 5px;
+  background-repeat:no-repeat;padding-right:40px;
+}
+.f textarea{min-height:96px;resize:vertical}
+.f input:focus,.f textarea:focus,.f select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.f input.bad,.f textarea.bad,.f select.bad{border-color:var(--danger);background:var(--danger-soft)}
+.f .err,.agree .err{display:none;font-size:14.5px;color:var(--danger);margin-top:6px;font-weight:500}
+.f.invalid .err,.agree.invalid .err{display:block}
+
+.row2{display:flex;gap:12px}
+.row2 > *{flex:1;min-width:0}
+@media (max-width:520px){.row2{flex-direction:column;gap:0}}
+
+.opts{display:flex;flex-direction:column;gap:9px}
+.opts.h{flex-direction:row;flex-wrap:wrap}
+.opts.h .opt-c{flex:1;min-width:130px}
+.opt-c{
+  display:flex;gap:11px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);
+  border-radius:5px;padding:13px 15px;cursor:pointer;transition:border-color .15s,background .15s;
+}
+.opt-c:hover{border-color:var(--accent-2)}
+.opt-c input{flex:none;margin:5px 0 0;accent-color:var(--accent);width:17px;height:17px}
+.opt-c .ot{font-size:16.5px;font-weight:500;line-height:1.45;display:block}
+.opt-c .od{font-size:14.5px;color:var(--muted);line-height:1.5;margin-top:1px;display:block}
+.opt-c:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+
+.agree{margin-top:26px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:18px 19px}
+.agree h4{margin:0 0 9px;font-family:"Hahmlet",serif;font-size:17.5px;font-weight:600}
+.agree p{font-size:15.5px;color:var(--ink-2);line-height:1.7}
+.agree .opt-c{margin-top:13px;background:var(--surface)}
+
+.submit-bar{margin-top:26px}
+.btn{
+  width:100%;font-family:inherit;font-size:18.5px;font-weight:600;color:var(--ink-on-accent);
+  background:var(--accent);border:none;border-radius:5px;padding:17px;cursor:pointer;
+  transition:background .15s,transform .1s;letter-spacing:.01em;
+}
+.btn:hover{background:var(--accent-2)}
+.btn:active{transform:scale(.99)}
+.btn:disabled{background:var(--muted);cursor:not-allowed}
+.submit-note{margin-top:11px;font-size:14.5px;color:var(--muted);text-align:center}
+.form-msg{margin-top:14px;display:none;font-size:16px;padding:13px 15px;border-radius:4px}
+.form-msg.show{display:block}
+.form-msg.bad{background:var(--danger-soft);border:1px solid var(--danger);color:var(--ink)}
+
+/* ── 상태 화면 (완료 · 오픈전 · 마감) ── */
+.state{display:none;margin-top:34px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 24px}
+.state.on{display:block}
+.state .seal{
+  width:64px;height:64px;border-radius:50%;background:var(--leaf-soft);border:1px solid var(--leaf);
+  display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 16px;
+}
+.state.gold .seal{background:var(--gold-soft);border-color:var(--gold)}
+.state.mute .seal{background:var(--surface-2);border-color:var(--line)}
+.state h2{font-size:26px;font-weight:600}
+.state p{margin-top:11px;font-size:17px;color:var(--ink-2)}
+.state .code{
+  margin:20px auto 0;display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:600;
+  letter-spacing:.06em;background:var(--surface-2);border:1px dashed var(--line);border-radius:5px;padding:11px 20px;
+}
+.state .code-cap{font-size:14px;color:var(--muted);margin-top:8px}
+.state .next{margin-top:24px;text-align:left;border-top:1px solid var(--line-soft);padding-top:20px}
+
+/* 오픈 시각 크게 */
+.opens{
+  margin:20px auto 0;display:inline-block;font-family:"Hahmlet",serif;font-size:26px;font-weight:700;
+  color:var(--accent-2);background:var(--accent-soft);border:1px solid var(--accent);
+  border-radius:6px;padding:13px 24px;line-height:1.4;
+}
+.countdown{margin-top:14px;font-family:"IBM Plex Mono",monospace;font-size:16px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ── 마무리 ── */
+.closing{margin-top:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:24px 22px;text-align:center}
+.closing h3{font-size:21px;font-weight:600;margin-bottom:10px}
+.closing p{font-size:17px;color:var(--ink-2)}
+.closing a{font-weight:600;text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
+footer{padding:24px 0 4px;font-size:14px;color:var(--muted);text-align:center}
+
+/* ── 행사 D-day 배지 ── */
+.dday{
+  display:inline-flex;align-items:center;gap:9px;margin-top:16px;
+  background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 16px 7px 9px;
+  font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--ink-2);
+}
+.dday b{
+  font-family:"Hahmlet",serif;font-size:17px;font-weight:700;color:var(--ink-on-accent);
+  background:var(--accent);border-radius:999px;padding:3px 12px;letter-spacing:.02em;
+}
+
+/* ── 오픈 예정 / 마감 배너 (안내는 그대로 보이고 신청서만 잠긴다) ── */
+.gate{
+  margin-top:30px;border-radius:7px;padding:26px 24px;text-align:center;
+  background:var(--accent-soft);border:1px solid var(--accent);
+}
+.gate.shut{background:var(--surface-2);border-color:var(--line)}
+.gate-lab{
+  font-family:"IBM Plex Mono",monospace;font-size:14px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--accent-2);
+}
+.gate.shut .gate-lab{color:var(--muted)}
+.gate-when{
+  margin-top:9px;font-family:"Hahmlet",serif;font-size:clamp(22px,5.4vw,28px);font-weight:700;
+  line-height:1.4;color:var(--ink);
+}
+.gate-sub{margin-top:10px;font-size:16.5px;color:var(--ink-2);line-height:1.65}
+.gate-count{
+  display:inline-block;margin-top:15px;font-family:"IBM Plex Mono",monospace;font-size:15px;
+  color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 16px;
+}

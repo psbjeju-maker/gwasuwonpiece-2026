@@ -109,6 +109,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   <button data-tab="t4">GPS 지점</button>
   <button data-tab="t6">투표</button>
   <button data-tab="t7">퀘스트 대사</button>
+  <button data-tab="t9">신청 관리</button>
   <button data-tab="t5">데이터</button>
 </nav>
 
@@ -312,6 +313,39 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 </section>
 
 <!-- ═══ 데이터 ═══ -->
+<!-- ═══ 참가 신청 관리 (부스 / 노래방 / 댄스) ═══ -->
+<section class="tab" id="t9">
+  <div class="note">
+    <b>apply.html</b>로 들어온 신청서를 서버(Firestore <code>gwasuwonpiece_applications</code>)에서 바로 불러옵니다.
+    이 기기에 기록이 없어도 인터넷만 되면 어디서든 보입니다. 상태를 바꾸면 즉시 서버에 저장됩니다.
+  </div>
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>종목</label>
+        <select id="apType" style="min-width:150px">
+          <option value="">전체</option>
+          <option value="booth">마켓 부스</option>
+          <option value="stage">노래방 · 댄스 대회</option>
+        </select>
+      </div>
+      <div>
+        <label>상태</label>
+        <select id="apStatus" style="min-width:150px">
+          <option value="">전체</option>
+          <option value="pending">대기</option>
+          <option value="accepted">선정</option>
+          <option value="rejected">미선정</option>
+        </select>
+      </div>
+      <button class="b pri" id="btnApLoad" style="align-self:flex-end">불러오기</button>
+      <button class="b" id="btnApCsv" style="align-self:flex-end">CSV 내려받기</button>
+    </div>
+  </div>
+  <div id="apStats" class="stats"></div>
+  <div id="apList"></div>
+</section>
+
 <section class="tab" id="t5">
   <div class="note warn">
     <b>행사가 끝나면 참가자 데이터를 삭제하세요.</b> 이름·전화번호가 저장되어 있습니다.
@@ -486,6 +520,143 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     box.innerHTML = "<p class='help'>조회 중…</p>";
     Store.fetchRemote(phone).then(renderTicketResult)
       .catch(function(){ box.innerHTML = "<div class='note'>조회 중 오류가 발생했습니다.</div>"; });
+  });
+
+  /* ── 참가 신청 관리 (apply.html → Firestore) ── */
+  var AP_COL   = "gwasuwonpiece_applications";
+  var AP_LABEL = { booth:"마켓 부스", song:"노래방 대회", dance:"댄스 대회", stage:"노래 · 댄스" };
+  var AP_STAGE_LIMIT = 10;   // 무대는 노래·댄스 합쳐 선착순 정원
+  var apCache  = [];
+
+  function apDb(){
+    try { return (window.firebase && window.firebase.apps && window.firebase.apps.length)
+      ? window.firebase.firestore() : null; } catch(e){ return null; }
+  }
+  function apPhone(v){ var n=String(v||"").replace(/[^0-9]/g,"");
+    return n.length===11 ? n.slice(0,3)+"-"+n.slice(3,7)+"-"+n.slice(7) : n; }
+
+  function apLoad(){
+    var box = $("apList"), db = apDb();
+    if (!db) { box.innerHTML = "<div class='note' style='border-left-color:var(--gold);background:var(--gold-soft)'>서버에 연결돼 있지 않습니다. 인터넷 연결을 확인하고 새로고침해 보세요.</div>"; return; }
+    box.innerHTML = "<p class='help'>불러오는 중…</p>";
+    db.collection(AP_COL).get().then(function(snap){
+      apCache = [];
+      snap.forEach(function(d){ var o=d.data()||{}; o._id=d.id; apCache.push(o); });
+      apCache.sort(function(a,b){ return String(b.createdAt||"").localeCompare(String(a.createdAt||"")); });
+      apRender();
+    }).catch(function(e){
+      box.innerHTML = "<div class='note'>불러오지 못했습니다: "+esc(e&&e.message)+"</div>";
+    });
+  }
+
+  /* 무대 선착순 — 반려한 건은 자리를 비워준다(apply.html 과 같은 기준) */
+  function apStageTaken(){
+    return apCache.filter(function(r){
+      return r.type==="stage" && r.status!=="rejected" && r.slot!=="wait"; }).length;
+  }
+  function apStageWait(){
+    return apCache.filter(function(r){
+      return r.type==="stage" && r.status!=="rejected" && r.slot==="wait"; }).length;
+  }
+  function apGenre(g){
+    return apCache.filter(function(r){
+      return r.type==="stage" && r.status!=="rejected" && r.slot!=="wait" && r.genre===g; }).length;
+  }
+
+  function apFiltered(){
+    var t = $("apType").value, st = $("apStatus").value;
+    return apCache.filter(function(r){
+      return (!t || r.type===t) && (!st || (r.status||"pending")===st);
+    });
+  }
+
+  function apRender(){
+    var rows = apFiltered();
+    var all  = apCache;
+    var n = function(t,s){ return all.filter(function(r){
+      return (!t||r.type===t) && (!s||(r.status||"pending")===s); }).length; };
+    $("apStats").innerHTML =
+      stat("전체 신청", all.length) +
+      stat("부스 대기/선정", n("booth","pending")+" / "+n("booth","accepted")) +
+      stat("무대 확정", apStageTaken()+" / "+AP_STAGE_LIMIT+"팀") +
+      stat("무대 대기", apStageWait()+"팀") +
+      stat("노래 / 댄스", apGenre("노래")+" / "+apGenre("댄스"));
+
+    if (!rows.length) { $("apList").innerHTML = "<div class='note'>해당하는 신청이 없습니다.</div>"; return; }
+
+    $("apList").innerHTML = rows.map(function(r){
+      var st = r.status || "pending";
+      var pill = st==="accepted" ? "<span class='pill ok'>선정</span>"
+               : st==="rejected" ? "<span class='pill no'>미선정</span>"
+               : "<span class='pill wait'>대기</span>";
+      var head = "<div style='display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px'>"+
+        "<b style='font-size:15px'>"+esc(r.teamName || r.name || "이름없음")+"</b>"+
+        "<span class='pill no'>"+esc(AP_LABEL[r.type]||r.type)+"</span>"+pill+
+        (r.type==="stage" && r.slot==="wait"
+          ? "<span class='pill wait'>대기 "+esc(r.waitNo||"?")+"번</span>" : "")+
+        "<span class='n' style='margin-left:auto;font-size:11.5px;color:var(--ink-3)'>"+
+        esc(r.code||"")+" · "+(r.createdAt?new Date(r.createdAt).toLocaleDateString("ko-KR"):"")+"</span></div>";
+
+      var lines = [["신청자", esc(r.name)+" · "+apPhone(r.phone)]];
+      if (r.type==="booth") {
+        lines.push(["존 · 테이블", esc(r.zone)+" · 테이블 "+esc(r.tables)+"개 ("+(Number(r.tables||0)*50000).toLocaleString()+"원)"]);
+        lines.push(["전기", esc(r.power)]);
+        lines.push(["판매 품목", esc(r.items)]);
+        if (r.snsUrl) lines.push(["채널", "<a href='"+esc(r.snsUrl)+"' target='_blank' rel='noopener'>"+esc(r.snsUrl)+"</a>"]);
+      } else {
+        if (r.genre) lines.push(["종목", esc(r.genre)]);
+        lines.push(["곡", esc(r.songTitle)+" — "+esc(r.songArtist)]);
+        lines.push(["음원", esc(r.mr)+(r.mrUrl?" · <a href='"+esc(r.mrUrl)+"' target='_blank' rel='noopener'>링크</a>":"")]);
+      }
+      if (r.memo) lines.push(["메모", esc(r.memo)]);
+
+      var body = "<div style='font-size:13px;line-height:1.9'>"+lines.map(function(l){
+        return "<div style='display:flex;gap:12px'><span style='flex:none;width:74px;color:var(--ink-3)'>"+l[0]+"</span><span>"+l[1]+"</span></div>";
+      }).join("")+"</div>";
+
+      var btns = "<div class='row' style='margin-top:12px'>"+
+        "<button class='b sm pri' data-apst='accepted' data-apid='"+esc(r._id)+"'>선정</button>"+
+        "<button class='b sm' data-apst='pending' data-apid='"+esc(r._id)+"'>대기로</button>"+
+        "<button class='b sm dan' data-apst='rejected' data-apid='"+esc(r._id)+"'>미선정</button>"+
+        "</div>";
+      return "<div class='card'>"+head+body+btns+"</div>";
+    }).join("");
+
+    $("apList").querySelectorAll("[data-apst]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var db = apDb(); if (!db) { alert("서버에 연결돼 있지 않습니다."); return; }
+        var id = b.dataset.apid, st = b.dataset.apst;
+        b.disabled = true;
+        db.collection(AP_COL).doc(id).set({ status: st, statusAt: new Date().toISOString() }, { merge:true })
+          .then(function(){
+            apCache.forEach(function(r){ if (r._id===id) { r.status = st; } });
+            apRender();
+          })
+          .catch(function(e){ b.disabled=false; alert("저장 실패: "+(e&&e.message)); });
+      });
+    });
+  }
+
+  function apCsv(){
+    var rows = apFiltered();
+    if (!rows.length) { alert("내려받을 신청이 없습니다."); return; }
+    var cols = ["code","type","status","slot","waitNo","genre","teamName","name","phone","zone","tables","power",
+                "items","snsUrl","songTitle","songArtist","mr","mrUrl","memo","createdAt"];
+    var q = function(v){ return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'; };
+    var csv = "\ufeff" + cols.join(",") + "\n" +
+      rows.map(function(r){ return cols.map(function(c){ return q(r[c]); }).join(","); }).join("\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type:"text/csv;charset=utf-8" }));
+    a.download = "과수원피스_신청_" + new Date().toISOString().slice(0,10) + ".csv";
+    a.click();
+  }
+
+  $("btnApLoad").addEventListener("click", apLoad);
+  $("btnApCsv").addEventListener("click", apCsv);
+  $("apType").addEventListener("change", apRender);
+  $("apStatus").addEventListener("change", apRender);
+  document.querySelector('nav button[data-tab="t9"]').addEventListener("click", function(){
+    if (!apCache.length) apLoad();
   });
 
   function fillGive(){

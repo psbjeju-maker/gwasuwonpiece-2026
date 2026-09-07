@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>노래방 · 댄스 대회 신청 · 과수원피스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="apply.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="back-bar">
+    <a class="back-link" href="apply.html">← 참가 신청으로 돌아가기</a>
+  </div>
+
+  <div class="hero">
+    <p class="eyebrow">Stage</p>
+    <h1>노래방 · 댄스 대회 신청</h1>
+    <p class="lede">한 무대에서 노래와 댄스 공연을 이어서 진행합니다.<br>
+    노래와 댄스 두 종목을 합쳐 총 10팀만 선착순으로 모집하오니, 참가를 생각하고 계시다면 서둘러 신청해 주세요!</p>
+    <p class="dday"><b data-dday>—</b><span>10월 31일(토) 행사까지</span></p>
+  </div>
+
+  <!-- 안내는 언제나 보인다 -->
+  <div id="stOpen">
+
+    <div class="slots" id="slotBox">
+      <div class="slots-top">
+        <span class="slots-lab">남은 자리</span>
+        <span class="slots-n" id="slotLeft">—</span>
+        <span class="slots-of">/ 10팀</span>
+        <span class="slots-state" id="slotState">확인 중…</span>
+      </div>
+      <div class="slots-bar"><div class="slots-fill" id="slotFill"></div></div>
+      <p class="slots-note" id="slotNote">노래·댄스를 합쳐서 셉니다.</p>
+    </div>
+
+    <dl class="facts">
+      <div class="fact"><dt>무대 시간</dt><dd><b>10월 31일(토) 14:00 ~ 15:00</b> — 메인 무대</dd></div>
+      <div class="fact"><dt>참가비</dt><dd><b>없음</b> — 항해 패스도 필요 없습니다</dd></div>
+      <div class="fact"><dt>정원</dt><dd>노래 · 댄스 합쳐 <b>10팀 선착순</b> (이후는 대기 접수)</dd></div>
+      <div class="fact"><dt>곡 수</dt><dd>1인(팀) <b>1곡</b> · <b>3분 ~ 5분 이내</b></dd></div>
+      <div class="fact"><dt>순위</dt><dd>관객이 <b>앱 실시간 투표</b>로 결정 → <b>응모권 지급</b></dd></div>
+      <div class="fact"><dt>접수 기간</dt><dd class="mono" data-f="stagePeriod">—</dd></div>
+    </dl>
+
+    <div class="notice ok">
+      <span class="mark">코스프레</span>
+      <span>코스프레 차림으로 올라오셔도 좋습니다. 복장 기준은 <a href="cosplay.html">코스프레 규정 안내</a>를 참고해 주세요.</span>
+    </div>
+    <div class="notice ok">
+      <span class="mark">랜덤</span>
+      <span>15:00 <strong>랜덤 플레이 댄스</strong>는 신청 없이 누구나 현장에서 바로 참여합니다. 이 신청과 무관해요.</span>
+    </div>
+    <div class="notice warn">
+      <span class="mark">음원</span>
+      <span>야외 행사라 통신이 불안정할 수 있습니다. 유튜브로 신청하셔도 <strong>스태프가 미리 받아둘 수 있게 링크를 꼭 적어</strong> 주세요.</span>
+    </div>
+
+    <!-- 접수 전 -->
+    <div class="gate" id="stBefore" hidden>
+      <p class="gate-lab">신청 오픈</p>
+      <p class="gate-when" id="openAt">—</p>
+      <p class="gate-sub">10팀 선착순이니 시간 맞춰 와 주세요.<br>지금은 위 안내만 먼저 확인해 주세요.</p>
+      <p class="gate-count" id="countdown"></p>
+    </div>
+
+    <!-- 접수 마감 -->
+    <div class="gate shut" id="stClosed" hidden>
+      <p class="gate-lab">접수 마감</p>
+      <p class="gate-when">사전 접수가 마감됐습니다</p>
+      <p class="gate-sub">당일 <b>빈자리가 생기면 현장에서</b> 받으니, 무대 옆 스태프에게 물어봐 주세요.</p>
+    </div>
+
+    <form id="fStage" novalidate>
+      <div class="form-head"><h3>신청서</h3><span class="line"></span></div>
+
+      <div class="notice gold" id="waitBanner" style="display:none;margin-top:0;margin-bottom:20px">
+        <span class="mark">대기</span>
+        <span>확정 10팀이 모두 찼습니다. 지금 신청하시면 <strong>대기 순번</strong>으로 접수되고, 앞 팀이 취소하면 순번대로 연락드립니다.</span>
+      </div>
+
+      <div class="f"><label>참가 종목<span class="req">*</span></label>
+        <div class="opts h">
+          <label class="opt-c"><input type="radio" name="genre" value="노래"><span class="ot">🎤 노래</span></label>
+          <label class="opt-c"><input type="radio" name="genre" value="댄스"><span class="ot">💃 댄스</span></label>
+        </div>
+        <p class="err">참가하실 종목을 선택해 주세요.</p></div>
+
+      <div class="row2">
+        <div class="f"><label>대표자 이름<span class="req">*</span></label>
+          <input type="text" name="name" maxlength="20" autocomplete="name">
+          <p class="err">이름을 입력해 주세요.</p></div>
+        <div class="f"><label>연락처<span class="req">*</span></label>
+          <input type="tel" name="phone" placeholder="010-0000-0000" inputmode="numeric" autocomplete="tel">
+          <p class="err">연락 가능한 휴대폰 번호를 정확히 입력해 주세요.</p></div>
+      </div>
+
+      <div class="f"><label>무대 이름 / 팀명<span class="opt">선택</span></label>
+        <p class="hint">사회자가 무대에서 불러드릴 이름입니다. 비워두시면 대표자 이름으로 소개해 드려요.</p>
+        <input type="text" name="teamName" maxlength="30"></div>
+
+      <div class="row2">
+        <div class="f"><label>곡명<span class="req">*</span></label>
+          <input type="text" name="songTitle" maxlength="80">
+          <p class="err">곡명을 입력해 주세요.</p></div>
+        <div class="f"><label>아티스트 / 작품명<span class="req">*</span></label>
+          <input type="text" name="songArtist" maxlength="80" placeholder="예) LiSA / 귀멸의 칼날 OP">
+          <p class="err">아티스트나 작품명을 입력해 주세요.</p></div>
+      </div>
+
+      <div class="f"><label>음원(MR) 준비<span class="req">*</span></label>
+        <div class="opts">
+          <label class="opt-c"><input type="radio" name="mr" value="직접 준비"><span><span class="ot">직접 준비해서 가져갑니다</span><span class="od">USB 또는 휴대폰 — 당일 스태프에게 전달</span></span></label>
+          <label class="opt-c"><input type="radio" name="mr" value="유튜브 링크"><span><span class="ot">유튜브 링크로 신청합니다</span><span class="od">아래에 링크를 적어 주세요</span></span></label>
+          <label class="opt-c"><input type="radio" name="mr" value="준비 요청"><span><span class="ot">준비를 부탁드립니다</span><span class="od">스태프가 곡명으로 찾아 준비합니다</span></span></label>
+        </div>
+        <p class="err">음원 준비 방식을 선택해 주세요.</p></div>
+
+      <div class="f"><label>음원 링크<span class="opt">유튜브 선택 시</span></label>
+        <input type="text" name="mrUrl" maxlength="200" placeholder="https://youtu.be/..."></div>
+
+      <div class="f"><label>남기실 말씀<span class="opt">선택</span></label>
+        <textarea name="memo" maxlength="400" placeholder="마이크 개수, 코스프레 캐릭터, 바닥에 눕거나 도는 안무 여부 등"></textarea></div>
+
+      <div class="agree">
+        <h4>개인정보 수집·이용 안내</h4>
+        <p>수집 항목은 <strong>이름 · 연락처 · 무대 정보</strong>이며, <strong>대회 진행과 순서 안내 목적</strong>으로만 사용합니다. 행사 종료 후 <strong>1개월 이내에 파기</strong>합니다. 무대 사진·영상은 행사 홍보에 사용될 수 있습니다.</p>
+        <label class="opt-c"><input type="checkbox" name="agree"><span class="ot">위 내용에 동의합니다</span></label>
+        <p class="err" style="margin-top:8px">동의가 필요합니다.</p>
+      </div>
+
+      <div class="submit-bar">
+        <button class="btn" type="submit">무대 신청하기</button>
+        <p class="submit-note">제출 후에도 같은 번호로 다시 신청하시면 내용이 갱신됩니다.</p>
+        <div class="form-msg bad"></div>
+      </div>
+    </form>
+  </div>
+
+  <!-- 제출 완료 (확정) -->
+  <div class="state" id="stDone">
+    <div class="seal">🎤</div>
+    <h2>신청이 접수됐습니다</h2>
+    <p>무대 순서는 <b>행사 3일 전</b>에 문자로 알려드립니다.<br>당일 <b>13:40까지</b> 무대 옆 스태프에게 오셔서 확인해 주세요.</p>
+    <div class="code" id="doneCode">—</div>
+    <p class="code-cap">접수번호 — 문의하실 때 알려주시면 빠릅니다</p>
+  </div>
+
+  <!-- 제출 완료 (대기) -->
+  <div class="state gold" id="stWait">
+    <div class="seal">⏳</div>
+    <h2>대기 순번으로 접수됐습니다</h2>
+    <p>확정 10팀이 이미 차서 <b id="waitNo">—</b>으로 접수됐습니다.<br>앞 팀이 취소하면 순번대로 연락드립니다.</p>
+    <div class="code" id="waitCode">—</div>
+    <p class="code-cap">접수번호 — 문의하실 때 알려주시면 빠릅니다</p>
+    <div class="next">
+      <div class="notice ok" style="margin-top:0"><span class="mark">현장</span><span>연락을 못 받으셨더라도 <strong>당일 무대 옆 스태프에게 오시면</strong> 빈자리가 생겼을 때 바로 올려드립니다.</span></div>
+    </div>
+  </div>
+
+  <div class="closing">
+    <h3>신청 전에 궁금한 점이 있다면</h3>
+    <p><a href="tel:064-742-0083">064-742-0083</a>으로 전화 주시거나<br>
+    <a href="https://litt.ly/psb_jeju" target="_blank" rel="noopener">박서방 제주지점 SNS</a>로 문의해 주세요.</p>
+  </div>
+
+  <footer>과수원피스 · 2026.10.31 (토) 금능석물원</footer>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="apply-core.js"></script>
+<script>
+(function () {
+  var A  = window.Apply;
+  var SC = A.SCHEDULE.stage;
+  var LIMIT = A.STAGE_LIMIT;
+
+  document.querySelectorAll('[data-f="stagePeriod"]').forEach(function (el) {
+    el.textContent = A.fmtDate(SC.open) + " " + A.fmtTime(SC.open) + " ~ " + A.fmtDate(SC.close);
+  });
+
+  /* ── 접수 창 열고 닫기 ── */
+  A.paintDday();
+
+  function applyWindow() {
+    var st = A.windowState("stage");
+    A.el("fStage").hidden   = (st !== "open");
+    A.el("stBefore").hidden = (st !== "before");
+    A.el("stClosed").hidden = (st !== "closed");
+    A.el("slotBox").hidden  = (st === "before");   // 열리기 전에는 잔여 자리 카운터를 감춘다
+    if (st === "before") {
+      A.el("openAt").textContent    = A.fmtFull(SC.open);
+      A.el("countdown").textContent = A.untilText("stage");
+    }
+    return st;
+  }
+  var state = applyWindow();
+  if (state === "before") {
+    /* 오픈 시각이 지나면 새로고침 없이 알아서 열린다 */
+    var tick = setInterval(function () {
+      if (applyWindow() === "open") { clearInterval(tick); refreshSlots(); }
+    }, 20000);
+  }
+
+  /* ── 잔여 자리 ── */
+  function paint(c) {
+    var left = Math.max(0, c.limit - c.main);
+    A.el("slotLeft").textContent  = left;
+    A.el("slotState").textContent = left > 0 ? (c.main + "팀 접수됨")
+                                             : ("확정 마감 · 대기 " + c.wait + "팀");
+    var fill = A.el("slotFill");
+    fill.style.width = Math.min(100, Math.round(c.main / c.limit * 100)) + "%";
+    fill.classList.toggle("full", left === 0);
+    A.el("slotNote").textContent = left > 0
+      ? "노래·댄스를 합쳐서 셉니다. 10팀이 차도 신청은 계속 받고, 그 뒤로는 대기 순번으로 올라갑니다."
+      : "확정 10팀은 찼지만 신청은 계속 받습니다. 지금 내시면 대기 순번으로 접수되고, 취소가 나오면 순번대로 올라갑니다.";
+    A.el("waitBanner").style.display = left > 0 ? "none" : "";
+  }
+  function refreshSlots() {
+    if (A.el("slotBox").hidden) return;
+    A.countStage().then(paint).catch(function () {
+      A.el("slotLeft").textContent  = "?";
+      A.el("slotState").textContent = "지금은 확인이 안 됩니다";
+    });
+  }
+  refreshSlots();
+
+  /* ── 제출 ── */
+  var RULES = [
+    ["genre","radio"],["name","text"],["phone","phone"],
+    ["songTitle","text"],["songArtist","text"],["mr","radio"],["agree","check"]
+  ];
+
+  var form  = A.el("fStage");
+  var msg   = form.querySelector(".form-msg");
+  var btn   = form.querySelector(".btn");
+  var label = btn.textContent;
+  A.liveClear(form);
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    msg.classList.remove("show");
+    if (!A.check(form, RULES)) return;
+    if (!A.db) { fail(A.netErr()); return; }
+
+    var data = { type: "stage", status: "pending", createdAt: new Date().toISOString() };
+    new FormData(form).forEach(function (v, k) { if (k !== "agree") data[k] = String(v).trim(); });
+    data.phone    = A.normPhone(data.phone);
+    data.code     = A.receipt("stage", data.phone);
+    data.agreedAt = data.createdAt;
+
+    btn.disabled = true; btn.textContent = "접수하는 중…";
+
+    var ref = A.db.collection(A.COL).doc("stage_" + data.phone);
+
+    /* 이미 낸 사람이 고쳐 내는 경우는 자리·순번을 그대로 유지한다.
+       새로 내는 경우에만 쓰기 직전에 정원을 다시 세어 확정/대기를 가른다. */
+    ref.get()
+      .then(function (mine) {
+        if (mine.exists) {
+          var prev = mine.data() || {};
+          data.slot   = prev.slot   || "main";
+          if (prev.waitNo) data.waitNo = prev.waitNo;
+          return null;
+        }
+        return A.countStage().then(function (c) {
+          paint(c);
+          if (c.main < c.limit) { data.slot = "main"; }
+          else { data.slot = "wait"; data.waitNo = c.wait + 1; }
+          return null;
+        });
+      })
+      .then(function () { return ref.set(data, { merge: true }); })
+      .then(function () {
+        A.el("stOpen").hidden = true;
+        if (data.slot === "wait") {
+          A.el("waitCode").textContent = data.code;
+          A.el("waitNo").textContent   = "대기 " + data.waitNo + "번";
+          A.show("stWait");
+          A.el("stWait").scrollIntoView({ behavior: "smooth", block: "center" });
+        } else {
+          A.el("doneCode").textContent = data.code;
+          A.show("stDone");
+          A.el("stDone").scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      })
+      .catch(function () { fail(A.netErr()); });
+  });
+
+  function fail(html) {
+    btn.disabled = false; btn.textContent = label;
+    msg.innerHTML = html; msg.classList.add("show");
+  }
+})();
+</script>
+</body>
+</html>

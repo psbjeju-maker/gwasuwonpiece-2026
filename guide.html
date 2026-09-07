@@ -384,7 +384,7 @@ footer .wrap{padding:20px 24px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-
 .pb-anchor.right{right:7px}
 
 @media (prefers-reduced-motion:no-preference){
-  .hero-hook,.hero-chips,.hero-date,.hero h1,.scroll-hint{opacity:0;transform:translateY(14px);animation:heroIn .7s cubic-bezier(.22,.9,.32,1) forwards}
+  .hero-hook,.hero-chips,.hero-date,.hero h1,.dday-big,.hero-apply,.scroll-hint{opacity:0;transform:translateY(14px);animation:heroIn .7s cubic-bezier(.22,.9,.32,1) forwards}
   .hero-date{animation-delay:.1s}
   .hero-hook{animation-delay:.22s}
   .hero h1{animation-delay:.36s}
@@ -403,9 +403,106 @@ footer .wrap{padding:20px 24px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-
   .hero-hook,.hero-chips,.hero-date,.hero h1,.scroll-hint{opacity:1;transform:none}
   .milestone-toast{display:none}
 }
+
+/* ── 참가 신청 진입 ── */
+.join-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:720px){.join-grid{grid-template-columns:1fr}}
+.join-card{
+  display:flex;gap:15px;align-items:flex-start;text-decoration:none;color:inherit;
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:22px 21px;
+  transition:border-color .18s,transform .18s,box-shadow .18s;
+}
+.join-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.06)}
+.join-ic{
+  flex:none;width:46px;height:46px;border-radius:50%;background:var(--accent-soft);
+  border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.join-tx{display:flex;flex-direction:column;gap:6px;min-width:0}
+.join-t{font-family:"Hahmlet","Malgun Gothic",serif;font-size:20px;font-weight:600;line-height:1.4;color:var(--ink)}
+.join-d{font-size:16px;line-height:1.65;color:var(--ink-2)}
+.join-go{margin-top:4px;font-family:"IBM Plex Mono",monospace;font-size:14.5px;font-weight:600;color:var(--accent)}
+
+/* ── 행사 D-day (히어로 큰 표시) ── */
+.dday-big{
+  margin-top:40px;display:inline-block;padding:26px 42px 22px;border-radius:14px;
+  background:rgba(11,26,38,.42);border:1px solid rgba(251,247,238,.34);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+}
+.dday-lab{
+  font-family:"IBM Plex Mono",monospace;font-size:26px;letter-spacing:.16em;
+  color:#F1ECD9;opacity:.9;text-shadow:0 1px 8px rgba(0,0,0,.5);
+}
+.dday-line{
+  margin-top:6px;display:flex;align-items:baseline;justify-content:center;gap:12px;
+  text-shadow:0 3px 18px rgba(0,0,0,.55);
+}
+.dday-num{
+  font-family:"Hahmlet",serif;font-weight:800;color:#FFB765;
+  font-size:clamp(78px,17vw,150px);line-height:1;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+}
+.dday-unit{
+  font-family:"Hahmlet",serif;font-weight:700;color:#FBF7EE;
+  font-size:clamp(30px,6vw,50px);line-height:1.2;
+}
+.dday-big.today .dday-num{font-size:clamp(52px,11vw,96px);color:#FFD08A}
+.dday-date{
+  margin-top:14px;font-family:"IBM Plex Mono",monospace;font-size:24px;letter-spacing:.04em;
+  color:#F1ECD9;opacity:.88;text-shadow:0 1px 8px rgba(0,0,0,.5);
+}
+@media (max-width:620px){
+  .dday-big{padding:22px 26px 18px;margin-top:32px}
+  .dday-lab{font-size:20px}
+  .dday-date{font-size:18px}
+}
+.dday-float{
+  position:fixed;top:10px;right:38px;z-index:62;
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--surface);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px 5px 6px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-2);
+  box-shadow:0 3px 12px rgba(0,0,0,.08);opacity:0;transform:translateY(-8px);
+  transition:opacity .3s,transform .3s;pointer-events:none;
+}
+.dday-float.on{opacity:1;transform:translateY(0)}
+.dday-float b{
+  font-family:"Hahmlet",serif;font-size:13.5px;font-weight:700;color:#fff;
+  background:var(--accent);border-radius:999px;padding:2px 9px;
+}
+@media (max-width:520px){
+  .dday-float{right:34px;font-size:11.5px;padding:4px 11px 4px 5px}
+  .dday-float span{display:none}
+}
+
+/* ── 히어로 신청 바로가기 ── */
+.hero-apply{
+  margin-top:34px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+}
+.hero-btn{
+  display:flex;align-items:center;gap:14px;text-decoration:none;text-align:left;
+  background:rgba(251,247,238,.94);border:1px solid rgba(251,247,238,.6);border-radius:999px;
+  padding:14px 30px 14px 18px;color:#20281F;
+  box-shadow:0 6px 22px rgba(0,0,0,.28);
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.hero-btn:hover{transform:translateY(-3px);background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.34)}
+.hero-btn .hb-ic{
+  flex:none;width:52px;height:52px;border-radius:50%;background:#F7DFC4;border:1px solid #D9641E;
+  display:flex;align-items:center;justify-content:center;font-size:25px;
+}
+.hero-btn .hb-tx{display:flex;flex-direction:column;gap:2px}
+.hero-btn .hb-t{font-family:"Hahmlet","Malgun Gothic",serif;font-size:29px;font-weight:700;line-height:1.3}
+.hero-btn .hb-d{font-family:"IBM Plex Mono",monospace;font-size:19px;color:#6B6650}
+@media (max-width:620px){
+  .hero-apply{flex-direction:column;align-items:stretch;margin-top:28px}
+  .hero-btn{justify-content:flex-start;padding:13px 22px 13px 14px}
+  .hero-btn .hb-ic{width:44px;height:44px;font-size:21px}
+  .hero-btn .hb-t{font-size:23px}
+  .hero-btn .hb-d{font-size:16px}
+}
 </style>
 
 <div class="scroll-progress" id="scrollProgress"></div>
+<div class="dday-float" id="ddayFloat"><b>—</b><span>10.31 행사까지</span></div>
 <span class="pb-anchor left" aria-hidden="true">⚓</span>
 <span class="pb-anchor right" aria-hidden="true">🍊</span>
 <div class="milestone-toast" id="milestoneToast"></div>
@@ -424,6 +521,20 @@ footer .wrap{padding:20px 24px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-
         <span class="hero-chip">과수원피스</span>
         <span class="hero-chip">무료입장</span>
       </div>
+
+      <div class="dday-big" id="ddayBig">
+        <p class="dday-lab">행사까지</p>
+        <p class="dday-line">
+          <span class="dday-num" id="ddayNum">—</span><span class="dday-unit" id="ddayUnit">일 남았습니다</span>
+        </p>
+        <p class="dday-date">2026년 10월 31일 토요일 · 10:00 – 16:00</p>
+      </div>
+
+      <div class="hero-apply">
+        <a class="hero-btn" href="apply-booth.html"><span class="hb-ic">🏴</span><span class="hb-tx"><span class="hb-t">셀러 신청</span><span class="hb-d">마켓 부스 모집</span></span></a>
+        <a class="hero-btn" href="apply-stage.html"><span class="hb-ic">🎤</span><span class="hb-tx"><span class="hb-t">노래 · 댄스 대회 신청</span><span class="hb-d">10팀 선착순 · 참가비 없음</span></span></a>
+      </div>
+
       <p class="scroll-hint" id="scrollHint">스크롤해서 모험을 시작하세요 ↓</p>
     </div>
   </div>
@@ -578,8 +689,35 @@ footer .wrap{padding:20px 24px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-
         <div class="vi-row"><span class="vi-k">장소</span><span class="vi-v">금능석물원</span><span class="vi-sub">과수원피스 — '원피스' 테마와 귤밭 체험을 동시에 즐길 수 있는 이색 테마 카페이자 숙소</span></div>
         <div class="vi-row"><span class="vi-k">날짜 · 시간</span><span class="vi-v">2026.10.31 (토) 10:00 – 16:00</span></div>
         <a class="map-link" href="https://map.naver.com/p/search/%EA%B8%88%EB%8A%A5%EC%84%9D%EB%AC%BC%EC%9B%90" target="_blank" rel="noopener">네이버 지도에서 길찾기 →</a>
-        <p class="rain">우천 시 <b>공지사항을 확인</b>하세요.</p>
+        <p class="rain">우천 시에도 <b>순연 없이 그대로 진행</b>합니다.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0" id="join">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">함께 만들기</p>
+      <h2>구경만 하기엔<br>아쉬우시다면</h2>
+    </div>
+    <div class="join-grid reveal">
+      <a class="join-card" href="apply-booth.html">
+        <span class="join-ic">🏴</span>
+        <span class="join-tx">
+          <span class="join-t">마켓 부스 (셀러)</span>
+          <span class="join-d">피규어 플리마켓 · 2차창작 · 음식 · 가공식품/기타 — 테이블당 50,000원, 셀러에게는 항해 패스 4장을 드립니다.</span>
+          <span class="join-go">부스 신청하기 →</span>
+        </span>
+      </a>
+      <a class="join-card" href="apply-stage.html">
+        <span class="join-ic">🎤</span>
+        <span class="join-tx">
+          <span class="join-t">노래방 · 댄스 대회</span>
+          <span class="join-d">한 무대에서 노래와 댄스를 이어서 진행합니다. 참가비 없이 두 종목 합쳐 10팀 선착순, 순위는 관객 투표로 정합니다.</span>
+          <span class="join-go">무대 신청하기 →</span>
+        </span>
+      </a>
     </div>
   </div>
 </section>
@@ -588,7 +726,7 @@ footer .wrap{padding:20px 24px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-
   <div class="wrap">
     <span class="badge">Coming Soon</span>
     <h2>10월 31일,<br>황금 귤을 찾으러 오세요.</h2>
-    <p>사전예매 곧 오픈 — 박서방 제주점 SNS에서 가장 먼저 알려드립니다.</p>
+    <p>사전예매 곧 오픈 — 박서방 제주지점 SNS에서 가장 먼저 알려드립니다.</p>
     <a class="cta-link" href="https://litt.ly/psb_jeju" target="_blank" rel="noopener">SNS 바로가기 →</a>
   </div>
 </div>
@@ -601,6 +739,47 @@ footer .wrap{padding:20px 24px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-
 </footer>
 
 <a href="#pass" class="float-cta" id="floatCta"><span>⚓ 항해 패스</span><span class="fc-price">6,000원~</span></a>
+
+<script>
+/* ── 행사까지 D-day — 접속할 때마다 표시 ── */
+(function(){
+  var EVENT_DAY = "2026-10-31";
+  function days(){
+    var t = new Date(EVENT_DAY + "T00:00:00");
+    var n = new Date();
+    var today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    return Math.round((t - today) / 86400000);
+  }
+  var d = days();
+  var big  = document.getElementById("ddayBig");
+  var num  = document.getElementById("ddayNum");
+  var unit = document.getElementById("ddayUnit");
+  var flt  = document.getElementById("ddayFloat");
+
+  if (d > 0) {
+    num.textContent  = d;
+    unit.textContent = "일 남았습니다";
+    if (flt) flt.querySelector("b").textContent = "D-" + d;
+  } else if (d === 0) {
+    big.classList.add("today");
+    num.textContent  = "오늘";
+    unit.textContent = "입니다!";
+    if (flt) flt.querySelector("b").textContent = "D-DAY";
+  } else {
+    big.classList.add("today");
+    num.textContent  = "행사 종료";
+    unit.textContent = "";
+    if (flt) flt.querySelector("b").textContent = "종료";
+  }
+
+  /* 히어로를 지나가면 상단에 작게 따라붙는다 */
+  if (flt) {
+    window.addEventListener("scroll", function(){
+      flt.classList.toggle("on", window.scrollY > 420);
+    }, { passive: true });
+  }
+})();
+</script>
 
 <script>
 (function(){

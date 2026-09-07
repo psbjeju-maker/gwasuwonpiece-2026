@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>참가 신청 · 과수원피스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="apply.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="back-bar">
+    <a class="back-link" href="guide.html">← 이용 가이드로 돌아가기</a>
+  </div>
+
+  <div class="hero">
+    <p class="eyebrow">Application</p>
+    <h1>참가 신청</h1>
+    <p class="lede">과수원피스에 셀러로, 또는 무대 참가자로 함께해 주세요. 아래에서 신청하실 항목을 골라 주세요.</p>
+    <p class="dday"><b data-dday>—</b><span>10월 31일(토) 행사까지</span></p>
+  </div>
+
+  <div class="picker">
+    <a class="pick" href="apply-booth.html">
+      <span class="ic">🏴</span>
+      <span class="tx">
+        <span class="tt">마켓 부스 (셀러)</span>
+        <span class="ds">피규어 플리마켓 · 2차창작 · 음식 · 가공식품/기타 — 테이블당 50,000원, 셀러에게는 항해 패스 4장을 드립니다.</span>
+        <span class="go" data-s="booth">—</span>
+      </span>
+      <span class="ar">→</span>
+    </a>
+    <a class="pick" href="apply-stage.html">
+      <span class="ic">🎤</span>
+      <span class="tx">
+        <span class="tt">노래방 · 댄스 대회</span>
+        <span class="ds">14:00 시작 · 참가비 없음 · 10팀 선착순. 노래와 댄스를 한 무대에서 이어서 진행합니다.</span>
+        <span class="go" data-s="stage">—</span>
+      </span>
+      <span class="ar">→</span>
+    </a>
+  </div>
+
+  <div class="closing">
+    <h3>신청 전에 궁금한 점이 있다면</h3>
+    <p><b>부스 관련 문의는 전화가 가장 빠릅니다.</b><br>
+    <a href="tel:064-742-0083">064-742-0083</a><br>
+    그 밖의 문의는 <a href="https://litt.ly/psb_jeju" target="_blank" rel="noopener">박서방 제주지점 SNS</a>로 주세요.</p>
+  </div>
+
+  <footer>과수원피스 · 2026.10.31 (토) 금능석물원</footer>
+
+</div>
+
+<script src="apply-core.js"></script>
+<script>
+(function () {
+  var A = window.Apply;
+  A.paintDday();
+  document.querySelectorAll('.go[data-s]').forEach(function (el) {
+    var key = el.dataset.s, sc = A.SCHEDULE[key], st = A.windowState(key);
+    if (st === "before") {
+      el.textContent = A.fmtFull(sc.open) + " 오픈 →";
+    } else if (st === "closed") {
+      el.textContent = "접수 마감 →";
+    } else {
+      el.textContent = "신청하기 · " + A.fmtDate(sc.close) + "까지 →";
+    }
+  });
+})();
+</script>
+</body>
+</html>
