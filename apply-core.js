@@ -33,6 +33,12 @@ window.Apply = (function () {
   };
   var COL = "gwasuwonpiece_applications";
 
+  /* ── 카카오 알림(사장님에게 "나에게 보내기") ──
+     kakao-notify/설정법.md 대로 Google Apps Script를 배포한 뒤,
+     여기 배포된 웹앱 URL만 붙여넣으면 신청이 들어올 때마다 카톡으로 온다.
+     비워두면(기본값) 아무 일도 안 하고 조용히 넘어간다 — 신청 자체는 이 값과 무관하게 항상 정상 저장됨. */
+  var KAKAO_WEBHOOK_URL = "";
+
   var db = null;
   try {
     if (window.firebase && window.firebase.initializeApp) {
@@ -179,6 +185,19 @@ window.Apply = (function () {
   function show(id){ var e = el(id); if (e) e.classList.add("on"); }
   function hide(id){ var e = el(id); if (e) e.classList.remove("on"); }
 
+  /* 신청 성공 직후 호출 — 실패해도(오프라인 등) 신청 자체엔 영향 없도록 조용히 무시한다. */
+  function notify(data){
+    if (!KAKAO_WEBHOOK_URL) return;
+    try {
+      fetch(KAKAO_WEBHOOK_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(data)
+      }).catch(function(){});
+    } catch (e) {}
+  }
+
   return {
     db: db, COL: COL, SCHEDULE: SCHEDULE, STAGE_LIMIT: STAGE_LIMIT,
     fmtDate: fmtDate, fmtTime: fmtTime, fmtFull: fmtFull,
@@ -187,7 +206,7 @@ window.Apply = (function () {
     normPhone: normPhone, validPhone: validPhone,
     check: check, liveClear: liveClear, receipt: receipt,
     countStage: countStage,
-    el: el, show: show, hide: hide,
+    el: el, show: show, hide: hide, notify: notify,
     netErr: function(){
       return "접수가 되지 않았습니다. 인터넷 연결을 확인하고 다시 눌러 주세요. " +
         "계속 안 되면 <a href='https://litt.ly/psb_jeju' target='_blank' rel='noopener'>박서방 제주지점 SNS</a>로 " +

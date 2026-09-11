@@ -225,6 +225,7 @@
         A.el("doneCode").textContent = data.code;
         A.show("stDone");
         A.el("stDone").scrollIntoView({ behavior: "smooth", block: "center" });
+        A.notify(data);
       })
       .catch(function () { fail(A.netErr()); });
   });
