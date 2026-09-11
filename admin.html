@@ -595,6 +595,13 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   function apPhone(v){ var n=String(v||"").replace(/[^0-9]/g,"");
     return n.length===11 ? n.slice(0,3)+"-"+n.slice(3,7)+"-"+n.slice(7) : n; }
 
+  /* 부스비: 반부스(0.5)만 30,000원으로 특가, 나머지는 테이블당 50,000원 정비례 */
+  function boothFee(tables){
+    var t = Number(tables||0);
+    if (t === 0.5) return 30000;
+    return t * 50000;
+  }
+
   function apLoad(){
     var box = $("apList"), db = apDb();
     if (!db) { box.innerHTML = "<div class='note' style='border-left-color:var(--gold);background:var(--gold-soft)'>서버에 연결돼 있지 않습니다. 인터넷 연결을 확인하고 새로고침해 보세요.</div>"; return; }
@@ -659,7 +666,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 
       var lines = [["신청자", esc(r.name)+" · "+apPhone(r.phone)]];
       if (r.type==="booth") {
-        lines.push(["존 · 테이블", esc(r.zone)+" · 테이블 "+esc(r.tables)+"개 ("+(Number(r.tables||0)*50000).toLocaleString()+"원)"]);
+        lines.push(["존 · 테이블", esc(r.zone)+" · 테이블 "+esc(r.tables)+"개 ("+boothFee(r.tables).toLocaleString()+"원)"]);
         lines.push(["전기", esc(r.power)]);
         lines.push(["판매 품목", esc(r.items)]);
         if (r.snsUrl) lines.push(["채널", "<a href='"+esc(r.snsUrl)+"' target='_blank' rel='noopener'>"+esc(r.snsUrl)+"</a>"]);
