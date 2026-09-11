@@ -37,7 +37,7 @@ window.Apply = (function () {
      kakao-notify/설정법.md 대로 Google Apps Script를 배포한 뒤,
      여기 배포된 웹앱 URL만 붙여넣으면 신청이 들어올 때마다 카톡으로 온다.
      비워두면(기본값) 아무 일도 안 하고 조용히 넘어간다 — 신청 자체는 이 값과 무관하게 항상 정상 저장됨. */
-  var KAKAO_WEBHOOK_URL = "";
+  var KAKAO_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyU9PKs_J3ObrkRQ2AQr3jGLONxq6T_VIB0LnIkSBNAC42dRcyPIk2EjXmRUIJG5qyWoA/exec";
 
   var db = null;
   try {
