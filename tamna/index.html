@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#04111c">
-<title>선원 수배령 — 탐라문화제 × 과수원피스</title>
+<title>탐라, 여섯 신을 만나다 — 탐라문화제 × 과수원피스</title>
 <style>
 @font-face{font-family:SCDream;src:url(../fonts/SCDream4.woff)format('woff');font-weight:400;font-display:swap}
 @font-face{font-family:SCDream;src:url(../fonts/SCDream5.woff)format('woff');font-weight:600;font-display:swap}
@@ -101,12 +101,14 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
 .poster .pn{font-size:13px;font-weight:800;text-align:center;line-height:1.25;letter-spacing:-.3px}
 .poster .pb{font-size:10.5px;text-align:center;color:#7a5c22;font-weight:600;margin-top:3px}
 .poster.got .face{filter:none}
-.poster.got:after{content:'CAPTURED';position:absolute;top:44%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);
-  border:3px solid #c2352a;color:#c2352a;font-size:15px;font-weight:800;letter-spacing:2px;padding:4px 10px;border-radius:4px;
-  opacity:.85;animation:stampin .4s cubic-bezier(.2,1.6,.4,1)}
+.poster.got:after{content:'親見';position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) rotate(-10deg);
+  width:58px;height:58px;border-radius:50%;border:3px solid #c2352a;color:#c2352a;font-size:20px;font-weight:800;
+  letter-spacing:0;display:flex;align-items:center;justify-content:center;
+  opacity:.82;animation:stampin .4s cubic-bezier(.2,1.6,.4,1)}
 @keyframes stampin{0%{transform:translate(-50%,-50%) rotate(-14deg) scale(2.4);opacity:0}
   60%{opacity:1}100%{transform:translate(-50%,-50%) rotate(-14deg) scale(1);opacity:.85}}
 .poster.today{outline:2px solid var(--coral);outline-offset:2px}
+.poster.resting{opacity:.55}
 .poster .todaybadge{position:absolute;top:6px;right:6px;background:var(--coral);color:#fff;font-size:9px;font-weight:800;
   padding:3px 6px;border-radius:4px;letter-spacing:.4px;z-index:2}
 .prog{display:flex;align-items:center;gap:10px;margin:14px 0 2px}
@@ -206,7 +208,7 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   <div id="hud">
     <div class="hudrow">
       <div class="purse"><i class="coin"></i><span id="goldN">0</span></div>
-      <div class="hudname">항해사<b id="meName">-</b></div>
+      <div class="hudname">순례자<b id="meName">-</b></div>
     </div>
     <div class="dday">과수원피스까지 <b id="ddayN">D-00</b> · 승선권 <b id="tkN">0</b>장 보유</div>
   </div>
@@ -214,45 +216,46 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   <!-- ========== 인트로 / 등록 ========== -->
   <section class="screen on" id="s-intro">
     <div class="introwrap" id="intro">
-      <div class="stamp">WANTED</div>
-      <h1 class="bigtitle">선원<br>수배령</h1>
+      <div class="stamp">TAMNA MYTH</div>
+      <h1 class="bigtitle">여섯 신을<br>만나다</h1>
       <div class="wantedmini">
         <i style="--r:-6deg"></i><i style="--r:3deg"></i><i style="--r:-2deg"></i>
         <i style="--r:5deg"></i><i style="--r:-4deg"></i><i style="--r:2deg"></i>
       </div>
       <p class="lead" style="text-align:center;margin:0 auto;max-width:330px">
-        10월 31일 <b style="color:var(--gold)">과수원피스</b>로 떠나는 배에<br>
-        탈 선원 <b style="color:var(--gold)">6명</b>이 탐라문화제에 흩어졌다.<br><br>
-        찾아서 사진을 찍고, 금화를 모아,<br><b style="color:var(--coral)">승선권</b>을 손에 넣어라.
+        탐라의 오랜 이야기 속 <b style="color:var(--gold)">여섯 신</b>이<br>
+        탐라문화제에 강림하셨습니다.<br><br>
+        찾아 인사드리고 <b style="color:var(--gold)">신표</b>를 모으면,<br>
+        10월 31일 <b style="color:var(--coral)">과수원피스</b>로 가는<br><b style="color:var(--coral)">승선권</b>으로 바꿀 수 있습니다.
       </p>
       <div class="card" style="margin-top:20px;text-align:left">
-        <div class="field"><label>항해사 이름 (닉네임)</label>
-          <input id="inName" placeholder="예) 밀짚모자" maxlength="12"></div>
+        <div class="field"><label>내 이름 (닉네임)</label>
+          <input id="inName" placeholder="예) 감귤" maxlength="12"></div>
         <div class="field" style="margin-bottom:8px"><label>전화번호</label>
           <input id="inPhone" type="tel" inputmode="numeric" placeholder="010-0000-0000" maxlength="13"></div>
         <p class="tiny">10월 31일 과수원피스 현장에서 <b style="color:var(--gold)">같은 번호</b>를 입력하면
           여기서 모은 승선권이 그대로 이어집니다. 추첨 확인 외 다른 용도로 쓰지 않으며 행사 종료 후 삭제합니다.</p>
       </div>
-      <button class="btn" id="btnStart">항해 시작하기</button>
+      <button class="btn" id="btnStart">순례 시작하기</button>
     </div>
   </section>
 
-  <!-- ========== 수배 (홈) ========== -->
+  <!-- ========== 신당 (홈) ========== -->
   <section class="screen" id="s-wanted">
-    <h2 class="sec">수배 중인 선원</h2>
-    <p class="lead">행사장 어딘가에 있습니다. 만나면 <b style="color:var(--gold)">명찰 QR</b>을 찍으세요.</p>
+    <h2 class="sec">탐라의 여섯 신</h2>
+    <p class="lead">행사장 곳곳에 강림해 계십니다. 만나 인사드리면 <b style="color:var(--gold)">신표 QR</b>을 받을 수 있어요.</p>
     <div class="prog"><div class="progbar"><i id="progFill" style="width:0"></i></div><div class="progn" id="progTxt">0 / 6</div></div>
     <div class="crewgrid" id="crewGrid"></div>
-    <button class="btn" style="margin:16px 0 6px" id="btnScan">📷 선원 QR 스캔하기</button>
+    <button class="btn" style="margin:16px 0 6px" id="btnScan">🖋 신표 스캔하기</button>
 
-    <h2 class="sec">오늘의 임무</h2>
+    <h2 class="sec">오늘의 순례</h2>
     <div id="todoList"></div>
   </section>
 
   <!-- ========== 게임 ========== -->
   <section class="screen" id="s-game">
-    <h2 class="sec">항해 훈련장</h2>
-    <p class="lead">몇 번이든 도전할 수 있습니다. 다만 하루에 많이 할수록 금화는 조금씩 줄어듭니다.<br>
+    <h2 class="sec">탐라 놀이터</h2>
+    <p class="lead">몇 번이든 도전할 수 있습니다. 다만 하루에 많이 할수록 복은 조금씩 줄어듭니다.<br>
       <span class="tag" id="decayTag">오늘 0회 · 지급률 100%</span></p>
     <div class="gamecard">
       <h4>🍊 황금귤 캐치</h4><p>30초. 떨어지는 황금귤을 터치. 폭탄은 피할 것.</p>
@@ -260,12 +263,12 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
       <button class="btn" style="margin-top:10px" data-game="catch">도전</button>
     </div>
     <div class="gamecard">
-      <h4>🚢 해적선 조타</h4><p>폰을 기울여(또는 화면 좌우를 눌러) 암초를 피하세요. 오래 버틸수록 금화.</p>
+      <h4>🌬 영등할망의 바람</h4><p>바람을 타고(폰을 기울이거나 화면 좌우를 눌러) 먹구름을 피하세요. 오래 버틸수록 복.</p>
       <div class="best" id="best-sail">최고 0초</div>
       <button class="btn" style="margin-top:10px" data-game="sail">도전</button>
     </div>
     <div class="gamecard">
-      <h4>🃏 기억력 카드</h4><p>12장 중 같은 그림 6쌍. 빠를수록 금화가 큽니다.</p>
+      <h4>🃏 기억력 카드</h4><p>12장 중 같은 그림 6쌍. 빠를수록 복이 큽니다.</p>
       <div class="best" id="best-memo">최고 기록 없음</div>
       <button class="btn" style="margin-top:10px" data-game="memo">도전</button>
     </div>
@@ -279,8 +282,8 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   <!-- ========== 포토 ========== -->
   <section class="screen" id="s-photo">
     <h2 class="sec">4컷 포토</h2>
-    <p class="lead">선원들과 찍은 사진 4장을 넣으면 과수원피스 프레임으로 만들어 드립니다. 저장해서 SNS에 올리고
-      부스 스태프에게 보여주면 <b style="color:var(--gold)">300 금화</b>.</p>
+    <p class="lead">신들과 찍은 사진 4장을 넣으면 탐라문화제 × 과수원피스 프레임으로 만들어 드립니다. 저장해서 SNS에 올리고
+      부스 스태프에게 보여주면 <b style="color:var(--gold)">300 복</b>.</p>
     <div class="slot4" id="slots"></div>
     <button class="btn" id="btnMake">4컷 만들기</button>
     <img id="photoOut" alt="완성된 4컷 사진">
@@ -297,13 +300,13 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   <!-- ========== 상점 ========== -->
   <section class="screen" id="s-shop">
     <h2 class="sec">선착장 매표소</h2>
-    <p class="lead">모은 금화로 <b style="color:var(--gold)">승선권</b>을 삽니다. 승선권은 10월 31일
+    <p class="lead">모은 복으로 <b style="color:var(--gold)">승선권</b>을 삽니다. 승선권은 10월 31일
       과수원피스 경품 추첨에 쓰입니다.</p>
     <div class="card" style="text-align:center;padding:22px 16px">
-      <div style="font-size:12px;color:var(--dim);font-weight:600">보유 금화</div>
+      <div style="font-size:12px;color:var(--dim);font-weight:600">보유 복</div>
       <div style="font-size:40px;font-weight:800;color:var(--gold);line-height:1.15;letter-spacing:-1px" id="shopGold">0</div>
-      <div style="font-size:12px;color:var(--dim)" id="shopNeed">승선권 1장까지 500 금화</div>
-      <button class="btn" style="margin-top:16px" id="btnBuy">승선권 1장 구매 (500 금화)</button>
+      <div style="font-size:12px;color:var(--dim)" id="shopNeed">승선권 1장까지 500 복</div>
+      <button class="btn" style="margin-top:16px" id="btnBuy">승선권 1장 구매 (500 복)</button>
       <div class="tiny" style="margin-top:8px" id="buyLimit">1인 최대 5장</div>
     </div>
     <h2 class="sec">보유 승선권</h2>
@@ -387,7 +390,7 @@ function d(){var t=today();if(!S.daily[t])S.daily[t]={};return S.daily[t]}
 
 function addGold(n,why){
   S.gold+=n;save();paint();
-  toast('+'+n+' 금화'+(why?' · '+why:''));
+  toast('+'+n+' 복'+(why?' · '+why:''));
 }
 function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');
   clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on')},2100)}
@@ -427,9 +430,9 @@ function checkAttend(){
     if(S.days.indexOf(t)<0)S.days.push(t);
     S.gold+=C.gold.attend;
     save();
-    setTimeout(function(){toast('출석 +'+C.gold.attend+' 금화')},600);
+    setTimeout(function(){toast('출석 +'+C.gold.attend+' 복')},600);
     if(S.days.length>=5&&!S.flags.perfect){S.flags.perfect=1;S.gold+=C.gold.perfect;save();
-      setTimeout(function(){toast('5일 개근! +'+C.gold.perfect+' 금화')},2600)}
+      setTimeout(function(){toast('5일 개근! +'+C.gold.perfect+' 복')},2600)}
   }
 }
 
@@ -452,21 +455,27 @@ function dday(){
 }
 function todayCrew(){
   var t=today();
-  for(var i=0;i<C.crew.length;i++)if(C.crew[i].day===t)return C.crew[i].id;
+  for(var i=0;i<C.crew.length;i++)if(C.crew[i].bonusDay===t)return C.crew[i].id;
   return null;
+}
+function isActiveToday(c){
+  if(!c.activeDays)return true;
+  return c.activeDays.indexOf(today())>=0;
 }
 function paintCrew(){
   var tc=todayCrew(), g=$('#crewGrid');g.innerHTML='';
   C.crew.forEach(function(c){
     var got=!!S.crew[c.id];
+    var active=isActiveToday(c);
     var el=document.createElement('div');
-    el.className='poster'+(got?' got':'')+(c.id===tc?' today':'');
+    el.className='poster'+(got?' got':'')+(c.id===tc?' today':'')+(!active&&!got?' resting':'');
     var face = got&&c.photo ? '<img src="'+c.photo+'" alt="'+c.name+'">'
              : '<span>'+(got?c.name.slice(0,1):'?')+'</span>';
-    el.innerHTML=(c.id===tc?'<div class="todaybadge">현상금 2배</div>':'')+
-      '<div class="pw">WANTED</div><div class="face">'+face+'</div>'+
+    var pb = got?'친견 완료':(!active?'오늘은 쉬어가심':(c.bounty||C.gold.crew)*(c.id===tc?C.gold.todayMultiplier:1)+' 복');
+    el.innerHTML=(c.id===tc?'<div class="todaybadge">오늘의 신</div>':'')+
+      '<div class="pw">탐라신화</div><div class="face">'+face+'</div>'+
       '<div class="pn">'+(got?c.name:'? ? ?')+'</div>'+
-      '<div class="pb">'+(got?'체포 완료':(c.bounty||C.gold.crew)*(c.id===tc?C.gold.todayMultiplier:1)+' 금화')+'</div>';
+      '<div class="pb">'+pb+'</div>';
     el.onclick=function(){ got?crewInfo(c):openScan(); };
     g.appendChild(el);
   });
@@ -476,17 +485,17 @@ function paintCrew(){
 }
 function crewInfo(c){
   sheet('<h3>'+c.name+'</h3><p>'+c.desc+'</p>'+
-    '<div class="card" style="text-align:center"><div class="tag">체포 완료</div>'+
-    '<p class="lead" style="margin:10px 0 0">이 선원과 찍은 사진으로 4컷을 만들어 보세요.</p></div>'+
+    '<div class="card" style="text-align:center"><div class="tag">친견 완료</div>'+
+    '<p class="lead" style="margin:10px 0 0">이 신과 찍은 사진으로 4컷을 만들어 보세요.</p></div>'+
     '<button class="btn" onclick="document.getElementById(\'modal\').classList.remove(\'on\');">닫기</button>');
 }
 function paintTodo(){
   var t=d(), tc=todayCrew(), n=Object.keys(S.crew).length;
   var items=[
-    {ic:'📜',t:'선원 6인 체포',s:n+'/6 완료'+(tc?' · 오늘은 현상금 2배 선원이 있습니다':''),g:C.gold.crew+'×6',done:n>=6},
+    {ic:'🙏',t:'여섯 신께 인사드리기',s:n+'/6 완료'+(tc?' · 오늘의 신이 계십니다':''),g:C.gold.crew+'×6',done:n>=6},
     {ic:'📸',t:'4컷 포토 만들기',s:'하루 1회',g:'+'+C.gold.photo,done:!!t.photo},
     {ic:'📣',t:'SNS 올리고 인증',s:'부스 스태프 확인',g:'+'+C.gold.sns,done:!!t.sns},
-    {ic:'🎮',t:'훈련장 미니게임',s:'오늘 '+(t.games||0)+'회 플레이',g:'최대 '+C.gameMax,done:false},
+    {ic:'🎮',t:'탐라 놀이터 미니게임',s:'오늘 '+(t.games||0)+'회 플레이',g:'최대 '+C.gameMax,done:false},
     {ic:'🛍️',t:'부스 물품 구매',s:'스태프 확인',g:'+'+C.gold.purchase,done:!!t.buy},
     {ic:'🎟️',t:'사전예매 인증',s:'한 번만 · 승선권 1장 값',g:'+'+C.gold.preorder,done:!!S.flags.pre}
   ];
@@ -512,14 +521,14 @@ function paintStaff(){
 function paintShop(){
   $('#shopGold').textContent=S.gold.toLocaleString();
   var left=Math.max(0,C.ticket.cost-(S.gold%C.ticket.cost));
-  $('#shopNeed').textContent=S.gold>=C.ticket.cost?'지금 바로 구매할 수 있습니다':'승선권 1장까지 '+left+' 금화';
+  $('#shopNeed').textContent=S.gold>=C.ticket.cost?'지금 바로 구매할 수 있습니다':'승선권 1장까지 '+left+' 복';
   var full=S.tickets.length>=C.ticket.max;
   $('#btnBuy').disabled=(S.gold<C.ticket.cost)||full;
-  $('#btnBuy').textContent=full?'보유 한도 도달':'승선권 1장 구매 ('+C.ticket.cost+' 금화)';
+  $('#btnBuy').textContent=full?'보유 한도 도달':'승선권 1장 구매 ('+C.ticket.cost+' 복)';
   $('#buyLimit').textContent='1인 최대 '+C.ticket.max+'장 · 현재 '+S.tickets.length+'장';
   $('#tkList').innerHTML=S.tickets.length?S.tickets.map(function(t,i){
     return '<div class="ticket"><b>승선권 #'+String(i+1).padStart(2,'0')+'</b><span>'+t+'</span></div>';
-  }).join(''):'<p class="lead">아직 승선권이 없습니다. 금화를 모아 보세요.</p>';
+  }).join(''):'<p class="lead">아직 승선권이 없습니다. 복을 모아 보세요.</p>';
 }
 $('#btnBuy').onclick=function(){
   if(S.gold<C.ticket.cost||S.tickets.length>=C.ticket.max)return;
@@ -536,7 +545,7 @@ $('#btnBuy').onclick=function(){
 
 /* ---------------- 코드 스캔 ---------------- */
 function openScan(kind){
-  var label = kind? '스태프 확인 코드' : '선원 명찰 QR 코드';
+  var label = kind? '스태프 확인 코드' : '신표 QR 코드';
   var demo='';
   if(C.demoMode){
     var btns = kind
@@ -546,7 +555,7 @@ function openScan(kind){
       '<div class="dbtns">'+btns+'</div></div>';
   }
   sheet('<h3>'+label+' 입력</h3>'+
-    '<p>'+(kind?'부스 스태프가 보여주는 코드를 입력하세요.':'선원이 목에 건 명찰의 코드를 입력하세요.')+'</p>'+
+    '<p>'+(kind?'부스 스태프가 보여주는 코드를 입력하세요.':'신을 뵈면 스태프가 보여주는 신표 코드를 입력하세요.')+'</p>'+
     '<div class="field"><input id="codeIn" placeholder="코드 입력" autocapitalize="characters"></div>'+
     '<button class="btn" id="codeGo">확인</button>'+demo);
   $('#codeGo').onclick=function(){redeem($('#codeIn').value.trim(),kind)};
@@ -564,8 +573,8 @@ function redeem(code,kind){
   }
   var hit=null;
   C.crew.forEach(function(c){if(c.code.toUpperCase()===code)hit=c});
-  if(!hit){toast('그런 선원은 없습니다');return}
-  if(S.crew[hit.id]){toast('이미 체포한 선원입니다');return}
+  if(!hit){toast('그런 신은 안 계십니다');return}
+  if(S.crew[hit.id]){toast('이미 인사드린 신입니다');return}
   var mult = (todayCrew()===hit.id)?C.gold.todayMultiplier:1;
   var g=(hit.bounty||C.gold.crew)*mult;
   S.crew[hit.id]=today();S.gold+=g;save();paint();
@@ -573,12 +582,12 @@ function redeem(code,kind){
   var n=Object.keys(S.crew).length;
   var extra='';
   if(n>=C.crew.length&&!S.flags.all){S.flags.all=1;S.gold+=C.gold.crewAll;save();paint();
-    extra='<div class="card" style="text-align:center;margin-top:6px"><div class="tag hot">6인 전원 체포</div>'+
-      '<p class="lead" style="margin:10px 0 0">보너스 <b style="color:var(--gold)">+'+C.gold.crewAll+' 금화</b><br><br>'+
-      '"잘했다, 항해사.<br>진짜 항해는 <b style="color:var(--coral)">10월 31일</b>부터야."<br>— 귤선장</p></div>';}
-  sheet('<h3>⚓ '+hit.name+' 체포!</h3><p>'+hit.desc+'</p>'+
+    extra='<div class="card" style="text-align:center;margin-top:6px"><div class="tag hot">여섯 신 모두 친견</div>'+
+      '<p class="lead" style="margin:10px 0 0">보너스 <b style="color:var(--gold)">+'+C.gold.crewAll+' 복</b><br><br>'+
+      '"탐라의 신들이 모두 그대를 반겼구나.<br>진짜 항해는 <b style="color:var(--coral)">10월 31일</b>, 과수원피스에서 시작된다."<br>— 귤선장</p></div>';}
+  sheet('<h3>🙏 '+hit.name+' 친견</h3><p>'+hit.desc+'</p>'+
     '<div class="card" style="text-align:center;padding:22px"><div style="font-size:34px;font-weight:800;color:var(--gold)">+'+g+'</div>'+
-    '<div class="tiny">금화 획득'+(mult>1?' · 오늘의 선원 2배!':'')+'</div></div>'+extra+
+    '<div class="tiny">복 획득'+(mult>1?' · 오늘의 신 2배!':'')+'</div></div>'+extra+
     '<button class="btn" style="margin-top:8px" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">계속</button>');
 }
 $('#btnScan').onclick=function(){openScan()};
@@ -606,7 +615,7 @@ function reward(raw,label){
   var g=Math.max(1,Math.min(C.gameMax,Math.round(raw*decayRate())));
   S.gold+=g;save();paint();paintGame();
   sheet('<h3>'+label+'</h3><div class="card" style="text-align:center;padding:24px">'+
-    '<div style="font-size:38px;font-weight:800;color:var(--gold)">+'+g+'</div><div class="tiny">금화 획득 · 지급률 '+
+    '<div style="font-size:38px;font-weight:800;color:var(--gold)">+'+g+'</div><div class="tiny">복 획득 · 지급률 '+
     Math.round(decayRate()*100)+'%</div></div>'+
     '<button class="btn" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">확인</button>');
 }
@@ -684,11 +693,11 @@ function finishCatch(score){
   reward(score/4,'🍊 '+score+'점');
 }
 
-/* --- ③ 해적선 조타 --- */
+/* --- ③ 영등할망의 바람 (조타) --- */
 var tiltX=0;
 function tiltH(e){ if(e.gamma!=null) tiltX=Math.max(-1,Math.min(1,e.gamma/25)); }
 function gSail(){
-  openStage('🚢 해적선 조타');
+  openStage('🌬 영등할망의 바람');
   if(window.DeviceOrientationEvent&&DeviceOrientationEvent.requestPermission){
     DeviceOrientationEvent.requestPermission().then(function(r){
       if(r==='granted')window.addEventListener('deviceorientation',tiltH)}).catch(function(){});
@@ -746,7 +755,7 @@ function gMemo(){
   openStage('🃏 기억력 카드');
   cv.style.display='none';
   var wrap=$('#memo');wrap.style.display='grid';
-  var faces=['🍊','⚓','🏴‍☠️','🧭','💰','🗺️'];
+  var faces=['🍊','🗿','🌊','🌾','🔥','⭐'];
   var deck=faces.concat(faces).sort(function(){return Math.random()-.5});
   wrap.innerHTML=deck.map(function(f,i){return '<div class="mcard" data-i="'+i+'"><span>'+f+'</span></div>'}).join('');
   var open=[],done=0,t0=performance.now(),lock=false,tick;
@@ -820,12 +829,12 @@ $('#btnMake').onclick=function(){
     x.strokeStyle='rgba(255,201,74,.35)';x.lineWidth=3;x.strokeRect(px,py,cw,ch);
   });
   x.fillStyle='#FFC94A';x.font='800 34px SCDream, sans-serif';x.textAlign='center';
-  x.fillText('과수원피스 STAMPEDE', W/2, 66);
+  x.fillText('탐라문화제 × 과수원피스', W/2, 66);
   x.fillStyle='rgba(233,241,247,.7)';x.font='600 21px SCDream, sans-serif';
-  x.fillText('2026.10.31 SAT · 금능석물원', W/2, H-96);
+  x.fillText(C.festivalDates, W/2, H-96);
   x.fillStyle='#FF5A47';x.font='800 27px SCDream, sans-serif';
   var n=Object.keys(S.crew).length;
-  x.fillText('선원 '+n+'/6 체포 · '+(S.name||'항해사'), W/2, H-52);
+  x.fillText('신 '+n+'/6 친견 · '+(S.name||'순례자'), W/2, H-52);
   var url=c.toDataURL('image/jpeg',.92);
   var out=$('#photoOut');out.src=url;out.style.display='block';
   $('#btnSave').style.display='block';
@@ -837,7 +846,7 @@ $('#btnMake').onclick=function(){
 
 /* ---------------- 초기화 ---------------- */
 $('#btnReset').onclick=function(){
-  sheet('<h3>기록을 지울까요?</h3><p>금화·승선권·체포 기록이 전부 사라집니다. 테스트용 기능입니다.</p>'+
+  sheet('<h3>기록을 지울까요?</h3><p>복·승선권·친견 기록이 전부 사라집니다. 테스트용 기능입니다.</p>'+
     '<button class="btn" id="okReset">지우기</button>'+
     '<button class="btn ghost" style="margin-top:8px" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">취소</button>');
   $('#okReset').onclick=function(){localStorage.removeItem(KEY);location.reload()};
