@@ -258,7 +258,7 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
     <p class="lead">몇 번이든 도전할 수 있습니다. 다만 하루에 많이 할수록 복은 조금씩 줄어듭니다.<br>
       <span class="tag" id="decayTag">오늘 0회 · 지급률 100%</span></p>
     <div class="gamecard">
-      <h4>🍊 황금귤 캐치</h4><p>30초. 떨어지는 황금귤을 터치. 폭탄은 피할 것.</p>
+      <h4>🍊 황금귤 캐치</h4><p>30초. 떨어지는 귤을 손가락으로 잘라 터뜨리세요. 큰 귤일수록 천천히 떨어지지만 여러 번 잘라야 부서집니다. 폭탄은 피할 것.</p>
       <div class="best" id="best-catch">최고 0점</div>
       <button class="btn" style="margin-top:10px" data-game="catch">도전</button>
     </div>
@@ -642,29 +642,64 @@ function startGame(k){
 }
 
 /* --- ① 황금귤 캐치 --- */
+/* 귤 크기 4단계 — 클수록 여러 번 잘라야 부서지고, 대신 천천히 떨어진다 */
+var CATCH_TIERS=[
+  {r:20, need:1, val:8,  vMul:1.3,  glow:false}, // 아기 귤
+  {r:30, need:1, val:12, vMul:1,    glow:false}, // 보통 귤
+  {r:42, need:2, val:26, vMul:0.72, glow:false}, // 큰 귤
+  {r:56, need:3, val:46, vMul:0.52, glow:true }  // 왕귤(황금)
+];
+function pickCatchTier(){
+  var r=Math.random();
+  if(r<0.42)return CATCH_TIERS[0];
+  if(r<0.76)return CATCH_TIERS[1];
+  if(r<0.93)return CATCH_TIERS[2];
+  return CATCH_TIERS[3];
+}
+function segPointDist(p0,p1,cx,cy){
+  var dx=p1.x-p0.x, dy=p1.y-p0.y, len2=dx*dx+dy*dy;
+  if(len2===0)return Math.hypot(cx-p0.x,cy-p0.y);
+  var t=Math.max(0,Math.min(1,((cx-p0.x)*dx+(cy-p0.y)*dy)/len2));
+  return Math.hypot(cx-(p0.x+t*dx), cy-(p0.y+t*dy));
+}
 function gCatch(){
   openStage('🍊 황금귤 캐치');
   var W=cv.width,H=cv.height,items=[],score=0,t0=performance.now(),dur=30000,spawn=0;
-  cv.onpointerdown=function(e){
-    var r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*2,y=(e.clientY-r.top)*2;
+  var lastPt=null, hitSet=null;
+  function pt(e){var r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)*2,y:(e.clientY-r.top)*2}}
+  function slice(p0,p1){
     for(var i=items.length-1;i>=0;i--){var it=items[i];
-      if(Math.hypot(it.x-x,it.y-y)<it.r+26){
-        if(it.bomb){score=Math.max(0,score-30);burst(it.x,it.y,'#FF5A47')}
-        else{score+=it.gold?25:10;burst(it.x,it.y,'#FFC94A')}
-        items.splice(i,1);break;}
+      if(hitSet.indexOf(it)>=0)continue;
+      if(segPointDist(p0,p1,it.x,it.y)<it.r+22){
+        hitSet.push(it);
+        if(it.bomb){score=Math.max(0,score-30);burst(it.x,it.y,'#FF5A47');items.splice(i,1);continue}
+        it.hits++;
+        var ang=Math.atan2(p1.y-p0.y,p1.x-p0.x)-it.rot;
+        it.marks.push(ang);
+        if(it.hits>=it.need){score+=it.val;burst(it.x,it.y,it.glow?'#FFC94A':'#ffd08a');items.splice(i,1)}
+        else{burst(p1.x,p1.y,'#fff8e6',5)}
+      }
     }
-  };
+  }
+  cv.onpointerdown=function(e){hitSet=[];lastPt=pt(e);slice(lastPt,lastPt)};
+  cv.onpointermove=function(e){if(!lastPt)return;var p=pt(e);slice(lastPt,p);lastPt=p};
+  cv.onpointerup=function(){lastPt=null;hitSet=null};
+  cv.onpointercancel=cv.onpointerup;
   var fx=[];
-  function burst(x,y,c){for(var i=0;i<10;i++)fx.push({x:x,y:y,vx:(Math.random()-.5)*10,vy:(Math.random()-.5)*10,l:1,c:c})}
+  function burst(x,y,c,n){n=n||10;for(var i=0;i<n;i++)fx.push({x:x,y:y,vx:(Math.random()-.5)*10,vy:(Math.random()-.5)*10,l:1,c:c})}
   function loop(now){
     var el=now-t0, left=Math.max(0,dur-el);
     if(left<=0){finishCatch(score);return}
     spawn-=16;
-    if(spawn<=0){spawn=Math.max(180,560-el/60);
-      var bomb=Math.random()<0.18, gold=!bomb&&Math.random()<0.22;
+    if(spawn<=0){spawn=Math.max(170,540-el/60);
+      var bomb=Math.random()<0.18;
+      var tier=bomb?null:pickCatchTier();
       /* 폭탄은 귤보다 2~3배 크게 — 눈에 확 띄는 대신 화면을 많이 가려서 더 위협적이다 */
-      items.push({x:60+Math.random()*(W-120),y:-40,r:bomb?26*(2+Math.random()):(gold?34:30),
-        v:2.2+Math.random()*2.2+el/16000,bomb:bomb,gold:gold,rot:Math.random()*6});}
+      items.push(bomb
+        ? {x:60+Math.random()*(W-120),y:-40,r:26*(2+Math.random()),v:2.2+Math.random()*2.2+el/16000,bomb:true,rot:Math.random()*6}
+        : {x:60+Math.random()*(W-120),y:-40,r:tier.r,need:tier.need,hits:0,val:tier.val,glow:tier.glow,marks:[],
+           v:(2.2+Math.random()*1.6+el/18000)*tier.vMul,bomb:false,rot:Math.random()*6});
+    }
     ctx.clearRect(0,0,W,H);
     var grd=ctx.createLinearGradient(0,0,0,H);grd.addColorStop(0,'#0a2233');grd.addColorStop(1,'#04111c');
     ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
@@ -674,9 +709,18 @@ function gCatch(){
       if(it.bomb){ctx.fillStyle='#22303a';ctx.beginPath();ctx.arc(0,0,it.r,0,7);ctx.fill();
         ctx.fillStyle='#FF5A47';ctx.fillRect(-it.r*.15,-it.r-it.r*.5,it.r*.3,it.r*.5);}
       else{var g2=ctx.createRadialGradient(-it.r*.3,-it.r*.3,2,0,0,it.r);
-        g2.addColorStop(0,it.gold?'#fff3c4':'#ffd08a');g2.addColorStop(1,it.gold?'#e0a52c':'#ef8b1f');
+        g2.addColorStop(0,it.glow?'#fff3c4':'#ffd08a');g2.addColorStop(1,it.glow?'#e0a52c':'#ef8b1f');
         ctx.fillStyle=g2;ctx.beginPath();ctx.arc(0,0,it.r,0,7);ctx.fill();
-        ctx.fillStyle='#2f7a3a';ctx.fillRect(-3,-it.r-9,6,10);}
+        if(it.glow){ctx.strokeStyle='rgba(255,233,150,.6)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,it.r+3,0,7);ctx.stroke();}
+        ctx.fillStyle='#2f7a3a';ctx.fillRect(-3,-it.r-9,6,10);
+        /* 잘린 만큼 흰 칼자국이 남는다 — 큰 귤일수록 여러 줄이 쌓인다 */
+        it.marks.forEach(function(a){
+          ctx.save();ctx.rotate(a);
+          ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=Math.max(2,it.r*0.07);
+          ctx.beginPath();ctx.moveTo(-it.r*0.85,0);ctx.lineTo(it.r*0.85,0);ctx.stroke();
+          ctx.restore();
+        });
+      }
       ctx.restore();
     });
     items=items.filter(function(it){return it.y<H+80});
