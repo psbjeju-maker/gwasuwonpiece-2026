@@ -158,6 +158,21 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
 .gamecard .best{font-size:11px;color:var(--gold);font-weight:700}
 #stage{position:fixed;inset:0;z-index:95;display:none;background:#04111c;flex-direction:column}
 #stage.on{display:flex}
+
+/* ---------- 대화(시네마) ---------- */
+#cinema{position:fixed;inset:0;z-index:97;display:none;flex-direction:column;justify-content:flex-end;
+  background:radial-gradient(120% 90% at 50% 15%,#1b3f5e,#04111c 62%);cursor:pointer}
+#cinema.on{display:flex}
+.cinePortrait{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:26px 26px 6px}
+.cinePortrait img{max-width:220px;max-height:100%;border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.55);
+  border:2px solid rgba(255,201,74,.35);animation:cinein .25s ease}
+@keyframes cinein{from{transform:translateY(10px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.cineCard{background:linear-gradient(180deg,#0d2740,#081a29);border-top:1px solid var(--line);
+  border-radius:20px 20px 0 0;padding:20px 20px calc(22px + var(--safe));box-shadow:0 -10px 30px rgba(0,0,0,.4)}
+.cineName{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--gold);
+  background:rgba(255,201,74,.12);border:1px solid rgba(255,201,74,.3);padding:4px 12px;border-radius:999px;margin-bottom:10px}
+.cineText{font-size:15px;line-height:1.7;min-height:52px}
+.cineNext{margin-top:14px;text-align:right;font-size:12.5px;font-weight:700;color:var(--dim)}
 .stagebar{display:flex;align-items:center;gap:12px;padding:14px 16px;font-size:13px;font-weight:800}
 .stagebar .x{margin-left:auto;font-size:22px;color:var(--dim);padding:0 4px}
 #canvasWrap{flex:1;position:relative;overflow:hidden}
@@ -255,7 +270,7 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   <!-- ========== 게임 ========== -->
   <section class="screen" id="s-game">
     <h2 class="sec">탐라 놀이터</h2>
-    <p class="lead">몇 번이든 도전할 수 있습니다. 다만 하루에 많이 할수록 복은 조금씩 줄어듭니다.<br>
+    <p class="lead">몇 번이든 도전할 수 있습니다. 다만 하루에 많이 할수록 복 포인트는 조금씩 줄어듭니다.<br>
       <span class="tag" id="decayTag">오늘 0회 · 지급률 100%</span></p>
     <div class="gamecard">
       <h4>🍊 황금귤 캐치</h4><p>30초. 떨어지는 귤을 손가락으로 잘라 터뜨리세요. 큰 귤일수록 천천히 떨어지지만 여러 번 잘라야 부서집니다. 폭탄은 피할 것.</p>
@@ -263,12 +278,12 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
       <button class="btn" style="margin-top:10px" data-game="catch">도전</button>
     </div>
     <div class="gamecard">
-      <h4>🌬 영등할망의 바람</h4><p>바람을 타고(폰을 기울이거나 화면 좌우를 눌러) 먹구름을 피하세요. 초록 복떡을 먹으면 룰렛이 돌아가 질풍(빠르게)·훈풍(느리게) 중 하나가 걸립니다. 오래 버틸수록 복.</p>
+      <h4>🌬 영등할망의 바람</h4><p>바람을 타고(폰을 기울이거나 화면 좌우를 눌러) 먹구름을 피하세요. 초록 복떡을 먹으면 룰렛이 돌아가 질풍(빠르게)·훈풍(느리게) 중 하나가 걸립니다. 오래 버틸수록 복 포인트.</p>
       <div class="best" id="best-sail">최고 0초</div>
       <button class="btn" style="margin-top:10px" data-game="sail">도전</button>
     </div>
     <div class="gamecard">
-      <h4>🃏 기억력 카드</h4><p>12장 중 같은 그림 6쌍. 빠를수록 복이 큽니다.</p>
+      <h4>🃏 기억력 카드</h4><p>12장 중 같은 그림 6쌍. 빠를수록 복 포인트가 큽니다.</p>
       <div class="best" id="best-memo">최고 기록 없음</div>
       <button class="btn" style="margin-top:10px" data-game="memo">도전</button>
     </div>
@@ -283,7 +298,7 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   <section class="screen" id="s-photo">
     <h2 class="sec">4컷 포토</h2>
     <p class="lead">신들과 찍은 사진 4장을 넣으면 탐라문화제 × 과수원피스 프레임으로 만들어 드립니다. 저장해서 SNS에 올리고
-      부스 스태프에게 보여주면 <b style="color:var(--gold)">300 복</b>.</p>
+      부스 스태프에게 보여주면 <b style="color:var(--gold)">300 복 포인트</b>.</p>
     <div class="slot4" id="slots"></div>
     <button class="btn" id="btnMake">4컷 만들기</button>
     <img id="photoOut" alt="완성된 4컷 사진">
@@ -300,13 +315,13 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   <!-- ========== 상점 ========== -->
   <section class="screen" id="s-shop">
     <h2 class="sec">선착장 매표소</h2>
-    <p class="lead">모은 복으로 <b style="color:var(--gold)">승선권</b>을 삽니다. 승선권은 10월 31일
+    <p class="lead">모은 복 포인트로 <b style="color:var(--gold)">승선권</b>을 삽니다. 승선권은 10월 31일
       과수원피스 경품 추첨에 쓰입니다.</p>
     <div class="card" style="text-align:center;padding:22px 16px">
-      <div style="font-size:12px;color:var(--dim);font-weight:600">보유 복</div>
+      <div style="font-size:12px;color:var(--dim);font-weight:600">보유 복 포인트</div>
       <div style="font-size:40px;font-weight:800;color:var(--gold);line-height:1.15;letter-spacing:-1px" id="shopGold">0</div>
-      <div style="font-size:12px;color:var(--dim)" id="shopNeed">승선권 1장까지 500 복</div>
-      <button class="btn" style="margin-top:16px" id="btnBuy">승선권 1장 구매 (500 복)</button>
+      <div style="font-size:12px;color:var(--dim)" id="shopNeed">승선권 1장까지 500 복 포인트</div>
+      <button class="btn" style="margin-top:16px" id="btnBuy">승선권 1장 구매 (500 복 포인트)</button>
       <div class="tiny" style="margin-top:8px" id="buyLimit">1인 최대 5장</div>
     </div>
     <h2 class="sec">보유 승선권</h2>
@@ -383,6 +398,16 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   <div id="memo" style="display:none"></div>
 </div>
 
+<!-- 대화(시네마) — 화면 아무 곳이나 탭하면 다음 대사로 -->
+<div id="cinema">
+  <div class="cinePortrait"><img id="cineImg" src="" alt=""></div>
+  <div class="cineCard">
+    <div class="cineName" id="cineName">도채비</div>
+    <div class="cineText" id="cineText"></div>
+    <div class="cineNext" id="cineNext">다음 ▶</div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script src="config.js"></script>
@@ -408,7 +433,7 @@ function d(){var t=today();if(!S.daily[t])S.daily[t]={};return S.daily[t]}
 
 function addGold(n,why){
   S.gold+=n;save();paint();
-  toast('+'+n+' 복'+(why?' · '+why:''));
+  toast('+'+n+' 복 포인트'+(why?' · '+why:''));
 }
 function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');
   clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on')},2100)}
@@ -448,9 +473,9 @@ function checkAttend(){
     if(S.days.indexOf(t)<0)S.days.push(t);
     S.gold+=C.gold.attend;
     save();
-    setTimeout(function(){toast('출석 +'+C.gold.attend+' 복')},600);
+    setTimeout(function(){toast('출석 +'+C.gold.attend+' 복 포인트')},600);
     if(S.days.length>=5&&!S.flags.perfect){S.flags.perfect=1;S.gold+=C.gold.perfect;save();
-      setTimeout(function(){toast('5일 개근! +'+C.gold.perfect+' 복')},2600)}
+      setTimeout(function(){toast('5일 개근! +'+C.gold.perfect+' 복 포인트')},2600)}
   }
 }
 
@@ -489,7 +514,7 @@ function paintCrew(){
     el.className='poster'+(got?' got':'')+(c.id===tc?' today':'')+(!active&&!got?' resting':'');
     var face = got&&c.photo ? '<img src="'+c.photo+'" alt="'+c.name+'">'
              : '<span>'+(got?c.name.slice(0,1):'?')+'</span>';
-    var pb = got?'친견 완료':(!active?'오늘은 쉬어가심':(c.bounty||C.gold.crew)*(c.id===tc?C.gold.todayMultiplier:1)+' 복');
+    var pb = got?'친견 완료':(!active?'오늘은 쉬어가심':(c.bounty||C.gold.crew)*(c.id===tc?C.gold.todayMultiplier:1)+' 복 포인트');
     el.innerHTML=(c.id===tc?'<div class="todaybadge">오늘의 신</div>':'')+
       '<div class="pw">탐라신화</div><div class="face">'+face+'</div>'+
       '<div class="pn">'+(got?c.name:'? ? ?')+'</div>'+
@@ -501,8 +526,15 @@ function paintCrew(){
   $('#progFill').style.width=(n/C.crew.length*100)+'%';
   $('#progTxt').textContent=n+' / '+C.crew.length;
 }
+function jejuCard(c){
+  if(!c.jeju)return '';
+  return '<div style="margin:12px 0;padding:13px 14px;background:rgba(255,201,74,.08);border:1px dashed var(--line);border-radius:12px;text-align:center">'+
+    '<div style="font-size:10px;color:var(--gold);font-weight:800;letter-spacing:.08em;margin-bottom:6px">제주어 한마디</div>'+
+    '<div style="font-size:19px;font-weight:800">"'+c.jeju.word+'"</div>'+
+    '<div style="font-size:12px;color:var(--dim);margin-top:3px">'+c.jeju.mean+'</div></div>';
+}
 function crewInfo(c){
-  sheet('<h3>'+c.name+'</h3><p>'+c.desc+'</p>'+
+  sheet('<h3>'+c.name+'</h3><p>'+c.desc+'</p>'+jejuCard(c)+
     '<div class="card" style="text-align:center"><div class="tag">친견 완료</div>'+
     '<p class="lead" style="margin:10px 0 0">이 신과 찍은 사진으로 4컷을 만들어 보세요.</p></div>'+
     '<button class="btn" onclick="document.getElementById(\'modal\').classList.remove(\'on\');">닫기</button>');
@@ -539,14 +571,14 @@ function paintStaff(){
 function paintShop(){
   $('#shopGold').textContent=S.gold.toLocaleString();
   var left=Math.max(0,C.ticket.cost-(S.gold%C.ticket.cost));
-  $('#shopNeed').textContent=S.gold>=C.ticket.cost?'지금 바로 구매할 수 있습니다':'승선권 1장까지 '+left+' 복';
+  $('#shopNeed').textContent=S.gold>=C.ticket.cost?'지금 바로 구매할 수 있습니다':'승선권 1장까지 '+left+' 복 포인트';
   var full=S.tickets.length>=C.ticket.max;
   $('#btnBuy').disabled=(S.gold<C.ticket.cost)||full;
-  $('#btnBuy').textContent=full?'보유 한도 도달':'승선권 1장 구매 ('+C.ticket.cost+' 복)';
+  $('#btnBuy').textContent=full?'보유 한도 도달':'승선권 1장 구매 ('+C.ticket.cost+' 복 포인트)';
   $('#buyLimit').textContent='1인 최대 '+C.ticket.max+'장 · 현재 '+S.tickets.length+'장';
   $('#tkList').innerHTML=S.tickets.length?S.tickets.map(function(t,i){
     return '<div class="ticket"><b>승선권 #'+String(i+1).padStart(2,'0')+'</b><span>'+t+'</span></div>';
-  }).join(''):'<p class="lead">아직 승선권이 없습니다. 복을 모아 보세요.</p>';
+  }).join(''):'<p class="lead">아직 승선권이 없습니다. 복 포인트를 모아 보세요.</p>';
 }
 $('#btnBuy').onclick=function(){
   if(S.gold<C.ticket.cost||S.tickets.length>=C.ticket.max)return;
@@ -602,7 +634,7 @@ function redeem(code,kind){
   if(n>=C.crew.length&&!S.flags.all){S.flags.all=1;S.gold+=C.gold.crewAll;save();paint();
     extra='<div class="card" style="text-align:center;margin-top:6px">'+
       '<div class="tag hot">여섯 신 모두 친견</div>'+
-      '<p class="lead" style="margin:10px 0 0">보너스 <b style="color:var(--gold)">+'+C.gold.crewAll+' 복</b></p>'+
+      '<p class="lead" style="margin:10px 0 0">보너스 <b style="color:var(--gold)">+'+C.gold.crewAll+' 복 포인트</b></p>'+
       '<div style="margin:14px 0;padding:13px 14px;background:rgba(255,201,74,.08);border:1px dashed var(--line);border-radius:12px;text-align:left">'+
         '<div style="font-size:10.5px;color:var(--gold);font-weight:800;letter-spacing:.06em;margin-bottom:8px">지금까지 한 건, 사실 예고편입니다</div>'+
         '<div style="font-size:12.5px;line-height:1.85">'+
@@ -612,10 +644,15 @@ function redeem(code,kind){
         '</div>'+
       '</div>'+
       '<p class="lead" style="margin:0">"탐라의 신들이 모두 그대를 반겼구나.<br>진짜 항해는 <b style="color:var(--coral)">10월 31일</b>, 과수원피스에서 시작된다."<br>— 귤선장</p></div>';}
-  sheet('<h3>🙏 '+hit.name+' 친견</h3><p>'+hit.desc+'</p>'+
-    '<div class="card" style="text-align:center;padding:22px"><div style="font-size:34px;font-weight:800;color:var(--gold)">+'+g+'</div>'+
-    '<div class="tiny">복 획득'+(mult>1?' · 오늘의 신 2배!':'')+'</div></div>'+extra+
-    '<button class="btn" style="margin-top:8px" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">계속</button>');
+  function showCaptureSheet(){
+    sheet('<h3>🙏 '+hit.name+' 친견</h3><p>'+hit.desc+'</p>'+jejuCard(hit)+
+      '<div class="card" style="text-align:center;padding:22px"><div style="font-size:34px;font-weight:800;color:var(--gold)">+'+g+'</div>'+
+      '<div class="tiny">복 포인트 획득'+(mult>1?' · 오늘의 신 2배!':'')+'</div></div>'+extra+
+      '<button class="btn" style="margin-top:8px" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">계속</button>');
+  }
+  /* 도채비는 처음 친견할 때만 짧은 대화 장면(오해 풀어주기)이 먼저 나온다 */
+  if(hit.id==='GOD2'){ playCinema(hit.name,DOKEBI_LINES,showCaptureSheet); }
+  else { showCaptureSheet(); }
 }
 $('#btnScan').onclick=function(){openScan()};
 $('#btnSns').onclick=function(){openScan('sns')};
@@ -624,6 +661,38 @@ $('#btnSns').onclick=function(){openScan('sns')};
 function sheet(html){$('#sheet').innerHTML=html;$('#modal').classList.add('on')}
 function closeModal(){$('#modal').classList.remove('on')}
 $('#modal').onclick=function(e){if(e.target===$('#modal'))closeModal()};
+
+/* ---------------- 대화(시네마) ----------------
+   신을 처음 친견할 때 짧은 대화 장면을 넣을 수 있다. 지금은 도채비 전용
+   (오해를 풀어주는 대사) — 다른 신에게도 쓰려면 아래 DOKEBI_LINES 같은
+   배열을 하나 더 만들어서 playCinema() 세 번째 인자로 넘기면 된다. */
+var CINE_LINES=null, cineIdx=0, cineDone=null;
+var DOKEBI_LINES=[
+  {img:'dokebi/fullbody.jpg', text:'오, 사람이잖아! 잘 왔다, 나는 도채비.'},
+  {img:'dokebi/exp_default.jpg', text:'근데 표정이 왜 그래? 뭘 상상한 거야?'},
+  {img:'dokebi/exp_surprise.jpg', text:'아~ 알겠다. 너 지금 "뿔 달리고 이빨 뾰족한 그거" 떠올렸지?'},
+  {img:'dokebi/exp_pout.jpg', text:'그건 일본 오니(鬼)잖아. 나는 도채비, 한국 도깨비라고.'},
+  {img:'dokebi/exp_wink.jpg', text:'우리는 원래 사람이랑 똑같이 생겼어. 뿔도 이빨도 없어. 옛날이야기에도 늘 그렇게 나온다고.'},
+  {img:'dokebi/exp_think.jpg', text:'대신 방망이 하나는 꼭 들고 다니지. 은혜도 원수도 화끈하게 갚는 성격이거든.'},
+  {img:'dokebi/exp_laugh.jpg', text:'자, 오해 풀렸으면 됐고! 탐라문화제 재밌게 즐기다 가라고!'}
+];
+function playCinema(name,lines,onDone){
+  CINE_LINES=lines;cineIdx=0;cineDone=onDone;
+  $('#cineName').textContent=name;
+  $('#cinema').classList.add('on');
+  cineStep();
+}
+function cineStep(){
+  var l=CINE_LINES[cineIdx];
+  $('#cineImg').src=l.img;
+  $('#cineText').textContent=l.text;
+  $('#cineNext').textContent=(cineIdx===CINE_LINES.length-1)?'확인 ▶':'다음 ▶';
+}
+$('#cinema').onclick=function(){
+  cineIdx++;
+  if(cineIdx>=CINE_LINES.length){$('#cinema').classList.remove('on');var fn=cineDone;cineDone=null;if(fn)fn();return}
+  cineStep();
+};
 
 /* ---------------- 미니게임 공통 ---------------- */
 function decayRate(){
@@ -642,7 +711,7 @@ function reward(raw,label){
   var g=Math.max(1,Math.min(C.gameMax,Math.round(raw*decayRate())));
   S.gold+=g;save();paint();paintGame();
   sheet('<h3>'+label+'</h3><div class="card" style="text-align:center;padding:24px">'+
-    '<div style="font-size:38px;font-weight:800;color:var(--gold)">+'+g+'</div><div class="tiny">복 획득 · 지급률 '+
+    '<div style="font-size:38px;font-weight:800;color:var(--gold)">+'+g+'</div><div class="tiny">복 포인트 획득 · 지급률 '+
     Math.round(decayRate()*100)+'%</div></div>'+
     '<button class="btn" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">확인</button>');
 }
@@ -1026,7 +1095,7 @@ $('#btnMake').onclick=function(){
 
 /* ---------------- 초기화 ---------------- */
 $('#btnReset').onclick=function(){
-  sheet('<h3>기록을 지울까요?</h3><p>복·승선권·친견 기록이 전부 사라집니다. 테스트용 기능입니다.</p>'+
+  sheet('<h3>기록을 지울까요?</h3><p>복 포인트·승선권·친견 기록이 전부 사라집니다. 테스트용 기능입니다.</p>'+
     '<button class="btn" id="okReset">지우기</button>'+
     '<button class="btn ghost" style="margin-top:8px" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">취소</button>');
   $('#okReset').onclick=function(){localStorage.removeItem(KEY);location.reload()};
