@@ -164,8 +164,9 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
   background:radial-gradient(120% 90% at 50% 15%,#1b3f5e,#04111c 62%);cursor:pointer}
 #cinema.on{display:flex}
 .cinePortrait{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:26px 26px 6px}
-.cinePortrait img{max-width:220px;max-height:100%;border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.55);
-  border:2px solid rgba(255,201,74,.35);animation:cinein .25s ease}
+/* 배경 없이 누끼 딴 캐릭터가 그대로 떠 있는 형태 — 카드 테두리 없이 그림자만 은은하게 */
+.cinePortrait img{max-width:250px;max-height:100%;filter:drop-shadow(0 16px 22px rgba(0,0,0,.55));
+  animation:cinein .25s ease}
 @keyframes cinein{from{transform:translateY(10px) scale(.97);opacity:0}to{transform:none;opacity:1}}
 .cineCard{background:linear-gradient(180deg,#0d2740,#081a29);border-top:1px solid var(--line);
   border-radius:20px 20px 0 0;padding:20px 20px calc(22px + var(--safe));box-shadow:0 -10px 30px rgba(0,0,0,.4)}
@@ -669,22 +670,22 @@ $('#modal').onclick=function(e){if(e.target===$('#modal'))closeModal()};
 var CINE_LINES=null, cineIdx=0, cineDone=null;
 /* 오프닝 — 등록 화면 뜨기 전, 처음 한 번만 재생. 진행자는 도채비. */
 var OPENING_LINES=[
-  {img:'dokebi/fullbody.jpg', text:'어이, 거기! 반갑다. 나는 도채비야.'},
-  {img:'dokebi/exp_default.jpg', text:'탐라문화제에 잘 왔어. 오늘 여기, 탐라의 오래된 이야기 속 여섯 신이 전부 강림해 있거든.'},
-  {img:'dokebi/exp_excited.jpg', text:'설문대할망, 소별왕, 영등할망, 자청비, 가문장아기… 그리고 나까지 여섯.'},
-  {img:'dokebi/exp_wink.jpg', text:'찾아가서 인사만 드려도 신표를 주지. 다 모으면 재밌는 일이 생길 거야.'},
-  {img:'dokebi/exp_think.jpg', text:'그리고 그 신표, 잘 모아두라고. 10월 31일에 훨씬 더 큰 곳에서 쓸모가 있을 테니까.'},
-  {img:'dokebi/exp_smile.jpg', text:'거기가 어디냐고? 직접 와서 확인해봐. 「과수원피스」라고, 재밌는 녀석들이 준비하고 있거든.'},
-  {img:'dokebi/exp_laugh.jpg', text:'자, 준비됐으면 이름부터 알려줘. 놀아보자고!'}
+  {img:'dokebi/exp_smile.png', text:'어이, 거기! 반갑다. 나는 도채비야.'},
+  {img:'dokebi/exp_default.png', text:'탐라문화제에 잘 왔어. 오늘 여기, 탐라의 오래된 이야기 속 여섯 신이 전부 강림해 있거든.'},
+  {img:'dokebi/exp_excited.png', text:'설문대할망, 소별왕, 영등할망, 자청비, 가문장아기… 그리고 나까지 여섯.'},
+  {img:'dokebi/exp_wink.png', text:'찾아가서 인사만 드려도 신표를 주지. 다 모으면 재밌는 일이 생길 거야.'},
+  {img:'dokebi/exp_think.png', text:'그리고 그 신표, 잘 모아두라고. 10월 31일에 훨씬 더 큰 곳에서 쓸모가 있을 테니까.'},
+  {img:'dokebi/exp_smirk.png', text:'거기가 어디냐고? 직접 와서 확인해봐. 「과수원피스」라고, 재밌는 녀석들이 준비하고 있거든.'},
+  {img:'dokebi/exp_laugh.png', text:'자, 준비됐으면 이름부터 알려줘. 놀아보자고!'}
 ];
 var DOKEBI_LINES=[
-  {img:'dokebi/fullbody.jpg', text:'오, 사람이잖아! 잘 왔다, 나는 도채비.'},
-  {img:'dokebi/exp_default.jpg', text:'근데 표정이 왜 그래? 뭘 상상한 거야?'},
-  {img:'dokebi/exp_surprise.jpg', text:'아~ 알겠다. 너 지금 "뿔 달리고 이빨 뾰족한 그거" 떠올렸지?'},
-  {img:'dokebi/exp_pout.jpg', text:'그건 일본 오니(鬼)잖아. 나는 도채비, 한국 도깨비라고.'},
-  {img:'dokebi/exp_wink.jpg', text:'우리는 원래 사람이랑 똑같이 생겼어. 뿔도 이빨도 없어. 옛날이야기에도 늘 그렇게 나온다고.'},
-  {img:'dokebi/exp_think.jpg', text:'대신 방망이 하나는 꼭 들고 다니지. 은혜도 원수도 화끈하게 갚는 성격이거든.'},
-  {img:'dokebi/exp_laugh.jpg', text:'자, 오해 풀렸으면 됐고! 탐라문화제 재밌게 즐기다 가라고!'}
+  {img:'dokebi/exp_smile.png', text:'오, 사람이잖아! 잘 왔다, 나는 도채비.'},
+  {img:'dokebi/exp_default.png', text:'근데 표정이 왜 그래? 뭘 상상한 거야?'},
+  {img:'dokebi/exp_surprise.png', text:'아~ 알겠다. 너 지금 "뿔 달리고 이빨 뾰족한 그거" 떠올렸지?'},
+  {img:'dokebi/exp_pout.png', text:'그건 일본 오니(鬼)잖아. 나는 도채비, 한국 도깨비라고.'},
+  {img:'dokebi/exp_wink.png', text:'우리는 원래 사람이랑 똑같이 생겼어. 뿔도 이빨도 없어. 옛날이야기에도 늘 그렇게 나온다고.'},
+  {img:'dokebi/exp_think.png', text:'대신 방망이 하나는 꼭 들고 다니지. 은혜도 원수도 화끈하게 갚는 성격이거든.'},
+  {img:'dokebi/exp_laugh.png', text:'자, 오해 풀렸으면 됐고! 탐라문화제 재밌게 즐기다 가라고!'}
 ];
 function playCinema(name,lines,onDone){
   CINE_LINES=lines;cineIdx=0;cineDone=onDone;
