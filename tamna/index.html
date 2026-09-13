@@ -100,6 +100,8 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
 .poster .face span{font-size:40px;font-weight:800;color:#9c8149}
 .poster .pn{font-size:13px;font-weight:800;text-align:center;line-height:1.25;letter-spacing:-.3px}
 .poster .pb{font-size:10.5px;text-align:center;color:#7a5c22;font-weight:600;margin-top:3px}
+.poster .liveHint{margin-top:5px;font-size:9.5px;font-weight:800;text-align:center;color:#0d6f66;
+  background:rgba(47,209,197,.18);border:1px solid rgba(13,111,102,.25);border-radius:99px;padding:2px 6px}
 .poster.got .face{filter:none}
 .poster.got:after{content:'親見';position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) rotate(-10deg);
   width:58px;height:58px;border-radius:50%;border:3px solid #c2352a;color:#c2352a;font-size:20px;font-weight:800;
@@ -416,7 +418,10 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
 
 <div id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="config.js"></script>
+<script src="live.js"></script>
 <script>
 (function(){
 'use strict';
@@ -425,6 +430,36 @@ var KEY = 'tamna_v1';
 var $  = function(s){return document.querySelector(s)};
 var $$ = function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
 var today = function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+
+/* ---------------- 신의 실시간 위치(나침반 힌트) ----------------
+   서버에서 흐려진 위치를 받아 내 위치와 비교해 "남서쪽 · 약 120m" 식으로만
+   보여준다. 지도 핀이나 정확한 좌표는 화면 어디에도 안 띄운다. */
+var liveHints = {}, playerPos = null;
+function refreshLive(){
+  if(!window.TamnaLive || !TamnaLive.hasDb())return;
+  TamnaLive.getAll().then(function(data){ liveHints=data||{}; paintCrew(); });
+}
+function refreshPlayerPos(){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(function(pos){
+    playerPos={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    paintCrew();
+  }, function(){ /* 권한 거부·실패 — 조용히 무시, 힌트는 방향 없이만 표시 */ },
+  {enableHighAccuracy:false, maximumAge:20000, timeout:8000});
+}
+function liveHintHtml(c){
+  var h=liveHints[c.id];
+  if(!h||!h.active||h.lat==null)return '';
+  if(h.updatedAt&&h.updatedAt.toMillis){
+    if(Date.now()-h.updatedAt.toMillis() > (C.liveLocation.staleMs||90000))return '';
+  }
+  if(playerPos){
+    var d=TamnaLive.distanceM(playerPos.lat,playerPos.lng,h.lat,h.lng);
+    var b=TamnaLive.bearingDeg(playerPos.lat,playerPos.lng,h.lat,h.lng);
+    return '<div class="liveHint">🧭 '+TamnaLive.dirLabel(b)+'쪽 · 약 '+TamnaLive.fmtDist(d)+'</div>';
+  }
+  return '<div class="liveHint">🧭 근처 어딘가에 계세요</div>';
+}
 
 /* ---------------- 상태 ---------------- */
 var S = load();
@@ -471,6 +506,10 @@ $('#btnStart').onclick=function(){
 function enter(){
   $('#hud').classList.add('on');$('#tabs').classList.add('on');
   checkAttend();paint();go('wanted');
+  refreshLive();refreshPlayerPos();
+  var everyMs=(C.liveLocation&&C.liveLocation.playerRefreshMs)||25000;
+  setInterval(refreshLive,everyMs);
+  setInterval(refreshPlayerPos,everyMs);
 }
 function checkAttend(){
   var t=today();
@@ -524,7 +563,7 @@ function paintCrew(){
     el.innerHTML=(c.id===tc?'<div class="todaybadge">오늘의 신</div>':'')+
       '<div class="pw">탐라신화</div><div class="face">'+face+'</div>'+
       '<div class="pn">'+(got?c.name:'? ? ?')+'</div>'+
-      '<div class="pb">'+pb+'</div>';
+      '<div class="pb">'+pb+'</div>'+(got?'':liveHintHtml(c));
     el.onclick=function(){ got?crewInfo(c):openScan(); };
     g.appendChild(el);
   });

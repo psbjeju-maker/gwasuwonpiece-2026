@@ -121,5 +121,34 @@ window.TAMNA = {
   /* ---------- 프로토타입 모드 ----------
      true 면 QR 없이 화면에서 바로 코드 입력·데모 버튼으로 테스트할 수 있다.
      실제 행사 때는 false 로 바꿀 것. */
-  demoMode: true
+  demoMode: true,
+
+  /* ---------- 신의 실시간 위치 (2026-09-13 추가) ----------
+     코스어(신 6명)가 game/tamna/staff/ 페이지에서 "근무 시작"을 누르면
+     ±fuzzMeters 로 흐려진 위치가 tamna_gods_live 컬렉션에 올라간다.
+     - 위치 이력은 절대 쌓지 않는다 — 문서 하나당 "최신 값"만 덮어쓴다.
+     - 참가자 화면엔 정확한 좌표·지도 핀이 아니라 "남서쪽 · 약 120m" 식
+       나침반 힌트로만 보여준다 (감시 느낌 대신 게임 힌트 느낌으로).
+     - 근무 종료 / 스태프 페이지의 "전체 초기화"를 누르면 즉시 null로
+       덮어써서 지운다. */
+  liveLocation: {
+    enabled: true,
+    collection: "tamna_gods_live",
+    fuzzMeters: 25,          // 실제 위치를 이 반경 안에서 무작위로 흐려서 전송
+    updateMs: 8000,          // 스태프 폰이 위치를 올리는 주기
+    playerRefreshMs: 25000,  // 참가자 화면이 힌트를 갱신하는 주기
+    staleMs: 90000,          // 이보다 오래된 위치는 "자리 비움"으로 취급
+    adminPin: "6842"         // 스태프 페이지 "전체 초기화" 진입 PIN (본편과 동일)
+  },
+
+  /* store.js와 동일한 Firebase 프로젝트(psbjeju-kuji)를 재사용한다.
+     컬렉션만 분리(tamna_gods_live)해서 쿠지·본편 데이터와 안 섞인다. */
+  firebase: {
+    apiKey: "AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",
+    authDomain: "psbjeju-kuji.firebaseapp.com",
+    projectId: "psbjeju-kuji",
+    storageBucket: "psbjeju-kuji.firebasestorage.app",
+    messagingSenderId: "627012765686",
+    appId: "1:627012765686:web:41178983d00eb37fd029d7"
+  }
 };
