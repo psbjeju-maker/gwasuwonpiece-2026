@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#04111c">
+<title>선원 수배령 — 탐라문화제 × 과수원피스</title>
+<style>
+@font-face{font-family:SCDream;src:url(../fonts/SCDream4.woff)format('woff');font-weight:400;font-display:swap}
+@font-face{font-family:SCDream;src:url(../fonts/SCDream5.woff)format('woff');font-weight:600;font-display:swap}
+@font-face{font-family:SCDream;src:url(../fonts/SCDream7.woff)format('woff');font-weight:800;font-display:swap}
+
+:root{
+  --ink:#04111c; --ink2:#0a1f31; --ink3:#123047;
+  --gold:#FFC94A; --gold2:#c9922a; --coral:#FF5A47; --teal:#2FD1C5;
+  --paper:#EBD9AE; --paper2:#d8c091; --paperInk:#3a2a15;
+  --txt:#e9f1f7; --dim:#8aa3b6; --line:rgba(255,201,74,.22);
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:SCDream,-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #1b4463 0%, transparent 60%),
+    linear-gradient(180deg,#04111c 0%,#071a29 45%,#04111c 100%);
+  background-attachment:fixed;
+  color:var(--txt);min-height:100dvh;overflow-x:hidden;
+}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input{font-family:inherit}
+
+/* ---------- 레이아웃 ---------- */
+#app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+.screen{display:none;flex:1;padding:0 16px 130px}
+.screen.on{display:block;animation:fade .28s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- 상단 HUD ---------- */
+#hud{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,rgba(4,17,28,.97),rgba(4,17,28,.82) 70%,transparent);
+  padding:12px 16px 14px;backdrop-filter:blur(8px);display:none}
+#hud.on{display:block}
+.hudrow{display:flex;align-items:center;gap:10px}
+.purse{display:flex;align-items:center;gap:7px;background:rgba(255,201,74,.1);border:1px solid var(--line);
+  border-radius:999px;padding:7px 14px 7px 10px;font-weight:800;font-size:15px;color:var(--gold)}
+.coin{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#ffe9a8,#FFC94A 45%,#a9741a);
+  box-shadow:0 0 10px rgba(255,201,74,.45);flex:none}
+.hudname{font-size:12px;color:var(--dim);margin-left:auto;text-align:right;line-height:1.4}
+.hudname b{display:block;color:var(--txt);font-size:13px;font-weight:600}
+.dday{margin-top:9px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--dim);
+  border-top:1px dashed rgba(255,255,255,.09);padding-top:8px}
+.dday b{color:var(--coral);font-weight:800;font-size:13px}
+
+/* ---------- 공통 파츠 ---------- */
+h2.sec{font-size:19px;font-weight:800;margin:22px 0 4px;letter-spacing:-.4px}
+p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:16px;margin-bottom:12px}
+.btn{display:block;width:100%;padding:15px;border-radius:14px;font-weight:800;font-size:15px;text-align:center;
+  background:linear-gradient(180deg,#ffd76b,#e0a52c);color:#2a1a02;box-shadow:0 6px 18px rgba(255,201,74,.22);
+  transition:transform .12s}
+.btn:active{transform:scale(.975)}
+.btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:var(--txt);box-shadow:none}
+.btn.teal{background:linear-gradient(180deg,#5fe6da,#18a196);color:#032b28}
+.btn:disabled{opacity:.4;pointer-events:none}
+.tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.6px;padding:4px 9px;border-radius:999px;
+  background:rgba(47,209,197,.16);color:var(--teal);border:1px solid rgba(47,209,197,.3)}
+.tag.hot{background:rgba(255,90,71,.16);color:#ff8b7c;border-color:rgba(255,90,71,.32)}
+
+/* ---------- 인트로 ---------- */
+#intro{padding:0 20px 40px;text-align:center}
+.introwrap{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:40px 0}
+.stamp{font-size:11px;letter-spacing:5px;color:var(--gold);font-weight:800}
+.bigtitle{font-size:clamp(38px,13vw,58px);font-weight:800;line-height:.98;letter-spacing:-2px;margin:2px 0 0;
+  background:linear-gradient(180deg,#fff5d6,#FFC94A 55%,#b8801d);-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 6px 30px rgba(255,201,74,.18)}
+.wantedmini{display:flex;gap:6px;justify-content:center;margin:18px 0 6px}
+.wantedmini i{width:36px;height:48px;border-radius:3px;background:linear-gradient(180deg,var(--paper),var(--paper2));
+  opacity:.85;display:block;position:relative;transform:rotate(var(--r,0deg));box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.wantedmini i:after{content:'?';position:absolute;inset:0;display:grid;place-items:center;color:#8d7a55;font-weight:800;font-size:20px}
+.field{text-align:left;margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--dim);margin-bottom:6px;font-weight:600}
+.field input{width:100%;padding:14px;border-radius:12px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);color:var(--txt);font-size:16px;outline:none}
+.field input:focus{border-color:var(--gold)}
+.tiny{font-size:11px;color:var(--dim);line-height:1.6}
+
+/* ---------- 수배 포스터 ---------- */
+.crewgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:6px}
+.poster{position:relative;background:linear-gradient(175deg,var(--paper),var(--paper2));border-radius:8px;
+  padding:10px 9px 11px;color:var(--paperInk);box-shadow:0 8px 20px rgba(0,0,0,.45);overflow:hidden;
+  border:1px solid #b9a173;transition:transform .15s}
+.poster:active{transform:scale(.97)}
+.poster:before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(115deg,rgba(120,90,40,.05) 0 2px,transparent 2px 5px)}
+.poster .pw{font-size:9.5px;letter-spacing:3px;font-weight:800;text-align:center;color:#7a5c22}
+.poster .face{margin:6px 0;aspect-ratio:1/1;border-radius:4px;background:#c9b184;display:grid;place-items:center;
+  overflow:hidden;border:1px solid #a8905f}
+.poster .face img{width:100%;height:100%;object-fit:cover;display:block}
+.poster .face span{font-size:40px;font-weight:800;color:#9c8149}
+.poster .pn{font-size:13px;font-weight:800;text-align:center;line-height:1.25;letter-spacing:-.3px}
+.poster .pb{font-size:10.5px;text-align:center;color:#7a5c22;font-weight:600;margin-top:3px}
+.poster.got .face{filter:none}
+.poster.got:after{content:'CAPTURED';position:absolute;top:44%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);
+  border:3px solid #c2352a;color:#c2352a;font-size:15px;font-weight:800;letter-spacing:2px;padding:4px 10px;border-radius:4px;
+  opacity:.85;animation:stampin .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes stampin{0%{transform:translate(-50%,-50%) rotate(-14deg) scale(2.4);opacity:0}
+  60%{opacity:1}100%{transform:translate(-50%,-50%) rotate(-14deg) scale(1);opacity:.85}}
+.poster.today{outline:2px solid var(--coral);outline-offset:2px}
+.poster .todaybadge{position:absolute;top:6px;right:6px;background:var(--coral);color:#fff;font-size:9px;font-weight:800;
+  padding:3px 6px;border-radius:4px;letter-spacing:.4px;z-index:2}
+.prog{display:flex;align-items:center;gap:10px;margin:14px 0 2px}
+.progbar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}
+.progbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:99px;transition:width .5s}
+.progn{font-size:12px;font-weight:800;color:var(--gold)}
+
+/* ---------- 할일 리스트 ---------- */
+.todo{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:13px;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+.todo.done{opacity:.45}
+.todo .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex:none;
+  background:rgba(255,201,74,.13)}
+.todo .tt{flex:1;min-width:0}
+.todo .tt b{display:block;font-size:13.5px;font-weight:600}
+.todo .tt span{font-size:11px;color:var(--dim)}
+.todo .gv{font-size:12px;font-weight:800;color:var(--gold);white-space:nowrap}
+.todo.done .gv{color:var(--teal)}
+
+/* ---------- 탭바 ---------- */
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;display:none;
+  background:linear-gradient(180deg,rgba(4,17,28,.6),rgba(4,17,28,.98) 45%);backdrop-filter:blur(14px);
+  border-top:1px solid rgba(255,255,255,.08);padding:8px 6px calc(8px + var(--safe))}
+#tabs.on{display:block}
+.tabin{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:10.5px;color:var(--dim);font-weight:600}
+.tab i{font-size:19px;font-style:normal;line-height:1;filter:grayscale(1) opacity(.55)}
+.tab.on{color:var(--gold)}
+.tab.on i{filter:none}
+
+/* ---------- 모달 ---------- */
+#modal{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;
+  background:rgba(2,9,15,.8);backdrop-filter:blur(4px)}
+#modal.on{display:flex}
+.sheet{width:100%;max-width:520px;background:linear-gradient(180deg,#0d2740,#081a29);
+  border-radius:22px 22px 0 0;border-top:1px solid var(--line);padding:22px 18px calc(24px + var(--safe));
+  animation:up .3s cubic-bezier(.2,.9,.3,1);max-height:90dvh;overflow-y:auto}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.sheet h3{margin:0 0 6px;font-size:19px;font-weight:800;letter-spacing:-.4px}
+.sheet p{margin:0 0 16px;font-size:13px;color:var(--dim);line-height:1.65}
+
+/* ---------- 게임 ---------- */
+.gamecard{position:relative;border-radius:16px;overflow:hidden;margin-bottom:12px;
+  background:linear-gradient(135deg,rgba(47,209,197,.1),rgba(255,201,74,.07));border:1px solid rgba(255,255,255,.1);padding:16px}
+.gamecard h4{margin:0 0 4px;font-size:16px;font-weight:800}
+.gamecard p{margin:0 0 12px;font-size:12px;color:var(--dim);line-height:1.6}
+.gamecard .best{font-size:11px;color:var(--gold);font-weight:700}
+#stage{position:fixed;inset:0;z-index:95;display:none;background:#04111c;flex-direction:column}
+#stage.on{display:flex}
+.stagebar{display:flex;align-items:center;gap:12px;padding:14px 16px;font-size:13px;font-weight:800}
+.stagebar .x{margin-left:auto;font-size:22px;color:var(--dim);padding:0 4px}
+#canvasWrap{flex:1;position:relative;overflow:hidden}
+#gcv{width:100%;height:100%;display:block;touch-action:none}
+#memo{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:16px;align-content:center}
+.mcard{aspect-ratio:3/4;border-radius:10px;background:linear-gradient(160deg,#17415f,#0c2942);border:1px solid rgba(255,201,74,.2);
+  display:grid;place-items:center;font-size:26px;transition:transform .25s;transform-style:preserve-3d}
+.mcard.flip{background:linear-gradient(160deg,var(--paper),var(--paper2))}
+.mcard.hide{opacity:0;pointer-events:none}
+.mcard span{opacity:0}
+.mcard.flip span{opacity:1}
+
+/* ---------- 포토 ---------- */
+.slot4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.slot{aspect-ratio:4/5;border-radius:10px;border:1.5px dashed rgba(255,255,255,.2);display:grid;place-items:center;
+  background:rgba(255,255,255,.04);overflow:hidden;position:relative;font-size:12px;color:var(--dim)}
+.slot img{width:100%;height:100%;object-fit:cover}
+#photoOut{width:100%;border-radius:12px;display:none;margin-top:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+
+/* ---------- 상점 ---------- */
+.ticket{position:relative;background:linear-gradient(115deg,#123047,#0b2135);border:1px solid var(--line);
+  border-radius:14px;padding:15px 16px;margin-bottom:10px;overflow:hidden}
+.ticket:before,.ticket:after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#04111c;left:-9px}
+.ticket:before{top:calc(50% - 9px)}
+.ticket:after{left:auto;right:-9px;top:calc(50% - 9px)}
+.ticket b{display:block;font-size:15px;font-weight:800;color:var(--gold)}
+.ticket span{font-size:11px;color:var(--dim);font-family:ui-monospace,monospace;letter-spacing:.5px}
+.warn{border:1px solid rgba(255,90,71,.35);background:rgba(255,90,71,.08);border-radius:13px;padding:13px 15px;
+  font-size:12.5px;line-height:1.7;color:#ffc4bb}
+.warn b{color:#ff8b7c}
+
+/* ---------- 토스트 ---------- */
+#toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);z-index:99;
+  background:rgba(10,31,49,.97);border:1px solid var(--line);color:var(--txt);padding:12px 20px;border-radius:99px;
+  font-size:13.5px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;
+  box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toast.on{opacity:1;transform:translateX(-50%)}
+.demo{margin-top:14px;padding-top:12px;border-top:1px dashed rgba(255,255,255,.12)}
+.demo .tiny{color:#ffb4a8}
+.dbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.dbtns button{font-size:11px;padding:7px 11px;border-radius:8px;background:rgba(255,90,71,.14);
+  border:1px solid rgba(255,90,71,.3);color:#ffb4a8;font-weight:700}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="hud">
+    <div class="hudrow">
+      <div class="purse"><i class="coin"></i><span id="goldN">0</span></div>
+      <div class="hudname">항해사<b id="meName">-</b></div>
+    </div>
+    <div class="dday">과수원피스까지 <b id="ddayN">D-00</b> · 승선권 <b id="tkN">0</b>장 보유</div>
+  </div>
+
+  <!-- ========== 인트로 / 등록 ========== -->
+  <section class="screen on" id="s-intro">
+    <div class="introwrap" id="intro">
+      <div class="stamp">WANTED</div>
+      <h1 class="bigtitle">선원<br>수배령</h1>
+      <div class="wantedmini">
+        <i style="--r:-6deg"></i><i style="--r:3deg"></i><i style="--r:-2deg"></i>
+        <i style="--r:5deg"></i><i style="--r:-4deg"></i><i style="--r:2deg"></i>
+      </div>
+      <p class="lead" style="text-align:center;margin:0 auto;max-width:330px">
+        10월 31일 <b style="color:var(--gold)">과수원피스</b>로 떠나는 배에<br>
+        탈 선원 <b style="color:var(--gold)">6명</b>이 탐라문화제에 흩어졌다.<br><br>
+        찾아서 사진을 찍고, 금화를 모아,<br><b style="color:var(--coral)">승선권</b>을 손에 넣어라.
+      </p>
+      <div class="card" style="margin-top:20px;text-align:left">
+        <div class="field"><label>항해사 이름 (닉네임)</label>
+          <input id="inName" placeholder="예) 밀짚모자" maxlength="12"></div>
+        <div class="field" style="margin-bottom:8px"><label>전화번호</label>
+          <input id="inPhone" type="tel" inputmode="numeric" placeholder="010-0000-0000" maxlength="13"></div>
+        <p class="tiny">10월 31일 과수원피스 현장에서 <b style="color:var(--gold)">같은 번호</b>를 입력하면
+          여기서 모은 승선권이 그대로 이어집니다. 추첨 확인 외 다른 용도로 쓰지 않으며 행사 종료 후 삭제합니다.</p>
+      </div>
+      <button class="btn" id="btnStart">항해 시작하기</button>
+    </div>
+  </section>
+
+  <!-- ========== 수배 (홈) ========== -->
+  <section class="screen" id="s-wanted">
+    <h2 class="sec">수배 중인 선원</h2>
+    <p class="lead">행사장 어딘가에 있습니다. 만나면 <b style="color:var(--gold)">명찰 QR</b>을 찍으세요.</p>
+    <div class="prog"><div class="progbar"><i id="progFill" style="width:0"></i></div><div class="progn" id="progTxt">0 / 6</div></div>
+    <div class="crewgrid" id="crewGrid"></div>
+    <button class="btn" style="margin:16px 0 6px" id="btnScan">📷 선원 QR 스캔하기</button>
+
+    <h2 class="sec">오늘의 임무</h2>
+    <div id="todoList"></div>
+  </section>
+
+  <!-- ========== 게임 ========== -->
+  <section class="screen" id="s-game">
+    <h2 class="sec">항해 훈련장</h2>
+    <p class="lead">몇 번이든 도전할 수 있습니다. 다만 하루에 많이 할수록 금화는 조금씩 줄어듭니다.<br>
+      <span class="tag" id="decayTag">오늘 0회 · 지급률 100%</span></p>
+    <div class="gamecard">
+      <h4>🍊 황금귤 캐치</h4><p>30초. 떨어지는 황금귤을 터치. 폭탄은 피할 것.</p>
+      <div class="best" id="best-catch">최고 0점</div>
+      <button class="btn" style="margin-top:10px" data-game="catch">도전</button>
+    </div>
+    <div class="gamecard">
+      <h4>🚢 해적선 조타</h4><p>폰을 기울여(또는 화면 좌우를 눌러) 암초를 피하세요. 오래 버틸수록 금화.</p>
+      <div class="best" id="best-sail">최고 0초</div>
+      <button class="btn" style="margin-top:10px" data-game="sail">도전</button>
+    </div>
+    <div class="gamecard">
+      <h4>🃏 기억력 카드</h4><p>12장 중 같은 그림 6쌍. 빠를수록 금화가 큽니다.</p>
+      <div class="best" id="best-memo">최고 기록 없음</div>
+      <button class="btn" style="margin-top:10px" data-game="memo">도전</button>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <div class="tag hot">체험판</div>
+      <p class="lead" style="margin:10px 0 0">여기 있는 건 맛보기입니다. <b style="color:var(--gold)">10월 31일 과수원피스</b>에서는
+        미션 11종과 과수원 전체를 돌아다니는 GPS 보물찾기 「황금 귤을 찾아라」가 열립니다.</p>
+    </div>
+  </section>
+
+  <!-- ========== 포토 ========== -->
+  <section class="screen" id="s-photo">
+    <h2 class="sec">4컷 포토</h2>
+    <p class="lead">선원들과 찍은 사진 4장을 넣으면 과수원피스 프레임으로 만들어 드립니다. 저장해서 SNS에 올리고
+      부스 스태프에게 보여주면 <b style="color:var(--gold)">300 금화</b>.</p>
+    <div class="slot4" id="slots"></div>
+    <button class="btn" id="btnMake">4컷 만들기</button>
+    <img id="photoOut" alt="완성된 4컷 사진">
+    <button class="btn ghost" id="btnSave" style="display:none;margin-top:10px">사진 저장하기</button>
+    <div class="card" style="margin-top:16px">
+      <div class="todo" style="margin:0;background:none;border:0;padding:0">
+        <div class="ic">📣</div>
+        <div class="tt"><b>SNS 인증</b><span>올린 화면을 부스 스태프에게 보여주세요</span></div>
+        <button class="btn" style="width:auto;padding:9px 14px;font-size:12px" id="btnSns">인증</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 상점 ========== -->
+  <section class="screen" id="s-shop">
+    <h2 class="sec">선착장 매표소</h2>
+    <p class="lead">모은 금화로 <b style="color:var(--gold)">승선권</b>을 삽니다. 승선권은 10월 31일
+      과수원피스 경품 추첨에 쓰입니다.</p>
+    <div class="card" style="text-align:center;padding:22px 16px">
+      <div style="font-size:12px;color:var(--dim);font-weight:600">보유 금화</div>
+      <div style="font-size:40px;font-weight:800;color:var(--gold);line-height:1.15;letter-spacing:-1px" id="shopGold">0</div>
+      <div style="font-size:12px;color:var(--dim)" id="shopNeed">승선권 1장까지 500 금화</div>
+      <button class="btn" style="margin-top:16px" id="btnBuy">승선권 1장 구매 (500 금화)</button>
+      <div class="tiny" style="margin-top:8px" id="buyLimit">1인 최대 5장</div>
+    </div>
+    <h2 class="sec">보유 승선권</h2>
+    <div id="tkList"></div>
+    <div class="warn" style="margin-top:14px">
+      <b>⚠ 추첨은 과수원피스 현장에서만 합니다.</b><br>
+      <span id="drawWhen"></span>에 번호를 부릅니다. 그 자리에 없으면 <b>바로 다시 뽑습니다.</b>
+      승선권은 꼭 현장에서 쓰세요.
+    </div>
+  </section>
+
+  <!-- ========== 안내 ========== -->
+  <section class="screen" id="s-info">
+    <h2 class="sec">과수원피스 STAMPEDE</h2>
+    <div class="card" style="text-align:center;padding:24px 16px">
+      <div class="stamp" style="font-size:10px">2026.10.31 SAT</div>
+      <div style="font-size:44px;font-weight:800;color:var(--coral);line-height:1;margin:8px 0" id="ddayBig">D-00</div>
+      <p class="lead" style="margin:0">금능석물원 · 10:00~16:00<br>입장 무료 · 항해 패스 6,000원</p>
+      <a class="btn" style="margin-top:16px;text-decoration:none" id="lnkPre" target="_blank" rel="noopener">사전예매 하러 가기</a>
+      <a class="btn ghost" style="margin-top:8px;text-decoration:none" id="lnkGuide" target="_blank" rel="noopener">행사 안내 보기</a>
+    </div>
+    <h2 class="sec">본편에서 할 수 있는 것</h2>
+    <div class="todo"><div class="ic">🧭</div><div class="tt"><b>GPS 보물찾기</b><span>과수원 전체를 도는 「황금 귤을 찾아라」</span></div></div>
+    <div class="todo"><div class="ic">🎯</div><div class="tt"><b>미션 11종</b><span>양궁·사격·고리던지기·피규어 컬링…</span></div></div>
+    <div class="todo"><div class="ic">🛍️</div><div class="tt"><b>서브컬처 마켓</b><span>피규어·2차창작·푸드 25팀</span></div></div>
+    <div class="todo"><div class="ic">🎤</div><div class="tt"><b>무대</b><span>노래·댄스·퀴즈 대회, 실시간 투표</span></div></div>
+    <div class="todo"><div class="ic">🍊</div><div class="tt"><b>감귤 체험</b><span>패스+감귤체험 콤보 10,000원</span></div></div>
+
+    <h2 class="sec">지금 여기</h2>
+    <div class="card">
+      <p class="lead" style="margin:0" id="boothInfo"></p>
+    </div>
+    <h2 class="sec">부스 인증</h2>
+    <div id="staffTodo"></div>
+    <button class="btn ghost" style="margin-top:20px" id="btnReset">기록 초기화 (테스트용)</button>
+    <p class="tiny" style="text-align:center;margin-top:14px;opacity:.5">프로토타입 v0.1 · 박서방 제주점</p>
+  </section>
+</div>
+
+<!-- 탭바 -->
+<nav id="tabs"><div class="tabin">
+  <button class="tab on" data-go="wanted"><i>📜</i>수배</button>
+  <button class="tab" data-go="game"><i>🎮</i>훈련장</button>
+  <button class="tab" data-go="photo"><i>📸</i>4컷</button>
+  <button class="tab" data-go="shop"><i>🎫</i>매표소</button>
+  <button class="tab" data-go="info"><i>🏴‍☠️</i>안내</button>
+</div></nav>
+
+<!-- 모달 -->
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+
+<!-- 게임 스테이지 -->
+<div id="stage">
+  <div class="stagebar"><span id="stTitle">게임</span><span id="stScore"></span><button class="x" id="stClose">✕</button></div>
+  <div id="canvasWrap"><canvas id="gcv"></canvas></div>
+  <div id="memo" style="display:none"></div>
+</div>
+
+<div id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+var C = window.TAMNA;
+var KEY = 'tamna_v1';
+var $  = function(s){return document.querySelector(s)};
+var $$ = function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var today = function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+
+/* ---------------- 상태 ---------------- */
+var S = load();
+function load(){
+  try{var v=JSON.parse(localStorage.getItem(KEY));if(v&&v.name)return v;}catch(e){}
+  return {name:'',phone:'',gold:0,crew:{},tickets:[],days:[],
+          daily:{},                 // {날짜:{games:n, photo:1, sns:1, buy:1, attend:1}}
+          best:{catch:0,sail:0,memo:0}, flags:{}, photos:[null,null,null,null]};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function d(){var t=today();if(!S.daily[t])S.daily[t]={};return S.daily[t]}
+
+function addGold(n,why){
+  S.gold+=n;save();paint();
+  toast('+'+n+' 금화'+(why?' · '+why:''));
+}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on')},2100)}
+
+/* ---------------- 화면 전환 ---------------- */
+function go(id){
+  $$('.screen').forEach(function(s){s.classList.remove('on')});
+  $('#s-'+id).classList.add('on');
+  $$('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.go===id)});
+  window.scrollTo(0,0);
+  if(id==='game')paintGame();
+  if(id==='shop')paintShop();
+}
+$$('.tab').forEach(function(t){t.onclick=function(){go(t.dataset.go)}});
+
+/* ---------------- 등록 ---------------- */
+$('#inPhone').addEventListener('input',function(e){
+  var v=e.target.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>7)v=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7);
+  else if(v.length>3)v=v.slice(0,3)+'-'+v.slice(3);
+  e.target.value=v;
+});
+$('#btnStart').onclick=function(){
+  var n=$('#inName').value.trim(), p=$('#inPhone').value.trim();
+  if(n.length<1){toast('이름을 입력해 주세요');return}
+  if(p.replace(/\D/g,'').length<10){toast('전화번호를 정확히 입력해 주세요');return}
+  S.name=n;S.phone=p;save();enter();
+};
+function enter(){
+  $('#hud').classList.add('on');$('#tabs').classList.add('on');
+  checkAttend();paint();go('wanted');
+}
+function checkAttend(){
+  var t=today();
+  if(!d().attend){
+    d().attend=1;
+    if(S.days.indexOf(t)<0)S.days.push(t);
+    S.gold+=C.gold.attend;
+    save();
+    setTimeout(function(){toast('출석 +'+C.gold.attend+' 금화')},600);
+    if(S.days.length>=5&&!S.flags.perfect){S.flags.perfect=1;S.gold+=C.gold.perfect;save();
+      setTimeout(function(){toast('5일 개근! +'+C.gold.perfect+' 금화')},2600)}
+  }
+}
+
+/* ---------------- 렌더 ---------------- */
+function paint(){
+  $('#goldN').textContent=S.gold.toLocaleString();
+  $('#meName').textContent=S.name;
+  $('#tkN').textContent=S.tickets.length;
+  var days=dday();
+  $('#ddayN').textContent='D-'+days;
+  $('#ddayBig').textContent='D-'+days;
+  $('#drawWhen').textContent=C.drawTime;
+  $('#lnkPre').href=C.preorderUrl;$('#lnkGuide').href=C.guideUrl;
+  $('#boothInfo').innerHTML=C.boothName+'<br>'+C.festivalName+' '+C.festivalDates+'<br>'+C.boothWhere;
+  paintCrew();paintTodo();paintShop();paintStaff();
+}
+function dday(){
+  var t=new Date(C.mainEventDate)-new Date();
+  return Math.max(0,Math.ceil(t/86400000));
+}
+function todayCrew(){
+  var t=today();
+  for(var i=0;i<C.crew.length;i++)if(C.crew[i].day===t)return C.crew[i].id;
+  return null;
+}
+function paintCrew(){
+  var tc=todayCrew(), g=$('#crewGrid');g.innerHTML='';
+  C.crew.forEach(function(c){
+    var got=!!S.crew[c.id];
+    var el=document.createElement('div');
+    el.className='poster'+(got?' got':'')+(c.id===tc?' today':'');
+    var face = got&&c.photo ? '<img src="'+c.photo+'" alt="'+c.name+'">'
+             : '<span>'+(got?c.name.slice(0,1):'?')+'</span>';
+    el.innerHTML=(c.id===tc?'<div class="todaybadge">현상금 2배</div>':'')+
+      '<div class="pw">WANTED</div><div class="face">'+face+'</div>'+
+      '<div class="pn">'+(got?c.name:'? ? ?')+'</div>'+
+      '<div class="pb">'+(got?'체포 완료':(c.bounty||C.gold.crew)*(c.id===tc?C.gold.todayMultiplier:1)+' 금화')+'</div>';
+    el.onclick=function(){ got?crewInfo(c):openScan(); };
+    g.appendChild(el);
+  });
+  var n=Object.keys(S.crew).length;
+  $('#progFill').style.width=(n/C.crew.length*100)+'%';
+  $('#progTxt').textContent=n+' / '+C.crew.length;
+}
+function crewInfo(c){
+  sheet('<h3>'+c.name+'</h3><p>'+c.desc+'</p>'+
+    '<div class="card" style="text-align:center"><div class="tag">체포 완료</div>'+
+    '<p class="lead" style="margin:10px 0 0">이 선원과 찍은 사진으로 4컷을 만들어 보세요.</p></div>'+
+    '<button class="btn" onclick="document.getElementById(\'modal\').classList.remove(\'on\');">닫기</button>');
+}
+function paintTodo(){
+  var t=d(), tc=todayCrew(), n=Object.keys(S.crew).length;
+  var items=[
+    {ic:'📜',t:'선원 6인 체포',s:n+'/6 완료'+(tc?' · 오늘은 현상금 2배 선원이 있습니다':''),g:C.gold.crew+'×6',done:n>=6},
+    {ic:'📸',t:'4컷 포토 만들기',s:'하루 1회',g:'+'+C.gold.photo,done:!!t.photo},
+    {ic:'📣',t:'SNS 올리고 인증',s:'부스 스태프 확인',g:'+'+C.gold.sns,done:!!t.sns},
+    {ic:'🎮',t:'훈련장 미니게임',s:'오늘 '+(t.games||0)+'회 플레이',g:'최대 '+C.gameMax,done:false},
+    {ic:'🛍️',t:'부스 물품 구매',s:'스태프 확인',g:'+'+C.gold.purchase,done:!!t.buy},
+    {ic:'🎟️',t:'사전예매 인증',s:'한 번만 · 승선권 1장 값',g:'+'+C.gold.preorder,done:!!S.flags.pre}
+  ];
+  $('#todoList').innerHTML=items.map(function(i){
+    return '<div class="todo'+(i.done?' done':'')+'"><div class="ic">'+i.ic+'</div><div class="tt"><b>'+i.t+
+      '</b><span>'+i.s+'</span></div><div class="gv">'+(i.done?'완료':i.g)+'</div></div>';
+  }).join('');
+}
+function paintStaff(){
+  var t=d();
+  var rows=[
+    {k:'sns',ic:'📣',t:'SNS 인증',g:C.gold.sns,done:!!t.sns},
+    {k:'purchase',ic:'🛍️',t:'물품 구매 인증',g:C.gold.purchase,done:!!t.buy},
+    {k:'preorder',ic:'🎟️',t:'사전예매 인증',g:C.gold.preorder,done:!!S.flags.pre}
+  ];
+  $('#staffTodo').innerHTML=rows.map(function(r){
+    return '<div class="todo'+(r.done?' done':'')+'"><div class="ic">'+r.ic+'</div><div class="tt"><b>'+r.t+
+      '</b><span>부스 스태프 QR</span></div>'+(r.done?'<div class="gv">완료</div>':
+      '<button class="btn" style="width:auto;padding:9px 14px;font-size:12px" data-staff="'+r.k+'">인증</button>')+'</div>';
+  }).join('');
+  $$('[data-staff]').forEach(function(b){b.onclick=function(){openScan(b.dataset.staff)}});
+}
+function paintShop(){
+  $('#shopGold').textContent=S.gold.toLocaleString();
+  var left=Math.max(0,C.ticket.cost-(S.gold%C.ticket.cost));
+  $('#shopNeed').textContent=S.gold>=C.ticket.cost?'지금 바로 구매할 수 있습니다':'승선권 1장까지 '+left+' 금화';
+  var full=S.tickets.length>=C.ticket.max;
+  $('#btnBuy').disabled=(S.gold<C.ticket.cost)||full;
+  $('#btnBuy').textContent=full?'보유 한도 도달':'승선권 1장 구매 ('+C.ticket.cost+' 금화)';
+  $('#buyLimit').textContent='1인 최대 '+C.ticket.max+'장 · 현재 '+S.tickets.length+'장';
+  $('#tkList').innerHTML=S.tickets.length?S.tickets.map(function(t,i){
+    return '<div class="ticket"><b>승선권 #'+String(i+1).padStart(2,'0')+'</b><span>'+t+'</span></div>';
+  }).join(''):'<p class="lead">아직 승선권이 없습니다. 금화를 모아 보세요.</p>';
+}
+$('#btnBuy').onclick=function(){
+  if(S.gold<C.ticket.cost||S.tickets.length>=C.ticket.max)return;
+  S.gold-=C.ticket.cost;
+  var code=(S.phone.replace(/\D/g,'').slice(-4))+'-'+Date.now().toString(36).toUpperCase().slice(-5);
+  S.tickets.push(code);save();paint();
+  sheet('<h3>🎫 승선권 획득</h3><p>과수원피스로 가는 배에 자리를 잡았습니다.</p>'+
+    '<div class="ticket" style="margin-bottom:16px"><b>승선권 #'+String(S.tickets.length).padStart(2,'0')+
+    '</b><span>'+code+'</span></div>'+
+    '<div class="warn" style="margin-bottom:16px"><b>⚠ 추첨은 '+C.drawTime+' 과수원피스 현장에서</b><br>'+
+    '그 자리에 없으면 바로 다시 뽑습니다. 꼭 오세요.</div>'+
+    '<button class="btn" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">알겠습니다</button>');
+};
+
+/* ---------------- 코드 스캔 ---------------- */
+function openScan(kind){
+  var label = kind? '스태프 확인 코드' : '선원 명찰 QR 코드';
+  var demo='';
+  if(C.demoMode){
+    var btns = kind
+      ? '<button data-code="'+C.staffCodes[kind]+'">'+C.staffCodes[kind]+'</button>'
+      : C.crew.map(function(c){return '<button data-code="'+c.code+'">'+c.code+'</button>'}).join('');
+    demo='<div class="demo"><p class="tiny">프로토타입 모드 — 실제 행사에서는 QR 카메라가 열립니다. 아래는 테스트용 버튼.</p>'+
+      '<div class="dbtns">'+btns+'</div></div>';
+  }
+  sheet('<h3>'+label+' 입력</h3>'+
+    '<p>'+(kind?'부스 스태프가 보여주는 코드를 입력하세요.':'선원이 목에 건 명찰의 코드를 입력하세요.')+'</p>'+
+    '<div class="field"><input id="codeIn" placeholder="코드 입력" autocapitalize="characters"></div>'+
+    '<button class="btn" id="codeGo">확인</button>'+demo);
+  $('#codeGo').onclick=function(){redeem($('#codeIn').value.trim(),kind)};
+  $$('#sheet .dbtns button').forEach(function(b){b.onclick=function(){redeem(b.dataset.code,kind)}});
+}
+function redeem(code,kind){
+  code=(code||'').toUpperCase().replace(/\s/g,'');
+  if(!code){toast('코드를 입력해 주세요');return}
+  if(kind){
+    if(code!==C.staffCodes[kind].toUpperCase()){toast('코드가 맞지 않습니다');return}
+    if(kind==='sns'){ if(d().sns){toast('오늘은 이미 인증했습니다');return} d().sns=1;addGold(C.gold.sns,'SNS 인증'); }
+    if(kind==='purchase'){ if(d().buy){toast('오늘은 이미 인증했습니다');return} d().buy=1;addGold(C.gold.purchase,'구매 인증'); }
+    if(kind==='preorder'){ if(S.flags.pre){toast('이미 인증했습니다');return} S.flags.pre=1;addGold(C.gold.preorder,'사전예매'); }
+    closeModal();return;
+  }
+  var hit=null;
+  C.crew.forEach(function(c){if(c.code.toUpperCase()===code)hit=c});
+  if(!hit){toast('그런 선원은 없습니다');return}
+  if(S.crew[hit.id]){toast('이미 체포한 선원입니다');return}
+  var mult = (todayCrew()===hit.id)?C.gold.todayMultiplier:1;
+  var g=(hit.bounty||C.gold.crew)*mult;
+  S.crew[hit.id]=today();S.gold+=g;save();paint();
+  closeModal();
+  var n=Object.keys(S.crew).length;
+  var extra='';
+  if(n>=C.crew.length&&!S.flags.all){S.flags.all=1;S.gold+=C.gold.crewAll;save();paint();
+    extra='<div class="card" style="text-align:center;margin-top:6px"><div class="tag hot">6인 전원 체포</div>'+
+      '<p class="lead" style="margin:10px 0 0">보너스 <b style="color:var(--gold)">+'+C.gold.crewAll+' 금화</b><br><br>'+
+      '"잘했다, 항해사.<br>진짜 항해는 <b style="color:var(--coral)">10월 31일</b>부터야."<br>— 귤선장</p></div>';}
+  sheet('<h3>⚓ '+hit.name+' 체포!</h3><p>'+hit.desc+'</p>'+
+    '<div class="card" style="text-align:center;padding:22px"><div style="font-size:34px;font-weight:800;color:var(--gold)">+'+g+'</div>'+
+    '<div class="tiny">금화 획득'+(mult>1?' · 오늘의 선원 2배!':'')+'</div></div>'+extra+
+    '<button class="btn" style="margin-top:8px" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">계속</button>');
+}
+$('#btnScan').onclick=function(){openScan()};
+$('#btnSns').onclick=function(){openScan('sns')};
+
+/* ---------------- 모달 ---------------- */
+function sheet(html){$('#sheet').innerHTML=html;$('#modal').classList.add('on')}
+function closeModal(){$('#modal').classList.remove('on')}
+$('#modal').onclick=function(e){if(e.target===$('#modal'))closeModal()};
+
+/* ---------------- 미니게임 공통 ---------------- */
+function decayRate(){
+  var n=d().games||0, r=1;
+  for(var i=0;i<C.gameDecay.length;i++){if(n<C.gameDecay[i][0]){r=C.gameDecay[i][1];break}}
+  return r;
+}
+function paintGame(){
+  $('#decayTag').textContent='오늘 '+(d().games||0)+'회 · 지급률 '+Math.round(decayRate()*100)+'%';
+  $('#best-catch').textContent='최고 '+(S.best.catch||0)+'점';
+  $('#best-sail').textContent='최고 '+(S.best.sail||0)+'초';
+  $('#best-memo').textContent=S.best.memo?'최고 '+S.best.memo+'초':'최고 기록 없음';
+}
+function reward(raw,label){
+  d().games=(d().games||0)+1;
+  var g=Math.max(1,Math.min(C.gameMax,Math.round(raw*decayRate())));
+  S.gold+=g;save();paint();paintGame();
+  sheet('<h3>'+label+'</h3><div class="card" style="text-align:center;padding:24px">'+
+    '<div style="font-size:38px;font-weight:800;color:var(--gold)">+'+g+'</div><div class="tiny">금화 획득 · 지급률 '+
+    Math.round(decayRate()*100)+'%</div></div>'+
+    '<button class="btn" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">확인</button>');
+}
+$$('[data-game]').forEach(function(b){b.onclick=function(){startGame(b.dataset.game)}});
+$('#stClose').onclick=function(){stopGame()};
+
+var stage=$('#stage'),cv=$('#gcv'),ctx=cv.getContext('2d'),raf=null,cur=null;
+function openStage(title){
+  cur=title;stage.classList.add('on');
+  $('#stTitle').textContent=title;$('#stScore').textContent='';
+  var w=$('#canvasWrap');cv.width=w.clientWidth*2;cv.height=w.clientHeight*2;
+  cv.style.display='block';$('#memo').style.display='none';
+}
+function stopGame(){
+  if(raf)cancelAnimationFrame(raf);raf=null;
+  stage.classList.remove('on');
+  window.removeEventListener('deviceorientation',tiltH);
+  cv.onpointerdown=null;cv.onpointermove=null;cv.onpointerup=null;
+}
+function startGame(k){
+  if(k==='catch')gCatch();
+  if(k==='sail')gSail();
+  if(k==='memo')gMemo();
+}
+
+/* --- ① 황금귤 캐치 --- */
+function gCatch(){
+  openStage('🍊 황금귤 캐치');
+  var W=cv.width,H=cv.height,items=[],score=0,t0=performance.now(),dur=30000,spawn=0;
+  cv.onpointerdown=function(e){
+    var r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*2,y=(e.clientY-r.top)*2;
+    for(var i=items.length-1;i>=0;i--){var it=items[i];
+      if(Math.hypot(it.x-x,it.y-y)<it.r+26){
+        if(it.bomb){score=Math.max(0,score-30);burst(it.x,it.y,'#FF5A47')}
+        else{score+=it.gold?25:10;burst(it.x,it.y,'#FFC94A')}
+        items.splice(i,1);break;}
+    }
+  };
+  var fx=[];
+  function burst(x,y,c){for(var i=0;i<10;i++)fx.push({x:x,y:y,vx:(Math.random()-.5)*10,vy:(Math.random()-.5)*10,l:1,c:c})}
+  function loop(now){
+    var el=now-t0, left=Math.max(0,dur-el);
+    if(left<=0){finishCatch(score);return}
+    spawn-=16;
+    if(spawn<=0){spawn=Math.max(180,560-el/60);
+      var bomb=Math.random()<0.18, gold=!bomb&&Math.random()<0.22;
+      items.push({x:60+Math.random()*(W-120),y:-40,r:bomb?26:(gold?34:30),
+        v:2.2+Math.random()*2.2+el/16000,bomb:bomb,gold:gold,rot:Math.random()*6});}
+    ctx.clearRect(0,0,W,H);
+    var grd=ctx.createLinearGradient(0,0,0,H);grd.addColorStop(0,'#0a2233');grd.addColorStop(1,'#04111c');
+    ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+    items.forEach(function(it){
+      it.y+=it.v*2.4;it.rot+=.02;
+      ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);
+      if(it.bomb){ctx.fillStyle='#22303a';ctx.beginPath();ctx.arc(0,0,it.r,0,7);ctx.fill();
+        ctx.fillStyle='#FF5A47';ctx.fillRect(-4,-it.r-14,8,14);}
+      else{var g2=ctx.createRadialGradient(-it.r*.3,-it.r*.3,2,0,0,it.r);
+        g2.addColorStop(0,it.gold?'#fff3c4':'#ffd08a');g2.addColorStop(1,it.gold?'#e0a52c':'#ef8b1f');
+        ctx.fillStyle=g2;ctx.beginPath();ctx.arc(0,0,it.r,0,7);ctx.fill();
+        ctx.fillStyle='#2f7a3a';ctx.fillRect(-3,-it.r-9,6,10);}
+      ctx.restore();
+    });
+    items=items.filter(function(it){return it.y<H+80});
+    fx.forEach(function(p){p.x+=p.vx*2;p.y+=p.vy*2;p.l-=.05;
+      ctx.globalAlpha=Math.max(0,p.l);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,7,0,7);ctx.fill();ctx.globalAlpha=1});
+    fx=fx.filter(function(p){return p.l>0});
+    $('#stScore').textContent=score+'점 · '+(left/1000).toFixed(1)+'초';
+    raf=requestAnimationFrame(loop);
+  }
+  raf=requestAnimationFrame(loop);
+}
+function finishCatch(score){
+  stopGame();
+  if(score>(S.best.catch||0))S.best.catch=score;
+  reward(score/4,'🍊 '+score+'점');
+}
+
+/* --- ③ 해적선 조타 --- */
+var tiltX=0;
+function tiltH(e){ if(e.gamma!=null) tiltX=Math.max(-1,Math.min(1,e.gamma/25)); }
+function gSail(){
+  openStage('🚢 해적선 조타');
+  if(window.DeviceOrientationEvent&&DeviceOrientationEvent.requestPermission){
+    DeviceOrientationEvent.requestPermission().then(function(r){
+      if(r==='granted')window.addEventListener('deviceorientation',tiltH)}).catch(function(){});
+  } else window.addEventListener('deviceorientation',tiltH);
+  var W=cv.width,H=cv.height,px=W/2,rocks=[],t0=performance.now(),spawn=0,touch=0,alive=true;
+  cv.onpointerdown=function(e){var r=cv.getBoundingClientRect();touch=((e.clientX-r.left)*2<W/2)?-1:1};
+  cv.onpointerup=function(){touch=0};
+  cv.onpointercancel=function(){touch=0};
+  var wave=0;
+  function loop(now){
+    if(!alive)return;
+    var el=(now-t0)/1000;
+    px+=(tiltX*9+touch*9);
+    px=Math.max(50,Math.min(W-50,px));
+    spawn-=16;
+    if(spawn<=0){spawn=Math.max(260,760-el*22);
+      rocks.push({x:60+Math.random()*(W-120),y:-60,r:34+Math.random()*26,v:3.4+el*0.09})}
+    ctx.clearRect(0,0,W,H);
+    var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#08304a');g.addColorStop(1,'#02131f');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    wave+=.04;
+    ctx.strokeStyle='rgba(47,209,197,.12)';ctx.lineWidth=3;
+    for(var i=0;i<7;i++){ctx.beginPath();
+      for(var x=0;x<=W;x+=24)ctx.lineTo(x,i*H/7+Math.sin(x/90+wave+i)*9);ctx.stroke();}
+    var hit=false;
+    rocks.forEach(function(r){
+      r.y+=r.v*2.6;
+      ctx.fillStyle='#3c4a55';ctx.beginPath();
+      ctx.moveTo(r.x-r.r,r.y+r.r);ctx.lineTo(r.x,r.y-r.r);ctx.lineTo(r.x+r.r,r.y+r.r);ctx.closePath();ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.14)';ctx.beginPath();
+      ctx.moveTo(r.x,r.y-r.r);ctx.lineTo(r.x+r.r*.5,r.y+r.r*.2);ctx.lineTo(r.x,r.y+r.r*.4);ctx.closePath();ctx.fill();
+      if(Math.abs(r.x-px)<r.r+30&&Math.abs(r.y-(H-160))<r.r+34)hit=true;
+    });
+    rocks=rocks.filter(function(r){return r.y<H+90});
+    // ship
+    ctx.save();ctx.translate(px,H-160);ctx.rotate(tiltX*.18+touch*.18);
+    ctx.fillStyle='#6b4527';ctx.beginPath();ctx.moveTo(-42,14);ctx.lineTo(42,14);ctx.lineTo(28,44);ctx.lineTo(-28,44);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#e9f1f7';ctx.beginPath();ctx.moveTo(0,-54);ctx.lineTo(34,10);ctx.lineTo(0,10);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#FFC94A';ctx.fillRect(-3,-60,5,72);
+    ctx.restore();
+    $('#stScore').textContent=el.toFixed(1)+'초';
+    if(hit){alive=false;finishSail(el);return}
+    raf=requestAnimationFrame(loop);
+  }
+  raf=requestAnimationFrame(loop);
+}
+function finishSail(sec){
+  var s=Math.floor(sec);stopGame();
+  if(s>(S.best.sail||0))S.best.sail=s;
+  reward(s*2,'🚢 '+s+'초 생존');
+}
+
+/* --- ⑤ 기억력 카드 --- */
+function gMemo(){
+  openStage('🃏 기억력 카드');
+  cv.style.display='none';
+  var wrap=$('#memo');wrap.style.display='grid';
+  var faces=['🍊','⚓','🏴‍☠️','🧭','💰','🗺️'];
+  var deck=faces.concat(faces).sort(function(){return Math.random()-.5});
+  wrap.innerHTML=deck.map(function(f,i){return '<div class="mcard" data-i="'+i+'"><span>'+f+'</span></div>'}).join('');
+  var open=[],done=0,t0=performance.now(),lock=false,tick;
+  tick=setInterval(function(){$('#stScore').textContent=((performance.now()-t0)/1000).toFixed(1)+'초'},100);
+  $$('#memo .mcard').forEach(function(el){
+    el.onclick=function(){
+      if(lock||el.classList.contains('flip'))return;
+      el.classList.add('flip');open.push(el);
+      if(open.length===2){
+        lock=true;
+        var a=deck[open[0].dataset.i],b=deck[open[1].dataset.i];
+        if(a===b){
+          done++;var pair=open.slice();
+          setTimeout(function(){pair.forEach(function(p){p.classList.add('hide')});},380);
+          open=[];lock=false;
+          if(done===6){clearInterval(tick);
+            var sec=(performance.now()-t0)/1000;
+            setTimeout(function(){finishMemo(sec)},450);}
+        } else {
+          setTimeout(function(){open.forEach(function(p){p.classList.remove('flip')});open=[];lock=false},700);
+        }
+      }
+    };
+  });
+}
+function finishMemo(sec){
+  var s=Math.round(sec*10)/10;stopGame();
+  $('#memo').style.display='none';
+  if(!S.best.memo||s<S.best.memo)S.best.memo=s;
+  var raw=Math.max(8,60-Math.max(0,s-15)*1.6);
+  reward(raw,'🃏 '+s+'초 클리어');
+}
+
+/* ---------------- 4컷 포토 ---------------- */
+var slots=[null,null,null,null];
+(function initSlots(){
+  var w=$('#slots');
+  for(var i=0;i<4;i++){
+    (function(i){
+      var el=document.createElement('label');el.className='slot';
+      el.innerHTML='<span>'+(i+1)+'번 사진<br>탭해서 선택</span>'+
+        '<input type="file" accept="image/*" style="display:none">';
+      var inp=el.querySelector('input');
+      inp.onchange=function(){
+        var f=inp.files[0];if(!f)return;
+        var r=new FileReader();
+        r.onload=function(){var img=new Image();img.onload=function(){slots[i]=img;
+          el.innerHTML='';var v=document.createElement('img');v.src=img.src;el.appendChild(v);el.appendChild(inp);};
+          img.src=r.result;};
+        r.readAsDataURL(f);
+      };
+      w.appendChild(el);
+    })(i);
+  }
+})();
+$('#btnMake').onclick=function(){
+  var have=slots.filter(Boolean).length;
+  if(have<4){toast('사진 4장을 모두 넣어 주세요 ('+have+'/4)');return}
+  var W=900,H=1500,c=document.createElement('canvas');c.width=W;c.height=H;
+  var x=c.getContext('2d');
+  x.fillStyle='#04111c';x.fillRect(0,0,W,H);
+  var g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#123047');g.addColorStop(1,'#04111c');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  var pad=42,gap=18,cw=(W-pad*2-gap)/2,ch=520;
+  slots.forEach(function(img,i){
+    var px=pad+(i%2)*(cw+gap), py=110+Math.floor(i/2)*(ch+gap);
+    x.save();x.beginPath();x.rect(px,py,cw,ch);x.clip();
+    var s=Math.max(cw/img.width,ch/img.height);
+    x.drawImage(img,px+(cw-img.width*s)/2,py+(ch-img.height*s)/2,img.width*s,img.height*s);
+    x.restore();
+    x.strokeStyle='rgba(255,201,74,.35)';x.lineWidth=3;x.strokeRect(px,py,cw,ch);
+  });
+  x.fillStyle='#FFC94A';x.font='800 34px SCDream, sans-serif';x.textAlign='center';
+  x.fillText('과수원피스 STAMPEDE', W/2, 66);
+  x.fillStyle='rgba(233,241,247,.7)';x.font='600 21px SCDream, sans-serif';
+  x.fillText('2026.10.31 SAT · 금능석물원', W/2, H-96);
+  x.fillStyle='#FF5A47';x.font='800 27px SCDream, sans-serif';
+  var n=Object.keys(S.crew).length;
+  x.fillText('선원 '+n+'/6 체포 · '+(S.name||'항해사'), W/2, H-52);
+  var url=c.toDataURL('image/jpeg',.92);
+  var out=$('#photoOut');out.src=url;out.style.display='block';
+  $('#btnSave').style.display='block';
+  $('#btnSave').onclick=function(){var a=document.createElement('a');a.href=url;
+    a.download='과수원피스_4컷_'+Date.now()+'.jpg';a.click()};
+  if(!d().photo){d().photo=1;addGold(C.gold.photo,'4컷 완성')}
+  out.scrollIntoView({behavior:'smooth',block:'center'});
+};
+
+/* ---------------- 초기화 ---------------- */
+$('#btnReset').onclick=function(){
+  sheet('<h3>기록을 지울까요?</h3><p>금화·승선권·체포 기록이 전부 사라집니다. 테스트용 기능입니다.</p>'+
+    '<button class="btn" id="okReset">지우기</button>'+
+    '<button class="btn ghost" style="margin-top:8px" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">취소</button>');
+  $('#okReset').onclick=function(){localStorage.removeItem(KEY);location.reload()};
+};
+
+/* ---------------- 부팅 ---------------- */
+if(S.name){$('#s-intro').classList.remove('on');enter();}
+})();
+</script>
+</body>
+</html>
