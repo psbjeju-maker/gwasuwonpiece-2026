@@ -263,7 +263,7 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
       <button class="btn" style="margin-top:10px" data-game="catch">도전</button>
     </div>
     <div class="gamecard">
-      <h4>🌬 영등할망의 바람</h4><p>바람을 타고(폰을 기울이거나 화면 좌우를 눌러) 먹구름을 피하세요. 오래 버틸수록 복.</p>
+      <h4>🌬 영등할망의 바람</h4><p>바람을 타고(폰을 기울이거나 화면 좌우를 눌러) 먹구름을 피하세요. 초록 복떡을 먹으면 룰렛이 돌아가 질풍(빠르게)·훈풍(느리게) 중 하나가 걸립니다. 오래 버틸수록 복.</p>
       <div class="best" id="best-sail">최고 0초</div>
       <button class="btn" style="margin-top:10px" data-game="sail">도전</button>
     </div>
@@ -662,7 +662,8 @@ function gCatch(){
     spawn-=16;
     if(spawn<=0){spawn=Math.max(180,560-el/60);
       var bomb=Math.random()<0.18, gold=!bomb&&Math.random()<0.22;
-      items.push({x:60+Math.random()*(W-120),y:-40,r:bomb?26:(gold?34:30),
+      /* 폭탄은 귤보다 2~3배 크게 — 눈에 확 띄는 대신 화면을 많이 가려서 더 위협적이다 */
+      items.push({x:60+Math.random()*(W-120),y:-40,r:bomb?26*(2+Math.random()):(gold?34:30),
         v:2.2+Math.random()*2.2+el/16000,bomb:bomb,gold:gold,rot:Math.random()*6});}
     ctx.clearRect(0,0,W,H);
     var grd=ctx.createLinearGradient(0,0,0,H);grd.addColorStop(0,'#0a2233');grd.addColorStop(1,'#04111c');
@@ -671,7 +672,7 @@ function gCatch(){
       it.y+=it.v*2.4;it.rot+=.02;
       ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);
       if(it.bomb){ctx.fillStyle='#22303a';ctx.beginPath();ctx.arc(0,0,it.r,0,7);ctx.fill();
-        ctx.fillStyle='#FF5A47';ctx.fillRect(-4,-it.r-14,8,14);}
+        ctx.fillStyle='#FF5A47';ctx.fillRect(-it.r*.15,-it.r-it.r*.5,it.r*.3,it.r*.5);}
       else{var g2=ctx.createRadialGradient(-it.r*.3,-it.r*.3,2,0,0,it.r);
         g2.addColorStop(0,it.gold?'#fff3c4':'#ffd08a');g2.addColorStop(1,it.gold?'#e0a52c':'#ef8b1f');
         ctx.fillStyle=g2;ctx.beginPath();ctx.arc(0,0,it.r,0,7);ctx.fill();
@@ -702,7 +703,12 @@ function gSail(){
     DeviceOrientationEvent.requestPermission().then(function(r){
       if(r==='granted')window.addEventListener('deviceorientation',tiltH)}).catch(function(){});
   } else window.addEventListener('deviceorientation',tiltH);
-  var W=cv.width,H=cv.height,px=W/2,rocks=[],t0=performance.now(),spawn=0,touch=0,alive=true;
+  var W=cv.width,H=cv.height,px=W/2,rocks=[],foods=[],t0=performance.now();
+  var spawn=0,foodSpawn=2600,touch=0,alive=true;
+  /* 룰렛 버프: 먹거리를 먹으면 잠깐 스핀하다 "질풍(빠르게)" 또는 "훈풍(느리게)" 중 하나로 확정된다.
+     질풍=장애물이 더 빠르고 촘촘해짐(고위험) · 훈풍=장애물이 느려짐(잠깐 숨 돌리기) */
+  var buff=null;          // {type:'fast'|'slow', until:<el 초>}
+  var spinUntil=0, spinResolved=true;
   cv.onpointerdown=function(e){var r=cv.getBoundingClientRect();touch=((e.clientX-r.left)*2<W/2)?-1:1};
   cv.onpointerup=function(){touch=0};
   cv.onpointercancel=function(){touch=0};
@@ -710,34 +716,83 @@ function gSail(){
   function loop(now){
     if(!alive)return;
     var el=(now-t0)/1000;
+    var spinning=!spinResolved&&el<spinUntil;
+    if(!spinResolved&&el>=spinUntil){
+      spinResolved=true;
+      var type=Math.random()<0.5?'fast':'slow';
+      buff={type:type,until:el+5};
+      toast(type==='fast'?'🌀 질풍 당첨! 5초간 거세집니다':'🌀 훈풍 당첨! 5초간 잠잠해집니다');
+    }
+    var mul = (buff&&buff.until>el) ? (buff.type==='fast'?1.55:0.62) : 1;
     px+=(tiltX*9+touch*9);
     px=Math.max(50,Math.min(W-50,px));
-    spawn-=16;
-    if(spawn<=0){spawn=Math.max(260,760-el*22);
-      rocks.push({x:60+Math.random()*(W-120),y:-60,r:34+Math.random()*26,v:3.4+el*0.09})}
+    if(!spinning){
+      /* 기존보다 스폰 간격을 좁히고 낙하 가속도를 올려 전체 난이도를 높였다 */
+      spawn-=16;
+      if(spawn<=0){spawn=Math.max(190,(650-el*30)/mul);
+        rocks.push({x:60+Math.random()*(W-120),y:-60,r:34+Math.random()*28,v:(3.8+el*0.12)*mul})}
+      foodSpawn-=16;
+      if(foodSpawn<=0){foodSpawn=4600+Math.random()*2600;
+        foods.push({x:60+Math.random()*(W-120),y:-40,r:26,v:2.5+el*0.05})}
+    }
     ctx.clearRect(0,0,W,H);
-    var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#08304a');g.addColorStop(1,'#02131f');
+    var g=ctx.createLinearGradient(0,0,0,H);
+    if(buff&&buff.until>el&&buff.type==='fast'){g.addColorStop(0,'#4a1f1a');g.addColorStop(1,'#1a0906');}
+    else if(buff&&buff.until>el&&buff.type==='slow'){g.addColorStop(0,'#0a3a3a');g.addColorStop(1,'#021616');}
+    else {g.addColorStop(0,'#08304a');g.addColorStop(1,'#02131f');}
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
     wave+=.04;
     ctx.strokeStyle='rgba(47,209,197,.12)';ctx.lineWidth=3;
     for(var i=0;i<7;i++){ctx.beginPath();
       for(var x=0;x<=W;x+=24)ctx.lineTo(x,i*H/7+Math.sin(x/90+wave+i)*9);ctx.stroke();}
     var hit=false;
-    rocks.forEach(function(r){
-      r.y+=r.v*2.6;
-      ctx.fillStyle='#3c4a55';ctx.beginPath();
-      ctx.moveTo(r.x-r.r,r.y+r.r);ctx.lineTo(r.x,r.y-r.r);ctx.lineTo(r.x+r.r,r.y+r.r);ctx.closePath();ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,.14)';ctx.beginPath();
-      ctx.moveTo(r.x,r.y-r.r);ctx.lineTo(r.x+r.r*.5,r.y+r.r*.2);ctx.lineTo(r.x,r.y+r.r*.4);ctx.closePath();ctx.fill();
-      if(Math.abs(r.x-px)<r.r+30&&Math.abs(r.y-(H-160))<r.r+34)hit=true;
+    if(!spinning){
+      rocks.forEach(function(r){
+        r.y+=r.v*2.6;
+        ctx.fillStyle='#3c4a55';ctx.beginPath();
+        ctx.moveTo(r.x-r.r,r.y+r.r);ctx.lineTo(r.x,r.y-r.r);ctx.lineTo(r.x+r.r,r.y+r.r);ctx.closePath();ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,.14)';ctx.beginPath();
+        ctx.moveTo(r.x,r.y-r.r);ctx.lineTo(r.x+r.r*.5,r.y+r.r*.2);ctx.lineTo(r.x,r.y+r.r*.4);ctx.closePath();ctx.fill();
+        if(Math.abs(r.x-px)<r.r+30&&Math.abs(r.y-(H-160))<r.r+34)hit=true;
+      });
+      rocks=rocks.filter(function(r){return r.y<H+90});
+    } else {
+      rocks.forEach(function(r){
+        ctx.fillStyle='#3c4a55';ctx.beginPath();
+        ctx.moveTo(r.x-r.r,r.y+r.r);ctx.lineTo(r.x,r.y-r.r);ctx.lineTo(r.x+r.r,r.y+r.r);ctx.closePath();ctx.fill();
+      });
+    }
+    /* 먹거리(복떡) — 먹으면 룰렛이 돌아간다 */
+    foods.forEach(function(f){
+      if(!spinning)f.y+=f.v*2.4;
+      ctx.save();ctx.translate(f.x,f.y);
+      var fg=ctx.createRadialGradient(-f.r*.3,-f.r*.3,2,0,0,f.r);
+      fg.addColorStop(0,'#eafcd9');fg.addColorStop(1,'#8fce5c');
+      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(0,0,f.r,0,7);ctx.fill();
+      ctx.fillStyle='rgba(80,55,15,.35)';
+      [[-6,-4],[6,-3],[-3,6],[5,7]].forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],2.6,0,7);ctx.fill();});
+      ctx.restore();
+      if(!spinning&&spinResolved&&Math.abs(f.x-px)<f.r+30&&Math.abs(f.y-(H-160))<f.r+34){
+        f.eaten=true; spinResolved=false; spinUntil=el+0.9;
+      }
     });
-    rocks=rocks.filter(function(r){return r.y<H+90});
+    foods=foods.filter(function(f){return f.y<H+80&&!f.eaten});
     // ship
     ctx.save();ctx.translate(px,H-160);ctx.rotate(tiltX*.18+touch*.18);
     ctx.fillStyle='#6b4527';ctx.beginPath();ctx.moveTo(-42,14);ctx.lineTo(42,14);ctx.lineTo(28,44);ctx.lineTo(-28,44);ctx.closePath();ctx.fill();
     ctx.fillStyle='#e9f1f7';ctx.beginPath();ctx.moveTo(0,-54);ctx.lineTo(34,10);ctx.lineTo(0,10);ctx.closePath();ctx.fill();
     ctx.fillStyle='#FFC94A';ctx.fillRect(-3,-60,5,72);
     ctx.restore();
+    if(spinning){
+      var flick=Math.floor(el*9)%2===0;
+      ctx.textAlign='center';ctx.font='800 30px SCDream, sans-serif';
+      ctx.fillStyle=flick?'#FF5A47':'#2FD1C5';
+      ctx.fillText(flick?'질풍?!':'훈풍?!', W/2, 90);
+    } else if(buff&&buff.until>el){
+      ctx.textAlign='center';ctx.font='700 18px SCDream, sans-serif';
+      ctx.fillStyle=buff.type==='fast'?'#ff8b7c':'#7fe8de';
+      ctx.fillText((buff.type==='fast'?'🌀 질풍 · ':'🌀 훈풍 · ')+Math.max(0,buff.until-el).toFixed(1)+'초', W/2, 50);
+    }
     $('#stScore').textContent=el.toFixed(1)+'초';
     if(hit){alive=false;finishSail(el);return}
     raf=requestAnimationFrame(loop);
