@@ -666,18 +666,47 @@ function gCatch(){
   openStage('🍊 황금귤 캐치');
   var W=cv.width,H=cv.height,items=[],score=0,t0=performance.now(),dur=30000,spawn=0;
   var lastPt=null, hitSet=null;
+  var fx=[], pieces=[], flashes=[], shakeT=0, shakeMag=0;
   function pt(e){var r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)*2,y:(e.clientY-r.top)*2}}
+  /* 과즙 스프레이 — 자른 방향과 수직으로 즙이 튄다 */
+  function juice(x,y,swipeAngle,c,n){
+    n=n||8;
+    for(var i=0;i<n;i++){
+      var side=(i%2===0)?1:-1, a=swipeAngle+Math.PI/2*side+(Math.random()-.5)*.9, sp=2+Math.random()*6;
+      fx.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,l:1,c:c,sz:3+Math.random()*3,grav:true});
+    }
+  }
+  /* 잘린 귤이 절단면을 보이며 양쪽으로 갈라져 날아간다 */
+  function splitFruit(it,swipeAngle){
+    [1,-1].forEach(function(side){
+      var a=swipeAngle+Math.PI/2*side;
+      pieces.push({x:it.x,y:it.y,vx:Math.cos(a)*(2.4+Math.random()*1.6),vy:Math.sin(a)*(2.4+Math.random()*1.6)-1.4,
+        rot:it.rot,vr:side*(0.1+Math.random()*.08),r:it.r,ang:swipeAngle+(side>0?0:Math.PI),glow:it.glow,life:1});
+    });
+  }
+  /* 폭탄 — 불꽃 파편 + 확산되는 섬광 + 짧은 화면 흔들림 */
+  function explode(x,y,r){
+    flashes.push({x:x,y:y,t:0,r0:r*0.3,r1:r*2.3});
+    shakeT=16; shakeMag=Math.min(14,r*0.16);
+    for(var i=0;i<26;i++){
+      var a=Math.random()*Math.PI*2, sp=2.5+Math.random()*7.5;
+      var role=i%3;
+      fx.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,l:1,
+        c:role===0?'#2a2a2a':(role===1?'#FF5A47':'#FFC94A'),
+        sz:role===0?4:6,grav:true});
+    }
+  }
   function slice(p0,p1){
+    var swipeAngle=Math.atan2(p1.y-p0.y,p1.x-p0.x);
     for(var i=items.length-1;i>=0;i--){var it=items[i];
       if(hitSet.indexOf(it)>=0)continue;
       if(segPointDist(p0,p1,it.x,it.y)<it.r+22){
         hitSet.push(it);
-        if(it.bomb){score=Math.max(0,score-30);burst(it.x,it.y,'#FF5A47');items.splice(i,1);continue}
+        if(it.bomb){score=Math.max(0,score-30);explode(it.x,it.y,it.r);items.splice(i,1);continue}
         it.hits++;
-        var ang=Math.atan2(p1.y-p0.y,p1.x-p0.x)-it.rot;
-        it.marks.push(ang);
-        if(it.hits>=it.need){score+=it.val;burst(it.x,it.y,it.glow?'#FFC94A':'#ffd08a');items.splice(i,1)}
-        else{burst(p1.x,p1.y,'#fff8e6',5)}
+        it.marks.push(swipeAngle-it.rot);
+        if(it.hits>=it.need){score+=it.val;splitFruit(it,swipeAngle);juice(it.x,it.y,swipeAngle,it.glow?'#FFC94A':'#ffd08a',10);items.splice(i,1)}
+        else{juice(it.x,it.y,swipeAngle,'#fff8e6',6)}
       }
     }
   }
@@ -685,8 +714,6 @@ function gCatch(){
   cv.onpointermove=function(e){if(!lastPt)return;var p=pt(e);slice(lastPt,p);lastPt=p};
   cv.onpointerup=function(){lastPt=null;hitSet=null};
   cv.onpointercancel=cv.onpointerup;
-  var fx=[];
-  function burst(x,y,c,n){n=n||10;for(var i=0;i<n;i++)fx.push({x:x,y:y,vx:(Math.random()-.5)*10,vy:(Math.random()-.5)*10,l:1,c:c})}
   function loop(now){
     var el=now-t0, left=Math.max(0,dur-el);
     if(left<=0){finishCatch(score);return}
@@ -701,6 +728,8 @@ function gCatch(){
            v:(2.2+Math.random()*1.6+el/18000)*tier.vMul,bomb:false,rot:Math.random()*6});
     }
     ctx.clearRect(0,0,W,H);
+    ctx.save();
+    if(shakeT>0){ctx.translate((Math.random()-.5)*shakeMag*2,(Math.random()-.5)*shakeMag*2);shakeT--}
     var grd=ctx.createLinearGradient(0,0,0,H);grd.addColorStop(0,'#0a2233');grd.addColorStop(1,'#04111c');
     ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
     items.forEach(function(it){
@@ -724,9 +753,34 @@ function gCatch(){
       ctx.restore();
     });
     items=items.filter(function(it){return it.y<H+80});
-    fx.forEach(function(p){p.x+=p.vx*2;p.y+=p.vy*2;p.l-=.05;
-      ctx.globalAlpha=Math.max(0,p.l);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,7,0,7);ctx.fill();ctx.globalAlpha=1});
+    /* 갈라진 귤 반쪽 — 절단면(흰 테두리)을 보이며 날아간다 */
+    pieces.forEach(function(p){
+      p.x+=p.vx;p.y+=p.vy;p.vy+=0.22;p.rot+=p.vr;p.life-=0.018;
+      ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+      ctx.beginPath();ctx.arc(0,0,p.r,p.ang,p.ang+Math.PI);ctx.closePath();
+      var pg=ctx.createRadialGradient(0,0,2,0,0,p.r);
+      pg.addColorStop(0,p.glow?'#fff3c4':'#ffd08a');pg.addColorStop(1,p.glow?'#e0a52c':'#ef8b1f');
+      ctx.fillStyle=pg;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=Math.max(2,p.r*.08);
+      ctx.beginPath();ctx.moveTo(Math.cos(p.ang)*p.r,Math.sin(p.ang)*p.r);
+      ctx.lineTo(Math.cos(p.ang+Math.PI)*p.r,Math.sin(p.ang+Math.PI)*p.r);ctx.stroke();
+      ctx.restore();ctx.globalAlpha=1;
+    });
+    pieces=pieces.filter(function(p){return p.life>0&&p.y<H+100});
+    /* 폭탄 섬광 */
+    flashes.forEach(function(fl){
+      fl.t++;var p=Math.min(1,fl.t/18);
+      var rad=fl.r0+(fl.r1-fl.r0)*p;
+      ctx.globalAlpha=1-p;
+      var fg=ctx.createRadialGradient(fl.x,fl.y,0,fl.x,fl.y,rad);
+      fg.addColorStop(0,'rgba(255,240,200,.9)');fg.addColorStop(.4,'rgba(255,140,60,.55)');fg.addColorStop(1,'rgba(255,90,71,0)');
+      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(fl.x,fl.y,rad,0,7);ctx.fill();ctx.globalAlpha=1;
+    });
+    flashes=flashes.filter(function(fl){return fl.t/18<1});
+    fx.forEach(function(p){p.x+=p.vx*2;p.y+=p.vy*2;if(p.grav)p.vy+=.16;p.l-=.045;
+      ctx.globalAlpha=Math.max(0,p.l);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.sz||7,0,7);ctx.fill();ctx.globalAlpha=1});
     fx=fx.filter(function(p){return p.l>0});
+    ctx.restore();
     $('#stScore').textContent=score+'점 · '+(left/1000).toFixed(1)+'초';
     raf=requestAnimationFrame(loop);
   }
