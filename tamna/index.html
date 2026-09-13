@@ -667,6 +667,16 @@ $('#modal').onclick=function(e){if(e.target===$('#modal'))closeModal()};
    (오해를 풀어주는 대사) — 다른 신에게도 쓰려면 아래 DOKEBI_LINES 같은
    배열을 하나 더 만들어서 playCinema() 세 번째 인자로 넘기면 된다. */
 var CINE_LINES=null, cineIdx=0, cineDone=null;
+/* 오프닝 — 등록 화면 뜨기 전, 처음 한 번만 재생 (본편 귤선장 이미지 재사용) */
+var OPENING_LINES=[
+  {img:'../captain/full_body.jpg', text:'오, 이런 델 다 오다니! 반갑다, 나는 귤선장이다.'},
+  {img:'../captain/exp_default.jpg', text:'10월 31일, 내가 지휘하는 진짜 항해가 열려. 「과수원피스」라고 들어봤나?'},
+  {img:'../captain/exp_think.jpg', text:'근데 그 전에… 탐라의 오래된 이야기 속 여섯 신이 여기, 탐라문화제에 강림하셨다는 소문이 있어.'},
+  {img:'../captain/exp_surprise.jpg', text:'설문대할망, 도채비, 소별왕, 영등할망, 자청비, 가문장아기. 전부 진짜로 만날 수 있다던데?'},
+  {img:'../captain/exp_wink.jpg', text:'찾아가서 인사드리고 신표를 모아봐. 다 모으면 좋은 일이 생길 거야.'},
+  {img:'../captain/exp_fighting.jpg', text:'그 신표, 잘 챙겨둬. 10월 31일 과수원피스에서 쓸모가 있을 테니까.'},
+  {img:'../captain/exp_happy.jpg', text:'자, 준비됐으면 이름부터 알려줘. 진짜 항해는 이제부터 시작이다!'}
+];
 var DOKEBI_LINES=[
   {img:'dokebi/fullbody.jpg', text:'오, 사람이잖아! 잘 왔다, 나는 도채비.'},
   {img:'dokebi/exp_default.jpg', text:'근데 표정이 왜 그래? 뭘 상상한 거야?'},
@@ -1103,6 +1113,9 @@ $('#btnReset').onclick=function(){
 
 /* ---------------- 부팅 ---------------- */
 if(S.name){$('#s-intro').classList.remove('on');enter();}
+else if(!S.flags.introSeen){
+  playCinema('귤선장',OPENING_LINES,function(){S.flags.introSeen=1;save()});
+}
 })();
 </script>
 </body>
