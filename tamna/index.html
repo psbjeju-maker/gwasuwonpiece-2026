@@ -328,6 +328,24 @@ p.lead{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 14px}
       <a class="btn" style="margin-top:16px;text-decoration:none" id="lnkPre" target="_blank" rel="noopener">사전예매 하러 가기</a>
       <a class="btn ghost" style="margin-top:8px;text-decoration:none" id="lnkGuide" target="_blank" rel="noopener">행사 안내 보기</a>
     </div>
+
+    <h2 class="sec">🔒 아직 못 보여드리는 것</h2>
+    <div class="card" style="position:relative;overflow:hidden;padding:0">
+      <div style="height:140px;background:
+          radial-gradient(circle at 22% 28%,rgba(255,201,74,.28),transparent 42%),
+          radial-gradient(circle at 72% 62%,rgba(47,209,197,.24),transparent 46%),
+          radial-gradient(circle at 45% 85%,rgba(255,90,71,.2),transparent 42%),
+          repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 10px,transparent 10px 20px),
+          linear-gradient(160deg,#123047,#04111c);
+          filter:blur(3px) saturate(1.15)"></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:rgba(4,17,28,.42)">
+        <div style="font-size:24px">🗺️🔒</div>
+        <div style="font-weight:800;font-size:13.5px">GPS 보물지도 — 전 지역 13개 지점</div>
+        <div style="font-size:11px;color:var(--dim)">탐라에서 만난 여섯 신은 맛보기였습니다</div>
+      </div>
+    </div>
+    <p class="tiny" style="text-align:center;margin:8px 0 4px">여기서 신 6명·미니게임 3종을 즐기셨다면,<br>과수원피스에선 <b style="color:var(--gold)">과수원 전체가 게임판</b>이 됩니다.</p>
+
     <h2 class="sec">본편에서 할 수 있는 것</h2>
     <div class="todo"><div class="ic">🧭</div><div class="tt"><b>GPS 보물찾기</b><span>과수원 전체를 도는 「황금 귤을 찾아라」</span></div></div>
     <div class="todo"><div class="ic">🎯</div><div class="tt"><b>미션 11종</b><span>양궁·사격·고리던지기·피규어 컬링…</span></div></div>
@@ -582,9 +600,18 @@ function redeem(code,kind){
   var n=Object.keys(S.crew).length;
   var extra='';
   if(n>=C.crew.length&&!S.flags.all){S.flags.all=1;S.gold+=C.gold.crewAll;save();paint();
-    extra='<div class="card" style="text-align:center;margin-top:6px"><div class="tag hot">여섯 신 모두 친견</div>'+
-      '<p class="lead" style="margin:10px 0 0">보너스 <b style="color:var(--gold)">+'+C.gold.crewAll+' 복</b><br><br>'+
-      '"탐라의 신들이 모두 그대를 반겼구나.<br>진짜 항해는 <b style="color:var(--coral)">10월 31일</b>, 과수원피스에서 시작된다."<br>— 귤선장</p></div>';}
+    extra='<div class="card" style="text-align:center;margin-top:6px">'+
+      '<div class="tag hot">여섯 신 모두 친견</div>'+
+      '<p class="lead" style="margin:10px 0 0">보너스 <b style="color:var(--gold)">+'+C.gold.crewAll+' 복</b></p>'+
+      '<div style="margin:14px 0;padding:13px 14px;background:rgba(255,201,74,.08);border:1px dashed var(--line);border-radius:12px;text-align:left">'+
+        '<div style="font-size:10.5px;color:var(--gold);font-weight:800;letter-spacing:.06em;margin-bottom:8px">지금까지 한 건, 사실 예고편입니다</div>'+
+        '<div style="font-size:12.5px;line-height:1.85">'+
+          '신 6명 → 과수원피스는 <b style="color:var(--coral)">미션 11종 + 과수원 전체 GPS 보물찾기</b><br>'+
+          '몇 분짜리 미니게임 → <b style="color:var(--coral)">감귤밭·산책로까지 이어지는 진짜 게임판</b><br>'+
+          '부스 하나 → <b style="color:var(--coral)">마켓 25팀 + 무대 + 코스프레</b>'+
+        '</div>'+
+      '</div>'+
+      '<p class="lead" style="margin:0">"탐라의 신들이 모두 그대를 반겼구나.<br>진짜 항해는 <b style="color:var(--coral)">10월 31일</b>, 과수원피스에서 시작된다."<br>— 귤선장</p></div>';}
   sheet('<h3>🙏 '+hit.name+' 친견</h3><p>'+hit.desc+'</p>'+
     '<div class="card" style="text-align:center;padding:22px"><div style="font-size:34px;font-weight:800;color:var(--gold)">+'+g+'</div>'+
     '<div class="tiny">복 획득'+(mult>1?' · 오늘의 신 2배!':'')+'</div></div>'+extra+
