@@ -5,25 +5,24 @@
 사용법:
     python build_hero_manifest.py
 
-  - cosplay-hero/탐라, cosplay-hero/탐라코스체험, cosplay-hero/과수 폴더를
-    이 순서대로 훑어서(각 폴더 안에서는 파일명 순) cosplay-hero/manifest.js 를 만든다.
-  - 폴더에 사진을 새로 넣거나 뺐으면 이 스크립트를 다시 실행 → 커밋 → 푸시.
+  - cosplay-hero/ 안의 "탐라.*", "탐라코스체험.*", "과수.*" 파일을 이 순서대로 찾아
+    cosplay-hero/manifest.js 를 만든다. 같은 이름으로 파일을 교체하면 순서는 그대로 유지된다.
+  - 사진을 바꾸거나 추가했으면 이 스크립트를 다시 실행 → 커밋 → 푸시.
 """
-import os, json
+import os, json, glob
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "cosplay-hero")
-FOLDERS = ["탐라", "탐라코스체험", "과수"]
+NAMES = ["탐라", "탐라코스체험", "과수"]
 EXTS = (".jpg", ".jpeg", ".png", ".webp")
 
 photos = []
-for folder in FOLDERS:
-    d = os.path.join(ROOT, folder)
-    if not os.path.isdir(d):
-        continue
-    for name in sorted(os.listdir(d)):
-        if name.lower().endswith(EXTS):
-            photos.append(f"cosplay-hero/{folder}/{name}")
+for name in NAMES:
+    for ext in EXTS:
+        p = os.path.join(ROOT, name + ext)
+        if os.path.isfile(p):
+            photos.append(f"cosplay-hero/{name}{ext}")
+            break
 
 out_path = os.path.join(ROOT, "manifest.js")
 with open(out_path, "w", encoding="utf-8") as f:
