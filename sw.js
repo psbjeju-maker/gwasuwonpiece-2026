@@ -1,17 +1,18 @@
 /* 오프라인 대응 — 한 번 열어두면 신호가 없어도 QR이 열리고 채점까지 된다. */
-var CACHE = "ggg-v22";
+var CACHE = "ggg-v23";
 var FILES = [
-  "./", "./index.html", "./style.css", "./data.js", "./store.js", "./app.js", "./gold.png", "./map.jpg",
+  "./", "./index.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./app.js", "./map.jpg",
   "./guide.html",
-  "./icons/ic_home.png", "./icons/ic_progress.png", "./icons/ic_rewards.png",
-  "./icons/ic_market.png", "./icons/ic_mission.png", "./icons/ic_treasure.png",
-  "./icons/ic_cosplay.png", "./icons/ic_photo.png", "./icons/ic_stage.png",
-  "./captain/exp_default.jpg", "./captain/exp_happy.jpg", "./captain/exp_smile.jpg",
-  "./captain/exp_wink.jpg", "./captain/exp_think.jpg", "./captain/exp_fighting.jpg",
-  "./captain/exp_found.jpg", "./captain/exp_surprise.jpg", "./captain/exp_search.jpg",
-  "./captain/exp_tease.jpg", "./captain/exp_sulk.jpg", "./captain/exp_warn.jpg",
-  "./audio/opening.mp3", "./audio/ocean.mp3",
-  "./captain/full_body.jpg"
+  "./fonts/SCDream4.woff", "./fonts/SCDream5.woff", "./fonts/SCDream7.woff",
+  /* 2026-09-28 디자인 팩(AI 시안) — 정식 작화로 바꿔도 같은 파일명이면 이 목록은 그대로 */
+  "./assets/characters/full_body.png", "./assets/characters/neutral.png", "./assets/characters/greeting.png",
+  "./assets/characters/thinking.png", "./assets/characters/surprised.png",
+  "./assets/characters/disappointed.png", "./assets/characters/success.png",
+  "./assets/icons/home.png", "./assets/icons/mission.png", "./assets/icons/map.png",
+  "./assets/icons/compass.png", "./assets/icons/ticket.png", "./assets/icons/vote.png",
+  "./assets/icons/camera.png", "./assets/icons/shop.png", "./assets/icons/golden_tangerine.png",
+  "./assets/icons/clue.png", "./assets/icons/treasure_chest.png", "./assets/icons/trophy.png",
+  "./audio/opening.mp3", "./audio/ocean.mp3"
 ];
 
 self.addEventListener("install", function (e) {

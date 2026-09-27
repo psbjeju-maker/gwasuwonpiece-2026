@@ -50,45 +50,42 @@ window.GAME_DATA = {
     rewardDesc: "메이커앤하비 매장의 경품 응모에 사용할 수 있는 티켓입니다. 매장에 방문해 스태프에게 이 화면을 보여주세요.",
     trophyTitle: "황금귤 획득 트로피",
     trophyDesc: "황금 귤을 끝까지 찾아낸 걸 증명하는 기념 배지",
-    /* 퀘스트 대화에 등장하는 화자 이름표. 미션 완료/시간대 대사 카드 상단에 표시된다. */
-    questWho: "귤선장",
-    /* 화자 기본 아바타(표정 이미지). 대사별로 avatar 필드를 따로 주면 그게 우선한다. */
-    questAvatar: "captain/exp_default.jpg"
+    /* 퀘스트 대화 화자 이름표. 2026-09-28부터 NPC는 '항해 기록관'(이름 확정 전 임시 표기)이고,
+       실제 표시는 assets.js의 NPC_NAME을 쓴다. */
+    questWho: "항해 기록관",
+    /* 화자 기본 표정. 표정 키(neutral/greeting/thinking/surprised/disappointed/success)로 적는다.
+       예전 captain/*.jpg 경로가 남아 있어도 assets.js가 새 표정으로 바꿔 준다. */
+    questAvatar: "neutral"
   },
 
   /* ---------- 인트로 퀘스트 (등록 전 오프닝 시네마, app.js의 Cinema가 재생) ----------
      line/각 choice.next: 빈 줄(\n\n)로 끊으면 그 자리에서 페이지가 나뉘어 "▼" 표시 후 탭해야 다음 문장으로 넘어간다.
      등록 화면 자체가 첫 실행에만 뜨므로(재방문·이어하기는 §boot()에서 곧장 scHome으로 감) 이 연출도 자연히 1회만 보인다. */
   introQuest: {
-    avatar: "captain/exp_default.jpg",
-    line: "어라? 너 혹시 황금 귤 찾으러 왔어?\n\n난 귤선장!\n이 귤밭을 몇 년째 뒤지고 있지. 🍊\n\n혼자 찾기는 심심한데…\n같이 찾아줄래?",
+    avatar: "greeting",
+    line: "왔구나! 네 이름부터 항해일지에 적어 둘게.\n\n그 전에 하나만. 오늘은 어떤 모험부터 해 볼래?",
     /* choices의 path가 missionPaths(아래)의 키와 짝지어져, 등록 직후 진행상황 화면의 미션 순서를 바꾼다.
        미션 종류·개수는 그대로다 — 안내받는 순서만 다르다. */
     choices: [
-      { label: "재미있겠네요!", path: "action",
-        next: "좋아! 그럼 오늘부터 우리 해적단이야! 🍊\n자, 어디부터 가볼까?",
-        avatar: "captain/exp_happy.jpg" },
-      { label: "해적이라니… 무서워요.", path: "social",
-        next: "에이, 무서운 거 없어!\n그냥 같이 놀면서 찾는 거야.\n\n천천히 해.\n내가 옆에 있을게.",
-        avatar: "captain/exp_think.jpg" }
+      { label: "몸으로 하는 미션부터", path: "action",
+        next: "좋아! 양궁·사격 같은 부스 미션부터 안내할게.",
+        avatar: "success" },
+      { label: "천천히 둘러보면서", path: "social",
+        next: "좋아. 코스프레·사진처럼 가벼운 미션부터 안내할게.",
+        avatar: "neutral" }
     ]
   },
 
-  /* 최종 정답을 맞혀 황금 귤이 열린 뒤 — 쿠폰 화면 직전에 나오는 반전 연출.
-     귤선장의 정체 공개. 확인 버튼을 누를 때마다 다음 줄로 넘어가고, 마지막 줄(사라짐) 확인 후
-     app.js가 약간의 정적(딜레이)을 두고서 쿠폰 화면으로 간다 — playFinalReveal() 참고. */
+  /* 최종 정답을 맞혀 황금 귤이 열린 뒤 — 쿠폰(보상) 화면 직전의 짧은 축하.
+     디자인 지시서 §4: 실제 완료 확인 → surprised → success → 보상 화면 순서로 짧게.
+     (2026-09-28 전까지 있던 귤선장 정체 공개 6단 연출은 NPC 교체로 내렸다 — git 기록에 남아 있음) */
   finalReveal: [
-    { line: "...찾았네.\n정말 찾았구나.", avatar: "captain/exp_surprise.jpg" },
-    { line: "이상하지? 난 이걸 아주 오래 찾았거든.\n그런데 오늘은 자네가 찾아줬네.", avatar: "captain/exp_think.jpg" },
-    { line: "사실 나도 몰랐어. 왜 계속 이곳을 떠돌고 있었는지.\n이제 알 것 같아. 난... 아직 떠나지 못했던 거야.", avatar: "captain/exp_sulk.jpg" },
-    { line: "몇 년 전, 나도 이곳에서 마지막으로 귤을 하나 찾고 있었거든.\n끝내 못 찾았어... 그게 내 미련이었나 봐.", avatar: "captain/exp_smile.jpg" },
-    { line: "그런데 자네가 찾아줬네. 내가 못 찾은 걸.\n...고마워.", avatar: "captain/exp_found.jpg" },
-    { line: "이제 가야겠다.\n\n다음에 이곳에 오면\n보물 찾기는 잠시 잊고,\n그냥 실컷 놀다 가.\n\n잘 가, 내 해적.\n그리고…… 정말 고마웠어.", avatar: "captain/exp_smile.jpg" }
+    { line: "찾았다…! 이게 바로 황금 귤이야.", avatar: "surprised" },
+    { line: "황금 귤을 찾아냈어! 오늘의 모험, 끝까지 멋졌어.", avatar: "success" }
   ],
 
-  /* 반전 연출이 끝나고 쿠폰 화면으로 넘어갈 때, 화면 위쪽에 아주 작게 뜨는 마지막 속삭임.
-     scCoupon 안 #cpWhisper에 그대로 들어간다(renderCoupon() 참고). */
-  finalWhisper: "황금 귤은……\n이제 자네의 보물이야. 🍊",
+  /* 보상 화면 위쪽에 작게 뜨는 한 줄. 비워 두면 표시하지 않는다(renderCoupon() 참고). */
+  finalWhisper: "",
 
   /* introQuest 선택지의 path별 미션 안내 순서. 미션 id는 missions 배열과 동일해야 한다.
      빠진 id가 있으면 renderMissions()가 나머지를 뒤에 그대로 이어붙인다. */
@@ -101,11 +98,11 @@ window.GAME_DATA = {
      time을 지나면(기기 시각 기준) 홈 화면에서 1회 자동으로 뜬다. 참가자별로 한 번만.
      타임테이블(§timetable)과 연동되는 이벤트만 골라 넣었다 — 전부 다 넣으면 번잡스럽다. */
   scheduleQuests: [
-    { id: "sq01", time: "11:00", avatar: "captain/exp_fighting.jpg", line: "어이! 곧 가위바위보 한판 열린대. 승부욕 있으면 가봐!" },
-    { id: "sq02", time: "13:00", avatar: "captain/exp_fighting.jpg", line: "오타쿠 퀴즈 대회 시작됐어! 아는 게 힘이지 않겠어?" },
-    { id: "sq03", time: "14:00", avatar: "captain/exp_fighting.jpg", line: "무대에서 노래랑 춤판 벌어진대. 구경만 해도 완전 재밌을걸?" },
-    { id: "sq04", time: "15:00", avatar: "captain/exp_fighting.jpg", line: "랜덤 플레이 댄스 시간이야! 몸이 근질거리면 뛰어들어봐." },
-    { id: "sq05", time: "15:20", avatar: "captain/exp_think.jpg", line: "슬슬 최종 추첨 시간 다가온다! 모은 티켓으로 운 한번 걸어볼래?" }
+    { id: "sq01", time: "11:00", avatar: "greeting", line: "곧 가위바위보 이벤트가 열려. 관심 있으면 가 봐!" },
+    { id: "sq02", time: "13:00", avatar: "neutral",  line: "오타쿠 퀴즈 대회가 시작됐어. 아는 만큼 도전해 봐!" },
+    { id: "sq03", time: "14:00", avatar: "neutral",  line: "무대에서 노래·댄스 대회가 열려. 구경만 해도 재밌을 거야." },
+    { id: "sq04", time: "15:00", avatar: "greeting", line: "랜덤 플레이 댄스 시간이야! 함께 뛰어 봐." },
+    { id: "sq05", time: "15:20", avatar: "thinking", line: "곧 최종 경품 추첨이야. 모은 응모티켓을 확인해 둬." }
   ],
 
   /* ---------- GPS 보물 지점 (2026-08-29: QR 40개 방식 폐기, GPS 나침반으로 전면 교체) ----------

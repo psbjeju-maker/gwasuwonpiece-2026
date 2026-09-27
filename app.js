@@ -9,9 +9,22 @@
   var wrongCount = 0;
 
   var LETTERS = [];                 // 최종 '질문'을 한 글자씩 쪼갠 배열 (모으면 질문이 완성된다)
+  var A = window.ASSETS;            // 중앙 에셋 매핑 + NPC 대사 (assets.js)
+  var heroMode = null;              // 홈 안내 카드 상황: "registered"(막 등록) / "revisit"(재방문) / null
 
   /* ---------- 도우미 ---------- */
   function $(id) { return document.getElementById(id); }
+  /* 대사 표의 {nickname} 등을 실제 값으로 채운다. 결과는 항상 textContent로만 넣는다. */
+  function lineText(key, vars) {
+    var t = (A.LINES[key] && A.LINES[key].text) || "";
+    return t.replace(/\{(\w+)\}/g, function (_, k) { return (vars && vars[k] != null) ? String(vars[k]) : ""; });
+  }
+  function setNpc(img, expr) {
+    if (!img) return;
+    var k = A.exprKey(expr);
+    img.src = A.CHAR[k];
+    img.style.transform = A.CHAR_FIX[k] || "";
+  }
   function pointById(id) {
     var list = D.gpsPoints || [];
     for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
@@ -101,7 +114,7 @@
     return { init: init, want: want };
   })();
 
-  /* ---------- 오프닝 시네마 (등록 전, 귤선장 전신 등장) ----------
+  /* ---------- 오프닝 시네마 (등록 전, 항해 기록관 전신 등장) ----------
      introQuest.line을 타이핑 연출로 보여주고, 선택지를 고르면 그 path가
      missionPaths(§data.js)와 짝지어져 등록 직후 미션 안내 순서를 바꾼다.
      "건너뛰기"는 언제든 가능하고, path 없이 등록하면 기본 순서로 진행된다. */
@@ -187,8 +200,10 @@
       pager = null;
       var el = $("cine");
       el.classList.add("hide");
+      document.body.classList.remove("in-cine");
+      document.body.appendChild($("soundToggle"));
       $("introForm").classList.add("show");
-      setTimeout(function () { el.style.display = "none"; }, 550);
+      setTimeout(function () { el.style.display = "none"; $("inNick").focus({ preventScroll: true }); }, 380);
     }
 
     function start() {
@@ -196,6 +211,10 @@
       started = true;
       var q = D.introQuest;
       if (!q || !q.line) { finish(); return; }
+      document.body.classList.add("in-cine");
+      $("cine").appendChild($("soundToggle"));
+      $("cineWho").textContent = A.NPC_NAME;
+      $("cineNext").textContent = A.LINES.firstVisit.btn;
       $("cineChoices").innerHTML = "";
       $("cineNext").style.display = "none";
       playPages($("cineText"), q.line, function () { showChoices(q.choices); });
@@ -216,14 +235,15 @@
   /* ---------- 퀘스트 대화 ----------
      questLine(text, opts): opts.choices가 있으면 선택형(결과는 재미 요소일 뿐 진행에 영향 없음),
      없으면 확인 버튼으로 닫는 단문형. opts.onOk는 확인 버튼을 눌렀을 때 호출된다. */
+  var questReturnFocus = null;
   function questLine(text, opts) {
     opts = opts || {};
-    $("questWho").textContent = opts.who || (D.settings && D.settings.questWho) || "귤선장";
+    /* 화자는 항상 항해 기록관. 예전 데이터에 "귤선장"이 남아 있어도 이름표는 바꿔 보여준다. */
+    $("questWho").textContent = opts.who || A.NPC_NAME;
     var av = $("questAvatar");
-    var avatarSrc = opts.avatar || (D.settings && D.settings.questAvatar) || "";
-    var card = av.parentNode.parentNode; /* .quest-card */
-    if (avatarSrc) { av.src = avatarSrc; card.classList.remove("no-avatar"); }
-    else { av.removeAttribute("src"); card.classList.add("no-avatar"); }
+    var card = av.parentNode; /* .quest-card */
+    if (opts.noAvatar) { av.removeAttribute("src"); card.classList.add("no-avatar"); }
+    else { setNpc(av, opts.expr || opts.avatar || (D.settings && D.settings.questAvatar) || "neutral"); av.alt = A.NPC_NAME; card.classList.remove("no-avatar"); }
     $("questText").textContent = text;
     var choicesEl = $("questChoices");
     choicesEl.innerHTML = "";
@@ -232,6 +252,7 @@
       okBtn.style.display = "none";
       opts.choices.forEach(function (c) {
         var b = document.createElement("button");
+        b.type = "button";
         b.className = "btn ghost";
         b.textContent = c.label;
         b.addEventListener("click", function () { if (c.onPick) c.onPick(); else closeQuest(); });
@@ -239,11 +260,39 @@
       });
     } else {
       okBtn.style.display = "";
+      okBtn.textContent = opts.okLabel || "확인";
       okBtn.onclick = function () { closeQuest(); if (opts.onOk) opts.onOk(); };
     }
-    $("questOverlay").classList.add("on");
+    var ov = $("questOverlay");
+    if (!ov.classList.contains("on")) questReturnFocus = document.activeElement;
+    ov.classList.add("on");
+    setTimeout(function () {
+      var f = (opts.choices && opts.choices.length) ? choicesEl.querySelector("button") : okBtn;
+      if (f) f.focus({ preventScroll: true });
+    }, 30);
   }
-  function closeQuest() { $("questOverlay").classList.remove("on"); }
+  function closeQuest() {
+    $("questOverlay").classList.remove("on");
+    if (questReturnFocus && questReturnFocus.focus && document.contains(questReturnFocus)) {
+      try { questReturnFocus.focus({ preventScroll: true }); } catch (e) {}
+    }
+    questReturnFocus = null;
+  }
+  /* 대화창: Esc는 확인 버튼과 같게(선택지가 있을 땐 무시), Tab은 창 안에서만 돈다 */
+  document.addEventListener("keydown", function (e) {
+    var ov = $("questOverlay");
+    if (!ov.classList.contains("on")) return;
+    if (e.key === "Escape") {
+      var ok = $("questOk");
+      if (ok.style.display !== "none") { e.preventDefault(); ok.click(); }
+    } else if (e.key === "Tab") {
+      var f = Array.prototype.filter.call(ov.querySelectorAll("button"), function (b) { return b.offsetParent !== null; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
 
   /* 미션 완료·시간대 이벤트처럼 "확인만 누르면 되는" 짧은 대사용 헬퍼 */
   function showQuestLine(text, avatar) {
@@ -299,6 +348,11 @@
     } else {
       nav.style.display = "none";
     }
+    document.body.classList.toggle("has-nav", !!NAV_SCREENS[id]);
+    /* 사운드 토글은 홈 상단 자리로 옮겨 붙인다(다른 화면에선 숨김) */
+    var snd = $("soundToggle");
+    if (id === "scHome") $("homeSoundSlot").appendChild(snd);
+    else if (snd.parentNode !== document.body && !(id === "scIntro" && $("cine").style.display !== "none")) document.body.appendChild(snd);
   }
   function moveTabIndicator(barId, indId, onId) {
     var bar = $(barId), ind = $(indId), on = $(onId);
@@ -411,13 +465,26 @@
       return;
     }
     var beginWatch = function () {
-      GEO.tracking = true;
+      GEO.tracking = true; GEO.err = null;
+      $("gateErr").hidden = true;
       renderCompassGate();
       GEO.watchId = navigator.geolocation.watchPosition(function (pos) {
         GEO.pos = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+        GEO.err = null;
         updateCompass();
       }, function (err) {
-        $("compassStatus") && ($("compassStatus").textContent = "위치 확인 오류: " + err.message);
+        /* 권한 거부 · 위치 못 찾음 · 시간 초과를 구분해서 안내한다(판정 로직은 그대로) */
+        GEO.err = err && err.code;
+        if (GEO.err === 1) {
+          /* 권한 거부 — 추적을 멈추고 허용 화면으로 돌려보내 다시 시도할 수 있게 한다 */
+          try { navigator.geolocation.clearWatch(GEO.watchId); } catch (e) {}
+          GEO.watchId = null; GEO.tracking = false;
+          $("gateErr").textContent = "위치 권한이 꺼져 있어요. 브라우저(또는 휴대폰) 설정에서 이 사이트의 위치 접근을 허용한 뒤 다시 눌러 주세요.";
+          $("gateErr").hidden = false;
+          renderCompassGate();
+          return;
+        }
+        updateCompass();
       }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 2000 });
       window.addEventListener("deviceorientationabsolute", onOrientation);
       window.addEventListener("deviceorientation", onOrientation);
@@ -432,6 +499,11 @@
     }
   }
 
+  function setTip(expr, text) {
+    setNpc($("treasureTipImg"), expr);
+    $("compassStatus").textContent = text;
+  }
+
   function updateCompass() {
     if (!$("compassDist")) return;
     var target = nextTarget();
@@ -439,21 +511,27 @@
 
     if (!target) {
       $("compassDist").textContent = "—";
+      dial.classList.add("nofix");
       var doneAll = uniqueLetterCount() >= LETTERS.length && LETTERS.length > 0;
       var unset = unsetPointCount();
-      $("compassStatus").textContent = doneAll
-        ? "글자를 전부 모았습니다!"
-        : (unset ? ("아직 위치가 설정되지 않은 단서가 " + unset + "개 있습니다. 스태프에게 문의하세요")
-                 : "안내할 단서가 없습니다. 스태프에게 문의하세요");
+      if (doneAll) setTip("success", "글자를 전부 모았어! 이제 마지막 문제를 풀어 봐.");
+      else setTip("thinking", unset
+        ? ("아직 위치가 설정되지 않은 단서가 " + unset + "개 있어. 스태프에게 문의해 줘.")
+        : "지금 안내할 단서가 없어. 스태프에게 문의해 줘.");
       dial.classList.remove("arrived");
       return;
     }
 
+    /* 현재 위치를 모르면 방향을 확정해서 보여주지 않는다(바늘을 흐리게) */
     if (!GEO.pos) {
       $("compassDist").textContent = "—";
-      $("compassStatus").textContent = "위치 확인 중…";
+      dial.classList.add("nofix");
+      if (GEO.err === 2) setTip("thinking", "위치를 찾지 못했어. 하늘이 트인 곳에서 잠시 기다려 줘.");
+      else if (GEO.err === 3) setTip("thinking", "위치 확인이 늦어지고 있어. 잠시 뒤 다시 확인해 줘.");
+      else setTip("thinking", lineText("locating"));
       return;
     }
+    dial.classList.toggle("nofix", !GEO.hasHeading);
 
     var dist = haversineDistance(GEO.pos.lat, GEO.pos.lng, target.lat, target.lng);
     var brg = bearingTo(GEO.pos.lat, GEO.pos.lng, target.lat, target.lng);
@@ -472,15 +550,14 @@
         GEO.arrivedId = target.id;
         openPointQuiz(target);
       }
-      $("compassStatus").textContent = "도착! 잠시 후 퀴즈가 뜹니다";
+      setTip("surprised", "도착했어! 잠시 후 퀴즈가 떠.");
     } else {
       dial.classList.remove("arrived");
       if (GEO.arrivedId === target.id) GEO.arrivedId = null;
       var accNote = (GEO.pos.accuracy && GEO.pos.accuracy > 30)
-        ? (" · GPS 오차 약 ±" + Math.round(GEO.pos.accuracy) + "m") : "";
-      $("compassStatus").textContent = GEO.hasHeading
-        ? ("나침반을 따라가세요" + accNote)
-        : ("방향 센서를 찾지 못했어요. 목표까지 방위 " + Math.round(brg) + "°" + accNote);
+        ? (" (GPS 오차 약 ±" + Math.round(GEO.pos.accuracy) + "m)") : "";
+      if (GEO.hasHeading) setTip("thinking", lineText("treasureGuide") + accNote);
+      else setTip("thinking", "방향 센서를 찾지 못했어. 북쪽 기준 " + Math.round(brg) + "° 방향이야." + accNote);
     }
   }
 
@@ -503,7 +580,8 @@
       var earned = (m.auto === "treasureClear") ? !!S.cleared
         : (m.auto.indexOf("vote:") === 0) ? !!S.votes[m.auto.slice(5)]
         : false;
-      if (earned && !already) { S.missionsDone.push(m.id); changed = true; if (m.line) showQuestLine(m.line, m.avatar); }
+      /* 대사는 여기서 띄우지 않는다 — 투표는 submitVote, 보물찾기 완주는 엔딩 연출이 각자 성공 대사를 보여준다 */
+      if (earned && !already) { S.missionsDone.push(m.id); changed = true; }
     });
     if (changed) Store.saveMe(S);
   }
@@ -581,28 +659,52 @@
     S.votes[sessionId] = candId;
     syncAutoMissions();
     Store.saveMe(S);
-    toast("투표했습니다!");
     openVote(sessionId);
+    questLine(lineText("voteSaved"), { expr: A.LINES.voteSaved.expr, okLabel: A.LINES.voteSaved.btn });
   }
-  /* 해적 HUD + 현재 퀘스트 배너 — 홈을 게임 화면처럼 만든다 */
+  /* 홈 상단 — 항해일지 카드 제목 + 진행 요약(실제 미션 수·티켓 수) + 카드 보조문구 */
   function renderHud() {
     if (!$("hudName")) return;
     syncAutoMissions();
     var got = uniqueLetterCount(), all = LETTERS.length;
     var mDone = (S.missionsDone || []).length, mAll = (D.missions || []).length;
+    var tickets = ticketsEarned(mDone);
 
-    $("hudName").textContent = S.nickname || "이름 없는 해적";
-    $("hudMeta").textContent = "미션 " + mDone + " / " + mAll
-      + " · 응모티켓 " + ticketsEarned(mDone) + "장";
-
+    $("hudName").textContent = S.nickname || "나";
     $("qbTitle").textContent = D.settings.title || "황금 귤을 찾아라";
-    $("qbSub").textContent = S.cleared
-      ? "보물을 손에 넣었다! 보상을 받아가라"
-      : "나침반을 따라가 단서를 모아라";
-    var pct = all ? got / all : 0;
-    $("qbBar").style.transform = "scaleX(" + pct + ")";
-    $("qbFoot").textContent = "단서 " + got + " / " + all;
-    $("qbPct").textContent = Math.round(pct * 100) + "%";
+
+    $("mDoneNum").textContent = mDone;
+    $("mAllNum").textContent = mAll;
+    $("ticketNum").textContent = tickets;
+    $("topTickets").textContent = tickets;
+    var dots = "";
+    if (mAll <= 16) for (var i = 0; i < mAll; i++) dots += '<i' + (i < mDone ? ' class="on"' : '') + '></i>';
+    $("mDots").innerHTML = dots;
+
+    $("treasureSub").textContent = S.cleared ? "황금 귤을 찾았어요" : ("단서 " + got + " / " + all);
+    var left = mAll - mDone;
+    $("missionSub").textContent = left > 0 ? ("남은 미션 " + left + "개") : "미션을 모두 마쳤어요";
+
+    var nextTier = (D.ticketTiers || []).filter(function (t) { return mDone < t.need; })[0];
+    $("rewardSub").textContent = S.cleared
+      ? (S.rewardIssued ? "골드 티켓 수령 완료" : "골드 티켓을 받을 수 있어요")
+      : (tickets > 0 ? ("응모티켓 " + tickets + "장을 모았어요")
+        : (nextTier ? ("미션 " + (nextTier.need - mDone) + "개 더 하면 응모티켓 " + nextTier.tickets + "장") : "모은 티켓을 확인해 보세요"));
+
+    renderShortcuts();
+  }
+
+  /* 바로가기는 실제 데이터가 있는 기능만 보여준다 */
+  function renderShortcuts() {
+    var has = {
+      secMap: !!(D.settings && D.settings.mapImage),
+      secTime: !!(D.timetable && D.timetable.length),
+      secVote: !!(D.votes && Object.keys(D.votes).length)
+    };
+    document.querySelectorAll("#shortcuts [data-jump]").forEach(function (b) { b.hidden = !has[b.dataset.jump]; });
+    ["secMap", "secTime", "secVote"].forEach(function (id) { $(id).hidden = !has[id]; });
+    $("voteCards").hidden = !has.secVote;
+    $("timetable").hidden = !has.secTime;
   }
 
   function renderHome() {
@@ -633,30 +735,42 @@
     $("homeMapBox").innerHTML = mapBase();
   }
 
-  /* 홈 화면 상단 "귤선장 추천" — 등록 시 고른 경로(orderedMissions) 순서대로
-     아직 안 한 미션 중 첫 번째를 추천한다. "다음에 뭘 해야 하지"를 없애기 위함. */
+  /* 홈 메인 안내 카드 — 상황에 맞는 대사 한 줄 + 가장 중요한 행동 하나.
+     추천 미션은 예전 "귤선장 추천"과 같은 규칙(등록 때 고른 경로 순서로, 아직 안 한 첫 미션). */
   function renderNextUp() {
-    var el = $("nextup");
-    if (!el) return;
+    if (!$("hero")) return;
     var list = orderedMissions();
     var done = S.missionsDone || [];
     var next = null;
     for (var i = 0; i < list.length; i++) {
       if (done.indexOf(list[i].id) < 0) { next = list[i]; break; }
     }
-    if (!next) {
-      el.classList.add("done");
-      $("nextupAv").src = "captain/exp_found.jpg";
-      $("nextupText").textContent = "미션을 전부 끝냈군! 이제 느긋하게 즐기다 가게나.";
-      return;
-    }
-    el.classList.remove("done");
-    $("nextupAv").src = next.avatar || "captain/exp_default.jpg";
-    $("nextupText").textContent = "이번엔 “" + next.name + "” 어때?";
-    $("nextupGo").onclick = function () {
-      if (next.id === "m03") { renderMain(); showTab("scMain"); }
+    var goNext = function () {
+      heroMode = null;
+      if (!next || next.id === "m03") { renderMain(); showTab("scMain"); }
       else { renderMissions(); showTab("scMissions"); }
     };
+    var key, text, btn, go;
+    if (S.cleared) {
+      key = "finalDone"; go = function () { renderRewards(); show("scRewards"); };
+    } else if (heroMode === "registered") {
+      key = "registered"; go = goNext;
+    } else if (heroMode === "revisit") {
+      key = "revisit"; go = goNext;
+    } else {
+      key = "missionGuide"; go = goNext;
+    }
+    text = lineText(key, { nickname: S.nickname || "" });
+    btn = A.LINES[key].btn;
+    /* 평상시에는 다음 추천 미션 이름을 대사에 붙여 준다 */
+    if (key === "missionGuide" && next) {
+      text = "다음은 ‘" + next.name + "’ 어때? " + (next.qr ? "완료 확인은 현장 스태프에게 부탁해 줘." : "");
+      btn = next.id === "m03" ? "보물찾기 하기" : A.LINES.missionGuide.btn;
+    }
+    $("heroLine").textContent = text.trim();
+    setNpc($("heroNpc"), A.LINES[key].expr);
+    $("heroGo").textContent = btn;
+    $("heroGo").onclick = go;
   }
 
   /* ---------- 미션 ---------- */
@@ -684,12 +798,16 @@
     var html = "";
     list.forEach(function (m) {
       var ok = done.indexOf(m.id) >= 0;
+      /* 상태는 앱이 실제로 아는 두 가지(시작 전 / 완료)만 쓴다. 완료 방식은 짧게 덧붙인다. */
+      var how = ok ? "" : (m.auto === "reaction" ? "" : m.auto ? "자동 완료" : "스태프 확인");
+      var state = '<span class="mstate ' + (ok ? 'done">완료' : 'todo">시작 전') + '</span>' +
+        (how ? '<span class="mhow">' + how + '</span>' : '');
       var action = (!ok && m.auto === "reaction")
-        ? '<button type="button" class="mgo" data-mid="' + m.id + '">도전하기 →</button>'
+        ? '<br><button type="button" class="mgo" data-mid="' + m.id + '">도전하기</button>'
         : "";
       html += '<div class="mitem' + (ok ? ' done' : '') + '">' +
-        '<div class="chk">' + (ok ? '✓' : '') + '</div>' +
-        '<div class="tx"><h4>' + m.name + '</h4><p>' + m.desc + '</p>' + action + '</div></div>';
+        '<div class="chk" aria-hidden="true">' + (ok ? '✓' : '') + '</div>' +
+        '<div class="tx"><h4>' + m.name + '</h4><p>' + m.desc + '</p>' + state + action + '</div></div>';
     });
     $("mlist").innerHTML = html;
     $("mlist").querySelectorAll(".mgo").forEach(function (btn) {
@@ -757,13 +875,10 @@
     Store.saveMe(S);
     var mid = reactState.mid;
     reactState = null;
-    toast("반응속도게임 완료!");
     renderMissions();
     showTab("scMissions");
-    if (isNew) {
-      var m = (D.missions || []).filter(function (x) { return x.id === mid; })[0];
-      if (m && m.line) showQuestLine(m.line, m.avatar);
-    }
+    if (isNew) questLine(lineText("missionDone"), { expr: A.LINES.missionDone.expr, okLabel: A.LINES.missionDone.btn });
+    else toast("이미 완료한 미션이에요");
   }
 
   /* ---------- 관리자(숨김 진입) ----------
@@ -777,16 +892,16 @@
     var vh = "";
     Object.keys(D.votes || {}).forEach(function (vid) {
       var v = D.votes[vid];
-      vh += '<div class="rewardcard"><h4 style="margin:0 0 10px;color:var(--gold-l)">' + v.title + '</h4>';
+      vh += '<div class="card rewardcard"><h4 style="margin:0 0 10px;font-size:17px">' + v.title + '</h4>';
       (v.candidates || []).forEach(function (c) {
         vh += '<div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0;font-size:13.5px">' +
           '<span>' + c.label + '</span>' +
-          '<button type="button" class="btn ghost" style="padding:4px 10px;font-size:11.5px" data-rmcand="' + vid + '|' + c.id + '">삭제</button></div>';
+          '<button type="button" class="btn ghost" style="width:auto;min-height:44px;padding:4px 14px;font-size:14px" data-rmcand="' + vid + '|' + c.id + '">삭제</button></div>';
       });
       vh += '<div style="display:flex;gap:8px;margin-top:10px">' +
         '<input type="text" id="admInput_' + vid + '" placeholder="' + (v.mode === "number" ? "번호" : "닉네임") + '" ' +
-        'style="flex:1;min-width:0;padding:9px;border-radius:9px;border:1px solid var(--panel-line);background:#0c2233;color:#fff">' +
-        '<button type="button" class="btn gold" style="padding:9px 16px" data-addcand="' + vid + '">추가</button></div></div>';
+        'style="flex:1;min-width:0">' +
+        '<button type="button" class="btn primary" style="width:auto;margin:0;padding:9px 18px" data-addcand="' + vid + '">추가</button></div></div>';
     });
     $("adminVotes").innerHTML = vh;
     $("adminVotes").querySelectorAll("[data-addcand]").forEach(function (btn) {
@@ -843,8 +958,14 @@
     $("rwTreasureStatus").textContent = cleared
       ? (S.rewardIssued ? "골드 티켓을 이미 수령했습니다" : "황금 귤을 찾았습니다! 골드 티켓을 받아가세요")
       : "아직 진행중이에요 (" + uniqueLetterCount() + " / " + LETTERS.length + " 단서)";
-    $("btnRewardCoupon").style.display = cleared ? "block" : "none";
-    $("btnRewardGo").style.display = cleared ? "none" : "block";
+    $("btnRewardCoupon").style.display = cleared ? "flex" : "none";
+    $("btnRewardGo").style.display = cleared ? "none" : "flex";
+
+    $("rwTrophyTitle").textContent = D.settings.trophyTitle || "황금귤 획득 트로피";
+    $("rwTrophyStatus").textContent = cleared
+      ? (D.settings.trophyDesc || "획득 완료")
+      : "잠김 — 보물찾기 마지막 문제를 맞히면 열려요";
+    $("rwTrophyCard").classList.toggle("locked", !cleared);
   }
 
   /* ---------- 메인 화면 ---------- */
@@ -876,7 +997,7 @@
     if (!p) { toast("알 수 없는 지점입니다"); showTab("scMain"); return; }
     if (D.settings.gameOpen === false) { toast("게임이 잠시 중단되었습니다"); showTab("scMain"); return; }
     if (hasLetter(p.li)) {
-      toast("이미 찾은 곳입니다");
+      toast(lineText("clueAlready"));
       renderMain(); showTab("scMain"); return;
     }
     CUR = p; wrongCount = 0;
@@ -938,10 +1059,14 @@
     $("tgrBox").classList.add("show");
     $("rsTitle").textContent = "";
     $("rsDesc").textContent = "";
+    $("rsNpc").hidden = true;
     show("scResult");
     playTangerineReveal(LETTERS[p.li], function () {
       $("rsTitle").textContent = "단서 「" + LETTERS[p.li] + "」 획득!";
       $("rsDesc").textContent = left > 0 ? "남은 글자 " + left + "개" : "글자를 전부 모았습니다!";
+      setNpc($("rsNpcImg"), A.LINES.clueFound.expr);
+      $("rsNpcText").textContent = done ? "찾았다! 글자를 전부 모았어. 이제 마지막 문제야." : lineText("clueFound");
+      $("rsNpc").hidden = false;
     });
 
     /* 글자를 다 모았으면 결과 버튼을 최종 도전으로 */
@@ -975,7 +1100,10 @@
     $("rsBig").textContent = "✓";
     $("rsBig").className = "big ev";
     $("rsTitle").textContent = m.name + " 완료!";
-    $("rsDesc").textContent = m.line || m.desc || "";
+    $("rsDesc").textContent = "";
+    setNpc($("rsNpcImg"), A.LINES.missionDone.expr);
+    $("rsNpcText").textContent = lineText("missionDone");
+    $("rsNpc").hidden = false;
     show("scResult");
     $("btnResultOk").textContent = "미션 목록으로";
     $("btnResultOk").dataset.go = "missions";
@@ -1001,7 +1129,7 @@
     $("fnCount").textContent = got >= all
       ? "글자를 전부 모았습니다"
       : got + " / " + all + " — 다 모으지 않아도 도전할 수 있습니다";
-    $("fnInput").value = ""; $("fnWrong").textContent = "";
+    $("fnInput").value = ""; $("fnWrong").textContent = ""; $("fnNpc").hidden = true;
     show("scFinal");
     setTimeout(function () { $("fnInput").focus(); }, 250);
   }
@@ -1014,7 +1142,8 @@
     for (var i = 0; i < list.length; i++) if (norm(list[i]) === v) ok = true;
 
     if (!ok) {
-      $("fnWrong").textContent = "아직 아니에요. 다시 한 번!";
+      $("fnWrong").textContent = "아직 아니에요.";
+      $("fnNpc").hidden = false;
       var c = $("fnInput"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
       c.select();
       return;
@@ -1037,23 +1166,24 @@
     if (t.classList.contains("open")) return;
     t.classList.add("open");
     $("tapMe").style.display = "none";
-    setTimeout(function () { playFinalReveal(renderCoupon); }, 950);
+    setTimeout(function () { playFinalReveal(renderCoupon); }, 750);
   }
 
-  /* 황금 귤을 연 직후, 쿠폰 화면으로 가기 전에 귤선장의 정체를 밝히는 짧은 연출을 보여준다.
+  /* 황금 귤을 연 직후, 쿠폰 화면으로 가기 전에 항해 기록관이 짧게 축하한다(놀람 → 성공).
      data.js의 finalReveal 배열을 순서대로 questLine으로 넘기고, 다 보면 onDone(renderCoupon)을 부른다. */
   function playFinalReveal(onDone) {
     var steps = D.finalReveal || [];
     var i = 0;
     function next() {
       if (i >= steps.length) {
-        /* 귤선장이 "사라지는" 마지막 순간 — 대화창이 닫히는 연출(약 0.28초)이
+        /* 대화창이 닫히는 연출(약 0.2초)이
            끝날 때까지 정적을 두고서 쿠폰 화면으로 넘어간다. */
-        setTimeout(onDone, 550);
+        setTimeout(onDone, 250);
         return;
       }
       var st = steps[i]; i++;
-      questLine(st.line, { avatar: st.avatar, onOk: next });
+      questLine(st.line, { avatar: st.avatar, onOk: next,
+        okLabel: i >= steps.length ? A.LINES.finalDone.btn : "다음" });
     }
     next();
   }
@@ -1091,6 +1221,7 @@
   }
 
   function showPassGate() {
+    $("passLine").textContent = lineText("needPass");
     $("passSub").textContent =
       "항해 패스 " + (D.settings.passPrice || "6,000원") + " · 미션과 보물찾기 전부 무제한";
     $("passDesk").textContent = D.settings.passDeskName || "매표소";
@@ -1112,6 +1243,7 @@
   /* ---------- 시작 ---------- */
   function boot() {
     LETTERS = clueChars();
+    A.preloadExpressions();
 
     $("introTitle").textContent = D.settings.title || "황금 귤을 찾아라";
     $("introSub").textContent = D.settings.subtitle || "";
@@ -1133,6 +1265,7 @@
       return;
     }
     if (!S.missionsDone) S.missionsDone = []; // 이전 버전 참가자 호환
+    heroMode = "revisit";
     Sound.want("ocean");
     renderMain();
 
@@ -1158,6 +1291,7 @@
     if (Store.normPhone(phone).length < 10) { toast("전화번호를 정확히 입력해 주세요"); $("inPhone").focus(); return; }
 
     S = Store.register(nick, phone);
+    heroMode = "registered";
     if (Cinema.getPath()) { S.missionPath = Cinema.getPath(); Store.saveMe(S); }
     Sound.want("ocean");
     renderMain();
@@ -1175,6 +1309,7 @@
 
   function enterAsRestored(found) {
     S = found; if (!S.missionsDone) S.missionsDone = [];
+    heroMode = "revisit";
     Sound.want("ocean");
     renderMain();
 
@@ -1226,7 +1361,17 @@
   });
 
   /* ---------- 홈 / 진행상황 / 보상 내비게이션 ---------- */
-  $("btnGoProgress").addEventListener("click", function () { renderMissions(); showTab("scMissions"); });
+  $("goTreasure").addEventListener("click", function () { heroMode = null; renderMain(); showTab("scMain"); });
+  $("goMissions").addEventListener("click", function () { heroMode = null; renderMissions(); showTab("scMissions"); });
+  $("statsStrip").addEventListener("click", function () { renderMissions(); showTab("scMissions"); });
+  $("goRewards").addEventListener("click", function () { renderRewards(); show("scRewards"); });
+  $("btnTopTickets").addEventListener("click", function () { renderRewards(); show("scRewards"); });
+  document.querySelectorAll("#shortcuts [data-jump]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var t = $(b.dataset.jump);
+      if (t) t.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    });
+  });
   $("tabMission").addEventListener("click", function () { renderMissions(); showTab("scMissions"); });
   $("tabTreasure").addEventListener("click", function () { renderMain(); showTab("scMain"); });
   $("tabMission2").addEventListener("click", function () { renderMissions(); showTab("scMissions"); });
@@ -1270,6 +1415,8 @@
   $("btnFinalBack").addEventListener("click", function () { renderMain(); showTab("scMain"); });
 
   $("tangerine").addEventListener("click", openTangerine);
+  $("tangerine").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openTangerine(); } });
+  $("reactPad").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tapReactPad(); } });
   $("scOpen").addEventListener("click", openTangerine);
   $("btnCouponBack").addEventListener("click", function () { renderMain(); showTab("scMain"); });
 
