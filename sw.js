@@ -1,7 +1,7 @@
 /* 오프라인 대응 — 한 번 열어두면 신호가 없어도 QR이 열리고 채점까지 된다. */
-var CACHE = "ggg-v23";
+var CACHE = "ggg-v24";
 var FILES = [
-  "./", "./index.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./app.js", "./map.jpg",
+  "./", "./index.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./app.js", "./catch.js", "./map.jpg",
   "./guide.html",
   "./fonts/SCDream4.woff", "./fonts/SCDream5.woff", "./fonts/SCDream7.woff",
   /* 2026-09-28 디자인 팩(AI 시안) — 정식 작화로 바꿔도 같은 파일명이면 이 목록은 그대로 */
@@ -12,6 +12,9 @@ var FILES = [
   "./assets/icons/compass.png", "./assets/icons/ticket.png", "./assets/icons/vote.png",
   "./assets/icons/camera.png", "./assets/icons/shop.png", "./assets/icons/golden_tangerine.png",
   "./assets/icons/clue.png", "./assets/icons/treasure_chest.png", "./assets/icons/trophy.png",
+  /* 황금귤 캐치 미션 */
+  "./assets/catch-game/orange_small.png", "./assets/catch-game/orange_normal.png", "./assets/catch-game/orange_big.png", "./assets/catch-game/orange_king.png", "./assets/catch-game/orange_gold.png", "./assets/catch-game/orange_legend.png", "./assets/catch-game/orange_rotten.png", "./assets/catch-game/cross_section.png", "./assets/catch-game/juice1.png", "./assets/catch-game/juice2.png", "./assets/catch-game/juice3.png", "./assets/catch-game/juice_rotten.png", "./assets/catch-game/spark_big.png", "./assets/catch-game/spark_small.png", "./assets/catch-game/ring.png", "./assets/catch-game/smoke.png", "./assets/catch-game/deco_wall.png", "./assets/catch-game/deco_fence.png", "./assets/catch-game/deco_rockbush.png", "./assets/catch-game/deco_grass1.png", "./assets/catch-game/deco_grass2.png", "./assets/catch-game/deco_rocks.png", "./assets/catch-game/deco_sign.png", "./assets/catch-game/deco_blossom.png", "./assets/catch-game/cloud1.png", "./assets/catch-game/cloud2.png", "./assets/catch-game/leaf1.png", "./assets/catch-game/leaf2.png", "./assets/catch-game/chest.png", "./assets/catch-game/glow.png",
+  "./sfx/slice.mp3", "./sfx/pop.mp3", "./sfx/boom.mp3", "./sfx/bonus.mp3", "./sfx/fanfare.mp3",
   "./audio/opening.mp3", "./audio/ocean.mp3"
 ];
 

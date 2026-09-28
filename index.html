@@ -491,6 +491,17 @@
   </button>
 </nav>
 
+<!-- 황금귤 캐치(미션) — catch.js가 여닫는다 -->
+<div class="catch-stage" id="catchStage" hidden>
+  <div class="catch-bar">
+    <span id="catchTitle">황금귤 캐치</span>
+    <button class="catch-x" id="catchClose" type="button" aria-label="게임 닫기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="catch-wrap" id="catchWrap"><canvas id="catchCv"></canvas></div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <div class="quest-overlay" id="questOverlay" role="dialog" aria-modal="true" aria-labelledby="questWho" aria-describedby="questText">
@@ -515,6 +526,7 @@
 <script src="data.js"></script>
 <script src="assets.js"></script>
 <script src="store.js"></script>
+<script src="catch.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

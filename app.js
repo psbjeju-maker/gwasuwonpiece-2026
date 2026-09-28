@@ -799,10 +799,11 @@
     list.forEach(function (m) {
       var ok = done.indexOf(m.id) >= 0;
       /* 상태는 앱이 실제로 아는 두 가지(시작 전 / 완료)만 쓴다. 완료 방식은 짧게 덧붙인다. */
-      var how = ok ? "" : (m.auto === "reaction" ? "" : m.auto ? "자동 완료" : "스태프 확인");
+      var inApp = m.auto === "reaction" || m.auto === "catch";   // 앱 안에서 바로 하는 미션
+      var how = ok ? "" : (inApp ? "" : m.auto ? "자동 완료" : "스태프 확인");
       var state = '<span class="mstate ' + (ok ? 'done">완료' : 'todo">시작 전') + '</span>' +
         (how ? '<span class="mhow">' + how + '</span>' : '');
-      var action = (!ok && m.auto === "reaction")
+      var action = (!ok && inApp)
         ? '<br><button type="button" class="mgo" data-mid="' + m.id + '">도전하기</button>'
         : "";
       html += '<div class="mitem' + (ok ? ' done' : '') + '">' +
@@ -813,8 +814,26 @@
     $("mlist").querySelectorAll(".mgo").forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.stopPropagation();
-        openReaction(btn.dataset.mid);
+        var mm = (D.missions || []).filter(function (x) { return x.id === btn.dataset.mid; })[0];
+        if (mm && mm.auto === "catch") openCatch(mm.id);
+        else openReaction(btn.dataset.mid);
       });
+    });
+  }
+
+  /* ---------- 황금귤 캐치 (앱 안 미션, catch.js) ----------
+     30초를 끝까지 하고 결과 카드를 누르면 점수와 상관없이 미션 완료. 중간에 닫으면 아무 일도 없다. */
+  function openCatch(mid) {
+    if (!window.CatchGame) { toast("게임을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요"); return; }
+    window.CatchGame.start(function (score, isBest) {
+      S.missionsDone = S.missionsDone || [];
+      var isNew = S.missionsDone.indexOf(mid) < 0;
+      if (isNew) { S.missionsDone.push(mid); Store.saveMe(S); }
+      renderMissions();
+      showTab("scMissions");
+      var line = score + "점" + (isBest ? ", 신기록이야!" : "!") + " ";
+      questLine(isNew ? (line + lineText("missionDone")) : (line + "이 미션은 이미 기록해 뒀어."),
+        { expr: A.LINES.missionDone.expr, okLabel: A.LINES.missionDone.btn });
     });
   }
 

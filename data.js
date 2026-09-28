@@ -90,8 +90,8 @@ window.GAME_DATA = {
   /* introQuest 선택지의 path별 미션 안내 순서. 미션 id는 missions 배열과 동일해야 한다.
      빠진 id가 있으면 renderMissions()가 나머지를 뒤에 그대로 이어붙인다. */
   missionPaths: {
-    action: ["m04","m05","m07","m09","m03","m01","m02","m10","m11","m12","m13"],
-    social: ["m01","m02","m11","m10","m03","m04","m05","m07","m09","m12","m13"]
+    action: ["m04","m05","m07","m09","m14","m03","m01","m02","m10","m11","m12","m13"],
+    social: ["m01","m02","m11","m10","m03","m04","m05","m07","m09","m14","m12","m13"]
   },
 
   /* ---------- 시간대별 퀘스트 대사 ----------
@@ -147,7 +147,7 @@ window.GAME_DATA = {
     { time: "16:00", title: "폐장" }
   ],
 
-  /* ---------- 미션 11종 (2026-08-27 개정: 주사위던지기·공기놀이 삭제, 반응속도게임은 모바일 자동판정으로 전환) ----------
+  /* ---------- 미션 12종 (2026-08-27 개정: 주사위던지기·공기놀이 삭제, 반응속도게임은 모바일 자동판정으로 전환 / 2026-09-28 황금귤 캐치(앱 안 게임) 추가) ----------
      완료 처리는 세 가지 방식 중 하나다.
        qr   : 스태프가 완료를 확인한 뒤 명찰의 QR을 보여주고, 참가자가 자기 폰으로 찍으면 즉시 완료. (7종)
        auto : 앱이 스스로 아는 상태로 자동 완료 (보물찾기 클리어, 반응속도 게임, 투표 참여). (4종)
@@ -159,6 +159,7 @@ window.GAME_DATA = {
     { id: "m04", name: "양궁미션",              desc: "양궁 미션 부스에 도전하세요", qr: "M04", avatar: "captain/exp_fighting.jpg", line: "오, 잘 쏘는데? 해적 자질이 있는데?" },
     { id: "m05", name: "사격미션",              desc: "사격 미션 부스에 도전하세요", qr: "M05", avatar: "captain/exp_fighting.jpg", line: "명중! 완전 멋진데?" },
     { id: "m07", name: "고리던지기",             desc: "고리던지기 미션 부스에 도전하세요", qr: "M07", avatar: "captain/exp_fighting.jpg", line: "오호~ 손재주 좋은데?" },
+    { id: "m14", name: "황금귤 캐치",            desc: "앱 안에서 바로 도전! 떨어지는 귤을 손가락으로 베어 보세요 (30초)", auto: "catch" },
     { id: "m09", name: "반응속도게임",           desc: "앱 안에서 바로 도전! 신호가 오면 화면을 터치하세요", auto: "reaction", avatar: "captain/exp_happy.jpg", line: "빠르다! 나보다 빠른 거 아냐?" },
     { id: "m10", name: "물품구매하기",           desc: "마켓에서 물품을 구매해보세요", qr: "M10", avatar: "captain/exp_happy.jpg", line: "보물은 잘 골랐어?" },
     { id: "m11", name: "SNS게시하기",           desc: "행사 사진을 SNS에 올리고 스태프에게 보여주세요", qr: "M11", avatar: "captain/exp_happy.jpg", line: "좋아! 이제 소문 좀 내볼까?" },
@@ -166,7 +167,7 @@ window.GAME_DATA = {
     { id: "m13", name: "랜덤 플레이 댄스 투표하기", desc: "랜덤 플레이 댄스 투표에 참여하면 자동 완료", auto: "vote:randomdance", avatar: "captain/exp_found.jpg", line: "하하, 재밌는 걸 골랐네!" }
   ],
 
-  /* ---------- 응모티켓 단계 (완료한 미션 개수 기준, 총 11종) ---------- */
+  /* ---------- 응모티켓 단계 (완료한 미션 개수 기준, 총 12종 — 2026-09-28 미션 추가 때 단계는 그대로 둠) ---------- */
   ticketTiers: [
     { need: 5,  tickets: 1 },
     { need: 7,  tickets: 2 },
