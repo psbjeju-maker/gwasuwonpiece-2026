@@ -33,7 +33,7 @@ window.GAME_DATA = {
        passRequired 를 false 로 두면 예전처럼 누구나 바로 시작한다(리허설용).
        passCode 는 make_qr.py 가 만드는 QR 주소(?p=…)에 그대로 들어간다.
        QR 은 벽에 붙이지 말고 스태프가 들고 있다가 결제한 사람에게만 보여줄 것. */
-    passRequired: true,
+    passRequired: false,
     passCode: "GGG-PASS-2026",
     passPrice: "6,000원",
     passDeskName: "매표소",
