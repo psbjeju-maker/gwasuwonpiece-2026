@@ -85,24 +85,20 @@
         </p>
         <p class="formerr" id="joinErr" role="alert" hidden></p>
         <button class="btn primary" id="btnJoin" type="button">항해일지에 기록하기</button>
-        <button class="btn ghost" id="btnShowRecover" type="button">이미 참가했어요 (복구 코드로 이어하기)</button>
+        <button class="btn ghost" id="btnShowRecover" type="button">이미 참가했어요 (전화번호로 이어하기)</button>
       </div>
 
       <div class="card logbook" id="recoverBox" hidden>
         <h2 class="card-title">이어서 하기</h2>
-        <p class="privacy">처음 등록할 때 보여 드린 <b>8자리 복구 코드</b>가 필요해요. 전화번호만으로는 열 수 없어요.</p>
+        <p class="privacy">처음 등록할 때 쓴 <b>전화번호</b>를 입력하면 이어서 할 수 있어요.</p>
         <div class="field">
           <label for="inRecPhone">전화번호</label>
           <input id="inRecPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
         </div>
-        <div class="field">
-          <label for="inRecCode">복구 코드 (8자리)</label>
-          <input id="inRecCode" type="text" placeholder="예) AB12CD34" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8">
-        </div>
         <p class="formerr" id="recErr" role="alert" hidden></p>
         <button class="btn primary" id="btnRecover" type="button">이어서 하기</button>
         <button class="btn ghost" id="btnHideRecover" type="button">처음 등록하기</button>
-        <p class="privacy" style="margin-top:12px">복구 코드를 잊었거나 다섯 번 틀렸다면 현장 스태프에게 문의해 주세요.</p>
+        <p class="privacy" style="margin-top:12px">번호가 바뀌었다면 현장 스태프에게 문의해 주세요.</p>
       </div>
     </div>
   </section>
@@ -113,20 +109,15 @@
       <img class="npc-img" src="assets/characters/greeting.png" alt="항해 기록관">
       <div class="bubble">
         <div class="nametag">항해 기록관</div>
-        <p id="codeLine">항해일지에 기록했어. 아래 두 코드는 꼭 저장해 둬!</p>
+        <p id="codeLine">항해일지에 기록했어. 이 참가코드는 스태프에게 보여줘야 해!</p>
       </div>
     </div>
 
     <div class="card codecard">
       <p class="cc-lbl">참가코드 <small>스태프에게 보여주는 번호</small></p>
       <div class="cc-big" id="ccCode">------</div>
-      <div class="cc-sep"></div>
-      <p class="cc-lbl">복구 코드 <small>지금 한 번만 보여요</small></p>
-      <div class="cc-big cc-rec" id="ccRec">--------</div>
-      <p class="cc-why">폰을 바꾸거나 브라우저 기록이 지워졌을 때 <b>전화번호 + 복구 코드</b>로 이어서 할 수 있어요. 캡처하거나 메모해 두세요.</p>
-      <button class="btn ghost" id="btnCopyRec" type="button">복구 코드 복사</button>
-      <label class="cc-check"><input type="checkbox" id="ccAck"><span>복구 코드를 저장했어요</span></label>
-      <button class="btn primary" id="btnCodeOk" type="button" disabled>모험 시작하기</button>
+      <p class="cc-why">폰을 바꾸거나 브라우저 기록이 지워져도 <b>등록한 전화번호</b>로 이어서 할 수 있어요.</p>
+      <button class="btn primary" id="btnCodeOk" type="button">모험 시작하기</button>
     </div>
   </section>
 

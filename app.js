@@ -1500,9 +1500,7 @@
   }
   function showCodeScreen(rec) {
     $("ccCode").textContent = rec.code || "------";
-    $("ccRec").textContent = rec.recoveryCode || "--------";
-    $("ccAck").checked = false;
-    $("btnCodeOk").disabled = true;
+    $("btnCodeOk").disabled = false;
     show("scCode");
   }
 
@@ -1568,8 +1566,8 @@
       if (Cinema.getPath()) { P.missionPath = Cinema.getPath(); Store.savePrefs(P); }
       heroMode = "registered";
       Sound.want("ocean");
-      if (r.recoveryCode) {
-        var rec = { code: r.code, recoveryCode: r.recoveryCode };
+      if (!r.existing) {
+        var rec = { code: r.code };
         try { sessionStorage.setItem(REC_KEY, JSON.stringify(rec)); } catch (e) {}
         refresh().catch(function () {}).then(function () { showCodeScreen(rec); });
       } else {
@@ -1581,7 +1579,7 @@
       if (e.reason === "phone-registered") {
         $("registerBox").hidden = true; $("recoverBox").hidden = false;
         $("inRecPhone").value = phone;
-        setMsg("recErr", "이미 등록된 번호예요. 처음 등록할 때 받은 8자리 복구 코드를 입력해 주세요.");
+        setMsg("recErr", "이미 등록된 번호예요. 아래 버튼을 눌러 이어서 진행하세요.");
         return;
       }
       setMsg("joinErr", errText(e));
@@ -1590,16 +1588,14 @@
 
   $("btnRecover").addEventListener("click", function () {
     var phone = $("inRecPhone").value.trim();
-    var code = $("inRecCode").value.trim().toUpperCase();
     setMsg("recErr", "");
     if (Store.normPhone(phone).length < 10) { setMsg("recErr", "전화번호를 정확히 입력해 주세요"); return; }
-    if (code.length < 6) { setMsg("recErr", "복구 코드를 입력해 주세요"); return; }
     var btn = this;
     btn.disabled = true; btn.textContent = "확인하는 중…";
-    EV.recover(phone, code).then(function (r) {
+    EV.recover(phone).then(function (r) {
       if (!r || !r.ok) {
         btn.disabled = false; btn.textContent = "이어서 하기";
-        setMsg("recErr", (r && r.error) || "전화번호나 복구 코드가 맞지 않아요. 5번 틀리면 15분간 잠겨요.");
+        setMsg("recErr", (r && r.error) || "등록된 번호를 찾지 못했어요. 번호를 다시 확인해 주세요.");
         return;
       }
       return refresh().then(function () {
@@ -1613,13 +1609,6 @@
     });
   });
 
-  $("ccAck").addEventListener("change", function () { $("btnCodeOk").disabled = !this.checked; });
-  $("btnCopyRec").addEventListener("click", function () {
-    var t = $("ccRec").textContent;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(t).then(function () { toast("복구 코드를 복사했어요"); }, function () { toast("복사하지 못했어요. 화면을 캡처해 두세요"); });
-    } else toast("복사하지 못했어요. 화면을 캡처해 두세요");
-  });
   $("btnCodeOk").addEventListener("click", function () {
     var btn = this;
     btn.disabled = true;

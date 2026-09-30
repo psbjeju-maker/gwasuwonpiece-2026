@@ -89,7 +89,7 @@
       'play-limit': '맛보기 횟수를 모두 사용했어요.',
       'mission-disabled': '지금 열려 있지 않은 미션이에요.',
       'staff-verify-required': '스태프 확인이 필요한 미션이에요.',
-      'phone-registered': '이미 등록된 번호예요. 복구 코드로 이어서 하거나 스태프에게 문의해 주세요.',
+      'phone-registered': '이미 등록된 번호예요. 전화번호로 이어서 하거나 스태프에게 문의해 주세요.',
       'config-missing': '행사 설정이 아직 준비되지 않았어요.',
       'event-disabled': '지금은 열려 있지 않아요.',
       'cost-not-set': '쿠지 필요 코인이 아직 정해지지 않았어요.',
@@ -156,7 +156,7 @@
   window.EV = {
     /* ---- 참가자 ---- */
     register: function (nickname, phone) { return raw('registerParticipant', { nickname: nickname, phone: phone }, true); },
-    recover: function (phone, recoveryCode) { return raw('recoverParticipant', { phone: phone, recoveryCode: recoveryCode }, true); },
+    recover: function (phone) { return raw('recoverParticipant', { phone: phone }, true); },
     state: function (eventId) { return raw('getState', { eventId: eventId }, true).then(function (s) { if (s && s.cfg) s.cfg = effCfg(s.cfg); return s; }); },
     claimMission: function (eventId, missionId) { return withRid('m.' + eventId + '.' + missionId, 'claimMission', { eventId: eventId, missionId: missionId }, true); },
     playKuji: function (eventId, source, number) {
