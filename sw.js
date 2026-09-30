@@ -1,7 +1,7 @@
 /* 오프라인 대응 — 한 번 열어두면 신호가 없어도 QR이 열리고 채점까지 된다. */
-var CACHE = "ggg-v28";
+var CACHE = "ggg-v31";
 var FILES = [
-  "./", "./index.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./qr.js", "./ev-client.js", "./mhcards.js", "./app.js", "./catch.js", "./map.jpg",
+  "./", "./index.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./qr.js", "./ev-client.js", "./mhcards.js", "./kujiboard.js", "./seal.js", "./sfx.js", "./app.js", "./catch.js", "./map.jpg",
   "./guide.html",
   "./fonts/SCDream4.woff", "./fonts/SCDream5.woff", "./fonts/SCDream7.woff",
   /* 2026-09-28 디자인 팩(AI 시안) — 정식 작화로 바꿔도 같은 파일명이면 이 목록은 그대로 */
@@ -17,7 +17,8 @@ var FILES = [
   "./sfx/slice.mp3", "./sfx/pop.mp3", "./sfx/boom.mp3", "./sfx/bonus.mp3", "./sfx/fanfare.mp3",
   "./audio/opening.mp3", "./audio/ocean.mp3",
   /* mh머니 트럼프 카드 */
-  "./assets/cards/back.webp", "./assets/cards/H1.webp", "./assets/cards/H2.webp", "./assets/cards/H3.webp", "./assets/cards/H4.webp", "./assets/cards/H5.webp", "./assets/cards/H6.webp", "./assets/cards/H7.webp", "./assets/cards/H8.webp", "./assets/cards/H9.webp", "./assets/cards/H10.webp", "./assets/cards/H11.webp", "./assets/cards/H12.webp", "./assets/cards/H13.webp"
+  "./assets/cards/back.webp", "./assets/cards/H1.webp", "./assets/cards/H2.webp", "./assets/cards/H3.webp", "./assets/cards/H4.webp", "./assets/cards/H5.webp", "./assets/cards/H6.webp", "./assets/cards/H7.webp", "./assets/cards/H8.webp", "./assets/cards/H9.webp", "./assets/cards/H10.webp", "./assets/cards/H11.webp", "./assets/cards/H12.webp", "./assets/cards/H13.webp",
+  "./assets/sfx/reveal_low.mp3", "./assets/sfx/reveal_mid.mp3", "./assets/sfx/reveal_top.mp3", "./assets/sfx/reveal_rainbow.mp3", "./assets/sfx/ui_confirm.mp3", "./assets/sfx/ui_select.mp3"
 ];
 
 self.addEventListener("install", function (e) {

@@ -52,7 +52,7 @@
     '.mh-alb{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}' +
     '.mh-slot{position:relative;aspect-ratio:400/604;border-radius:6%;overflow:hidden;background:#dfe6f2;box-shadow:0 2px 6px rgba(0,0,0,.25)}' +
     '.mh-slot img{width:100%;height:100%;object-fit:cover;display:block}' +
-    '.mh-slot.no img{filter:grayscale(.6) brightness(.75);opacity:.85}' +
+    '.mh-slot.no img{filter:grayscale(.35);opacity:.3}' +
     '.mh-slot .n{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-weight:900;font-size:clamp(14px,4.5vw,22px);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8)}' +
     '.mh-slot .c{position:absolute;top:4px;right:4px;background:#1E5AA8;color:#fff;font-size:12px;font-weight:800;padding:1px 7px;border-radius:99px;box-shadow:0 1px 4px rgba(0,0,0,.4)}' +
     '.mh-alb-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px;font-weight:800}' +
@@ -164,8 +164,8 @@
       '<div class="mh-alb-bar"><i style="width:' + Math.round(c / TOTAL * 100) + '%"></i></div><div class="mh-alb">';
     for (var i = 1; i <= TOTAL; i++) {
       var id = 'M' + i, n = owned(book, id);
-      h += '<div class="mh-slot ' + (n ? '' : 'no') + '" data-id="' + id + '"><img alt="' + (n ? label(id) + ' 카드' : '아직 없는 카드') + '" loading="lazy" src="' + esc(n ? src(id) : back()) + '">' +
-        (n > 1 ? '<span class="c">×' + n + '</span>' : '') + (n ? '' : '<span class="n">' + label(id) + '</span>') + '</div>';
+      h += '<div class="mh-slot ' + (n ? '' : 'no') + '" data-id="' + id + '"><img alt="' + (n ? label(id) + ' 카드' : '아직 없는 카드') + '" loading="lazy" src="' + esc(src(id)) + '">' +
+        (n > 1 ? '<span class="c">×' + n + '</span>' : '') + '' + '</div>';
     }
     h += '</div>' + (c === TOTAL ? '<div class="mh-done">🎉 13장 컴플리트!</div>' : '<p style="font-size:13px;opacity:.75;margin:10px 0 0">미션을 하거나 쿠지에서 꽝이 나오면 카드가 한 장씩 늘어나요.</p>');
     el.innerHTML = h;
@@ -198,7 +198,7 @@
       var h = '<p class="mh-t">' + esc(opts.title || '쿠지에 넣을 카드를 골라 주세요') + '</p><p class="mh-s">' + cnt + ' / ' + need + '장 선택</p><div class="mh-pk">';
       for (var i = 1; i <= TOTAL; i++) {
         var id = 'M' + i, n = owned(book, id), u = sel[id] || 0;
-        h += '<div class="mh-slot ' + (n ? '' : 'no') + (u ? ' sel' : '') + '" data-id="' + id + '"><img alt="' + label(id) + '" src="' + esc(n ? src(id) : back()) + '">' +
+        h += '<div class="mh-slot ' + (n ? '' : 'no') + (u ? ' sel' : '') + '" data-id="' + id + '"><img alt="' + label(id) + '" src="' + esc(src(id)) + '">' +
           (n ? '<span class="c' + (u ? ' sc' : '') + '">' + (u ? u + '/' : '') + n + '</span>' : '') + '</div>';
       }
       h += '</div><div class="mh-tray">';

@@ -159,7 +159,13 @@
     recover: function (phone, recoveryCode) { return raw('recoverParticipant', { phone: phone, recoveryCode: recoveryCode }, true); },
     state: function (eventId) { return raw('getState', { eventId: eventId }, true).then(function (s) { if (s && s.cfg) s.cfg = effCfg(s.cfg); return s; }); },
     claimMission: function (eventId, missionId) { return withRid('m.' + eventId + '.' + missionId, 'claimMission', { eventId: eventId, missionId: missionId }, true); },
-    playKuji: function (eventId, source) { return withRid('k.' + eventId + '.' + (source || 'coin'), 'playKuji', { eventId: eventId, source: source || 'coin' }, true); },
+    playKuji: function (eventId, source, number) {
+      var d = { eventId: eventId, source: source || 'coin' }; if (number) d.number = number;
+      return withRid('k.' + eventId + '.' + (source || 'coin') + (number ? '.n' + number : ''), 'playKuji', d, true);
+    },
+    kujiBoard: function (eventId) { return raw('kujiBoard', { eventId: eventId }, true); },
+    /* 스태프가 참가자 폰에 PIN 을 눌러 확인 → 미션 카드 지급 (SNS 인증 등) */
+    confirmMission: function (eventId, missionId, pin) { return withRid('c.' + eventId + '.' + missionId, 'confirmMission', { eventId: eventId, missionId: missionId, pin: pin }, true); },
     submitClue: function (eventId, clueId, answer) { return raw('submitClue', { eventId: eventId, clueId: clueId, answer: answer }, true); },
     claimTreasure: function (eventId, code) { return withRid('t.' + eventId, 'claimTreasure', { eventId: eventId, answer: code }, true); },
     /* ---- 스태프 / 관리자 ---- */

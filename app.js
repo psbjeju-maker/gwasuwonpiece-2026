@@ -719,6 +719,7 @@
 
       if (c.verify === "staff") {
         how = ok ? "" : "스태프 확인 · 참가코드를 보여주세요";
+        if (!ok && window.KB) action = '<button type="button" class="mgo" data-staffpin="' + m.id + '">스태프 확인 (PIN)</button>';
       } else if (inApp) {
         if (pendingClaims[m.id]) action = '<button type="button" class="mgo" data-retry="' + m.id + '">코인 받기 다시 시도</button>';
         else action = '<button type="button" class="mgo" data-mid="' + m.id + '">' + (ok ? "다시 도전" : "도전하기") + '</button>';
@@ -729,6 +730,7 @@
         else action = '<button type="button" class="mgo" data-votego="' + vid + '">투표하러 가기</button>';
       } else if (!ok) {
         how = "스태프 확인 · 참가코드를 보여주세요";
+        if (window.KB) action = '<button type="button" class="mgo" data-staffpin="' + m.id + '">스태프 확인 (PIN)</button>';
       }
       var state = '<span class="mstate ' + (ok ? 'done">완료' : 'todo">시작 전') + '</span>' +
         (how ? '<span class="mhow">' + how + '</span>' : '');
@@ -754,8 +756,28 @@
           finishClaim(btn.dataset.votecoin, "");
         } else if (btn.dataset.votego) {
           openVote(btn.dataset.votego);
+        } else if (btn.dataset.staffpin) {
+          askStaffPin(btn.dataset.staffpin);
         }
       });
+    });
+  }
+
+  /* 스태프가 참가자 폰에 PIN 을 눌러 확인 → 카드 지급 */
+  function askStaffPin(mid) {
+    var before = bookCopy();
+    KB.askPin({
+      title: "스태프 확인",
+      desc: "스태프가 미션을 확인했다면 PIN 을 입력해 주세요. 카드가 바로 지급돼요.",
+      submit: function (pin) { return EV.confirmMission(EVENT, mid, pin); },
+      onDone: function (r) {
+        refresh().catch(function () {}).then(function () {
+          renderMissions(); renderHud();
+          var cards = (r && (r.cards || (r.play && r.play.cards))) || [];
+          if (cards.length && window.MH) MH.reveal(cards, { book: before, title: coinName() + " 카드를 받았어요!", onClose: function () { renderMissions(); renderHud(); } });
+          else toast("스태프 확인 완료");
+        });
+      }
     });
   }
 
@@ -1248,6 +1270,29 @@
         setMsg("kjErr", errText(e));
     }
   }
+  /* 번호 뽑기판 모드(cfg.kuji.pickNumber): 번호 선택 → 봉인지 연출 → 결과. 아니면 예전처럼 바로 뽑기 */
+  function startKuji(source) {
+    if (kujiBusy) return;
+    if (!(CFG.kuji && CFG.kuji.pickNumber && window.KB)) { doKuji(source); return; }
+    kujiBusy = true; setMsg("kjErr", "");
+    $("btnPlayKuji").disabled = true; $("btnPlayPaid").disabled = true;
+    var bookBefore = bookCopy();
+    KB.open({
+      title: "쿠지 번호를 골라 주세요",
+      board: function () { return EV.kujiBoard(EVENT); },
+      play: function (n) { return EV.playKuji(EVENT, source, n); },
+      onResult: function (r) {
+        kujiBusy = false;
+        kujiBookBefore = bookBefore;
+        if (ST && ST.wallet && r.wallet) {
+          ST.wallet.coins = r.wallet.coins; ST.wallet.paidPlays = r.wallet.paidPlays; ST.wallet.playCount = r.wallet.playCount;
+        }
+        refresh().catch(function () {}).then(function () { showKujiResult(r.play, r.duplicate); });
+      },
+      onError: function (e) { kujiBusy = false; renderKuji(); kujiError(e); },
+      onCancel: function () { kujiBusy = false; renderKuji(); }
+    });
+  }
   function doKuji(source) {
     if (kujiBusy) return;
     kujiBusy = true; setMsg("kjErr", "");
@@ -1638,10 +1683,10 @@
   $("btnPlayKuji").addEventListener("click", function () {
     var w = wallet(), K = CFG.kuji || {}, cost = w.kujiCost != null ? w.kujiCost : K.cost, bk = bookCopy(), have = 0;
     Object.keys(bk).forEach(function (k) { if (/^M\d+$/.test(k)) have += (bk[k].given || 0) + (bk[k].pending || 0); });
-    if (window.MH && MH.pick && cost > 0 && cost <= 10 && have >= cost && !kujiBusy) MH.pick(bk, cost, { title: "쿠지에 넣을 카드 " + cost + "장을 골라 주세요", onDone: function () { doKuji("coin"); } });
-    else doKuji("coin");
+    if (window.MH && MH.pick && cost > 0 && cost <= 10 && have >= cost && !kujiBusy) MH.pick(bk, cost, { title: "쿠지에 넣을 카드 " + cost + "장을 골라 주세요", onDone: function () { startKuji("coin"); } });
+    else startKuji("coin");
   });
-  $("btnPlayPaid").addEventListener("click", function () { doKuji("paid"); });
+  $("btnPlayPaid").addEventListener("click", function () { startKuji("paid"); });
   $("btnKujiToMission").addEventListener("click", function () { go("scMissions"); });
   $("btnCardsRefresh").addEventListener("click", function () {
     var btn = this; btn.disabled = true;
