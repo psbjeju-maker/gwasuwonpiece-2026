@@ -19,7 +19,7 @@
   <div class="hero">
     <p class="eyebrow">Presale</p>
     <h1>항해 패스 사전예매</h1>
-    <p class="lede" id="leadTxt">과수원피스 항해 패스(6,000원) 사전예매는 <b>10월 17일(토)</b>부터 시작됩니다. 오픈되면 이 페이지에서 신청 방법을 바로 안내해 드릴게요.</p>
+    <p class="lede" id="leadTxt">항해 패스(6,000원)는 <b>10월 17일(토)</b>부터 <b>박서방 제주지점</b>에서 직접 구매하실 수 있습니다. 온라인 예매 없이 매장 방문 구매로 진행됩니다.</p>
     <p class="countdown" id="countTxt">—</p>
   </div>
 
@@ -44,10 +44,10 @@
   if (st === 'before') {
     el.textContent = A.untilText('presale');
   } else if (st === 'open') {
-    lead.innerHTML = '항해 패스(6,000원) 사전예매가 진행 중입니다. 신청 방법은 준비 중이니 잠시만 기다려 주세요.';
-    el.textContent = '지금 사전예매 기간입니다';
+    lead.innerHTML = '항해 패스(6,000원)를 <b>박서방 제주지점</b>에서 판매 중입니다. 매장에 방문해 현장 구매해 주세요.';
+    el.textContent = '지금 매장에서 구매하실 수 있어요';
   } else {
-    lead.innerHTML = '항해 패스 사전예매가 마감되었습니다. 행사 당일 매표소에서 구입하실 수 있어요.';
+    lead.innerHTML = '항해 패스 사전 판매가 마감되었습니다. 행사 당일 매표소에서도 구입하실 수 있어요.';
     el.textContent = '';
   }
 })();
