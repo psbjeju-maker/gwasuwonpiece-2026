@@ -657,19 +657,18 @@
   }
   /* cb(err, result) — 실패하면 pendingClaims에 남겨 다시 시도할 수 있게 한다 */
   function bookCopy() { return JSON.parse(JSON.stringify((ST && ST.cardBook) || {})); }
-  function claimMission(mid, cb) {
+  function claimMission(mid, cb, tier) {
     if (claimBusy[mid]) return;
     claimBusy[mid] = true;
     var before = bookCopy();
-    EV.claimMission(EVENT, mid).then(function (r) {
+    EV.claimMission(EVENT, mid, tier).then(function (r) {
       claimBusy[mid] = false;
       delete pendingClaims[mid];
       if (ST && ST.wallet && r && r.coins != null) ST.wallet.coins = r.coins;
-      return refresh().catch(function () {}).then(function () {
-        var cards = r && r.cards;
-        if (cards && cards.length && window.MH) MH.reveal(cards, { book: before, title: coinName() + " 카드를 받았어요!", onClose: function () { cb(null, r); } });
-        else cb(null, r);
-      });
+      var fresh = refresh().catch(function () {});
+      var cards = r && r.cards;
+      if (cards && cards.length && window.MH) MH.reveal(cards, { book: before, title: coinName() + " 카드를 받았어요!", onClose: function () { fresh.then(function () { cb(null, r); }); } });
+      else fresh.then(function () { cb(null, r); });
     }, function (e) {
       claimBusy[mid] = false;
       e = errInfo(e);
@@ -718,8 +717,9 @@
       var how = "", action = "";
 
       if (c.verify === "staff") {
-        how = ok ? "" : "스태프 확인 · 참가코드를 보여주세요";
-        if (!ok && window.KB) action = '<button type="button" class="mgo" data-staffpin="' + m.id + '">스태프 확인 (PIN)</button>';
+        var again = m.id === "m11";
+        how = ok ? (again ? "새 게시물을 올리면 또 받을 수 있어요" : "") : "스태프 확인 · 참가코드를 보여주세요";
+        if ((!ok || again) && window.KB) action = '<button type="button" class="mgo" data-staffpin="' + m.id + '">스태프 확인 (PIN)</button>';
       } else if (inApp) {
         if (pendingClaims[m.id]) action = '<button type="button" class="mgo" data-retry="' + m.id + '">코인 받기 다시 시도</button>';
         else action = '<button type="button" class="mgo" data-mid="' + m.id + '">' + (ok ? "다시 도전" : "도전하기") + '</button>';
@@ -771,18 +771,16 @@
       desc: "스태프가 미션을 확인했다면 PIN 을 입력해 주세요. 카드가 바로 지급돼요.",
       submit: function (pin) { return EV.confirmMission(EVENT, mid, pin); },
       onDone: function (r) {
-        refresh().catch(function () {}).then(function () {
-          renderMissions(); renderHud();
-          var cards = (r && (r.cards || (r.play && r.play.cards))) || [];
-          if (cards.length && window.MH) MH.reveal(cards, { book: before, title: coinName() + " 카드를 받았어요!", onClose: function () { renderMissions(); renderHud(); } });
-          else toast("스태프 확인 완료");
-        });
+        var fresh = refresh().catch(function () {}).then(function () { renderMissions(); renderHud(); });
+        var cards = (r && (r.cards || (r.play && r.play.cards))) || [];
+        if (cards.length && window.MH) MH.reveal(cards, { book: before, title: coinName() + " 카드를 받았어요!", onClose: function () { fresh.then(function () { renderMissions(); renderHud(); }); } });
+        else { toast("스태프 확인 완료"); }
       }
     });
   }
 
   /* 코인 요청 → 결과 안내 → 미션 목록. 실패하면 화면을 그대로 두고 다시 시도하게 한다. */
-  function finishClaim(mid, prefix) {
+  function finishClaim(mid, prefix, tier) {
     claimMission(mid, function (e, r) {
       renderMissions(); renderHud();
       if (e) {
@@ -794,14 +792,21 @@
       showTab("scMissions");
       questLine((prefix || "") + claimMessage(r),
         { expr: r && r.awarded > 0 ? A.LINES.coinGot.expr : "neutral", okLabel: A.LINES.missionDone.btn });
-    });
+    }, tier);
   }
 
   /* ---------- 황금귤 캐치 (앱 안 미션, catch.js) ---------- */
   function openCatch(mid) {
     if (!window.CatchGame) { toast("게임을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요"); return; }
     window.CatchGame.start(function (score, isBest) {
-      finishClaim(mid, score + "점" + (isBest ? ", 신기록! " : "! "));
+      var tier = score >= 7000 ? 3 : score >= 5000 ? 2 : score >= 3000 ? 1 : 0;
+      var pre = score + "점" + (isBest ? ", 신기록! " : "! ");
+      if (!tier) {
+        showTab("scMissions");
+        questLine(pre + "3,000점부터 코인을 받을 수 있어요. (3,000점 1개 · 5,000점 2개 · 7,000점 3개)", { expr: "neutral", okLabel: A.LINES.missionDone.btn });
+        return;
+      }
+      finishClaim(mid, pre, tier);
     });
   }
 
@@ -1271,34 +1276,34 @@
     }
   }
   /* 번호 뽑기판 모드(cfg.kuji.pickNumber): 번호 선택 → 봉인지 연출 → 결과. 아니면 예전처럼 바로 뽑기 */
-  function startKuji(source) {
+  function startKuji(source, cardIds) {
     if (kujiBusy) return;
-    if (!(CFG.kuji && CFG.kuji.pickNumber && window.KB)) { doKuji(source); return; }
+    if (!(CFG.kuji && CFG.kuji.pickNumber && window.KB)) { doKuji(source, cardIds); return; }
     kujiBusy = true; setMsg("kjErr", "");
     $("btnPlayKuji").disabled = true; $("btnPlayPaid").disabled = true;
     var bookBefore = bookCopy();
     KB.open({
       title: "쿠지 번호를 골라 주세요",
       board: function () { return EV.kujiBoard(EVENT); },
-      play: function (n) { return EV.playKuji(EVENT, source, n); },
+      play: function (n) { return EV.playKuji(EVENT, source, n, cardIds); },
       onResult: function (r) {
         kujiBusy = false;
         kujiBookBefore = bookBefore;
         if (ST && ST.wallet && r.wallet) {
           ST.wallet.coins = r.wallet.coins; ST.wallet.paidPlays = r.wallet.paidPlays; ST.wallet.playCount = r.wallet.playCount;
         }
-        refresh().catch(function () {}).then(function () { showKujiResult(r.play, r.duplicate); });
+        refresh().catch(function () {}).then(function () { showKujiResult(r.play, r.duplicate, true); });
       },
       onError: function (e) { kujiBusy = false; renderKuji(); kujiError(e); },
       onCancel: function () { kujiBusy = false; renderKuji(); }
     });
   }
-  function doKuji(source) {
+  function doKuji(source, cardIds) {
     if (kujiBusy) return;
     kujiBusy = true; setMsg("kjErr", "");
     $("btnPlayKuji").disabled = true; $("btnPlayPaid").disabled = true;
     var bookBefore = bookCopy();
-    EV.playKuji(EVENT, source).then(function (r) {
+    EV.playKuji(EVENT, source, null, cardIds).then(function (r) {
       kujiBusy = false;
       kujiBookBefore = bookBefore;
       if (ST && ST.wallet && r.wallet) {
@@ -1312,14 +1317,16 @@
     });
   }
   var kujiBookBefore = {};
-  function showKujiResult(play, dup) {
+  /* 번호판 모드는 봉인지 연출을 이미 봤으므로 귤 까기 연출은 건너뛴다(연출·카드 겹침 방지) */
+  function revealStep(text, cb, skip) { if (skip) cb(); else playTangerineReveal(text, cb); }
+  function showKujiResult(play, dup, skipTgr) {
     if (!play) { renderKuji(); return; }
-    if (play.kind === "coin") { showCoinResult(play, dup); return; }
+    if (play.kind === "coin") { showCoinResult(play, dup, skipTgr); return; }
     var special = play.kind === "special";
-    resultBase({ burst: "KUJI", tgr: true });
+    resultBase({ burst: "KUJI", tgr: !skipTgr });
     show("scResult");
     if (dup) toast("이미 처리된 결과예요. 다시 보여 드릴게요");
-    playTangerineReveal(special ? "특별" : "카드", function () {
+    revealStep(special ? "특별" : "카드", function () {
       $("rsTitle").textContent = special ? "특별 상품 당첨!" : "직접 만든 트럼프 카드!";
       $("rsDesc").textContent = play.name || "";
       var pim = $("rsPrizeImg"), pu = play.image;
@@ -1333,26 +1340,26 @@
       $("rsNpcText").textContent = play.demo ? "맛보기 결과야. 진짜 쿠지는 코인을 모아서 도전해 봐!"
         : "수령 코드를 스태프에게 보여주면 받을 수 있어. 코드는 ‘내 카드’에서 다시 볼 수 있어.";
       $("rsNpc").hidden = false;
-    });
+    }, skipTgr);
     $("btnResultOk").textContent = "확인";
     $("btnResultOk").dataset.go = "kuji";
   }
 
-  function showCoinResult(play, dup) {
+  function showCoinResult(play, dup, skipTgr) {
     var n = play.coinReward || (play.cards && play.cards.length) || 1;
-    resultBase({ burst: "KUJI", tgr: true });
+    resultBase({ burst: "KUJI", tgr: !skipTgr });
     show("scResult");
     if (dup) toast("이미 처리된 결과예요. 다시 보여 드릴게요");
-    playTangerineReveal("카드", function () {
+    revealStep("카드", function () {
       $("rsTitle").textContent = "아쉽! 대신 " + coinName() + " " + n + "장";
       $("rsDesc").textContent = "다음 미션으로 카드를 더 모아 쿠지에 또 도전해요.";
       $("rsNpcText").textContent = "카드 3장이면 쿠지 한 번! 도감을 채워 보자.";
       setNpc($("rsNpcImg"), "success");
       $("rsNpc").hidden = false;
       if (play.cards && play.cards.length && window.MH) {
-        setTimeout(function () { MH.reveal(play.cards, { book: kujiBookBefore, title: coinName() + " 카드를 받았어요!" }); }, 700);
+        setTimeout(function () { MH.reveal(play.cards, { book: kujiBookBefore, title: coinName() + " 카드를 받았어요!" }); }, skipTgr ? 300 : 1800);
       }
-    });
+    }, skipTgr);
     $("btnResultOk").textContent = "확인";
     $("btnResultOk").dataset.go = "kuji";
   }
@@ -1589,13 +1596,15 @@
   $("btnRecover").addEventListener("click", function () {
     var phone = $("inRecPhone").value.trim();
     setMsg("recErr", "");
+    var rnick = $("inRecNick").value.trim();
+    if (!rnick) { setMsg("recErr", "닉네임을 입력해 주세요"); return; }
     if (Store.normPhone(phone).length < 10) { setMsg("recErr", "전화번호를 정확히 입력해 주세요"); return; }
     var btn = this;
     btn.disabled = true; btn.textContent = "확인하는 중…";
-    EV.recover(phone).then(function (r) {
+    EV.recover(phone, rnick).then(function (r) {
       if (!r || !r.ok) {
         btn.disabled = false; btn.textContent = "이어서 하기";
-        setMsg("recErr", (r && r.error) || "등록된 번호를 찾지 못했어요. 번호를 다시 확인해 주세요.");
+        setMsg("recErr", (r && r.error) || "번호와 닉네임이 맞지 않아요. 다시 확인해 주세요.");
         return;
       }
       return refresh().then(function () {
@@ -1671,8 +1680,8 @@
 
   $("btnPlayKuji").addEventListener("click", function () {
     var w = wallet(), K = CFG.kuji || {}, cost = w.kujiCost != null ? w.kujiCost : K.cost, bk = bookCopy(), have = 0;
-    Object.keys(bk).forEach(function (k) { if (/^M\d+$/.test(k)) have += (bk[k].given || 0) + (bk[k].pending || 0); });
-    if (window.MH && MH.pick && cost > 0 && cost <= 10 && have >= cost && !kujiBusy) MH.pick(bk, cost, { title: "쿠지에 넣을 카드 " + cost + "장을 골라 주세요", onDone: function () { startKuji("coin"); } });
+    Object.keys(bk).forEach(function (k) { if (/^M\d+$/.test(k)) have += MH.held(bk, k); });
+    if (window.MH && MH.pick && cost > 0 && cost <= 10 && have >= cost && !kujiBusy) MH.pick(bk, cost, { title: "쿠지에 넣을 카드 " + cost + "장을 골라 주세요", onDone: function (ids) { startKuji("coin", ids); } });
     else startKuji("coin");
   });
   $("btnPlayPaid").addEventListener("click", function () { startKuji("paid"); });

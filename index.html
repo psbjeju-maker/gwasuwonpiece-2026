@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#F6F3EC">
 <link rel="icon" href="assets/icons/golden_tangerine.png">
 <link rel="apple-touch-icon" href="assets/icons/golden_tangerine.png">
@@ -90,7 +90,11 @@
 
       <div class="card logbook" id="recoverBox" hidden>
         <h2 class="card-title">이어서 하기</h2>
-        <p class="privacy">처음 등록할 때 쓴 <b>전화번호</b>를 입력하면 이어서 할 수 있어요.</p>
+        <p class="privacy">처음 등록할 때 쓴 <b>닉네임과 전화번호</b>를 입력하면 이어서 할 수 있어요.</p>
+        <div class="field">
+          <label for="inRecNick">닉네임</label>
+          <input id="inRecNick" type="text" placeholder="등록한 닉네임" autocomplete="off" maxlength="20">
+        </div>
         <div class="field">
           <label for="inRecPhone">전화번호</label>
           <input id="inRecPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
@@ -533,6 +537,7 @@
 <audio id="bgmOcean" src="audio/ocean.mp3" loop preload="none"></audio>
 
 <!-- 코인·미션·쿠지·단서·수령은 전부 서버가 기록한다(ev-client.js가 Firebase SDK를 스스로 불러온다) -->
+<script>['gesturestart','gesturechange','gestureend'].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault()},{passive:false})});var _lt=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-_lt<300)e.preventDefault();_lt=n},{passive:false});</script>
 <script src="data.js"></script>
 <script src="assets.js"></script>
 <script src="store.js"></script>

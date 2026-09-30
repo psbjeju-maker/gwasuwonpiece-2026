@@ -50,9 +50,7 @@
   function sealItem(play, opts) {
     var img = (typeof play.image === 'string' && /^(https?:\/\/|data:image\/(jpeg|png|webp);base64,)/.test(play.image)) ? play.image : '';
     if (play.kind === 'coin') {
-      var c = play.cards && play.cards[0];
-      var m = window.MH && c ? window.MH.src(c) : '';
-      return { label: 'mh머니', name: 'mh머니 카드 ' + ((play.cards && play.cards.length) || 1) + '장', img: m, power: '약' };
+      return { label: 'mh머니', name: 'mh머니 카드 ' + ((play.cards && play.cards.length) || 1) + '장', img: '', power: '약' };
     }
     var r = RANK(play.name);
     var pw = r === 0 ? '무지개' : r === 1 ? '강' : r === 2 ? '중' : '강';

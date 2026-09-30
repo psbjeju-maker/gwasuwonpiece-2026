@@ -100,7 +100,8 @@
       'limit-not-set': '보물 수령 조건이 아직 준비되지 않았어요.',
       'person-limit': '받을 수 있는 보물 수를 채웠어요.',
       'card-id-required': '지급한 카드 종류를 선택해 주세요.',
-      'already-given': '이미 지급된 결과예요.'
+      'already-given': '이미 지급된 결과예요.',
+      'no-tier': '아직 보상을 받을 단계에 도달하지 못했어요.'
     };
     if (m[reason]) return m[reason];
     if (code === 'unauthenticated') return '로그인 정보가 없어요. 새로고침해 주세요.';
@@ -156,11 +157,12 @@
   window.EV = {
     /* ---- 참가자 ---- */
     register: function (nickname, phone) { return raw('registerParticipant', { nickname: nickname, phone: phone }, true); },
-    recover: function (phone) { return raw('recoverParticipant', { phone: phone }, true); },
+    recover: function (phone, nickname) { return raw('recoverParticipant', { phone: phone, nickname: nickname }, true); },
     state: function (eventId) { return raw('getState', { eventId: eventId }, true).then(function (s) { if (s && s.cfg) s.cfg = effCfg(s.cfg); return s; }); },
-    claimMission: function (eventId, missionId) { return withRid('m.' + eventId + '.' + missionId, 'claimMission', { eventId: eventId, missionId: missionId }, true); },
-    playKuji: function (eventId, source, number) {
+    claimMission: function (eventId, missionId, tier) { return withRid('m.' + eventId + '.' + missionId + (tier ? '.t' + tier : ''), 'claimMission', tier ? { eventId: eventId, missionId: missionId, tier: tier } : { eventId: eventId, missionId: missionId }, true); },
+    playKuji: function (eventId, source, number, cardIds) {
       var d = { eventId: eventId, source: source || 'coin' }; if (number) d.number = number;
+      if (cardIds && cardIds.length) d.cardIds = cardIds;
       return withRid('k.' + eventId + '.' + (source || 'coin') + (number ? '.n' + number : ''), 'playKuji', d, true);
     },
     kujiBoard: function (eventId) { return raw('kujiBoard', { eventId: eventId }, true); },

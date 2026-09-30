@@ -8,8 +8,10 @@
   function label(id) { var n = num(id); return FACE[n] || String(n); }
   function src(id) { return CFG.base + 'H' + num(id) + '.webp'; }
   function back() { return CFG.base + 'back.webp'; }
-  function owned(book, id) { var b = book && book[id]; return b ? (b.given || 0) + (b.pending || 0) : 0; }
-  function kinds(book) { var c = 0; for (var i = 1; i <= TOTAL; i++) if (owned(book, 'M' + i) > 0) c++; return c; }
+  /* owned = 지금 가진 장수(쿠지에 넣은 건 뺀다), ever = 지금까지 한 번이라도 나온 카드(도감) */
+  function owned(book, id) { var b = book && book[id]; return b ? Math.max(0, (b.given || 0) + (b.pending || 0) - (b.used || 0)) : 0; }
+  function ever(book, id) { var b = book && book[id]; return b ? (b.given || 0) + (b.pending || 0) : 0; }
+  function kinds(book) { var c = 0; for (var i = 1; i <= TOTAL; i++) if (ever(book, 'M' + i) > 0) c++; return c; }
   function reduced() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
@@ -53,6 +55,7 @@
     '.mh-slot{position:relative;aspect-ratio:400/604;border-radius:6%;overflow:hidden;background:#dfe6f2;box-shadow:0 2px 6px rgba(0,0,0,.25)}' +
     '.mh-slot img{width:100%;height:100%;object-fit:cover;display:block}' +
     '.mh-slot.no img{filter:grayscale(.35);opacity:.3}' +
+    '.mh-slot.no.seen img{opacity:.5}' +
     '.mh-slot .n{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-weight:900;font-size:clamp(14px,4.5vw,22px);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8)}' +
     '.mh-slot .c{position:absolute;top:4px;right:4px;background:#1E5AA8;color:#fff;font-size:12px;font-weight:800;padding:1px 7px;border-radius:99px;box-shadow:0 1px 4px rgba(0,0,0,.4)}' +
     '.mh-alb-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px;font-weight:800}' +
@@ -163,15 +166,15 @@
     var h = '<div class="mh-alb-h"><span>내 트럼프 카드</span><small>' + c + ' / ' + TOTAL + '종</small></div>' +
       '<div class="mh-alb-bar"><i style="width:' + Math.round(c / TOTAL * 100) + '%"></i></div><div class="mh-alb">';
     for (var i = 1; i <= TOTAL; i++) {
-      var id = 'M' + i, n = owned(book, id);
-      h += '<div class="mh-slot ' + (n ? '' : 'no') + '" data-id="' + id + '"><img alt="' + (n ? label(id) + ' 카드' : '아직 없는 카드') + '" loading="lazy" src="' + esc(src(id)) + '">' +
+      var id = 'M' + i, n = owned(book, id), ev = ever(book, id);
+      h += '<div class="mh-slot ' + (n ? '' : ev ? 'no seen' : 'no') + '" data-id="' + id + '"><img alt="' + (n ? label(id) + ' 카드' : ev ? label(id) + ' 카드(도감)' : '아직 없는 카드') + '" loading="lazy" src="' + esc(src(id)) + '">' +
         (n > 1 ? '<span class="c">×' + n + '</span>' : '') + '' + '</div>';
     }
-    h += '</div>' + (c === TOTAL ? '<div class="mh-done">🎉 13장 컴플리트!</div>' : '<p style="font-size:13px;opacity:.75;margin:10px 0 0">미션을 하거나 쿠지에서 꽝이 나오면 카드가 한 장씩 늘어나요.</p>');
+    h += '</div>' + (c === TOTAL ? '<div class="mh-done">🎉 13장 컴플리트!</div>' : '<p style="font-size:13px;opacity:.75;margin:10px 0 0">진한 카드는 지금 가진 카드, 흐린 카드는 도감에만 있어요. 숫자는 지금 가진 장수예요.</p>');
     el.innerHTML = h;
     el.onclick = function (e) {
       var slot = e.target.closest && e.target.closest('.mh-slot'); if (!slot) return;
-      var id = slot.getAttribute('data-id'); if (!owned(book, id)) return;
+      var id = slot.getAttribute('data-id'); if (!ever(book, id)) return;
       if (onTap) onTap(id); else view(id);
     };
   }
@@ -228,5 +231,5 @@
     draw(); document.body.appendChild(ov);
   }
 
-  window.MH = { pick: pick, init: function (o) { if (o && o.base) CFG.base = o.base; }, reveal: reveal, album: album, view: view, src: src, label: label, kinds: kinds, total: TOTAL, preload: function () { var a = []; for (var i = 1; i <= TOTAL; i++) a.push('M' + i); preload(a); } };
+  window.MH = { held: owned, pick: pick, init: function (o) { if (o && o.base) CFG.base = o.base; }, reveal: reveal, album: album, view: view, src: src, label: label, kinds: kinds, total: TOTAL, preload: function () { var a = []; for (var i = 1; i <= TOTAL; i++) a.push('M' + i); preload(a); } };
 })();
