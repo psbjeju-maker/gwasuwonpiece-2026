@@ -11,13 +11,29 @@
 </head>
 <body>
 
-<div class="net" id="netBadge" role="status">오프라인 — 기록은 이 폰에 저장돼요</div>
+<div class="net" id="netBadge" role="status">오프라인 — 연결되면 다시 시도해 주세요</div>
 <button class="soundtoggle" id="soundToggle" type="button" aria-label="소리 켜기/끄기" aria-pressed="true">🔊</button>
 
 <div class="app">
 
-  <!-- ══ 1. 인트로 / 등록 ══ -->
-  <section class="screen on" id="scIntro">
+  <!-- 참가코드: 로그인한 뒤 내비가 있는 모든 화면 위에 계속 보인다(스태프 조회용) -->
+  <div class="codebar" id="codeBar" hidden>
+    <span class="cb-lbl">참가코드</span>
+    <b class="cb-code" id="codeBarVal">------</b>
+    <span class="cb-nick" id="codeBarNick"></span>
+  </div>
+
+  <!-- ══ 0. 서버 확인 중 ══ -->
+  <section class="screen on" id="scBoot">
+    <div class="bootbox">
+      <img class="boot-ic" src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
+      <p class="boot-msg" id="bootMsg">항해일지를 불러오는 중…</p>
+      <button class="btn primary" id="btnBootRetry" type="button" hidden>다시 시도</button>
+    </div>
+  </section>
+
+  <!-- ══ 1. 인트로 / 등록 / 복구 ══ -->
+  <section class="screen" id="scIntro">
 
     <!-- 첫 만남 — 항해 기록관 전신 + 대사 -->
     <div class="cine" id="cine">
@@ -46,14 +62,15 @@
       <div class="card rules">
         <h2 class="card-title">이렇게 진행돼요</h2>
         <ol>
-          <li>보물찾기 화면을 열면 <b>나침반</b>이 다음 단서 방향을 가리킵니다.</li>
-          <li>화살표를 따라가 도착하면 퀴즈가 뜹니다.</li>
-          <li>퀴즈를 맞히면 <b>단서 한 글자</b>를 얻습니다.</li>
-          <li>글자를 모아 조합하면 마지막 답이 나오고, <b>황금 귤</b>이 열립니다.</li>
+          <li>미션을 하면 <b class="coinname">귤코인</b>을 받아요.</li>
+          <li>코인을 모아 <b>디지털 쿠지</b>에 도전해요. 결과는 바로 화면에 나와요.</li>
+          <li>기본 결과는 <b>직접 만든 트럼프 카드</b>, 운이 좋으면 <b>특별 상품(피규어)</b>이 나와요.</li>
+          <li>나침반을 따라 <b>단서</b>를 풀고, 캡슐 코드를 입력하면 <b>보물</b>을 받을 수 있어요.</li>
+          <li>상품은 화면의 <b>수령 코드</b>를 스태프에게 보여주고 받아요.</li>
         </ol>
       </div>
 
-      <div class="card logbook">
+      <div class="card logbook" id="registerBox">
         <div class="field">
           <label for="inNick">닉네임</label>
           <input id="inNick" type="text" placeholder="게임에서 쓸 이름" autocomplete="nickname" maxlength="12">
@@ -63,12 +80,53 @@
           <input id="inPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
         </div>
         <p class="privacy">
-          전화번호는 <b>보상 지급 확인 목적으로만</b> 사용하며,
+          전화번호는 <b>참가 확인과 상품 수령 확인 목적으로만</b> 사용하며,
           행사 종료 후 7일 이내에 삭제합니다.
         </p>
+        <p class="formerr" id="joinErr" role="alert" hidden></p>
         <button class="btn primary" id="btnJoin" type="button">항해일지에 기록하기</button>
-        <button class="btn ghost" id="btnRestore" type="button">이미 참가했어요 (전화번호로 이어하기)</button>
+        <button class="btn ghost" id="btnShowRecover" type="button">이미 참가했어요 (복구 코드로 이어하기)</button>
       </div>
+
+      <div class="card logbook" id="recoverBox" hidden>
+        <h2 class="card-title">이어서 하기</h2>
+        <p class="privacy">처음 등록할 때 보여 드린 <b>8자리 복구 코드</b>가 필요해요. 전화번호만으로는 열 수 없어요.</p>
+        <div class="field">
+          <label for="inRecPhone">전화번호</label>
+          <input id="inRecPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
+        </div>
+        <div class="field">
+          <label for="inRecCode">복구 코드 (8자리)</label>
+          <input id="inRecCode" type="text" placeholder="예) AB12CD34" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8">
+        </div>
+        <p class="formerr" id="recErr" role="alert" hidden></p>
+        <button class="btn primary" id="btnRecover" type="button">이어서 하기</button>
+        <button class="btn ghost" id="btnHideRecover" type="button">처음 등록하기</button>
+        <p class="privacy" style="margin-top:12px">복구 코드를 잊었거나 다섯 번 틀렸다면 현장 스태프에게 문의해 주세요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 1-A. 등록 직후: 참가코드 · 복구 코드 저장 ══ -->
+  <section class="screen" id="scCode">
+    <div class="npcrow">
+      <img class="npc-img" src="assets/characters/greeting.png" alt="항해 기록관">
+      <div class="bubble">
+        <div class="nametag">항해 기록관</div>
+        <p id="codeLine">항해일지에 기록했어. 아래 두 코드는 꼭 저장해 둬!</p>
+      </div>
+    </div>
+
+    <div class="card codecard">
+      <p class="cc-lbl">참가코드 <small>스태프에게 보여주는 번호</small></p>
+      <div class="cc-big" id="ccCode">------</div>
+      <div class="cc-sep"></div>
+      <p class="cc-lbl">복구 코드 <small>지금 한 번만 보여요</small></p>
+      <div class="cc-big cc-rec" id="ccRec">--------</div>
+      <p class="cc-why">폰을 바꾸거나 브라우저 기록이 지워졌을 때 <b>전화번호 + 복구 코드</b>로 이어서 할 수 있어요. 캡처하거나 메모해 두세요.</p>
+      <button class="btn ghost" id="btnCopyRec" type="button">복구 코드 복사</button>
+      <label class="cc-check"><input type="checkbox" id="ccAck"><span>복구 코드를 저장했어요</span></label>
+      <button class="btn primary" id="btnCodeOk" type="button" disabled>모험 시작하기</button>
     </div>
   </section>
 
@@ -85,15 +143,20 @@
     <div class="card pass-card">
       <h1 class="pass-title">항해 패스가 필요합니다</h1>
       <p class="pass-sub" id="passSub">—</p>
+      <div class="pass-code">
+        <span>내 참가코드</span>
+        <b id="passCode">------</b>
+      </div>
       <ol class="pass-steps">
         <li><b id="passDesk">매표소</b>에서 항해 패스를 구입합니다.</li>
-        <li>스태프가 보여주는 <b>패스 QR</b>을 이 폰으로 찍습니다.</li>
-        <li>바로 항해가 시작됩니다.</li>
+        <li>위 <b>참가코드</b>를 스태프에게 보여줍니다.</li>
+        <li>스태프가 패스를 등록하면 바로 항해가 시작됩니다.</li>
       </ol>
-      <p class="pass-what">패스가 있어야 미션·보물찾기·투표를 하고, <b>경품 응모권</b>을 받을 수 있습니다.</p>
+      <p class="pass-what">패스가 있어야 미션·보물찾기·투표를 하고, 코인으로 <b>디지털 쿠지</b>를 할 수 있어요.</p>
     </div>
 
-    <button class="btn ghost" id="btnPassAgain" type="button">이미 QR을 찍었어요 (다시 확인)</button>
+    <p class="formerr" id="passErr" role="alert" hidden></p>
+    <button class="btn primary" id="btnPassAgain" type="button">패스 등록했어요 (다시 확인)</button>
   </section>
 
   <!-- ══ 2. 홈 ══ -->
@@ -102,9 +165,9 @@
     <header class="topbar">
       <div class="logo" id="hudCrest" aria-label="과수원피스">과수원<span>피스</span></div>
       <span class="sound-slot" id="homeSoundSlot"></span>
-      <button class="ticketpill" id="btnTopTickets" type="button">
-        <img src="assets/icons/ticket.png" alt="" aria-hidden="true">
-        내 티켓 <b id="topTickets">0</b>장
+      <button class="ticketpill" id="btnTopCoins" type="button">
+        <img src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
+        <span class="coinname">귤코인</span> <b id="topCoins">0</b>
         <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
       </button>
     </header>
@@ -121,15 +184,15 @@
     </div>
 
     <!-- 진행 요약 -->
-    <button class="stats" id="statsStrip" type="button" aria-label="진행상황 보기">
+    <button class="stats" id="statsStrip" type="button" aria-label="미션 보기">
       <div class="stat">
-        <span class="stat-lbl">완료한 미션</span>
+        <span class="stat-lbl">해 본 미션</span>
         <span class="stat-num"><b id="mDoneNum">0</b><small> / <span id="mAllNum">0</span></small></span>
         <div class="dots" id="mDots" aria-hidden="true"></div>
       </div>
       <div class="stat stat-t">
-        <span class="stat-lbl">내 티켓</span>
-        <span class="stat-num"><b id="ticketNum">0</b><small>장</small></span>
+        <span class="stat-lbl coinname">귤코인</span>
+        <span class="stat-num"><b id="coinNum">0</b><small>개</small></span>
       </div>
     </button>
 
@@ -161,12 +224,12 @@
       </button>
     </div>
 
-    <!-- 내 보상 요약 -->
-    <button class="rewardsum" id="goRewards" type="button">
-      <img src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
+    <!-- 쿠지 바로가기 -->
+    <button class="rewardsum" id="goKuji" type="button">
+      <img src="assets/icons/ticket.png" alt="" aria-hidden="true">
       <span class="rs-body">
-        <span class="act-title">나의 보상</span>
-        <span class="act-sub" id="rewardSub">모은 티켓을 확인해 보세요</span>
+        <span class="act-title">디지털 쿠지</span>
+        <span class="act-sub" id="kujiSub">코인으로 도전해 보세요</span>
       </span>
     </button>
 
@@ -180,7 +243,7 @@
     <div class="mapbox" id="homeMapBox"></div>
   </section>
 
-  <!-- ══ 2-1. 진행상황: 미션 ══ -->
+  <!-- ══ 2-1. 미션 ══ -->
   <section class="screen" id="scMissions">
     <div class="tabbar" id="tabbar1" role="tablist">
       <span class="tabind" id="tabInd1"></span>
@@ -189,7 +252,7 @@
     </div>
     <div class="progress">
       <div class="row">
-        <span class="lbl">완료한 미션</span>
+        <span class="lbl">해 본 미션</span>
         <span class="cnt"><b id="mNow">0</b> / <span id="mAll">0</span></span>
       </div>
       <div class="bar"><i id="mBar"></i></div>
@@ -198,6 +261,7 @@
       <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
       <div class="bubble"><p id="missionTip">마음에 드는 미션부터 골라 봐. 완료 확인은 현장 스태프에게 부탁해 줘.</p></div>
     </div>
+    <p class="formerr" id="missionErr" role="alert" hidden></p>
     <div class="mlist" id="mlist"></div>
   </section>
 
@@ -208,74 +272,94 @@
       <button class="tabbtn" id="tabMission2" type="button" role="tab">미션</button>
       <button class="tabbtn on" id="tabTreasure2" type="button" role="tab">보물찾기</button>
     </div>
-    <div class="progress">
-      <div class="row">
-        <span class="lbl">모은 단서</span>
-        <span class="cnt"><b id="pgNow">0</b> / <span id="pgAll">0</span></span>
-      </div>
-      <div class="bar"><i id="pgBar"></i></div>
+
+    <div class="card" id="treasureOff" hidden>
+      <h2 class="card-title">보물찾기는 아직 열리지 않았어요</h2>
+      <p class="privacy" style="margin:6px 0 0">시작 시간은 현장 공지를 확인해 주세요.</p>
     </div>
 
-    <div class="card compass-gate" id="compassGate">
-      <div class="npcrow npcrow-sm">
-        <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
-        <div class="bubble"><p>주변 단서를 찾으려면 현재 위치가 필요해.</p></div>
+    <div id="treasureBody">
+      <div class="progress">
+        <div class="row">
+          <span class="lbl">모은 단서</span>
+          <span class="cnt"><b id="pgNow">0</b> / <span id="pgAll">0</span></span>
+        </div>
+        <div class="bar"><i id="pgBar"></i></div>
+        <p class="pg-note" id="pgNote"></p>
       </div>
-      <p class="gate-why">위치와 방향 센서는 <b>다음 단서까지의 거리와 방향</b>을 보여 줄 때만 씁니다. 위치 기록은 서버에 저장하지 않아요.</p>
-      <p class="gate-err" id="gateErr" role="alert" hidden></p>
-      <button class="btn primary" id="btnCompassStart" type="button">위치 허용하기</button>
-    </div>
 
-    <div class="compass-wrap" id="compassWrap" style="display:none">
-      <div class="compass-dial nofix" id="compassDial">
-        <span class="compass-fwd">정면</span>
-        <svg viewBox="0 0 300 300" aria-hidden="true">
-          <circle cx="150" cy="150" r="140" fill="var(--surface)" stroke="var(--gold)" stroke-width="1.5"/>
-          <circle cx="150" cy="150" r="112" fill="none" stroke="var(--line)" stroke-width="1"/>
-          <g stroke="var(--muted)" stroke-width="2" stroke-linecap="round">
-            <line x1="150" y1="16" x2="150" y2="30" transform="rotate(0 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="24" transform="rotate(30 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="24" transform="rotate(60 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="30" transform="rotate(90 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="24" transform="rotate(120 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="24" transform="rotate(150 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="30" transform="rotate(180 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="24" transform="rotate(210 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="24" transform="rotate(240 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="30" transform="rotate(270 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="24" transform="rotate(300 150 150)"/>
-            <line x1="150" y1="16" x2="150" y2="24" transform="rotate(330 150 150)"/>
-          </g>
-          <g id="compassNeedle">
-            <path d="M150,52 L168,158 L150,142 L132,158 Z" fill="var(--teal)"/>
-            <circle cx="150" cy="150" r="9" fill="var(--navy)"/>
-          </g>
-        </svg>
+      <div class="card compass-gate" id="compassGate">
+        <div class="npcrow npcrow-sm">
+          <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
+          <div class="bubble"><p>주변 단서를 찾으려면 현재 위치가 필요해.</p></div>
+        </div>
+        <p class="gate-why">위치와 방향 센서는 <b>다음 단서까지의 거리와 방향</b>을 보여 줄 때만 씁니다. 위치 기록은 서버에 저장하지 않아요.</p>
+        <p class="gate-err" id="gateErr" role="alert" hidden></p>
+        <button class="btn primary" id="btnCompassStart" type="button">위치 허용하기</button>
       </div>
-      <div class="compass-dist">
-        <span class="num" id="compassDist">—</span>
-        <span class="cap">다음 단서까지</span>
+
+      <div class="compass-wrap" id="compassWrap" style="display:none">
+        <div class="compass-dial nofix" id="compassDial">
+          <span class="compass-fwd">정면</span>
+          <svg viewBox="0 0 300 300" aria-hidden="true">
+            <circle cx="150" cy="150" r="140" fill="var(--surface)" stroke="var(--gold)" stroke-width="1.5"/>
+            <circle cx="150" cy="150" r="112" fill="none" stroke="var(--line)" stroke-width="1"/>
+            <g stroke="var(--muted)" stroke-width="2" stroke-linecap="round">
+              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(0 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(30 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(60 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(90 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(120 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(150 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(180 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(210 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(240 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(270 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(300 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(330 150 150)"/>
+            </g>
+            <g id="compassNeedle">
+              <path d="M150,52 L168,158 L150,142 L132,158 Z" fill="var(--teal)"/>
+              <circle cx="150" cy="150" r="9" fill="var(--navy)"/>
+            </g>
+          </svg>
+        </div>
+        <div class="compass-dist">
+          <span class="num" id="compassDist">—</span>
+          <span class="cap">다음 단서까지</span>
+        </div>
+        <div class="npcrow npcrow-sm" id="treasureTip">
+          <img class="npc-img" id="treasureTipImg" src="assets/characters/thinking.png" alt="항해 기록관">
+          <div class="bubble"><p id="compassStatus">아직 위치를 확인하고 있어. 잠시 뒤 다시 확인해 줘.</p></div>
+        </div>
       </div>
-      <div class="npcrow npcrow-sm" id="treasureTip">
-        <img class="npc-img" id="treasureTipImg" src="assets/characters/thinking.png" alt="항해 기록관">
-        <div class="bubble"><p id="compassStatus">아직 위치를 확인하고 있어. 잠시 뒤 다시 확인해 줘.</p></div>
+
+      <div class="card pouch">
+        <div class="pouch-head">
+          <img src="assets/icons/clue.png" alt="" aria-hidden="true">
+          <h2 class="card-title">단서 기록</h2>
+        </div>
+        <div class="chips" id="pouch"></div>
+      </div>
+
+      <div class="card zonecard" id="zoneCard" hidden>
+        <h2 class="card-title">구역별 보물 현황</h2>
+        <div id="zoneList"></div>
+      </div>
+
+      <div class="card claimcard">
+        <h2 class="card-title">보물 캡슐 코드</h2>
+        <p class="privacy" style="margin:4px 0 12px">보물을 찾으면 캡슐 안의 코드를 입력하세요. 수령 코드가 나오면 스태프에게 보여주세요.</p>
+        <input id="tcInput" type="text" placeholder="캡슐 코드" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" aria-label="캡슐 코드">
+        <p class="formerr" id="tcMsg" role="status" hidden></p>
+        <button class="btn primary" id="btnClaimTreasure" type="button">코드 확인</button>
+        <div class="claimlist" id="claimList"></div>
+      </div>
+
+      <div class="stack">
+        <button class="btn ghost" id="btnHowScan" type="button">나침반은 어떻게 쓰나요?</button>
       </div>
     </div>
-
-    <div class="card pouch">
-      <div class="pouch-head">
-        <img src="assets/icons/clue.png" alt="" aria-hidden="true">
-        <h2 class="card-title">단서 주머니</h2>
-      </div>
-      <div class="chips" id="pouch"></div>
-    </div>
-
-    <div class="stack">
-      <button class="btn primary" id="btnFinal" type="button">모은 글자로 답 맞히기</button>
-      <button class="btn ghost" id="btnHowScan" type="button">나침반은 어떻게 쓰나요?</button>
-    </div>
-
-    <p class="footnote">찾은 단서 <b id="foundCnt">0</b>개 · 참가자 <span id="whoAmI"></span></p>
   </section>
 
   <!-- ══ 2-2. 실시간 투표 ══ -->
@@ -288,6 +372,7 @@
       </div>
     </div>
     <div id="voteBody"></div>
+    <p class="formerr" id="voteErr" role="alert" hidden></p>
     <button class="btn ghost" id="btnVoteBack" type="button">홈으로</button>
   </section>
 
@@ -305,12 +390,11 @@
     <button class="btn ghost" id="btnQuizBack" type="button">나중에 풀기</button>
   </section>
 
-  <!-- ══ 4. 정답 연출 ══ -->
+  <!-- ══ 4. 결과 연출 (단서 / 쿠지 / 수령 코드) ══ -->
   <section class="screen" id="scResult">
     <div class="result">
       <div class="burst" id="rsBurst"></div>
       <div class="big" id="rsBig"></div>
-      <!-- GPS 단서 획득 전용 — 미션완료(위 .big)와 자리를 공유, JS가 둘 중 하나만 보여준다 -->
       <div class="tgr" id="tgrBox">
         <div class="tgr-fruit" id="tgrFruit">
           <div class="tgr-crackline"></div>
@@ -328,153 +412,87 @@
       </div>
       <h2 id="rsTitle"></h2>
       <p id="rsDesc"></p>
+
+      <div class="coupon pickup" id="rsPickup" hidden>
+        <div class="stamp" id="rsStamp">수령 완료</div>
+        <div class="kind" id="rsKind">PICKUP CODE</div>
+        <h2 id="rsItem"></h2>
+        <div class="who" id="rsWho"></div>
+        <div class="line"></div>
+        <div class="no" id="rsCode"></div>
+        <div class="qrbox"><img id="rsQr" alt="수령 코드 QR"></div>
+        <p class="note" id="rsNote">스태프에게 이 화면과 참가코드를 보여주세요.</p>
+      </div>
+
       <div class="npcrow npcrow-sm rs-npc" id="rsNpc" hidden>
         <img class="npc-img" id="rsNpcImg" src="assets/characters/surprised.png" alt="항해 기록관">
         <div class="bubble"><p id="rsNpcText"></p></div>
       </div>
-      <button class="btn primary" id="btnResultOk" type="button">나침반으로 돌아가기</button>
+      <button class="btn primary" id="btnResultOk" type="button">확인</button>
     </div>
   </section>
 
-  <!-- ══ 5. 최종 도전 ══ -->
-  <section class="screen" id="scFinal">
-    <div class="pagehead">
-      <img src="assets/icons/treasure_chest.png" alt="" aria-hidden="true">
-      <div>
-        <h1>마지막 문제</h1>
-        <p id="fnQ"></p>
-      </div>
-    </div>
+  <!-- ══ 5. 디지털 쿠지 ══ -->
+  <section class="screen" id="scKuji">
+    <h1 class="pagetitle">디지털 쿠지</h1>
+    <p class="pagesub" id="kujiSubTitle">코인을 내고 한 번 뽑아요. 결과는 바로 나와요.</p>
 
-    <div class="card final-hint">
-      <div class="chips" id="fnChips"></div>
-      <p id="fnCount"></p>
-    </div>
-
-    <div class="card qcard">
-      <input id="fnInput" type="text" placeholder="조합한 답을 입력하세요" autocomplete="off"
-             autocapitalize="off" spellcheck="false" enterkeyhint="done" aria-label="최종 답">
-      <button class="btn primary" id="btnFinalAnswer" type="button">제출</button>
-      <p class="wrongmsg" id="fnWrong" role="status"></p>
-    </div>
-
-    <div class="npcrow npcrow-sm" id="fnNpc" hidden>
-      <img class="npc-img" src="assets/characters/disappointed.png" alt="항해 기록관">
-      <div class="bubble"><p>조금 아쉬워! 모은 단서를 다시 살펴보자.</p></div>
-    </div>
-
-    <button class="btn ghost" id="btnFinalBack" type="button">더 모으러 가기</button>
-  </section>
-
-  <!-- ══ 6. 황금 귤 개봉 ══ -->
-  <section class="screen" id="scOpen">
-    <div class="opening">
-      <div class="tangerine" id="tangerine" role="button" tabindex="0" aria-label="황금 귤 열기">
-        <div class="glow"></div>
-        <div class="half top"></div>
-        <div class="half bot"></div>
-      </div>
-      <p class="tapme" id="tapMe">화면을 눌러 열어보세요</p>
-    </div>
-  </section>
-
-  <!-- ══ 7. 골드 티켓 ══ -->
-  <section class="screen" id="scCoupon">
-    <p class="cp-whisper" id="cpWhisper"></p>
-    <h1 class="cp-title">황금 귤을 찾았다!</h1>
-    <p class="cp-answer" id="cpAnswer"></p>
-
-    <div class="card trophy">
-      <img class="trophy-ic" src="assets/icons/trophy.png" alt="">
-      <div class="trophy-body">
-        <div class="trophy-title" id="trophyTitle">황금귤 획득 트로피</div>
-        <div class="trophy-desc" id="trophyDesc">황금 귤을 끝까지 찾아낸 걸 증명하는 기념 배지</div>
-      </div>
-    </div>
-
-    <div class="coupon" id="couponCard">
-      <div class="stamp">수령 완료</div>
-      <div class="kind" id="cpKind">GOLD TICKET</div>
-      <h2 id="cpTitle">골드 티켓</h2>
-      <div class="who" id="cpWho"></div>
-      <div class="line"></div>
-      <div class="no" id="cpNo"></div>
-      <div class="at" id="cpAt"></div>
-      <p class="note" id="cpNote"></p>
-    </div>
-
-    <button class="btn ghost" id="btnCouponBack" type="button">나침반 다시 보기</button>
-    <p class="footnote">이 화면을 스태프에게 보여주세요. 1인 1회만 지급됩니다.</p>
-  </section>
-
-  <!-- ══ 8. 내 보상 ══ -->
-  <section class="screen" id="scRewards">
-    <h1 class="pagetitle">내 보상</h1>
-
-    <div class="card rewardcard">
-      <div class="rc-top">
-        <img class="rc-icon" src="assets/icons/ticket.png" alt="" aria-hidden="true">
+    <div class="card coincard">
+      <div class="cc-row">
+        <img src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
         <div>
-          <h2 class="card-title">응모티켓</h2>
-          <p>미션을 완료할수록 응모티켓을 더 받아요 (그날 추첨용)</p>
+          <p class="cc-lbl coinname">귤코인</p>
+          <div class="coin-big"><b id="kjCoins">0</b><small>개</small></div>
         </div>
       </div>
-      <div class="bar"><i id="rwMissionBar"></i></div>
-      <p class="rc-status" id="rwMissionStatus">미션 0 / 0 완료</p>
-      <div class="tierladder" id="rwTierLadder"></div>
+      <p class="coin-cost" id="kjCost">1회 — 코인</p>
+      <p class="formerr" id="kjErr" role="alert" hidden></p>
+      <button class="btn primary" id="btnPlayKuji" type="button">쿠지 뽑기</button>
+      <button class="btn ghost" id="btnPlayPaid" type="button" hidden>유료 이용권으로 뽑기</button>
+      <button class="btn ghost" id="btnKujiToMission" type="button" hidden>코인 모으러 가기</button>
     </div>
 
-    <div class="card rewardcard">
-      <div class="rc-top">
-        <img class="rc-icon" src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
-        <div>
-          <h2 class="card-title">골드 티켓</h2>
-          <p>보물찾기 완주 시 해적왕 트로피 + 다음 행사 응모권</p>
-        </div>
-      </div>
-      <p class="rc-status" id="rwTreasureStatus">아직 진행중이에요</p>
-      <button class="btn primary" id="btnRewardCoupon" type="button" style="display:none">골드 티켓 보기</button>
-      <button class="btn ghost" id="btnRewardGo" type="button">보물찾기 하러 가기</button>
-    </div>
-
-    <div class="card rewardcard" id="rwTrophyCard">
-      <div class="rc-top">
-        <img class="rc-icon" id="rwTrophyIcon" src="assets/icons/trophy.png" alt="" aria-hidden="true">
-        <div>
-          <h2 class="card-title" id="rwTrophyTitle">황금귤 획득 트로피</h2>
-          <p id="rwTrophyStatus">보물찾기를 완주하면 열려요</p>
-        </div>
-      </div>
+    <div class="card kujiinfo">
+      <h2 class="card-title">이렇게 나와요</h2>
+      <ul class="plainlist">
+        <li>기본 결과는 <b>직접 만든 트럼프 카드</b>예요.</li>
+        <li>운이 좋으면 <b>특별 상품(피규어)</b>이 나와요.</li>
+        <li>결과 화면의 <b>수령 코드</b>를 스태프에게 보여주면 상품을 받을 수 있어요.</li>
+        <li>수령 코드는 <b>내 카드</b> 화면에서 다시 볼 수 있어요.</li>
+      </ul>
+      <p class="privacy" id="kjPaidNote" style="margin:10px 0 0" hidden>유료 쿠지는 1회 2,000원이에요. 계좌이체 후 스태프에게 참가코드를 보여주면 이용권을 넣어 드려요.</p>
     </div>
   </section>
 
-  <!-- ══ 9. 반응속도게임 (미션) ══ -->
+  <!-- ══ 6. 내 카드 ══ -->
+  <section class="screen" id="scCards">
+    <h1 class="pagetitle">내 카드</h1>
+    <p class="pagesub">쿠지로 받은 결과예요. 수령 코드를 스태프에게 보여주면 받을 수 있어요.</p>
+    <p class="formerr" id="cardsErr" role="alert" hidden></p>
+
+    <h2 class="secttl" style="margin-top:8px">트럼프 카드</h2>
+    <div class="cardbook" id="cardBook"></div>
+
+    <h2 class="secttl">특별 상품</h2>
+    <div class="cardbook" id="specialList"></div>
+
+    <h2 class="secttl">쿠지 기록</h2>
+    <div class="playlist" id="playList"></div>
+
+    <button class="btn ghost" id="btnCardsRefresh" type="button">새로고침</button>
+  </section>
+
+  <!-- ══ 7. 반응속도게임 (미션) ══ -->
   <section class="screen" id="scReaction">
     <h1 class="pagetitle">반응속도게임</h1>
     <p class="pagesub" id="reactRound">라운드 1 / 3</p>
     <div class="reactpad wait" id="reactPad" role="button" tabindex="0"><span id="reactPadTxt">준비하세요</span></div>
     <div id="reactDoneBox" style="display:none">
       <p class="react-avg" id="reactAvg"></p>
+      <p class="formerr" id="reactErr" role="alert" hidden></p>
       <button class="btn primary" id="btnReactFinish" type="button">미션 완료 처리</button>
     </div>
     <button class="btn ghost" id="btnReactBack" type="button">미션 목록으로</button>
-  </section>
-
-  <!-- ══ 10. 관리자(숨김) ══ -->
-  <section class="screen" id="scAdmin">
-    <h1 class="pagetitle">관리자</h1>
-    <p class="pagesub">이 기기에 저장된 기록만 보입니다 (다른 참가자 폰과 자동 동기화되지 않음)</p>
-
-    <h2 class="secttl">투표 후보 관리</h2>
-    <div id="adminVotes"></div>
-
-    <h2 class="secttl">참가자 (이 기기 기준)</h2>
-    <div id="adminPlayers"></div>
-
-    <div class="stack">
-      <button class="btn ghost" id="btnAdminWipe" type="button">이 기기 데이터 전체 삭제</button>
-      <button class="btn ghost" id="btnAdminBack" type="button">닫기</button>
-    </div>
   </section>
 
 </div>
@@ -484,10 +502,13 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>홈
   </button>
   <button class="navbtn" data-nav="scMissions" type="button">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>진행상황
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>미션·보물
   </button>
-  <button class="navbtn" data-nav="scRewards" type="button">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V21h14v-8.5M12 8.5V21"/><path d="M12 8.5C10 4 6.5 4.5 7.5 7c.6 1.3 2.6 1.5 4.5 1.5M12 8.5c2-4.5 5.5-4 4.5-1.5-.6 1.3-2.6 1.5-4.5 1.5"/></svg>내 보상
+  <button class="navbtn" data-nav="scKuji" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V21h14v-8.5M12 8.5V21"/><path d="M12 8.5C10 4 6.5 4.5 7.5 7c.6 1.3 2.6 1.5 4.5 1.5M12 8.5c2-4.5 5.5-4 4.5-1.5-.6 1.3-2.6 1.5-4.5 1.5"/></svg>쿠지
+  </button>
+  <button class="navbtn" data-nav="scCards" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="11" height="15" rx="2"/><path d="M8 21h9a2 2 0 0 0 2-2V8"/></svg>내 카드
   </button>
 </nav>
 
@@ -519,13 +540,13 @@
 <audio id="bgmOpening" src="audio/opening.mp3" loop preload="none"></audio>
 <audio id="bgmOcean" src="audio/ocean.mp3" loop preload="none"></audio>
 
-<!-- 골드 티켓 상환 확인을 메이커앤하비 매장에서도 하려면 서버 저장이 필요해서 붙였다.
-     로드 실패해도(오프라인 등) store.js가 조용히 로컬 전용으로 넘어간다. -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<!-- 코인·미션·쿠지·단서·수령은 전부 서버가 기록한다(ev-client.js가 Firebase SDK를 스스로 불러온다) -->
 <script src="data.js"></script>
 <script src="assets.js"></script>
 <script src="store.js"></script>
+<script src="qr.js"></script>
+<script src="ev-client.js"></script>
+<script src="mhcards.js"></script>
 <script src="catch.js"></script>
 <script src="app.js"></script>
 </body>

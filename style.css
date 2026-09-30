@@ -54,7 +54,7 @@ b{font-weight:700;}
 .app{max-width:480px;margin:0 auto;position:relative;}
 .screen{display:none;padding:14px var(--pad-x) calc(var(--nav-h) + 76px + var(--safe-b));}
 .screen.on{display:block;animation:fade .22s ease-out;}
-#scIntro,#scQuiz,#scResult,#scFinal,#scOpen,#scCoupon,#scVote,#scReaction,#scAdmin,#scPass{padding-bottom:calc(76px + var(--safe-b));}
+#scBoot,#scCode,#scIntro,#scQuiz,#scResult,#scVote,#scReaction,#scPass{padding-bottom:calc(76px + var(--safe-b));}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes slideInRight{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 @keyframes slideInLeft{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
@@ -347,36 +347,7 @@ body > .soundtoggle{display:none;}
 .result .rs-npc p{color:var(--ink);margin:0;}
 .result .btn{margin-top:20px;}
 
-/* ══════════ 최종 ══════════ */
-.final-hint{margin-bottom:14px;}
-.final-hint p{font-size:14px;color:var(--muted);margin-top:10px;}
-
-/* ══════════ 황금 귤 개봉 ══════════ */
-.opening{overflow:hidden;min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;}
-.tangerine{width:220px;height:220px;position:relative;cursor:pointer;z-index:1;}
-.tangerine .half{position:absolute;left:0;width:220px;height:110px;overflow:hidden;
-  background-image:url('assets/icons/golden_tangerine.png');background-repeat:no-repeat;background-size:220px 220px;
-  transition:transform .8s cubic-bezier(.3,.9,.3,1),opacity .8s;}
-.tangerine .half.top{top:0;background-position:0 0;}
-.tangerine .half.bot{bottom:0;background-position:0 -110px;}
-.tangerine.open .half.top{transform:translateY(-110px) rotate(-14deg);opacity:0;}
-.tangerine.open .half.bot{transform:translateY(110px) rotate(14deg);opacity:0;}
-.tangerine .glow{position:absolute;inset:10px;opacity:0;border-radius:50%;
-  background:radial-gradient(circle,#FFF8E2 0%,rgba(226,196,137,.8) 40%,transparent 70%);transition:opacity .4s .3s;}
-.tangerine.open .glow{opacity:1;animation:flare .9s .2s ease-out forwards;}
-@keyframes flare{from{transform:scale(.4)}to{transform:scale(2.6);opacity:0}}
-.tapme{margin-top:24px;font-size:15px;color:var(--muted);font-weight:700;animation:blink 1.8s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
-
-/* ══════════ 골드 티켓 ══════════ */
-.cp-whisper{font-size:14px;color:var(--muted);text-align:center;white-space:pre-line;margin:6px 0 8px;}
-.cp-whisper:empty{display:none;}
-.cp-title{font-size:26px;font-weight:700;text-align:center;margin:10px 0 2px;}
-.cp-answer{font-size:15px;color:var(--muted);text-align:center;margin-bottom:18px;}
-.trophy{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-.trophy-ic{width:72px;height:72px;object-fit:contain;flex:none;}
-.trophy-title{font-size:18px;font-weight:700;}
-.trophy-desc{font-size:14px;color:var(--muted);margin-top:2px;}
+/* ══════════ 수령 코드(쿠폰형) ══════════ */
 .coupon{position:relative;background:linear-gradient(160deg,var(--navy) 0%,var(--navy-deep) 100%);color:#fff;border-radius:22px;
   padding:22px 20px;text-align:center;border:1px solid var(--gold);overflow:hidden;}
 .coupon .kind{font-size:13px;letter-spacing:.18em;color:var(--gold-on-navy);font-weight:700;}
@@ -388,20 +359,8 @@ body > .soundtoggle{display:none;}
 .coupon .note{font-size:14px;color:rgba(255,255,255,.85);margin-top:12px;line-height:1.55;}
 .coupon .stamp{display:none;position:absolute;top:18px;right:-34px;transform:rotate(35deg);background:var(--danger);color:#fff;
   font-size:13px;font-weight:700;padding:4px 40px;}
-.coupon.used .stamp{display:block;}
-#scCoupon .btn{margin-top:18px;}
-
-/* ══════════ 내 보상 ══════════ */
-.rewardcard + .rewardcard{margin-top:14px;}
-.rc-top{display:flex;gap:14px;align-items:center;margin-bottom:12px;}
-.rc-icon{width:64px;height:64px;object-fit:contain;flex:none;}
-.rc-top p{font-size:14px;color:var(--muted);line-height:1.5;margin-top:2px;}
-.rc-status{font-size:15px;font-weight:500;margin:10px 0 0;}
-.rewardcard .btn{margin-top:12px;}
-.tierladder{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
-.tierchip{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted);}
-.tierchip.on{background:var(--gold-soft);color:var(--navy);font-weight:700;box-shadow:0 0 0 1px var(--gold) inset;}
-.rewardcard.locked .rc-icon{filter:grayscale(1);opacity:.45;}
+.coupon.used .stamp,.coupon.void .stamp{display:block;}
+.coupon.used{filter:saturate(.5);}
 
 /* ══════════ 투표 ══════════ */
 .votelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-bottom:18px;}
@@ -507,6 +466,62 @@ body.catch-on{overflow:hidden;}
 .tgr-text{position:relative;z-index:1;text-align:center;font-weight:700;font-size:30px;line-height:44px;color:var(--navy);
   opacity:0;transform:scale(.7);transition:opacity .3s .1s ease, transform .3s .1s cubic-bezier(.2,.9,.3,1.3);}
 .tgr-fruit.unfurl .tgr-text{opacity:1;transform:scale(1);}
+
+
+/* ══════════ 개편(2026-09-30): 참가코드 바 · 부팅 · 코드 저장 · 쿠지 · 카드 ══════════ */
+.codebar{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:10px;padding:8px var(--pad-x);
+  background:var(--navy);color:#fff;font-size:14px;}
+.cb-lbl{color:rgba(255,255,255,.72);}
+.cb-code{font-size:20px;letter-spacing:.14em;color:var(--gold-on-navy);font-variant-numeric:tabular-nums;}
+.cb-nick{margin-left:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:rgba(255,255,255,.85);}
+.bootbox{display:flex;flex-direction:column;align-items:center;gap:14px;padding:90px 0 20px;text-align:center;}
+.boot-ic{width:96px;height:96px;object-fit:contain;animation:bootPulse 1.6s ease-in-out infinite;}
+@keyframes bootPulse{50%{transform:scale(1.06);opacity:.8}}
+.boot-msg{font-size:16px;color:var(--muted);line-height:1.6;}
+.formerr{font-size:15px;color:var(--danger);line-height:1.55;margin:0 0 12px;font-weight:500;}
+.codecard{text-align:center;border-top:3px solid var(--gold);}
+.cc-lbl{font-size:15px;font-weight:700;color:var(--ink);}
+.cc-lbl small{display:block;font-size:13px;font-weight:400;color:var(--muted);}
+.cc-big{font-size:38px;font-weight:700;letter-spacing:.16em;color:var(--navy);margin:6px 0 4px;font-variant-numeric:tabular-nums;}
+.cc-rec{color:var(--teal-deep);font-size:34px;}
+.cc-sep{height:1px;margin:14px 0;background:repeating-linear-gradient(90deg,var(--gold) 0 6px,transparent 6px 12px);}
+.cc-why{font-size:14px;color:var(--muted);line-height:1.6;margin:8px 0 14px;text-align:left;}
+.cc-check{display:flex;align-items:center;gap:10px;min-height:48px;margin:12px 0 6px;font-size:16px;font-weight:700;cursor:pointer;text-align:left;}
+.cc-check input{width:24px;height:24px;accent-color:var(--teal);flex:none;}
+.pass-code{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:12px 16px;
+  border-radius:14px;background:var(--gold-soft);border:1px solid var(--gold);font-size:14px;}
+.pass-code b{font-size:28px;letter-spacing:.16em;color:var(--navy);font-variant-numeric:tabular-nums;}
+.pg-note{font-size:14px;color:var(--muted);margin-top:8px;}
+.coincard{margin-bottom:14px;}
+.cc-row{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.cc-row img{width:64px;height:64px;object-fit:contain;flex:none;}
+.coin-big{display:flex;align-items:baseline;gap:4px;}
+.coin-big b{font-size:40px;color:var(--navy);line-height:1.1;}
+.coin-big small{font-size:16px;color:var(--muted);}
+.coin-cost{font-size:15px;color:var(--teal-deep);font-weight:700;margin-bottom:12px;}
+.coincard .btn{margin-top:10px;}
+.kujiinfo p,.kujiinfo li{font-size:15px;line-height:1.6;}
+.plainlist{margin:10px 0 0;padding-left:20px;font-size:15px;line-height:1.6;}
+.plainlist li + li{margin-top:4px;}
+.cardbook,.playlist{display:flex;flex-direction:column;gap:8px;}
+.cbrow,.playrow,.zrow,.claimrow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);
+  border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;}
+.cbname{font-weight:700;min-width:0;}
+.cbst,.pl-side{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center;flex:none;}
+.st{font-style:normal;font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;}
+.st.pending{background:var(--gold-soft);color:#6E4F14;}
+.st.given{background:var(--teal-soft);color:var(--teal-deep);}
+.st.void{background:var(--surface-2);color:var(--muted);}
+.pl-main{display:flex;flex-direction:column;min-width:0;}
+.pl-main small,.claimrow small{display:block;font-size:13px;color:var(--muted);}
+.playrow .mgo,.claimrow .mgo{margin-top:0;min-height:40px;}
+.zonecard .zrow{margin-top:8px;}
+.claimcard{margin-top:14px;}
+.claimlist{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+.qrbox{display:flex;justify-content:center;margin:12px 0 0;}
+.qrbox img{width:160px;height:160px;background:#fff;padding:8px;border-radius:12px;image-rendering:pixelated;}
+.coupon.pickup{width:100%;margin-top:18px;}
+.coinname{}
 
 /* ══════════ 모션 줄이기 ══════════ */
 @media (prefers-reduced-motion:reduce){

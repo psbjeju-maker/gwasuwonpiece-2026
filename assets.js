@@ -86,7 +86,9 @@ window.ASSETS = (function () {
     wrongFinal:      { expr: "disappointed", text: "조금 아쉬워! 모은 단서를 다시 살펴보자.",                btn: "다시 도전" },
     needPass:        { expr: "neutral",      text: "이 모험은 패스가 필요해. 안내를 확인해 줘.",             btn: "패스 안내" },
     voteSaved:       { expr: "success",      text: "네 선택을 기록했어. 참여해 줘서 고마워!",                btn: "확인" },
-    finalDone:       { expr: "success",      text: "황금 귤을 찾아냈어! 오늘의 모험, 끝까지 멋졌어.",         btn: "내 보상 보기" },
+    finalDone:       { expr: "success",      text: "보물을 찾아냈어! 수령 코드를 스태프에게 보여주면 돼.",     btn: "수령 코드 보기" },
+    coinGot:         { expr: "success",      text: "코인을 받았어! 쿠지에서 써 봐.",                        btn: "계속하기" },
+    kujiOpen:        { expr: "greeting",     text: "코인이 모이면 디지털 쿠지에 도전해 봐. 결과는 바로 보여줄게.", btn: "쿠지 하기" },
     saveFailed:      { expr: "thinking",     text: "기록을 저장하지 못했어. 연결을 확인하고 다시 시도해 줘.",  btn: "다시 시도" }
   };
 

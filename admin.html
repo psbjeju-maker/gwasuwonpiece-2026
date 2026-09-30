@@ -86,9 +86,10 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 
 <div class="gate" id="gate">
   <h1 style="font-size:19px;margin-bottom:6px">운영자 화면</h1>
-  <p style="color:var(--ink-3);font-size:13px;margin-bottom:18px">PIN을 입력하세요</p>
-  <input type="text" id="pin" inputmode="numeric" maxlength="4" placeholder="····">
+  <p style="color:var(--ink-3);font-size:13px;margin-bottom:18px">관리자 PIN을 입력하세요 (서버에서 확인합니다)</p>
+  <input type="password" id="pin" inputmode="numeric" maxlength="12" placeholder="····" autocomplete="off">
   <button class="b pri" style="width:100%;margin-top:12px" id="btnPin">열기</button>
+  <p id="pinMsg" style="color:var(--alert);font-size:13px;margin-top:10px;min-height:18px"></p>
 </div>
 
 <div class="wrap hidden" id="main">
@@ -102,11 +103,9 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 </header>
 
 <nav>
-  <button class="on" data-tab="t1">진행 현황</button>
-  <button data-tab="t10">항해 패스</button>
-  <button data-tab="t8">티켓 상환</button>
-  <button data-tab="t2">최종 정답</button>
-  <button data-tab="t3">퀴즈</button>
+  <button class="on" data-tab="t1">현장 운영</button>
+  <button data-tab="t2">기본 설정</button>
+  <button data-tab="t3">퀴즈 문구</button>
   <button data-tab="t4">GPS 지점</button>
   <button data-tab="t6">투표</button>
   <button data-tab="t7">퀘스트 대사</button>
@@ -114,137 +113,55 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   <button data-tab="t5">데이터</button>
 </nav>
 
-<!-- ═══ 진행 현황 ═══ -->
+<!-- ═══ 현장 운영 (서버) ═══ -->
 <section class="tab on" id="t1">
-  <div class="stats" id="stats"></div>
-  <div class="row" style="margin-bottom:12px">
-    <button class="b sm" id="btnReload">새로고침</button>
-    <span style="color:var(--ink-3);font-size:12.5px" id="syncNote"></span>
+  <div class="note warn">
+    <b>2026-09-30 개편으로 참가자 목록·항해 패스·미션 체크·티켓 상환은 이 화면에서 없어졌습니다.</b>
+    코인·미션·쿠지·보물은 전부 서버가 기록하므로, 현장 처리는 쿠지 시스템의
+    <b>행사 스태프 콘솔</b>(<code>쿠지시스템/web/event/</code>, 행사 <code>gwasu</code>)에서 합니다.
+    <ul style="margin:8px 0 0 18px;padding:0">
+      <li>참가자 조회 · 항해 패스 부여 — 참가자 앱에 표시된 <b>6자리 참가코드</b>로 조회</li>
+      <li>스태프 확인형 미션 지급 · 유료 쿠지(2,000원, 계좌이체 확인 후 부여)</li>
+      <li>상품 재고 · 보물(캡슐) 등록 · 수령 처리 · 행사 설정(코인 이름·미션 보상·쿠지 코인)</li>
+    </ul>
   </div>
-  <div class="scroll">
-    <table>
-      <thead><tr>
-        <th>닉네임</th><th>연락처</th><th>단서</th><th>찾은 지점</th><th>미션</th>
-        <th>상태</th><th>보상</th><th></th>
-      </tr></thead>
-      <tbody id="players"></tbody>
-    </table>
-  </div>
-  <h3>단서 수동 지급</h3>
-  <p class="help">GPS가 안 잡히거나 지점을 못 찾을 때 스태프가 직접 글자를 줍니다. 참가자를 고르고 글자를 선택하세요.</p>
+  <h3 style="margin-top:0">서버 설정 현황 (읽기 전용)</h3>
+  <p class="help">참가자 앱이 실제로 쓰는 값입니다. <b>미정</b>인 항목은 서버가 지급·사용을 막습니다. 값은 스태프 콘솔에서 채웁니다.</p>
   <div class="card">
-    <div class="row">
-      <div style="flex:1;min-width:180px"><label>참가자</label><select id="giveWho"></select></div>
-      <div style="flex:1;min-width:180px"><label>지급할 글자</label><select id="giveWhat"></select></div>
-      <button class="b pri" id="btnGive" style="align-self:flex-end">지급</button>
-    </div>
-  </div>
-
-  <h3>미션 완료 체크</h3>
-  <p class="help">참가자가 미션을 완료하면 스태프가 눌러서 체크합니다. 다시 누르면 취소됩니다.</p>
-  <div class="card">
-    <div class="row" style="margin-bottom:12px">
-      <div style="flex:1;min-width:220px"><label>참가자</label><select id="missionWho"></select></div>
-    </div>
-    <div class="qlist" id="missionCheck"></div>
+    <div id="cfgBox"></div>
+    <button class="b sm" id="btnCfgReload" style="margin-top:10px">새로고침</button>
   </div>
 </section>
 
-<!-- ═══ 항해 패스 (매표소 · QR을 못 찍는 참가자 구제) ═══ -->
-<section class="tab" id="t10">
-  <div class="note">
-    참가자는 매표소에서 <b>항해 패스 QR</b>을 찍어야 항해가 시작됩니다.
-    카메라가 안 되거나 QR을 못 찍는 참가자는 여기서 <b>전화번호로 직접 열어</b> 주세요.
-    (앱에서 닉네임·전화번호 등록까지는 끝낸 상태여야 조회됩니다.)
-  </div>
-  <div class="card">
-    <div class="row">
-      <div style="flex:1;min-width:200px">
-        <label>참가자 전화번호</label>
-        <input type="tel" id="passPhone" placeholder="010-0000-0000" inputmode="numeric">
-      </div>
-      <button class="b pri" id="btnPassLookup" style="align-self:flex-end">조회</button>
-    </div>
-  </div>
-  <div id="passResult"></div>
-</section>
-
-<!-- ═══ 골드 티켓 상환 (메이커앤하비 매장용) ═══ -->
-<section class="tab" id="t8">
-  <div class="note">
-    행사 당일이 아니어도, <b>이 기기에 아무 기록이 없어도</b> 씁니다.
-    전화번호로 서버(Firestore)에서 바로 조회하므로, <b>메이커앤하비 매장</b>에서 골드 티켓을
-    상환할 때 이 탭에서 확인·지급 처리하세요. (서버 미연결 시 "서버에 연결돼 있지 않습니다"가 뜹니다 — 인터넷 연결을 확인하세요.)
-  </div>
-  <div class="card">
-    <div class="row">
-      <div style="flex:1;min-width:200px">
-        <label>참가자 전화번호</label>
-        <input type="tel" id="ticketPhone" placeholder="010-0000-0000" inputmode="numeric">
-      </div>
-      <button class="b pri" id="btnTicketLookup" style="align-self:flex-end">조회</button>
-    </div>
-  </div>
-  <div id="ticketResult"></div>
-</section>
-
-<!-- ═══ 최종 정답 ═══ -->
+<!-- ═══ 기본 설정 ═══ -->
 <section class="tab" id="t2">
   <div class="note">
-<b>지점에 뿌려지는 단서는 '질문' 글자입니다.</b> 아래 <b>질문 문구</b>를 바꾸면 공백·물음표를 뺀 글자가
-    자동으로 분해되어 GPS 지점(L01~)에 순서대로 배정됩니다. 참가자는 그 글자를 모아 질문을 완성하고, <b>답</b>을 입력합니다.<br>
-    <b>최종 정답</b>은 배정 대상이 아니라 마지막 입력을 채점할 때만 씁니다.
-    질문 글자 수가 GPS 지점 수보다 많으면 남는 글자는 배정되지 않으니, 아래 배정표를 확인하세요.
+    참가자 앱 첫 화면의 제목·부제, 패스 안내, 지도 이미지입니다.
+    최종 정답·보상·글자 배정은 폐지되었습니다(보물·쿠지 결과는 서버 설정).
+    저장하면 <b>이 기기</b>에서 즉시 반영되고, [데이터] 탭에서 data.js를 내려받아 덮어써야 모든 기기에 반영됩니다.
   </div>
   <div class="card">
-    <div class="field" style="margin-bottom:14px">
-      <label>최종 정답 (12~18자 권장)</label>
-      <input type="text" id="fAns">
-    </div>
-    <div class="field" style="margin-bottom:14px">
-      <label>인정할 다른 표기 (줄바꿈으로 구분 — 띄어쓰기·다른 표기)</label>
-      <textarea id="fAlias"></textarea>
-    </div>
-    <div class="field" style="margin-bottom:14px">
-      <label>최종 질문 — <b>이 글자들이 지점에 뿌려집니다</b> (공백·물음표 제외한 글자 수 = GPS 지점 수)</label>
-      <input type="text" id="fFinalQn" placeholder="예: 루피가 먹은 열매의 진짜 이름은?">
-    </div>
     <div class="row">
       <div style="flex:1;min-width:160px"><label>게임 제목</label><input type="text" id="fTitle"></div>
       <div style="flex:1;min-width:160px"><label>부제</label><input type="text" id="fSub"></div>
     </div>
     <div class="row" style="margin-top:12px">
-      <div style="flex:1;min-width:160px"><label>보상 이름</label><input type="text" id="fRw"></div>
-      <div style="flex:2;min-width:200px"><label>보상 안내 문구</label><input type="text" id="fRwDesc"></div>
+      <div style="flex:1;min-width:160px"><label>항해 패스 가격 표기</label><input type="text" id="fPrice" placeholder="6,000원"></div>
+      <div style="flex:1;min-width:160px"><label>패스 판매처 이름</label><input type="text" id="fDesk" placeholder="매표소"></div>
     </div>
     <div class="row" style="margin-top:12px">
       <div style="flex:1;min-width:160px"><label>지도 이미지 파일명 (비우면 내장 개념도)</label><input type="text" id="fMap" placeholder="map.jpg"></div>
-      <div style="flex:1;min-width:120px"><label>운영자 PIN</label><input type="text" id="fPin" maxlength="4"></div>
     </div>
     <button class="b pri" style="margin-top:16px" id="btnSaveSettings">저장</button>
   </div>
-  <h3>글자 배정표</h3>
-  <div class="note">
-참가자는 <b>지점에 도착 → 그 지점의 퀴즈를 풀면 질문 글자 한 개</b>를 받습니다.
-    글자를 다 모으면 질문이 완성되고, 그 <b>답</b>을 입력해야 클리어입니다.
-    아래 표는 <b>질문 글자 · 지점 · 퀴즈</b>가 어떻게 짝지어져 있는지 보여줍니다.
-    퀴즈 문구를 고치려면 <b>퀴즈</b> 탭에서 하세요.<br>
-    질문 글자 수와 GPS 지점 수가 다르면 "배정 없음"이 뜹니다. 질문을 확정한 뒤 지점 수를 맞춰야 합니다
-    (data.js의 <code>gpsPoints</code> 배열 — 지금은 관리자 화면에서 직접 늘리고 줄일 수 없습니다).
-  </div>
-  <div class="scroll"><table>
-    <thead><tr><th>#</th><th>질문 글자</th><th>GPS 지점</th><th>이 지점에서 낼 퀴즈</th><th>정답</th><th>좌표</th></tr></thead>
-    <tbody id="letterMap"></tbody>
-  </table></div>
 </section>
 
 <!-- ═══ 퀴즈 ═══ -->
 <section class="tab" id="t3">
-  <p class="help">문제당 <b>정답 별칭을 3~5개</b> 적어두세요. 채점은 공백·특수문자를 지우고 비교하므로
-    "고죠 사토루"와 "고죠사토루"는 같은 답으로 처리됩니다.</p>
+  <p class="help">단서 <b>문제 문구</b>만 고칩니다. <b>정답은 이 화면·공개 파일에 없습니다</b> — 서버에 해시로만 저장되며,
+    스태프 콘솔(보물·단서 등록)에서만 바꿀 수 있습니다. 단서 하나에 인정되는 정답은 하나입니다.</p>
   <div class="row" style="margin-bottom:14px">
-    <button class="b pri" id="btnSaveQuiz">퀴즈 전체 저장</button>
-    <span style="color:var(--ink-3);font-size:12.5px">별칭은 쉼표로 구분</span>
+    <button class="b pri" id="btnSaveQuiz">문구 전체 저장</button>
   </div>
   <div class="qlist" id="quizList"></div>
 </section>
@@ -258,23 +175,14 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     나온 값을 <code>data.js</code>의 <code>gpsPoints</code>에 붙여넣어야 채워집니다.
   </div>
   <div class="card">
-    <label>미션 QR용 기준 주소 (아래 미션 QR에만 사용)</label>
     <div class="row">
-      <input type="text" id="baseUrl" style="flex:1;min-width:240px" placeholder="https://내주소.web.app/">
       <button class="b" id="btnCopyAll">좌표 목록 복사</button>
       <button class="b" id="btnCsv">CSV 내려받기</button>
     </div>
   </div>
   <div class="scroll"><table>
-    <thead><tr><th>ID</th><th>글자</th><th>퀴즈</th><th>좌표(lat, lng)</th><th>도착 반경</th></tr></thead>
+    <thead><tr><th>ID</th><th>단서</th><th>좌표(lat, lng)</th><th>도착 반경</th></tr></thead>
     <tbody id="qrList"></tbody>
-  </table></div>
-
-  <h3>미션 완료 QR (스태프 명찰용)</h3>
-  <p class="help">부스마다 이 QR을 인쇄해서 스태프가 들고 있다가, 참가자가 미션을 완료하면 보여주고 자기 폰으로 찍게 하세요. 찍는 즉시 완료 처리됩니다.</p>
-  <div class="scroll"><table>
-    <thead><tr><th>코드</th><th>미션</th><th>URL</th></tr></thead>
-    <tbody id="missionQrList"></tbody>
   </table></div>
 </section>
 
@@ -282,7 +190,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 <section class="tab" id="t6">
   <div class="note">
     후보를 등록해두면 참가자 화면에 곧바로 뜬다. 투표 시작 전이면 참가자에게는 카운트다운만 보이고,
-    시작 시각이 지나면 자동으로 투표창이 열린다.
+    시작 시각이 지나면 자동으로 투표창이 열린다. <b>투표 선택은 참가자 기기에만 기록되어 득표수 집계는 없습니다</b>(코인 보상만 서버가 지급).
   </div>
   <div id="voteAdminList"></div>
 </section>
@@ -368,7 +276,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 
 <section class="tab" id="t5">
   <div class="note warn">
-    <b>행사가 끝나면 참가자 데이터를 삭제하세요.</b> 이름·전화번호가 저장되어 있습니다.
+    참가자·코인·쿠지 기록은 서버에 있어 이 화면에서 내려받거나 지우지 않습니다. 행사 후 개인정보(이름·전화번호) 정리는 서버 관리자에게 요청하세요.
   </div>
   <div class="card">
     <h3 style="margin-top:0">콘텐츠 내보내기</h3>
@@ -376,20 +284,13 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     <button class="b pri" id="btnExport">data.js 내려받기</button>
     <button class="b" id="btnResetContent">수정 내용 되돌리기</button>
   </div>
-  <div class="card">
-    <h3 style="margin-top:0">참가자 데이터</h3>
-    <p class="help">이 기기에 저장된 참가자 기록입니다. Firebase를 붙이기 전에는 기기마다 따로 저장됩니다.</p>
-    <button class="b" id="btnExportPlayers">참가자 CSV 내려받기</button>
-    <button class="b dan" id="btnWipe">전체 참가자 데이터 삭제</button>
-  </div>
 </section>
 
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="data.js"></script>
 <script src="store.js"></script>
+<script src="ev-client.js"></script>
 <script>
 (function(){
   if(new URLSearchParams(location.search).get("reset")==="1"){
@@ -399,17 +300,27 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   var D = Store.loadContent();
   var $ = function(id){return document.getElementById(id)};
 
-  /* ── PIN ── */
+  /* ── 관리자 로그인: PIN은 서버가 확인한다(이 파일에는 PIN이 없다) ── */
   function unlock(){
     $("gate").classList.add("hidden");
     $("main").classList.remove("hidden");
     renderAll();
   }
-  $("btnPin").addEventListener("click",function(){
-    if($("pin").value === (D.settings.adminPin||"6842")) unlock();
-    else { $("pin").value=""; $("pin").placeholder="다시"; }
-  });
-  $("pin").addEventListener("keydown",function(e){ if(e.key==="Enter") $("btnPin").click(); });
+  function doLogin(){
+    var pin = $("pin").value.trim();
+    if(!pin) return;
+    var btn = $("btnPin");
+    btn.disabled = true; $("pinMsg").textContent = "확인 중…";
+    EV.pinLogin(pin, "admin").then(function(){
+      $("pin").value = ""; $("pinMsg").textContent = ""; btn.disabled = false; unlock();
+    }).catch(function(e){
+      btn.disabled = false; $("pin").value = "";
+      $("pinMsg").textContent = (e && e.code && e.message) ? e.message : "서버에 연결할 수 없어요. 인터넷을 확인하고 다시 시도해 주세요.";
+    });
+  }
+  $("btnPin").addEventListener("click", doLogin);
+  $("pin").addEventListener("keydown",function(e){ if(e.key==="Enter") doLogin(); });
+
 
   /* ── 탭 ── */
   document.querySelectorAll("nav button").forEach(function(b){
@@ -421,15 +332,6 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   });
 
   /* ── 공용 ── */
-  /* 지점에 뿌리는 단서 글자 = 최종 '질문'에서 공백·문장부호를 뺀 글자들 (정답이 아니다) */
-  function letters(){
-    var q = (D.quizzes && D.quizzes.final && D.quizzes.final.qn) || "";
-    return q.replace(/[\s?!.,·:;"'()\-—‘’“”]/g, "").split("");
-  }
-  function pointOf(li){
-    var list = (D.gpsPoints||[]).filter(function(p){return p.li===li});
-    return list[0] || null;
-  }
   function download(name, text, mime){
     var blob = new Blob(["﻿"+text], {type:(mime||"text/plain")+";charset=utf-8"});
     var a = document.createElement("a");
@@ -438,149 +340,9 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
 
-  /* ── 진행 현황 ── */
-  function renderPlayers(){
-    var list = Store.players(), L = letters().length;
-    var cleared=0, issued=0, letterSum=0;
-    var html = "";
-    list.forEach(function(p){
-      var uniq = {};
-      (p.letters||[]).forEach(function(x){uniq[x.li]=1});
-      var n = Object.keys(uniq).length;
-      letterSum += n;
-      if(p.cleared) cleared++;
-      if(p.rewardIssued) issued++;
-      html += "<tr>"+
-        "<td><b>"+esc(p.nickname)+"</b></td>"+
-        "<td class='n'>····"+String(p.phone||"").slice(-4)+"</td>"+
-        "<td class='n'>"+n+" / "+L+"</td>"+
-        "<td class='n'>"+(p.found||[]).length+"</td>"+
-        "<td class='n'>"+(p.missionsDone||[]).length+" / "+D.missions.length+"</td>"+
-        "<td>"+(p.cleared?"<span class='pill ok'>클리어</span>":"<span class='pill no'>진행중</span>")+"</td>"+
-        "<td>"+(p.rewardIssued?"<span class='pill ok'>지급완료</span>":
-                (p.cleared?"<span class='pill wait'>지급대기</span>":"<span class='pill no'>—</span>"))+"</td>"+
-        "<td class='n'>"+
-          (p.cleared && !p.rewardIssued ? "<button class='b sm' data-give='"+p.phone+"'>지급</button> " : "")+
-          "<button class='b sm dan' data-del='"+p.phone+"'>초기화</button>"+
-        "</td></tr>";
-    });
-    $("players").innerHTML = html || "<tr><td colspan='9' style='color:var(--ink-3)'>참가자가 없습니다</td></tr>";
-
-    $("stats").innerHTML =
-      stat("참가자", list.length) +
-      stat("클리어", cleared) +
-      stat("보상 지급", issued) +
-      stat("평균 단서", list.length ? (letterSum/list.length).toFixed(1) : "0") +
-      stat("GPS 지점", (D.gpsPoints||[]).length) +
-      stat("좌표 미설정", (D.gpsPoints||[]).filter(function(p){return p.lat==null||p.lng==null}).length);
-
-    $("syncNote").textContent = Store.hasServer()
-      ? "서버 동기화 켜짐" : "이 기기에 저장된 기록만 보입니다 (Firebase 미연결)";
-
-    $("players").querySelectorAll("[data-give]").forEach(function(b){
-      b.addEventListener("click",function(){
-        var all = Store.players();
-        for(var i=0;i<all.length;i++) if(all[i].phone===b.dataset.give){
-          all[i].rewardIssued = true;
-          all[i].rewardIssuedAt = Date.now();
-          Store.updatePlayer(all[i]);
-          break;
-        }
-        renderPlayers();
-      });
-    });
-    $("players").querySelectorAll("[data-del]").forEach(function(b){
-      b.addEventListener("click",function(){
-        if(!confirm("이 참가자의 기록을 지웁니다. 계속할까요?")) return;
-        Store.removePlayer(b.dataset.del); renderPlayers(); fillGive(); fillMissionWho();
-      });
-    });
-  }
   function stat(k,v){ return "<div class='stat'><div class='k'>"+k+"</div><div class='v'>"+v+"</div></div>"; }
   function esc(s){ return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]}); }
 
-  /* ── 항해 패스 수동 개시 ── QR을 못 찍는 참가자를 스태프가 열어준다 */
-  function renderPassResult(p){
-    var box = $("passResult");
-    if (!p) { box.innerHTML = "<div class='note'>등록된 참가자를 찾을 수 없습니다. 앱에서 닉네임·전화번호 등록을 먼저 하도록 안내해 주세요.</div>"; return; }
-    box.innerHTML =
-      "<div class='card'>" +
-      "<div style='font-size:15px;font-weight:700;margin-bottom:6px'>" + esc(p.nickname || "이름없음") + " 해적</div>" +
-      "<div style='font-size:12.5px;color:var(--ink-3);margin-bottom:10px'>····" + String(p.phone||"").slice(-4) + "</div>" +
-      "<div style='margin-bottom:14px'>" + (p.pass
-        ? "<span class='pill ok'>패스 개시됨" + (p.passAt ? " · " + new Date(p.passAt).toLocaleString("ko-KR") : "") + "</span>"
-        : "<span class='pill wait'>아직 패스 없음</span>") + "</div>" +
-      (p.pass ? "" : "<button class='b pri' id='btnPassGive'>패스 열어주기</button>") +
-      "</div>";
-    if (!p.pass) {
-      $("btnPassGive").addEventListener("click", function(){
-        if (!confirm(p.nickname + " 해적의 항해 패스를 열어줍니다. 결제를 확인하셨나요?")) return;
-        var btn = this; btn.disabled = true; btn.textContent = "처리 중…";
-        Store.patchRemote(p.phone, { pass: true, passAt: Date.now() }).then(function(){
-          p.pass = true; p.passAt = Date.now();
-          renderPassResult(p);
-        }).catch(function(e){
-          btn.disabled = false; btn.textContent = "패스 열어주기";
-          alert("처리 실패: " + (e && e.message ? e.message : "알 수 없는 오류"));
-        });
-      });
-    }
-  }
-  $("btnPassLookup").addEventListener("click", function(){
-    var phone = $("passPhone").value.trim();
-    if (Store.normPhone(phone).length < 10) { alert("전화번호를 정확히 입력하세요."); return; }
-    var box = $("passResult");
-    if (!Store.hasServer()) {
-      box.innerHTML = "<div class='note' style='border-left-color:var(--gold);background:var(--gold-soft)'>서버에 연결돼 있지 않습니다. 인터넷 연결을 확인하고 새로고침해 보세요.</div>";
-      return;
-    }
-    box.innerHTML = "<p class='help'>조회 중…</p>";
-    Store.fetchRemote(phone).then(renderPassResult)
-      .catch(function(){ box.innerHTML = "<div class='note'>조회 중 오류가 발생했습니다.</div>"; });
-  });
-
-  /* ── 골드 티켓 상환 (메이커앤하비 매장) ── 이 기기의 로컬 캐시와 무관하게 항상 서버로 조회한다 */
-  function renderTicketResult(p){
-    var box = $("ticketResult");
-    if (!p) { box.innerHTML = "<div class='note'>등록된 참가자를 찾을 수 없습니다.</div>"; return; }
-    var statusHtml = !p.cleared
-      ? "<span class='pill no'>아직 황금 귤을 못 찾음 — 상환 대상 아님</span>"
-      : (p.rewardIssued
-          ? "<span class='pill ok'>이미 상환 완료" + (p.rewardIssuedAt ? " · " + new Date(p.rewardIssuedAt).toLocaleString("ko-KR") : "") + "</span>"
-          : "<span class='pill wait'>상환 대기 — 지급 가능</span>");
-    box.innerHTML =
-      "<div class='card'>" +
-      "<div style='font-size:15px;font-weight:700;margin-bottom:6px'>" + esc(p.nickname || "이름없음") + " 해적</div>" +
-      "<div style='font-size:12.5px;color:var(--ink-3);margin-bottom:10px'>····" + String(p.phone||"").slice(-4) + " · 쿠폰번호 " + esc(p.rewardNo||"------") + "</div>" +
-      "<div style='margin-bottom:14px'>" + statusHtml + "</div>" +
-      (p.cleared && !p.rewardIssued ? "<button class='b pri' id='btnTicketIssue'>지급 처리</button>" : "") +
-      "</div>";
-    if (p.cleared && !p.rewardIssued) {
-      $("btnTicketIssue").addEventListener("click", function(){
-        if (!confirm(p.nickname + " 해적에게 골드 티켓을 지급 처리할까요? 되돌릴 수 없습니다.")) return;
-        var btn = this; btn.disabled = true; btn.textContent = "처리 중…";
-        Store.issueRemote(p.phone).then(function(){
-          p.rewardIssued = true; p.rewardIssuedAt = Date.now();
-          renderTicketResult(p);
-        }).catch(function(e){
-          btn.disabled = false; btn.textContent = "지급 처리";
-          alert("처리 실패: " + (e && e.message ? e.message : "알 수 없는 오류"));
-        });
-      });
-    }
-  }
-  $("btnTicketLookup").addEventListener("click", function(){
-    var phone = $("ticketPhone").value.trim();
-    if (Store.normPhone(phone).length < 10) { alert("전화번호를 정확히 입력하세요."); return; }
-    var box = $("ticketResult");
-    if (!Store.hasServer()) {
-      box.innerHTML = "<div class='note' style='border-left-color:var(--gold);background:var(--gold-soft)'>서버에 연결돼 있지 않습니다. 인터넷 연결을 확인하고 새로고침해 보세요.</div>";
-      return;
-    }
-    box.innerHTML = "<p class='help'>조회 중…</p>";
-    Store.fetchRemote(phone).then(renderTicketResult)
-      .catch(function(){ box.innerHTML = "<div class='note'>조회 중 오류가 발생했습니다.</div>"; });
-  });
 
   /* ── 참가 신청 관리 (apply.html → Firestore) ── */
   var AP_COL   = "gwasuwonpiece_applications";
@@ -603,6 +365,15 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   }
 
   function apLoad(){
+    var box = $("apList");
+    if (!apDb()) {
+      box.innerHTML = "<p class='help'>서버에 연결하는 중…</p>";
+      EV.readCfg(EVENT).catch(function(){}).then(apLoadNow);
+      return;
+    }
+    apLoadNow();
+  }
+  function apLoadNow(){
     var box = $("apList"), db = apDb();
     if (!db) { box.innerHTML = "<div class='note' style='border-left-color:var(--gold);background:var(--gold-soft)'>서버에 연결돼 있지 않습니다. 인터넷 연결을 확인하고 새로고침해 보세요.</div>"; return; }
     box.innerHTML = "<p class='help'>불러오는 중…</p>";
@@ -726,73 +497,6 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     if (!apCache.length) apLoad();
   });
 
-  function fillGive(){
-    var list = Store.players();
-    $("giveWho").innerHTML = list.map(function(p){
-      return "<option value='"+p.phone+"'>"+esc(p.nickname)+"</option>";
-    }).join("") || "<option value=''>참가자 없음</option>";
-    $("giveWhat").innerHTML = letters().map(function(c,i){
-      return "<option value='"+i+"'>"+(i+1)+"번째 — "+c+"</option>";
-    }).join("");
-  }
-  $("btnGive").addEventListener("click",function(){
-    var phone = $("giveWho").value, li = parseInt($("giveWhat").value,10);
-    if(!phone) return;
-    var all = Store.players();
-    for(var i=0;i<all.length;i++) if(all[i].phone===phone){
-      var p = all[i];
-      var has = (p.letters||[]).some(function(x){return x.li===li});
-      if(has){ alert("이미 가지고 있는 글자입니다."); return; }
-      p.letters = p.letters||[];
-      p.letters.push({li:li,char:letters()[li],at:Date.now()});
-      Store.updatePlayer(p);
-      alert("「"+letters()[li]+"」 지급 완료");
-      renderPlayers();
-      return;
-    }
-  });
-  $("btnReload").addEventListener("click",function(){ renderPlayers(); fillGive(); fillMissionWho(); renderVoteAdmin(); });
-
-  /* ── 미션 완료 체크 ── */
-  function fillMissionWho(){
-    var list = Store.players();
-    var cur = $("missionWho").value;
-    $("missionWho").innerHTML = list.map(function(p){
-      return "<option value='"+p.phone+"'>"+esc(p.nickname)+"</option>";
-    }).join("") || "<option value=''>참가자 없음</option>";
-    if(cur) $("missionWho").value = cur;
-    renderMissionCheck();
-  }
-  function renderMissionCheck(){
-    var phone = $("missionWho").value;
-    var all = Store.players();
-    var p = null;
-    for(var i=0;i<all.length;i++) if(all[i].phone===phone){ p = all[i]; break; }
-    if(!p){ $("missionCheck").innerHTML = "<p class='help' style='margin:0'>참가자를 선택하세요</p>"; return; }
-    var done = p.missionsDone||[];
-    $("missionCheck").innerHTML = D.missions.map(function(m){
-      var ok = done.indexOf(m.id)>=0;
-      return "<div class='qitem' data-mid='"+m.id+"' style='cursor:pointer;display:flex;gap:10px;align-items:center'>"+
-        "<span style='font-size:18px'>"+(ok?"✅":"⬜")+"</span>"+
-        "<div><b>"+esc(m.name)+"</b><div style='color:var(--ink-3);font-size:12.5px'>"+esc(m.desc)+"</div></div></div>";
-    }).join("");
-    $("missionCheck").querySelectorAll("[data-mid]").forEach(function(el){
-      el.addEventListener("click",function(){
-        var mid = el.dataset.mid;
-        var all2 = Store.players();
-        for(var i=0;i<all2.length;i++) if(all2[i].phone===phone){
-          var pp = all2[i]; pp.missionsDone = pp.missionsDone||[];
-          var idx = pp.missionsDone.indexOf(mid);
-          if(idx>=0) pp.missionsDone.splice(idx,1); else pp.missionsDone.push(mid);
-          Store.updatePlayer(pp);
-          break;
-        }
-        renderMissionCheck(); renderPlayers();
-      });
-    });
-  }
-  $("missionWho").addEventListener("change", renderMissionCheck);
-
   /* ── 게임 열림/중지 ── */
   function renderOpen(){
     var on = D.settings.gameOpen !== false;
@@ -804,68 +508,34 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     Store.saveContent(D); renderOpen();
   });
 
-  /* ── 최종 정답 ── */
+  /* ── 기본 설정 ── */
   function renderSettings(){
     var s = D.settings;
-    $("fAns").value = s.finalAnswer||"";
-    $("fAlias").value = (s.finalAliases||[]).join("\n");
     $("fTitle").value = s.title||"";
     $("fSub").value = s.subtitle||"";
-    $("fRw").value = s.rewardTitle||"";
-    $("fRwDesc").value = s.rewardDesc||"";
-    $("fFinalQn").value = (D.quizzes && D.quizzes.final && D.quizzes.final.qn) || "";
+    $("fPrice").value = s.passPrice||"";
+    $("fDesk").value = s.passDeskName||"";
     $("fMap").value = s.mapImage||"";
-    $("fPin").value = s.adminPin||"";
-    renderLetterMap();
-  }
-  function renderLetterMap(){
-    var L = letters(), html="";
-    L.forEach(function(c,i){
-      var p = pointOf(i);
-      var idCell = p ? p.id : "<span class='pill no'>배정 없음</span>";
-      var coordCell = !p ? "—"
-        : (p.lat!=null && p.lng!=null) ? "<span class='pill ok'>설정됨</span>"
-        : "<span class='pill wait'>미설정</span>";
-      var qz = (p && D.quizzes) ? D.quizzes[p.q] : null;
-      var qnCell = qz ? esc(qz.qn)
-        : (p ? "<span class='pill no'>퀴즈 없음 ("+esc(p.q||"미지정")+")</span>" : "—");
-      var ansCell = qz ? "<span class='pill ok'>"+esc((qz.a||[])[0]||"")+"</span>" : "—";
-      html += "<tr><td class='n'>"+(i+1)+"</td><td style='font-size:17px'><b>"+esc(c)+"</b></td>"+
-        "<td class='n'>"+idCell+"</td>"+
-        "<td style='font-size:13px;line-height:1.5'>"+qnCell+"</td>"+
-        "<td class='n'>"+ansCell+"</td>"+
-        "<td class='n'>"+coordCell+"</td></tr>";
-    });
-    $("letterMap").innerHTML = html;
   }
   $("btnSaveSettings").addEventListener("click",function(){
     var s = D.settings;
-    s.finalAnswer = $("fAns").value.trim();
-    s.finalAliases = $("fAlias").value.split("\n").map(function(x){return x.trim()}).filter(Boolean);
     s.title = $("fTitle").value.trim();
     s.subtitle = $("fSub").value.trim();
-    s.rewardTitle = $("fRw").value.trim();
-    s.rewardDesc = $("fRwDesc").value.trim();
-    D.quizzes = D.quizzes || {};
-    D.quizzes.final = D.quizzes.final || { a: [] };
-    D.quizzes.final.qn = $("fFinalQn").value.trim();
+    s.passPrice = $("fPrice").value.trim();
+    s.passDeskName = $("fDesk").value.trim();
     s.mapImage = $("fMap").value.trim();
-    s.adminPin = $("fPin").value.trim() || "6842";
     Store.saveContent(D);
-    renderLetterMap(); fillGive();
-    alert("저장했습니다. 참가자 화면을 새로고침하면 반영됩니다.");
+    alert("이 기기에 저장했습니다. 모든 기기에 반영하려면 [데이터] 탭에서 data.js를 내려받아 덮어써야 합니다.");
   });
 
-  /* ── 퀴즈 ── */
+  /* ── 퀴즈(단서 문구) — 정답은 서버에만 있다 ── */
   function renderQuiz(){
     var html = "";
     (D.gpsPoints||[]).forEach(function(p){
-      var z = D.quizzes[p.q] || {qn:"",a:[]};
+      var z = D.quizzes[p.q] || {qn:""};
       html += "<div class='qitem'>"+
-        "<div class='top'><span class='id'>"+p.id+" · "+p.q+"</span><span class='pill let'>글자 "+(p.li+1)+"</span></div>"+
-        "<input type='text' data-q='"+p.q+"' data-f='qn' value=\""+esc(z.qn).replace(/"/g,'&quot;')+"\" placeholder='문제'>"+
-        "<input type='text' style='margin-top:6px' data-q='"+p.q+"' data-f='a' value=\""+
-          esc((z.a||[]).join(", ")).replace(/"/g,'&quot;')+"\" placeholder='정답 별칭 (쉼표로 구분)'>"+
+        "<div class='top'><span class='id'>"+p.id+" · "+p.q+"</span></div>"+
+        "<input type='text' data-q='"+p.q+"' value=\""+esc(z.qn).replace(/"/g,'&quot;')+"\" placeholder='문제'>"+
         "</div>";
     });
     $("quizList").innerHTML = html;
@@ -873,42 +543,25 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
   $("btnSaveQuiz").addEventListener("click",function(){
     $("quizList").querySelectorAll("[data-q]").forEach(function(el){
       var id = el.dataset.q;
-      if(!D.quizzes[id]) D.quizzes[id] = {qn:"",a:[]};
-      if(el.dataset.f==="qn") D.quizzes[id].qn = el.value.trim();
-      else D.quizzes[id].a = el.value.split(",").map(function(x){return x.trim()}).filter(Boolean);
+      if(!D.quizzes[id]) D.quizzes[id] = {qn:""};
+      D.quizzes[id].qn = el.value.trim();
     });
     Store.saveContent(D);
-    alert("퀴즈를 저장했습니다.");
+    alert("문구를 이 기기에 저장했습니다. 모든 기기에 반영하려면 [데이터] 탭에서 data.js를 내려받아 덮어써야 합니다.");
   });
 
   /* ── GPS 지점 목록 ── */
-  function baseUrl(){
-    var v = $("baseUrl").value.trim();
-    if(!v) v = location.href.replace(/admin\.html.*$/,"");
-    if(!/\/$/.test(v)) v += "/";
-    return v;
-  }
   function renderQr(){
-    var L = letters(), html="";
+    var html="";
     (D.gpsPoints||[]).forEach(function(p){
       var set = p.lat!=null && p.lng!=null;
       html += "<tr><td class='n'><b>"+p.id+"</b></td>"+
-        "<td class='n'>"+(p.li!=null&&L[p.li]?L[p.li]:"—")+"</td>"+
         "<td class='n'>"+(p.q||"")+"</td>"+
         "<td class='n'>"+(set ? (p.lat.toFixed(6)+", "+p.lng.toFixed(6)) : "<span class='pill wait'>미설정</span>")+"</td>"+
         "<td class='n'>"+(p.radius||D.settings.gpsRadius||15)+"m</td></tr>";
     });
     $("qrList").innerHTML = html;
-    renderMissionQr();
   }
-  function renderMissionQr(){
-    var html = (D.missions||[]).filter(function(m){return m.qr}).map(function(m){
-      return "<tr><td class='n'><b>"+m.qr+"</b></td><td>"+esc(m.name)+"</td>"+
-        "<td class='n' style='font-size:12px'>"+baseUrl()+"?m="+m.qr+"</td></tr>";
-    }).join("");
-    $("missionQrList").innerHTML = html || "<tr><td colspan='3' style='color:var(--ink-3)'>QR이 있는 미션이 없습니다</td></tr>";
-  }
-  $("baseUrl").addEventListener("input",renderMissionQr);
   $("btnCopyAll").addEventListener("click",function(){
     var txt = (D.gpsPoints||[]).map(function(p){
       return p.id+"\t"+(p.lat!=null?p.lat+","+p.lng:"미설정");
@@ -917,11 +570,9 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
       function(){ prompt("복사해서 쓰세요", txt); });
   });
   $("btnCsv").addEventListener("click",function(){
-    var L = letters();
-    var rows = [["id","letter","quiz","lat","lng","radius_m"]];
+    var rows = [["id","clue","lat","lng","radius_m"]];
     (D.gpsPoints||[]).forEach(function(p){
-      rows.push([p.id,(p.li!=null&&L[p.li])?L[p.li]:"",p.q||"",
-        p.lat!=null?p.lat:"", p.lng!=null?p.lng:"", p.radius||D.settings.gpsRadius||15]);
+      rows.push([p.id,p.q||"", p.lat!=null?p.lat:"", p.lng!=null?p.lng:"", p.radius||D.settings.gpsRadius||15]);
     });
     download("gps_points.csv", rows.map(function(r){return r.join(",")}).join("\n"),"text/csv");
   });
@@ -935,45 +586,12 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     if(!confirm("이 화면에서 수정한 내용을 모두 버리고 원래 data.js 로 되돌립니다.")) return;
     Store.resetContent(); location.reload();
   });
-  $("btnExportPlayers").addEventListener("click",function(){
-    var L = letters().length;
-    var rows = [["닉네임","전화번호","단서수","전체","찾은지점","클리어","보상지급","쿠폰번호","클리어시각"]];
-    Store.players().forEach(function(p){
-      var uniq={}; (p.letters||[]).forEach(function(x){uniq[x.li]=1});
-      rows.push([p.nickname,p.phone,Object.keys(uniq).length,L,(p.found||[]).length,
-        p.cleared?"O":"", p.rewardIssued?"O":"", p.rewardNo||"",
-        p.clearedAt? new Date(p.clearedAt).toLocaleString("ko-KR"):""]);
-    });
-    download("players.csv", rows.map(function(r){return r.join(",")}).join("\n"),"text/csv");
-  });
-  $("btnWipe").addEventListener("click",function(){
-    if(!confirm("이 기기의 참가자 데이터를 전부 삭제합니다. 되돌릴 수 없습니다.")) return;
-    if(!confirm("정말 삭제할까요?")) return;
-    var known = Store.players(); // 지우기 전에 이 기기가 아는 목록을 먼저 챙겨둔다
-    Store.wipePlayers(); renderPlayers(); fillGive();
-    if (Store.hasServer() && known.length) {
-      Promise.all(known.map(function(p){ return Store.deleteRemote(p.phone); })).then(function(){
-        alert("삭제했습니다 (이 기기가 아는 " + known.length + "명의 서버 기록도 함께 지웠습니다).\n\n" +
-          "이 기기에서 한 번도 조회 안 한 참가자가 남아있을 수 있습니다 — 행사 완전 종료 후에는 " +
-          "Firebase 콘솔에서 gwasuwonpiece_players 컬렉션을 통째로 한 번 더 확인해 주세요.");
-      });
-    } else {
-      alert("삭제했습니다.");
-    }
-  });
-
   /* ── 투표 관리 ── */
   function candLabel(id){ return "cand"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
   function renderVoteAdmin(){
-    var players = Store.players();
     var html = "";
     Object.keys(D.votes||{}).forEach(function(sid){
       var v = D.votes[sid];
-      var tally = {};
-      (v.candidates||[]).forEach(function(c){ tally[c.id]=0; });
-      players.forEach(function(p){ var pick=(p.votes||{})[sid]; if(pick!=null && tally[pick]!=null) tally[pick]++; });
-      var totalVotes = Object.keys(tally).reduce(function(a,k){return a+tally[k]},0);
-
       html += "<div class='card'>"+
         "<h3 style='margin-top:0'>"+esc(v.title)+" <span class='pill "+
           (v.mode==='number'?'dup':'let')+"'>"+(v.mode==='number'?'번호':'닉네임')+"</span></h3>"+
@@ -984,16 +602,13 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
             "<div class='row'><input type='text' id='newcand_"+sid+"' placeholder='"+(v.mode==='number'?'예: 7':'예: 해적닉네임')+"'>"+
             "<button class='b pri sm' data-addcand='"+sid+"'>추가</button></div></div>"+
         "</div>"+
-        "<div class='scroll'><table><thead><tr><th>후보</th><th>득표</th><th></th></tr></thead><tbody>"+
+        "<div class='scroll'><table><thead><tr><th>후보</th><th></th></tr></thead><tbody>"+
         (v.candidates||[]).map(function(c){
-          var pct = totalVotes ? Math.round(tally[c.id]/totalVotes*100) : 0;
           return "<tr><td><b>"+esc(c.label)+"</b></td>"+
-            "<td class='n'>"+tally[c.id]+"표 ("+pct+"%)</td>"+
             "<td><button class='b sm dan' data-delcand='"+sid+"|"+c.id+"'>삭제</button></td></tr>";
         }).join("") +
-        (!(v.candidates||[]).length ? "<tr><td colspan='3' style='color:var(--ink-3)'>등록된 후보 없음</td></tr>" : "") +
+        (!(v.candidates||[]).length ? "<tr><td colspan='2' style='color:var(--ink-3)'>등록된 후보 없음</td></tr>" : "") +
         "</tbody></table></div>"+
-        "<p class='help' style='margin:10px 0 0'>총 투표수: "+totalVotes+"표</p>"+
       "</div>";
     });
     $("voteAdminList").innerHTML = html;
@@ -1142,12 +757,40 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     alert("미션 대사를 저장했습니다.");
   });
 
-  function renderAll(){
-    renderOpen(); renderPlayers(); fillGive(); fillMissionWho(); renderSettings(); renderQuiz(); renderVoteAdmin();
-    renderIntroQuest(); renderScheduleQuests(); renderMissionQuest();
-    $("baseUrl").value = location.href.replace(/admin\.html.*$/,"");
-    renderQr();
+  var EVENT = "gwasu";
+  function cfgRow(k, v){ return "<tr><td style='width:44%'>"+k+"</td><td>"+v+"</td></tr>"; }
+  function undef(v, fmt){ return (v==null||v==="") ? "<span class='pill wait'>미정</span>" : (fmt?fmt(v):esc(String(v))); }
+  function renderCfg(){
+    var box = $("cfgBox");
+    box.innerHTML = "<p class='help'>서버 설정을 불러오는 중…</p>";
+    EV.readCfg(EVENT).then(function(c){
+      if(!c){ box.innerHTML = "<div class='note warn'>서버에 행사 설정(evCfg/"+EVENT+")이 아직 없습니다. 운영 시드를 먼저 넣어야 합니다.</div>"; return; }
+      var ms = c.missions || {}, ids = Object.keys(ms);
+      var noReward = ids.filter(function(k){ return ms[k].reward==null; }).length;
+      var k = c.kuji || {}, t = c.treasure || {};
+      box.innerHTML = "<div class='scroll'><table><tbody>"+
+        cfgRow("행사 열림", c.enabled===false ? "<span class='pill no'>닫힘</span>" : "<span class='pill ok'>열림</span>")+
+        cfgRow("항해 패스 필수", c.passRequired ? "<span class='pill ok'>필수</span>" : "<span class='pill no'>불필요</span>")+
+        cfgRow("코인 이름", undef(c.coinName, function(v){return esc(v)}) + (c.coinName==null ? " (앱에는 임시 표기 '귤코인')" : ""))+
+        cfgRow("쿠지 1회 코인", undef(k.cost, function(v){return v+"코인"}))+
+        cfgRow("쿠지 열림", k.enabled===false ? "<span class='pill no'>닫힘</span>" : "<span class='pill ok'>열림</span>")+
+        cfgRow("미션 수 / 보상 미정", ids.length+"개 / "+(noReward ? "<span class='pill wait'>"+noReward+"개 미정</span>" : "<span class='pill ok'>없음</span>"))+
+        cfgRow("보물찾기 열림", t.enabled ? "<span class='pill ok'>열림</span>" : "<span class='pill no'>닫힘</span>")+
+        cfgRow("보물: 필요 단서 수", undef(t.minClues))+
+        cfgRow("보물: 1인 수령 한도", undef(t.perPersonLimit))+
+        "</tbody></table></div>";
+    }).catch(function(e){
+      box.innerHTML = "<div class='note warn'>불러오지 못했습니다: "+esc((e&&e.code&&e.message)||"서버에 연결할 수 없어요")+"</div>";
+    });
   }
+  $("btnCfgReload").addEventListener("click", renderCfg);
+
+  function renderAll(){
+    renderOpen(); renderSettings(); renderQuiz(); renderVoteAdmin();
+    renderIntroQuest(); renderScheduleQuests(); renderMissionQuest();
+    renderQr(); renderCfg();
+  }
+  (function(){ var si = window.EV && EV.sessionInfo(); if(si && si.role==="admin") unlock(); })();
 })();
 </script>
 </body>
