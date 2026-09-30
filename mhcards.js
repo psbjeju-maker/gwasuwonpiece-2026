@@ -60,6 +60,14 @@
     '.mh-alb-bar{height:8px;border-radius:99px;background:rgba(120,140,170,.3);margin:0 0 10px;overflow:hidden}' +
     '.mh-alb-bar i{display:block;height:100%;background:linear-gradient(90deg,#5fb0ff,#ffce2e)}' +
     '.mh-done{margin:10px 0 0;padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,#ffe58a,#ffce2e);color:#5a3a00;font-weight:900;text-align:center}' +
+    '.mh-pk{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:min(94vw,420px)}' +
+    '.mh-pk .mh-slot{cursor:pointer}.mh-pk .mh-slot.sel{outline:3px solid #ffce2e;transform:translateY(-4px)}' +
+    '.mh-pk .mh-slot.no{cursor:default}' +
+    '.mh-pk .mh-slot .c.sc{background:#ffce2e;color:#5a3a00}' +
+    '.mh-tray{display:flex;gap:8px;margin:12px 0 2px;min-height:56px;align-items:center}' +
+    '.mh-tray i{width:38px;aspect-ratio:400/604;border-radius:5px;border:2px dashed rgba(255,255,255,.5);display:block;overflow:hidden}' +
+    '.mh-tray i.f{border:2px solid #ffce2e}.mh-tray i img{width:100%;height:100%;object-fit:cover;display:block}' +
+    '.mh-btn[disabled]{opacity:.4}.mh-act{flex-wrap:wrap;justify-content:center}' +
     '@media (prefers-reduced-motion:reduce){.mh-card,.mh-hint{animation:none!important}.mh-card{transition:none}}';
   var styled = false;
   function ensureCss() { if (styled) return; styled = true; var s = document.createElement('style'); s.textContent = css; document.head.appendChild(s); }
@@ -179,5 +187,46 @@
     document.body.appendChild(ov);
   }
 
-  window.MH = { init: function (o) { if (o && o.base) CFG.base = o.base; }, reveal: reveal, album: album, view: view, src: src, label: label, kinds: kinds, total: TOTAL, preload: function () { var a = []; for (var i = 1; i <= TOTAL; i++) a.push('M' + i); preload(a); } };
+
+  /* 쿠지에 넣을 카드 고르기(연출). need 장을 고르면 onDone(ids) — 실제 차감은 서버가 mh머니로 처리한다 */
+  function pick(book, need, opts) {
+    ensureCss(); opts = opts || {};
+    var sel = {}, cnt = 0;
+    var ov = document.createElement('div'); ov.className = 'mh-ov';
+    function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    function draw() {
+      var h = '<p class="mh-t">' + esc(opts.title || '쿠지에 넣을 카드를 골라 주세요') + '</p><p class="mh-s">' + cnt + ' / ' + need + '장 선택</p><div class="mh-pk">';
+      for (var i = 1; i <= TOTAL; i++) {
+        var id = 'M' + i, n = owned(book, id), u = sel[id] || 0;
+        h += '<div class="mh-slot ' + (n ? '' : 'no') + (u ? ' sel' : '') + '" data-id="' + id + '"><img alt="' + label(id) + '" src="' + esc(n ? src(id) : back()) + '">' +
+          (n ? '<span class="c' + (u ? ' sc' : '') + '">' + (u ? u + '/' : '') + n + '</span>' : '') + '</div>';
+      }
+      h += '</div><div class="mh-tray">';
+      var chosen = []; Object.keys(sel).forEach(function (k) { for (var j = 0; j < sel[k]; j++) chosen.push(k); });
+      for (var q = 0; q < need; q++) h += chosen[q] ? '<i class="f"><img alt="" src="' + esc(src(chosen[q])) + '"></i>' : '<i></i>';
+      h += '</div><div class="mh-act"><button type="button" class="mh-btn sec" data-a="x">취소</button><button type="button" class="mh-btn sec" data-a="auto">자동으로 넣기</button><button type="button" class="mh-btn" data-a="ok"' + (cnt === need ? '' : ' disabled') + '>쿠지에 넣기</button></div>';
+      ov.innerHTML = h;
+    }
+    ov.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('button');
+      if (b) {
+        if (b.getAttribute('data-a') === 'x') { close(); return; }
+        if (b.getAttribute('data-a') === 'auto') {
+          var pool = []; for (var i = 1; i <= TOTAL; i++) for (var j = 0; j < owned(book, 'M' + i); j++) pool.push('M' + i);
+          for (var m = pool.length - 1; m > 0; m--) { var r = Math.floor(Math.random() * (m + 1)), t = pool[m]; pool[m] = pool[r]; pool[r] = t; }
+          var ids2 = pool.slice(0, need); close(); if (opts.onDone) opts.onDone(ids2); return;
+        }
+        if (b.getAttribute('data-a') === 'ok' && cnt === need) { var ids = []; Object.keys(sel).forEach(function (k) { for (var j = 0; j < sel[k]; j++) ids.push(k); }); close(); if (opts.onDone) opts.onDone(ids); }
+        return;
+      }
+      var sl = e.target.closest && e.target.closest('.mh-slot'); if (!sl) return;
+      var id = sl.getAttribute('data-id'), n = owned(book, id), u = sel[id] || 0;
+      if (!n) return;
+      if (u < n && cnt < need) { sel[id] = u + 1; cnt++; } else if (u) { cnt -= u; sel[id] = 0; }
+      draw();
+    });
+    draw(); document.body.appendChild(ov);
+  }
+
+  window.MH = { pick: pick, init: function (o) { if (o && o.base) CFG.base = o.base; }, reveal: reveal, album: album, view: view, src: src, label: label, kinds: kinds, total: TOTAL, preload: function () { var a = []; for (var i = 1; i <= TOTAL; i++) a.push('M' + i); preload(a); } };
 })();

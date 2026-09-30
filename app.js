@@ -1154,6 +1154,7 @@
     $("tgrBox").classList.toggle("show", !!o.tgr);
     $("rsTitle").textContent = o.title || "";
     $("rsDesc").textContent = o.desc || "";
+    var pi = $("rsPrizeImg"); if (pi) { pi.hidden = true; pi.style.display = "none"; pi.removeAttribute("src"); }
     $("rsNpc").hidden = true;
     $("rsPickup").hidden = true;
   }
@@ -1276,6 +1277,8 @@
     playTangerineReveal(special ? "특별" : "카드", function () {
       $("rsTitle").textContent = special ? "특별 상품 당첨!" : "직접 만든 트럼프 카드!";
       $("rsDesc").textContent = play.name || "";
+      var pim = $("rsPrizeImg"), pu = play.image;
+      if (pim && special && typeof pu === "string" && /^(https?:\/\/|data:image\/(jpeg|png|webp);base64,)/.test(pu)) { pim.src = pu; pim.hidden = false; pim.style.display = "block"; }
       if (play.demo) {
         $("rsDesc").textContent = (play.name || "") + " — 맛보기 결과예요. 수령 코드는 없어요.";
       } else if (play.pickup && play.pickup.code) {
@@ -1632,7 +1635,12 @@
     else go("scMain");
   });
 
-  $("btnPlayKuji").addEventListener("click", function () { doKuji("coin"); });
+  $("btnPlayKuji").addEventListener("click", function () {
+    var w = wallet(), K = CFG.kuji || {}, cost = w.kujiCost != null ? w.kujiCost : K.cost, bk = bookCopy(), have = 0;
+    Object.keys(bk).forEach(function (k) { if (/^M\d+$/.test(k)) have += (bk[k].given || 0) + (bk[k].pending || 0); });
+    if (window.MH && MH.pick && cost > 0 && cost <= 10 && have >= cost && !kujiBusy) MH.pick(bk, cost, { title: "쿠지에 넣을 카드 " + cost + "장을 골라 주세요", onDone: function () { doKuji("coin"); } });
+    else doKuji("coin");
+  });
   $("btnPlayPaid").addEventListener("click", function () { doKuji("paid"); });
   $("btnKujiToMission").addEventListener("click", function () { go("scMissions"); });
   $("btnCardsRefresh").addEventListener("click", function () {
