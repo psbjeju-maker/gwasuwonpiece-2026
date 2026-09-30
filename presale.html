@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사전예매 · 과수원피스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="apply.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="back-bar">
+    <a class="back-link" href="guide.html">← 이용 가이드로 돌아가기</a>
+  </div>
+
+  <div class="hero">
+    <p class="eyebrow">Presale</p>
+    <h1>항해 패스 사전예매</h1>
+    <p class="lede" id="leadTxt">과수원피스 항해 패스(6,000원) 사전예매는 <b>10월 17일(토)</b>부터 시작됩니다. 오픈되면 이 페이지에서 신청 방법을 바로 안내해 드릴게요.</p>
+    <p class="countdown" id="countTxt">—</p>
+  </div>
+
+  <div class="closing">
+    <h3>사전예매 관련 문의</h3>
+    <p><b>문의는 전화가 가장 빠릅니다.</b><br>
+    <a href="tel:064-742-0083">064-742-0083</a><br>
+    그 밖의 문의는 <a href="https://litt.ly/psb_jeju" target="_blank" rel="noopener">박서방 제주지점 SNS</a>로 주세요.</p>
+  </div>
+
+  <footer>과수원피스 · 2026.10.31 (토) 금능석물원</footer>
+
+</div>
+
+<script src="apply-core.js"></script>
+<script>
+(function () {
+  var A = window.Apply;
+  var st = A.windowState('presale');
+  var el = document.getElementById('countTxt');
+  var lead = document.getElementById('leadTxt');
+  if (st === 'before') {
+    el.textContent = A.untilText('presale');
+  } else if (st === 'open') {
+    lead.innerHTML = '항해 패스(6,000원) 사전예매가 진행 중입니다. 신청 방법은 준비 중이니 잠시만 기다려 주세요.';
+    el.textContent = '지금 사전예매 기간입니다';
+  } else {
+    lead.innerHTML = '항해 패스 사전예매가 마감되었습니다. 행사 당일 매표소에서 구입하실 수 있어요.';
+    el.textContent = '';
+  }
+})();
+</script>
+</body>
+</html>
