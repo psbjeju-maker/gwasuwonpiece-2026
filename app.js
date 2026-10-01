@@ -1321,6 +1321,7 @@
   function revealStep(text, cb, skip) { if (skip) cb(); else playTangerineReveal(text, cb); }
   function showKujiResult(play, dup, skipTgr) {
     if (!play) { renderKuji(); return; }
+    if (play.kind === "blank") { showBlankResult(play, dup, skipTgr); return; }
     if (play.kind === "coin") { showCoinResult(play, dup, skipTgr); return; }
     var special = play.kind === "special";
     resultBase({ burst: "KUJI", tgr: !skipTgr });
@@ -1345,6 +1346,20 @@
     $("btnResultOk").dataset.go = "kuji";
   }
 
+  function showBlankResult(play, dup, skipTgr) {
+    resultBase({ burst: "KUJI", tgr: !skipTgr });
+    show("scResult");
+    if (dup) toast("이미 처리된 결과예요. 다시 보여 드릴게요");
+    revealStep("카드", function () {
+      $("rsTitle").textContent = play.name || "꽝";
+      $("rsDesc").textContent = "이번엔 아쉽게 꽝이에요. 다음 미션으로 카드를 모아 또 도전해요.";
+      $("rsNpcText").textContent = "다음엔 꼭 될 거야!";
+      setNpc($("rsNpcImg"), "success");
+      $("rsNpc").hidden = false;
+    }, skipTgr);
+    $("btnResultOk").textContent = "확인";
+    $("btnResultOk").dataset.go = "kuji";
+  }
   function showCoinResult(play, dup, skipTgr) {
     var n = play.coinReward || (play.cards && play.cards.length) || 1;
     resultBase({ burst: "KUJI", tgr: !skipTgr });

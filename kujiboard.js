@@ -49,6 +49,9 @@
   /* 상 이름 → 봉인지 연출(등급 글자·강도) */
   function sealItem(play, opts) {
     var img = (typeof play.image === 'string' && /^(https?:\/\/|data:image\/(jpeg|png|webp);base64,)/.test(play.image)) ? play.image : '';
+    if (play.kind === 'blank') {
+      return { label: '꽝', name: play.name || '꽝', img: '', power: '약' };
+    }
     if (play.kind === 'coin') {
       return { label: 'mh머니', name: 'mh머니 카드 ' + ((play.cards && play.cards.length) || 1) + '장', img: '', power: '약' };
     }
