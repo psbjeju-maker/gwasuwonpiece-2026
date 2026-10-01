@@ -54,8 +54,8 @@
     '.mh-alb{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}' +
     '.mh-slot{position:relative;aspect-ratio:400/604;border-radius:6%;overflow:hidden;background:#dfe6f2;box-shadow:0 2px 6px rgba(0,0,0,.25)}' +
     '.mh-slot img{width:100%;height:100%;object-fit:cover;display:block}' +
-    '.mh-slot.no img{filter:grayscale(.35);opacity:.3}' +
-    '.mh-slot.no.seen img{opacity:.5}' +
+    '.mh-slot.no img{filter:grayscale(1) brightness(.14);opacity:1}' +
+    '.mh-slot.no.seen img{filter:none;opacity:.55}' +
     '.mh-slot .n{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-weight:900;font-size:clamp(14px,4.5vw,22px);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8)}' +
     '.mh-slot .c{position:absolute;top:4px;right:4px;background:#1E5AA8;color:#fff;font-size:12px;font-weight:800;padding:1px 7px;border-radius:99px;box-shadow:0 1px 4px rgba(0,0,0,.4)}' +
     '.mh-alb-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px;font-weight:800}' +
@@ -170,7 +170,7 @@
       h += '<div class="mh-slot ' + (n ? '' : ev ? 'no seen' : 'no') + '" data-id="' + id + '"><img alt="' + (n ? label(id) + ' 카드' : ev ? label(id) + ' 카드(도감)' : '아직 없는 카드') + '" loading="lazy" src="' + esc(src(id)) + '">' +
         (n > 1 ? '<span class="c">×' + n + '</span>' : '') + '' + '</div>';
     }
-    h += '</div>' + (c === TOTAL ? '<div class="mh-done">🎉 13장 컴플리트!</div>' : '<p style="font-size:13px;opacity:.75;margin:10px 0 0">진한 카드는 지금 가진 카드, 흐린 카드는 도감에만 있어요. 숫자는 지금 가진 장수예요.</p>');
+    h += '</div>' + (c === TOTAL ? '<div class="mh-done">🎉 13장 컴플리트!</div>' : '<p style="font-size:13px;opacity:.75;margin:10px 0 0">선명한 카드는 지금 가진 카드, 반투명 카드는 도감에만 있어요, 어두운 카드는 아직 못 만난 카드예요. 숫자는 지금 가진 장수예요.</p>');
     el.innerHTML = h;
     el.onclick = function (e) {
       var slot = e.target.closest && e.target.closest('.mh-slot'); if (!slot) return;
