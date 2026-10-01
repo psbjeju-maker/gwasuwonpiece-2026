@@ -163,7 +163,7 @@
   function album(el, book, onTap) {
     ensureCss(); if (!el) return;
     var c = kinds(book);
-    var h = '<div class="mh-alb-h"><span>내 트럼프 카드</span><small>' + c + ' / ' + TOTAL + '종</small></div>' +
+    var h = '<div class="mh-alb-h"><span>수집 현황</span><small>' + c + ' / ' + TOTAL + '종</small></div>' +
       '<div class="mh-alb-bar"><i style="width:' + Math.round(c / TOTAL * 100) + '%"></i></div><div class="mh-alb">';
     for (var i = 1; i <= TOTAL; i++) {
       var id = 'M' + i, n = owned(book, id), ev = ever(book, id);
