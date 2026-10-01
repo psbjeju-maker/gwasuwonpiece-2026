@@ -54,7 +54,7 @@
     '.mh-alb{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}' +
     '.mh-slot{position:relative;aspect-ratio:400/604;border-radius:6%;overflow:hidden;background:#dfe6f2;box-shadow:0 2px 6px rgba(0,0,0,.25)}' +
     '.mh-slot img{width:100%;height:100%;object-fit:cover;display:block}' +
-    '.mh-slot.no img{filter:grayscale(1) brightness(.04);opacity:1}' +
+    '.mh-slot.no img{filter:grayscale(1) brightness(.3) contrast(.8);opacity:1}' +
     '.mh-slot.no.seen img{filter:none;opacity:.55}' +
     '.mh-slot .n{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-weight:900;font-size:clamp(14px,4.5vw,22px);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8)}' +
     '.mh-slot .c{position:absolute;top:4px;right:4px;background:#1E5AA8;color:#fff;font-size:12px;font-weight:800;padding:1px 7px;border-radius:99px;box-shadow:0 1px 4px rgba(0,0,0,.4)}' +
