@@ -1566,13 +1566,22 @@
   $("inRecPhone").addEventListener("input", fmtPhoneInput);
   $("btnBootRetry").addEventListener("click", boot);
 
+  /* 닉네임을 3번 틀리면 서버가 잠그고 스태프에게 보낸다 — 더 눌러봤자 안 되니 입력을 막아둔다 */
+  function setRecoverLocked(locked) {
+    $("inRecNick").disabled = locked;
+    $("inRecPhone").disabled = locked;
+    $("btnRecover").disabled = locked;
+  }
+
   $("btnShowRecover").addEventListener("click", function () {
     $("registerBox").hidden = true; $("recoverBox").hidden = false;
     if ($("inPhone").value && !$("inRecPhone").value) $("inRecPhone").value = $("inPhone").value;
+    setRecoverLocked(false);
     setMsg("recErr", "");
   });
   $("btnHideRecover").addEventListener("click", function () {
     $("recoverBox").hidden = true; $("registerBox").hidden = false;
+    setRecoverLocked(false);
   });
 
   $("btnJoin").addEventListener("click", function () {
@@ -1596,15 +1605,29 @@
         refresh().then(function () { enterApp("이미 등록된 참가자예요. 이어서 진행합니다"); }, function (e) { setMsg("joinErr", errText(e)); });
       }
     }, function (e) {
-      btn.disabled = false; btn.textContent = "항해일지에 기록하기";
       e = errInfo(e);
-      if (e.reason === "phone-registered") {
-        $("registerBox").hidden = true; $("recoverBox").hidden = false;
-        $("inRecPhone").value = phone;
-        setMsg("recErr", "이미 등록된 번호예요. 아래 버튼을 눌러 이어서 진행하세요.");
+      if (e.reason !== "phone-registered") {
+        btn.disabled = false; btn.textContent = "항해일지에 기록하기";
+        setMsg("joinErr", errText(e));
         return;
       }
-      setMsg("joinErr", errText(e));
+      /* 이미 등록된 번호 — 방금 입력한 닉네임이 맞으면 되묻지 않고 바로 이어서 들어가게 한다 */
+      btn.textContent = "확인하는 중…";
+      EV.recover(phone, nick).then(function () {
+        return refresh().then(function () {
+          btn.disabled = false; btn.textContent = "항해일지에 기록하기";
+          heroMode = "revisit"; Sound.want("ocean");
+          enterApp("이미 등록된 참가자예요. 이어서 진행합니다");
+        });
+      }).catch(function (e2) {
+        btn.disabled = false; btn.textContent = "항해일지에 기록하기";
+        e2 = errInfo(e2);
+        $("registerBox").hidden = true; $("recoverBox").hidden = false;
+        $("inRecPhone").value = phone; $("inRecNick").value = nick;
+        setRecoverLocked(e2.reason === "recover-locked");
+        setMsg("recErr", e2.reason === "recover-locked" ? errText(e2) :
+          "입력한 닉네임이 처음 등록할 때와 달라요. 다시 확인해 주세요.");
+      });
     });
   });
 
@@ -1629,6 +1652,8 @@
       });
     }).catch(function (e) {
       btn.disabled = false; btn.textContent = "이어서 하기";
+      e = errInfo(e);
+      setRecoverLocked(e.reason === "recover-locked");
       setMsg("recErr", errText(e));
     });
   });
