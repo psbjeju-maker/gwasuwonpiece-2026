@@ -131,7 +131,8 @@
     function setToggleUI() {
       var b = $("soundToggle");
       if (!b) return;
-      b.textContent = on ? "🔊" : "🔇";
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>' +
+        (on ? '<path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>' : '<path d="M16 9.5l5 5M21 9.5l-5 5"/>') + '</svg>';
       b.setAttribute("aria-pressed", on ? "true" : "false");
     }
 
@@ -700,50 +701,51 @@
   }
   function voteIdOf(m) { return m.auto && m.auto.indexOf("vote:") === 0 ? m.auto.slice(5) : null; }
 
-  function renderMissions() {
-    var list = visibleMissions();
-    var done = list.filter(function (m) { return missionCount(m.id) > 0; }).length;
-    $("mNow").textContent = done;
-    $("mAll").textContent = list.length;
-    $("mBar").style.transform = "scaleX(" + (list.length ? (done / list.length) : 0) + ")";
-    setMsg("missionErr", "");
+  /* 미션 묶음 — 부스(스태프 확인) / 앱 안에서 / 무대 투표 */
+  var MGROUPS = [
+    { id: "booth", title: "부스 미션", sub: "부스 스태프에게 참가코드를 보여주세요" },
+    { id: "app",   title: "앱 미션",   sub: "폰으로 바로 도전해요" },
+    { id: "stage", title: "무대 투표", sub: "무대 시간에 열려요" }
+  ];
+  function missionGroup(m) {
+    if (voteIdOf(m)) return "stage";
+    if (m.auto === "catch" || m.auto === "reaction" || m.auto === "treasureClear") return "app";
+    return "booth";
+  }
+  function badgeSrc(m) { return A.BASE + "badges/" + m.id + ".webp"; }
 
-    var html = "";
-    list.forEach(function (m) {
-      var c = cfgMission(m.id) || {};
-      var cnt = missionCount(m.id), ok = cnt > 0;
-      var inApp = m.auto === "catch" || m.auto === "reaction";
-      var vid = voteIdOf(m);
-      var how = "", action = "";
+  /* 미션 하나의 안내 문구(how)와 실행 버튼(action) */
+  function missionAction(m) {
+    var c = cfgMission(m.id) || {};
+    var ok = missionCount(m.id) > 0;
+    var inApp = m.auto === "catch" || m.auto === "reaction";
+    var vid = voteIdOf(m);
+    var how = "", action = "";
+    if (m.auto === "treasureClear") {
+      how = ok ? "보물찾기를 끝냈어요" : "보물찾기에서 단서를 모아 최종 질문을 풀어요";
+      action = '<button type="button" class="btn primary" data-treasure="1">보물찾기로 가기</button>';
+    } else if (c.verify === "staff") {
+      var again = m.id === "m11" || (c.replayReward && c.replayMax > 1);
+      how = ok ? (again ? "또 도전하면 다시 받을 수 있어요" : "완료했어요") : "부스 스태프에게 참가코드를 보여주세요";
+      if ((!ok || again) && window.KB) action = '<button type="button" class="btn primary" data-staffpin="' + m.id + '">스태프 확인 (PIN 입력)</button>';
+    } else if (inApp) {
+      if (pendingClaims[m.id]) action = '<button type="button" class="btn primary" data-retry="' + m.id + '">코인 받기 다시 시도</button>';
+      else action = '<button type="button" class="btn primary" data-mid="' + m.id + '">' + (ok ? "다시 도전" : "도전하기") + '</button>';
+    } else if (vid) {
+      var picked = P.votes[vid];
+      if (!ok && picked) action = '<button type="button" class="btn primary" data-votecoin="' + m.id + '">코인 받기</button>';
+      else if (!ok) action = '<button type="button" class="btn primary" data-votego="' + vid + '">투표하러 가기</button>';
+      var v = D.votes && D.votes[vid];
+      how = ok ? "투표 완료" : (v ? ("투표 시간 " + v.opensAt + " ~ " + v.closesAt) : "");
+    }
+    return { how: how, action: action, ok: ok };
+  }
 
-      if (c.verify === "staff") {
-        var again = m.id === "m11";
-        how = ok ? (again ? "새 게시물을 올리면 또 받을 수 있어요" : "") : "스태프 확인 · 참가코드를 보여주세요";
-        if ((!ok || again) && window.KB) action = '<button type="button" class="mgo" data-staffpin="' + m.id + '">스태프 확인 (PIN)</button>';
-      } else if (inApp) {
-        if (pendingClaims[m.id]) action = '<button type="button" class="mgo" data-retry="' + m.id + '">코인 받기 다시 시도</button>';
-        else action = '<button type="button" class="mgo" data-mid="' + m.id + '">' + (ok ? "다시 도전" : "도전하기") + '</button>';
-      } else if (vid) {
-        var picked = P.votes[vid];
-        if (ok) how = "";
-        else if (picked) action = '<button type="button" class="mgo" data-votecoin="' + m.id + '">코인 받기</button>';
-        else action = '<button type="button" class="mgo" data-votego="' + vid + '">투표하러 가기</button>';
-      } else if (!ok) {
-        how = "스태프 확인 · 참가코드를 보여주세요";
-        if (window.KB) action = '<button type="button" class="mgo" data-staffpin="' + m.id + '">스태프 확인 (PIN)</button>';
-      }
-      var state = '<span class="mstate ' + (ok ? 'done">완료' : 'todo">시작 전') + '</span>' +
-        (how ? '<span class="mhow">' + how + '</span>' : '');
-      html += '<div class="mitem' + (ok ? ' done' : '') + '">' +
-        '<div class="chk" aria-hidden="true">' + (ok ? '✓' : '') + '</div>' +
-        '<div class="tx"><h4>' + esc(m.name) + '</h4><p>' + esc(m.desc) + '</p>' + state +
-        (action ? '<br>' + action : '') + '</div></div>';
-    });
-    $("mlist").innerHTML = html || '<p class="maphint" style="margin:0">지금 열려 있는 미션이 없어요</p>';
-
-    $("mlist").querySelectorAll(".mgo").forEach(function (btn) {
+  function bindMissionActions(root, before) {
+    root.querySelectorAll("[data-mid],[data-retry],[data-votecoin],[data-votego],[data-staffpin],[data-treasure]").forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.stopPropagation();
+        if (before) before();
         if (btn.dataset.mid) {
           var mm = (D.missions || []).filter(function (x) { return x.id === btn.dataset.mid; })[0];
           if (mm && mm.auto === "catch") openCatch(mm.id);
@@ -758,9 +760,60 @@
           openVote(btn.dataset.votego);
         } else if (btn.dataset.staffpin) {
           askStaffPin(btn.dataset.staffpin);
+        } else if (btn.dataset.treasure) {
+          showTab("scMain");
         }
       });
     });
+  }
+
+  function renderMissions() {
+    var list = visibleMissions();
+    var done = list.filter(function (m) { return missionCount(m.id) > 0; }).length;
+    $("mNow").textContent = done;
+    $("mAll").textContent = list.length;
+    $("mBar").style.transform = "scaleX(" + (list.length ? (done / list.length) : 0) + ")";
+    setMsg("missionErr", "");
+
+    var html = "";
+    MGROUPS.forEach(function (g) {
+      var items = list.filter(function (m) { return missionGroup(m) === g.id; });
+      if (!items.length) return;
+      var gd = items.filter(function (m) { return missionCount(m.id) > 0; }).length;
+      html += '<section class="mgroup"><div class="mg-head"><h3>' + g.title + '</h3><span class="mg-cnt">' + gd + ' / ' + items.length + '</span></div>' +
+        '<p class="mg-sub">' + g.sub + '</p><div class="mgrid">';
+      items.forEach(function (m) {
+        var cnt = missionCount(m.id), ok = cnt > 0;
+        html += '<button type="button" class="mtile' + (ok ? ' done' : '') + '" data-open="' + m.id + '">' +
+          '<span class="mbadge"><img src="' + badgeSrc(m) + '" alt="" loading="lazy">' +
+          (ok ? '<i class="mcheck" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></svg></i>' : '') + '</span>' +
+          '<span class="mname">' + esc(m.name) + '</span>' +
+          '<span class="mstat">' + (ok ? (cnt > 1 ? '완료 ×' + cnt : '완료') : '도전 전') + '</span></button>';
+      });
+      html += '</div></section>';
+    });
+    $("mlist").innerHTML = html || '<p class="maphint" style="margin:0">지금 열려 있는 미션이 없어요</p>';
+    $("mlist").querySelectorAll("[data-open]").forEach(function (b) {
+      b.addEventListener("click", function () { openMissionSheet(b.dataset.open); });
+    });
+  }
+
+  function closeMissionSheet() { $("msheet").hidden = true; document.body.classList.remove("sheet-open"); }
+  function openMissionSheet(mid) {
+    var m = (D.missions || []).filter(function (x) { return x.id === mid; })[0];
+    if (!m) return;
+    var a = missionAction(m), g = missionGroup(m), cnt = missionCount(m.id);
+    var code = ST && ST.participant ? ST.participant.code : "";
+    $("msBody").innerHTML =
+      '<img class="ms-badge' + (a.ok ? '' : ' todo') + '" src="' + badgeSrc(m) + '" alt="">' +
+      '<h3 class="ms-name">' + esc(m.name) + '</h3>' +
+      '<p class="ms-desc">' + esc(m.desc) + '</p>' +
+      '<p class="ms-state ' + (a.ok ? 'done' : 'todo') + '">' + (a.ok ? (cnt > 1 ? '완료 ×' + cnt : '완료') : '도전 전') + (a.how ? ' · ' + esc(a.how) : '') + '</p>' +
+      (g === "booth" && code ? '<div class="ms-code"><span>내 참가코드</span><b>' + esc(code) + '</b></div>' : '') +
+      (a.action || '');
+    bindMissionActions($("msBody"), closeMissionSheet);
+    $("msheet").hidden = false;
+    document.body.classList.add("sheet-open");
   }
 
   /* 스태프가 참가자 폰에 PIN 을 눌러 확인 → 카드 지급 */
@@ -995,15 +1048,15 @@
     $("coinNum").textContent = coins();
     $("topCoins").textContent = coins();
     $("kjCoins").textContent = coins();
-    var dots = "";
-    if (mAll <= 16) for (var i = 0; i < mAll; i++) dots += '<i' + (i < mDone ? ' class="on"' : '') + '></i>';
-    $("mDots").innerHTML = dots;
 
     var T = treasure();
+    $("clueNum").textContent = T ? (T.clues || []).length : 0;
+    $("clueAllNum").textContent = clueIds().length;
     $("treasureSub").textContent = T ? ("단서 " + (T.clues || []).length + " / " + clueIds().length) : "곧 열려요";
     var left = mAll - mDone;
     $("missionSub").textContent = mAll === 0 ? "곧 열려요" : (left > 0 ? ("남은 미션 " + left + "개") : "미션을 모두 해 봤어요");
-    $("kujiSub").textContent = coinName() + " " + coins() + "개 · 결과는 바로 나와요";
+    var cost = (ST && ST.wallet && ST.wallet.kujiCost) || 3, plays = Math.floor(coins() / cost);
+    $("kujiSub").textContent = plays > 0 ? ("지금 " + plays + "번 뽑을 수 있어요") : ("카드 " + cost + "장으로 1번");
     applyCoinName();
     renderShortcuts();
   }
@@ -1014,10 +1067,7 @@
       secTime: !!(D.timetable && D.timetable.length),
       secVote: !!(D.votes && Object.keys(D.votes).length)
     };
-    document.querySelectorAll("#shortcuts [data-jump]").forEach(function (b) { b.hidden = !has[b.dataset.jump]; });
     ["secMap", "secTime", "secVote"].forEach(function (id) { $(id).hidden = !has[id]; });
-    $("voteCards").hidden = !has.secVote;
-    $("timetable").hidden = !has.secTime;
   }
 
   function renderHome() {
@@ -1079,9 +1129,11 @@
     $("pgNow").textContent = got;
     $("pgAll").textContent = all;
     $("pgBar").style.transform = "scaleX(" + (all ? (got / all) : 0) + ")";
-    $("pgNote").textContent = T.minClues != null
-      ? ("보물 수령에 필요한 단서: " + T.minClues + "개")
-      : "보물 수령에 필요한 단서 수는 현장 공지를 확인해 주세요.";
+    var capsule = !!(CFG.treasure && CFG.treasure.perPersonLimit);
+    document.querySelector(".claimcard").hidden = !capsule && !(T.claims || []).length;
+    $("pgNote").textContent = got >= all && all
+      ? "단서를 모두 모았어요! 완성된 질문의 답을 맞혀 보세요."
+      : "단서 글자를 모아 최종 질문을 완성하세요. 다 모으지 않아도 답을 알겠다면 도전할 수 있어요.";
 
     var html = "";
     ids.forEach(function (id, i) {
@@ -1383,6 +1435,7 @@
   function renderCards() {
     setMsg("cardsErr", "");
     var plays = (ST && ST.plays) || [], book = (ST && ST.cardBook) || {};
+
     var nameOf = {};
     plays.forEach(function (p) { if (p.cardId && p.name && !nameOf[p.cardId]) nameOf[p.cardId] = p.name; });
 
@@ -1565,6 +1618,8 @@
   $("inPhone").addEventListener("input", fmtPhoneInput);
   $("inRecPhone").addEventListener("input", fmtPhoneInput);
   $("btnBootRetry").addEventListener("click", boot);
+  $("msDim").addEventListener("click", closeMissionSheet);
+  $("msClose").addEventListener("click", closeMissionSheet);
 
   /* 닉네임을 3번 틀리면 서버가 잠그고 스태프에게 보낸다 — 더 눌러봤자 안 되니 입력을 막아둔다 */
   function setRecoverLocked(locked) {
@@ -1687,15 +1742,12 @@
   /* ---------- 내비게이션 ---------- */
   $("goTreasure").addEventListener("click", function () { heroMode = null; go("scMain"); });
   $("goMissions").addEventListener("click", function () { heroMode = null; go("scMissions"); });
-  $("statsStrip").addEventListener("click", function () { go("scMissions"); });
-  $("goKuji").addEventListener("click", function () { go("scKuji"); });
-  $("btnTopCoins").addEventListener("click", function () { go("scKuji"); });
-  document.querySelectorAll("#shortcuts [data-jump]").forEach(function (b) {
-    b.addEventListener("click", function () {
-      var t = $(b.dataset.jump);
-      if (t) t.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-    });
+  document.querySelectorAll("#statsStrip [data-go]").forEach(function (b) {
+    b.addEventListener("click", function () { heroMode = null; go(b.dataset.go); });
   });
+  $("goKuji").addEventListener("click", function () { go("scKuji"); });
+  $("goCards").addEventListener("click", function () { go("scCards"); });
+  $("btnTopCoins").addEventListener("click", function () { go("scKuji"); });
   $("tabMission").addEventListener("click", function () { go("scMissions"); });
   $("tabTreasure").addEventListener("click", function () { go("scMain"); });
   $("tabMission2").addEventListener("click", function () { go("scMissions"); });

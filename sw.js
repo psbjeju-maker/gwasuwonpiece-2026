@@ -1,5 +1,5 @@
 /* 오프라인 대응 — 한 번 열어두면 신호가 없어도 QR이 열리고 채점까지 된다. */
-var CACHE = "ggg-v36";
+var CACHE = "ggg-v37";
 var FILES = [
   "./", "./index.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./qr.js", "./ev-client.js", "./mhcards.js", "./kujiboard.js", "./seal.js", "./sfx.js", "./app.js", "./catch.js", "./map.jpg",
   "./guide.html",
@@ -18,7 +18,9 @@ var FILES = [
   "./audio/opening.mp3", "./audio/ocean.mp3",
   /* mh머니 트럼프 카드 */
   "./assets/cards/back.webp", "./assets/cards/H1.webp", "./assets/cards/H2.webp", "./assets/cards/H3.webp", "./assets/cards/H4.webp", "./assets/cards/H5.webp", "./assets/cards/H6.webp", "./assets/cards/H7.webp", "./assets/cards/H8.webp", "./assets/cards/H9.webp", "./assets/cards/H10.webp", "./assets/cards/H11.webp", "./assets/cards/H12.webp", "./assets/cards/H13.webp",
-  "./assets/sfx/reveal_low.mp3", "./assets/sfx/reveal_mid.mp3", "./assets/sfx/reveal_top.mp3", "./assets/sfx/reveal_rainbow.mp3", "./assets/sfx/ui_confirm.mp3", "./assets/sfx/ui_select.mp3"
+  "./assets/sfx/reveal_low.mp3", "./assets/sfx/reveal_mid.mp3", "./assets/sfx/reveal_top.mp3", "./assets/sfx/reveal_rainbow.mp3", "./assets/sfx/ui_confirm.mp3", "./assets/sfx/ui_select.mp3",
+  /* 2026-10-05 미션 배지 */
+  "./assets/badges/m01.webp", "./assets/badges/m02.webp", "./assets/badges/m03.webp", "./assets/badges/m04.webp", "./assets/badges/m05.webp", "./assets/badges/m07.webp", "./assets/badges/m09.webp", "./assets/badges/m10.webp", "./assets/badges/m11.webp", "./assets/badges/m12.webp", "./assets/badges/m13.webp", "./assets/badges/m14.webp"
 ];
 
 self.addEventListener("install", function (e) {

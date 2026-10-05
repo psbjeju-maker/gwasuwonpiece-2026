@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/icons/golden_tangerine.png">
 <link rel="apple-touch-icon" href="assets/icons/golden_tangerine.png">
 <title>황금 귤을 찾아라</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -179,20 +179,23 @@
     </div>
 
     <!-- 진행 요약 -->
-    <button class="stats" id="statsStrip" type="button" aria-label="미션 보기">
-      <div class="stat">
-        <span class="stat-lbl">해 본 미션</span>
-        <span class="stat-num"><b id="mDoneNum">0</b><small> / <span id="mAllNum">0</span></small></span>
-        <div class="dots" id="mDots" aria-hidden="true"></div>
-      </div>
-      <div class="stat stat-t">
-        <span class="stat-lbl coinname">귤코인</span>
-        <span class="stat-num"><b id="coinNum">0</b><small>개</small></span>
-      </div>
-    </button>
+    <div class="stat3" id="statsStrip">
+      <button class="s3" type="button" data-go="scMissions">
+        <span class="s3-lbl">미션</span>
+        <span class="s3-num"><b id="mDoneNum">0</b><small>/<span id="mAllNum">0</span></small></span>
+      </button>
+      <button class="s3" type="button" data-go="scMain">
+        <span class="s3-lbl">단서</span>
+        <span class="s3-num"><b id="clueNum">0</b><small>/<span id="clueAllNum">0</span></small></span>
+      </button>
+      <button class="s3" type="button" data-go="scKuji">
+        <span class="s3-lbl coinname">mh머니</span>
+        <span class="s3-num"><b id="coinNum">0</b><small>장</small></span>
+      </button>
+    </div>
 
     <!-- 주요 행동 -->
-    <div class="acts2">
+    <div class="acts4">
       <button class="actcard" id="goTreasure" type="button">
         <img src="assets/icons/compass.png" alt="" aria-hidden="true">
         <span class="act-title">보물찾기</span>
@@ -203,39 +206,31 @@
         <span class="act-title">미션</span>
         <span class="act-sub" id="missionSub">오늘의 도전 확인</span>
       </button>
-    </div>
-
-    <!-- 바로가기 — 데이터가 있는 것만 JS가 보여준다 -->
-    <div class="shortcuts" id="shortcuts">
-      <button class="shortcut" data-jump="secMap" type="button" hidden>
-        <img src="assets/icons/map.png" alt="" aria-hidden="true"><span>행사 지도</span>
-      </button>
-      <button class="shortcut" data-jump="secTime" type="button" hidden>
-        <svg class="shortcut-svg" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="25" r="16"/><path d="M24 16v10l7 4"/><path d="M12 9l-4 4M36 9l4 4"/></svg>
-        <span>타임테이블</span>
-      </button>
-      <button class="shortcut" data-jump="secVote" type="button" hidden>
-        <img src="assets/icons/vote.png" alt="" aria-hidden="true"><span>투표</span>
-      </button>
-    </div>
-
-    <!-- 쿠지 바로가기 -->
-    <button class="rewardsum" id="goKuji" type="button">
-      <img src="assets/icons/ticket.png" alt="" aria-hidden="true">
-      <span class="rs-body">
+      <button class="actcard" id="goKuji" type="button">
+        <img src="assets/icons/ticket.png" alt="" aria-hidden="true">
         <span class="act-title">디지털 쿠지</span>
-        <span class="act-sub" id="kujiSub">코인으로 도전해 보세요</span>
-      </span>
-    </button>
+        <span class="act-sub" id="kujiSub">카드 3장으로 1번</span>
+      </button>
+      <button class="actcard" id="goCards" type="button">
+        <img src="assets/icons/treasure_chest.png" alt="" aria-hidden="true">
+        <span class="act-title">내 카드</span>
+        <span class="act-sub" id="cardsSub">모은 카드와 상품</span>
+      </button>
+    </div>
 
-    <h2 class="secttl" id="secVote">실시간 투표</h2>
-    <div class="votecards" id="voteCards"></div>
-
-    <h2 class="secttl" id="secTime">오늘 타임테이블</h2>
-    <div class="ttable" id="timetable"></div>
-
-    <h2 class="secttl" id="secMap">행사 지도</h2>
-    <div class="mapbox" id="homeMapBox"></div>
+    <!-- 행사 정보 — 접어 두고 필요할 때 연다 -->
+    <details class="fold" id="secVote">
+      <summary><img src="assets/icons/vote.png" alt="" aria-hidden="true"><span>실시간 투표</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="votecards" id="voteCards"></div>
+    </details>
+    <details class="fold" id="secTime">
+      <summary><svg class="fold-ic" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="25" r="16"/><path d="M24 16v10l7 4"/></svg><span>오늘 타임테이블</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="ttable" id="timetable"></div>
+    </details>
+    <details class="fold" id="secMap">
+      <summary><img src="assets/icons/map.png" alt="" aria-hidden="true"><span>행사 지도</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="mapbox" id="homeMapBox"></div>
+    </details>
   </section>
 
   <!-- ══ 2-1. 미션 ══ -->
@@ -493,6 +488,15 @@
 
 </div>
 
+<!-- 미션 상세 시트 -->
+<div class="msheet" id="msheet" hidden>
+  <div class="ms-dim" id="msDim"></div>
+  <div class="ms-panel" role="dialog" aria-modal="true" aria-label="미션 상세">
+    <button class="ms-close" id="msClose" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div id="msBody"></div>
+  </div>
+</div>
+
 <nav class="navbar" id="navbar" aria-label="주요 화면">
   <button class="navbtn" data-nav="scHome" type="button">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>홈
@@ -546,6 +550,6 @@
 <script src="mhcards.js?v=4"></script>
 <script src="kujiboard.js?v=2"></script>
 <script src="catch.js"></script>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

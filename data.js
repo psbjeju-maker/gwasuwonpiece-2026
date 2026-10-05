@@ -115,7 +115,7 @@ window.GAME_DATA = {
   missions: [
     { id: "m01", name: "코스프레하기",          desc: "오늘 하루, 캐릭터가 되어보세요" },
     { id: "m02", name: "코스어와 사진찍기",      desc: "코스프레 참가자와 함께 사진을 남겨보세요" },
-    { id: "m03", name: "황금 귤 찾기 완료",       desc: "보물 캡슐을 찾으면 스태프가 확인해요", auto: "treasureClear" },
+    { id: "m03", name: "보물찾기 완료",          desc: "GPS 단서를 모아 최종 질문의 답을 맞혀요", auto: "treasureClear" },
     { id: "m04", name: "양궁미션",              desc: "양궁 미션 부스에 도전하세요" },
     { id: "m05", name: "사격미션",              desc: "사격 미션 부스에 도전하세요" },
     { id: "m07", name: "고리던지기",             desc: "고리던지기 미션 부스에 도전하세요" },
@@ -123,8 +123,8 @@ window.GAME_DATA = {
     { id: "m09", name: "반응속도게임",           desc: "앱 안에서 바로 도전! 신호가 오면 화면을 터치하세요", auto: "reaction" },
     { id: "m10", name: "물품구매하기",           desc: "마켓에서 물품을 구매해보세요" },
     { id: "m11", name: "SNS게시하기",           desc: "행사 사진을 SNS에 올리고 스태프에게 보여주세요" },
-    { id: "m12", name: "노래&댄스 무대 투표하기", desc: "무대 투표에 참여하면 자동 완료", auto: "vote:singdance" },
-    { id: "m13", name: "랜덤 플레이 댄스 투표하기", desc: "랜덤 플레이 댄스 투표에 참여하면 자동 완료", auto: "vote:randomdance" }
+    { id: "m12", name: "무대 투표", desc: "무대 투표에 참여하면 자동 완료", auto: "vote:singdance" },
+    { id: "m13", name: "랜덤댄스 투표", desc: "랜덤 플레이 댄스 투표에 참여하면 자동 완료", auto: "vote:randomdance" }
   ],
 
   /* ---------- 실시간 투표 ----------
