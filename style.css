@@ -612,3 +612,13 @@ body.sheet-open{overflow:hidden;}
   text-shadow:0 1px 4px rgba(0,0,0,.6);}
 .qs-close{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(28px + var(--safe-b));min-width:160px;min-height:52px;border-radius:999px;
   border:1px solid rgba(255,255,255,.5);background:rgba(20,36,57,.7);color:#fff;font-size:17px;font-weight:700;cursor:pointer;}
+
+/* 미션 고르기 시트 */
+.pick{display:flex;flex-direction:column;gap:8px;margin-top:14px;max-height:56vh;overflow:auto;text-align:left;}
+.pickrow{display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);
+  font-size:16px;font-weight:700;cursor:pointer;}
+.pickrow:active{background:var(--surface-2);}
+.pickrow img{width:44px;height:44px;flex:none;}
+.pickrow span{flex:1;}
+.pickrow em{font-style:normal;font-size:12px;color:var(--teal-deep);background:var(--teal-soft);padding:1px 8px;border-radius:999px;}
+.pickrow em:empty{display:none;}

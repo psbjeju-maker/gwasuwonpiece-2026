@@ -345,9 +345,15 @@
     var d = new Date(); return d.getHours() * 60 + d.getMinutes();
   }
 
+  /* 행사 당일인지(한국 시간). 시간대 안내·LIVE 표시는 당일에만 쓴다 */
+  function isEventDay() {
+    var day = (D.settings && D.settings.eventDate) || "2026-10-31";
+    var t = (ST && ST.serverTime) ? ST.serverTime + (Date.now() - (ST._recvAt || Date.now())) : Date.now();
+    return new Date(t + 9 * 3600e3).toISOString().slice(0, 10) === day;
+  }
   function checkScheduleQuests() {
     var list = D.scheduleQuests || [];
-    if (!list.length || !ST) return;
+    if (!list.length || !ST || !isEventDay()) return;
     var nm = nowMin(), changed = false, toShow = null, toShowAvatar = null;
     list.forEach(function (q) {
       if (P.seenSchedule.indexOf(q.id) >= 0) return;
@@ -426,7 +432,7 @@
     if (refreshing) return refreshing;
     refreshing = EV.state(EVENT).then(function (s) {
       refreshing = null;
-      ST = s;
+      ST = s; ST._recvAt = Date.now();
       CFG = s.cfg || {};
       applyCoinName();
       updateCodeBar();
@@ -704,7 +710,7 @@
 
   /* 미션 묶음 — 부스(스태프 확인) / 앱 안에서 / 무대 투표 */
   var MGROUPS = [
-    { id: "booth", title: "부스 미션", sub: "부스에 붙은 QR을 찍으면 바로 완료돼요" },
+    { id: "booth", title: "부스 미션", sub: "미션을 고르고 미션 QR을 찍으면 완료돼요" },
     { id: "app",   title: "앱 미션",   sub: "폰으로 바로 도전해요" },
     { id: "stage", title: "무대 투표", sub: "무대 시간에 열려요" }
   ];
@@ -728,8 +734,8 @@
       action = '<button type="button" class="btn primary" data-treasure="1">보물찾기로 가기</button>';
     } else if (c.verify === "staff") {
       var again = m.id === "m11" || (c.replayReward && c.replayMax > 1);
-      how = ok ? (again ? "또 도전하고 QR을 찍으면 다시 받아요" : "완료했어요") : "부스에 붙은 QR을 찍으면 완료돼요";
-      if (!ok || again) action = '<button type="button" class="btn primary" data-scan="1">' + QR_ICON + 'QR 찍기</button>';
+      how = ok ? (again ? "또 하면 QR을 찍어 다시 받아요" : "완료했어요") : "미션을 마치고 스태프가 보여 주는 QR을 찍어요";
+      if (!ok || again) action = '<button type="button" class="btn primary" data-scan="' + m.id + '">' + QR_ICON + 'QR 찍고 완료하기</button>';
     } else if (inApp) {
       if (pendingClaims[m.id]) action = '<button type="button" class="btn primary" data-retry="' + m.id + '">코인 받기 다시 시도</button>';
       else action = '<button type="button" class="btn primary" data-mid="' + m.id + '">' + (ok ? "다시 도전" : "도전하기") + '</button>';
@@ -765,7 +771,7 @@
         } else if (btn.dataset.treasure) {
           showTab("scMain");
         } else if (btn.dataset.scan) {
-          Scan.open();
+          Scan.open(btn.dataset.scan);
         }
       });
     });
@@ -828,19 +834,25 @@
     if (m) return m[1].toUpperCase();
     return /^[A-Za-z0-9]{10}$/.test(t) ? t.toUpperCase() : "";
   }
+  function passTokenFromText(t) {
+    var m = /[?&]pq=([A-Za-z0-9]+)/.exec(String(t || ""));
+    return m ? m[1].toUpperCase() : "";
+  }
+  var PQ_KEY = "ggg_pending_pq";
   function missionName(mid) {
     var m = (D.missions || []).filter(function (x) { return x.id === mid; })[0];
     return m ? m.name : "미션";
   }
   var mqBusy = false;
-  function handleMissionQr(token) {
+  function handleMissionQr(token, mid) {
     if (!token || mqBusy) return;
+    if (!mid) { openQrPicker(token); return; }
     mqBusy = true;
     var before = bookCopy();
-    EV.claimMissionQr(EVENT, token).then(function (r) {
+    EV.claimMissionQr(EVENT, token, mid).then(function (r) {
       mqBusy = false;
       var fresh = refresh().catch(function () {}).then(function () { renderMissions(); renderHud(); });
-      var name = missionName(r && r.missionId);
+      var name = missionName((r && r.missionId) || mid);
       var cards = (r && r.cards) || [];
       if (r && r.awarded > 0 && cards.length && window.MH) {
         MH.reveal(cards, { book: before, title: name + " 완료!", onClose: function () { fresh.then(function () { showTab("scMissions"); }); } });
@@ -858,10 +870,56 @@
       mqBusy = false;
       e = errInfo(e);
       if (e.reason === "pass-required") { showPassGate(); return; }
-      if (e.reason === "qr-unknown") { questLine("이 QR은 과수원피스 미션 QR이 아니야. 부스에 붙은 QR을 다시 찍어 줘.", { expr: "thinking" }); return; }
+      if (e.reason === "qr-unknown") { questLine("이 QR은 과수원피스 미션 QR이 아니야. 스태프가 보여 주는 미션 QR을 찍어 줘.", { expr: "thinking" }); return; }
       toast(errText(e));
     });
   }
+  var pqBusy = false;
+  function handlePassCard(token) {
+    if (!token || pqBusy) return;
+    pqBusy = true;
+    EV.claimPassCard(EVENT, token).then(function () {
+      pqBusy = false;
+      return refresh().catch(function () {}).then(function () {
+        enterApp(); questLine("항해 패스 확인 완료! 이제 모든 미션과 쿠지를 즐길 수 있어.", { expr: "success" });
+      });
+    }, function (e) {
+      pqBusy = false;
+      e = errInfo(e);
+      var t = e.reason === "pass-card-used" ? "이미 다른 분이 쓴 패스 카드예요. 매표소에 문의해 주세요."
+        : e.reason === "pass-card-unknown" ? "과수원피스 항해 패스 카드가 아니에요." : errText(e);
+      if ($("scPass").classList.contains("on")) setMsg("passErr", t); else toast(t);
+    });
+  }
+  function takePendingPq() {
+    var t = null;
+    try { t = sessionStorage.getItem(PQ_KEY); sessionStorage.removeItem(PQ_KEY); } catch (e) {}
+    return t;
+  }
+
+  /* 어떤 미션을 완료했는지 고르기 — token 이 있으면(카메라로 먼저 찍고 들어온 경우) 고르는 즉시 완료 */
+  function openQrPicker(token) {
+    var list = visibleMissions().filter(function (m) { return missionGroup(m) === "booth"; });
+    var h = '<h3 class="ms-name">어떤 미션을 했나요?</h3>' +
+      '<p class="ms-desc">' + (token ? "고르면 바로 완료돼요" : "고른 다음 스태프가 보여 주는 QR을 찍어요") + '</p><div class="pick">';
+    list.forEach(function (m) {
+      var cnt = missionCount(m.id);
+      h += '<button type="button" class="pickrow" data-pick="' + m.id + '"><img src="' + badgeSrc(m) + '" alt="">' +
+        '<span>' + esc(m.name) + '</span><em>' + (cnt ? (cnt > 1 ? "완료 ×" + cnt : "완료") : "") + '</em></button>';
+    });
+    h += '</div>';
+    $("msBody").innerHTML = h;
+    $("msBody").querySelectorAll("[data-pick]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        closeMissionSheet();
+        if (token) handleMissionQr(token, b.dataset.pick);
+        else Scan.open(b.dataset.pick);
+      });
+    });
+    $("msheet").hidden = false;
+    document.body.classList.add("sheet-open");
+  }
+
   function takePendingMq() {
     var t = null;
     try { t = sessionStorage.getItem(MQ_KEY); sessionStorage.removeItem(MQ_KEY); } catch (e) {}
@@ -869,7 +927,7 @@
   }
 
   var Scan = (function () {
-    var stream = null, raf = 0, det = null, canvas = null, ctx = null, done = false;
+    var stream = null, raf = 0, det = null, canvas = null, ctx = null, done = false, forMid = null, forPass = false;
     function stop() {
       cancelAnimationFrame(raf); raf = 0;
       if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
@@ -882,12 +940,15 @@
       });
     }
     function found(text) {
-      var tok = tokenFromText(text);
-      if (!tok) { $("qrScanHint").textContent = "미션 QR이 아니에요. 부스에 붙은 QR을 비춰 주세요."; return false; }
+      var pq = passTokenFromText(text), tok = pq ? "" : tokenFromText(text);
+      if (forPass ? !pq : !tok) {
+        $("qrScanHint").textContent = forPass ? "항해 패스 카드의 QR을 비춰 주세요." : "미션 QR이 아니에요. 스태프가 보여 주는 QR을 비춰 주세요.";
+        return false;
+      }
       done = true;
       try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) {}
       stop();
-      handleMissionQr(tok);
+      if (pq) handlePassCard(pq); else handleMissionQr(tok, forMid);
       return true;
     }
     function tick() {
@@ -915,9 +976,11 @@
       }
       raf = requestAnimationFrame(tick);
     }
-    function open() {
+    function open(mid) {
       done = false;
-      $("qrScanHint").textContent = "부스에 붙은 미션 QR을 네모 안에 맞춰 주세요";
+      forPass = mid === "pass"; forMid = forPass ? null : (mid || null);
+      $("qrScanHint").textContent = forPass ? "항해 패스 카드의 QR을 네모 안에 맞춰 주세요"
+        : (forMid ? "‘" + missionName(forMid) + "’ 완료 QR을 찍어 주세요" : "미션 QR을 네모 안에 맞춰 주세요");
       $("qrScan").hidden = false; document.body.classList.add("sheet-open");
       canvas = canvas || document.createElement("canvas");
       ctx = ctx || canvas.getContext("2d", { willReadFrequently: true });
@@ -1199,7 +1262,7 @@
     renderHud();
     checkScheduleQuests();
 
-    var now = new Date(), nm = now.getHours() * 60 + now.getMinutes();
+    var now = new Date(), nm = isEventDay() ? now.getHours() * 60 + now.getMinutes() : -1;
     var list = D.timetable || [], liveIdx = -1;
     for (var i = 0; i < list.length; i++) {
       var start = timeToMin(list[i].time);
@@ -1653,7 +1716,6 @@
     $("passLine").textContent = lineText("needPass");
     $("passSub").textContent = "항해 패스 " + (D.settings.passPrice || "6,000원") + " · 부스 체험비는 따로 없어요";
     $("passDesk").textContent = D.settings.passDeskName || "매표소";
-    $("passCode").textContent = ST && ST.participant ? ST.participant.code : "------";
     setMsg("passErr", "");
     show("scPass");
   }
@@ -1672,6 +1734,8 @@
   }
   function enterApp(msg) {
     updateCodeBar();
+    var pq = takePendingPq();
+    if (pq) { handlePassCard(pq); if (!hasPass()) { showPassGate(); return; } }
     if (!hasPass()) { showPassGate(); return; }
     renderHome(); show("scHome");
     if (msg) toast(msg);
@@ -1718,9 +1782,9 @@
 
     var params = new URLSearchParams(location.search);
     var legacyQr = params.get("m") || params.get("p");
-    var mq = tokenFromText(location.search);
-    if (mq) {
-      try { sessionStorage.setItem(MQ_KEY, mq); } catch (e) {}
+    var pq = passTokenFromText(location.search), mq = pq ? "" : tokenFromText(location.search);
+    if (mq || pq) {
+      try { if (mq) sessionStorage.setItem(MQ_KEY, mq); if (pq) sessionStorage.setItem(PQ_KEY, pq); } catch (e) {}
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
 
@@ -1752,7 +1816,8 @@
   $("btnBootRetry").addEventListener("click", boot);
   $("msDim").addEventListener("click", closeMissionSheet);
   $("qrClose").addEventListener("click", function () { Scan.stop(); });
-  $("btnScanTop").addEventListener("click", function () { Scan.open(); });
+  $("btnScanTop").addEventListener("click", function () { openQrPicker(null); });
+  $("btnPassScan").addEventListener("click", function () { Scan.open("pass"); });
   $("msClose").addEventListener("click", closeMissionSheet);
 
   /* 닉네임을 3번 틀리면 서버가 잠그고 스태프에게 보낸다 — 더 눌러봤자 안 되니 입력을 막아둔다 */

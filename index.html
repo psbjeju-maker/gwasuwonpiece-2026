@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/icons/golden_tangerine.png">
 <link rel="apple-touch-icon" href="assets/icons/golden_tangerine.png">
 <title>황금 귤을 찾아라</title>
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -138,20 +138,19 @@
     <div class="card pass-card">
       <h1 class="pass-title">항해 패스가 필요합니다</h1>
       <p class="pass-sub" id="passSub">—</p>
-      <div class="pass-code">
-        <span>내 참가코드</span>
-        <b id="passCode">------</b>
-      </div>
       <ol class="pass-steps">
-        <li><b id="passDesk">매표소</b>에서 항해 패스를 구입합니다.</li>
-        <li>위 <b>참가코드</b>를 스태프에게 보여줍니다.</li>
-        <li>스태프가 패스를 등록하면 바로 항해가 시작됩니다.</li>
+        <li><b id="passDesk">매표소</b>에서 항해 패스 카드를 받아요.</li>
+        <li>아래 버튼을 눌러 카드의 QR을 찍으면 바로 항해 시작!</li>
       </ol>
+      <button class="btn primary scanbig" id="btnPassScan" type="button">
+        <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4M7 12h10"/></svg>
+        패스 카드 QR 찍기
+      </button>
       <p class="pass-what">패스가 있어야 미션·보물찾기·투표를 하고, 코인으로 <b>디지털 쿠지</b>를 할 수 있어요.</p>
     </div>
 
     <p class="formerr" id="passErr" role="alert" hidden></p>
-    <button class="btn primary" id="btnPassAgain" type="button">패스 등록했어요 (다시 확인)</button>
+    <button class="btn ghost" id="btnPassAgain" type="button">패스 등록했어요 (다시 확인)</button>
   </section>
 
   <!-- ══ 2. 홈 ══ -->
@@ -249,7 +248,7 @@
     </div>
     <div class="npcrow npcrow-sm">
       <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
-      <div class="bubble"><p id="missionTip">부스 미션을 하고 나면 그 부스에 붙은 QR을 찍어 줘. 바로 완료돼!</p></div>
+      <div class="bubble"><p id="missionTip">미션을 마치면 미션을 고르고, 스태프가 보여 주는 QR을 찍어 줘. 바로 완료돼!</p></div>
     </div>
     <button class="btn primary scanbig" id="btnScanTop" type="button">
       <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4M7 12h10"/></svg>
@@ -558,10 +557,10 @@
 <script src="assets.js"></script>
 <script src="store.js"></script>
 <script src="qr.js"></script>
-<script src="ev-client.js?v=2"></script>
+<script src="ev-client.js?v=3"></script>
 <script src="mhcards.js?v=4"></script>
 <script src="kujiboard.js?v=2"></script>
 <script src="catch.js"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

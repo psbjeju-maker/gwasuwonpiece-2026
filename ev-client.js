@@ -170,7 +170,9 @@
     /* 스태프가 참가자 폰에 PIN 을 눌러 확인 → 미션 카드 지급 (SNS 인증 등) */
     confirmMission: function (eventId, missionId, pin) { return withRid('c.' + eventId + '.' + missionId, 'confirmMission', { eventId: eventId, missionId: missionId, pin: pin }, true); },
     /* 부스에 붙은 미션 QR 을 참가자가 직접 찍음 → 스태프 없이 완료 */
-    claimMissionQr: function (eventId, token) { return withRid('q.' + eventId + '.' + token, 'claimMissionQr', { eventId: eventId, token: token }, true); },
+    claimMissionQr: function (eventId, token, missionId) { return withRid('q.' + eventId + '.' + missionId, 'claimMissionQr', { eventId: eventId, token: token, missionId: missionId }, true); },
+    /* 매표소에서 산 항해 패스 카드(1장 1회)를 찍어 패스를 켠다 */
+    claimPassCard: function (eventId, token) { return raw('claimPassCard', { eventId: eventId, token: token }, true); },
     submitClue: function (eventId, clueId, answer) { return raw('submitClue', { eventId: eventId, clueId: clueId, answer: answer }, true); },
     claimTreasure: function (eventId, code) { return withRid('t.' + eventId, 'claimTreasure', { eventId: eventId, answer: code }, true); },
     /* ---- 스태프 / 관리자 ---- */

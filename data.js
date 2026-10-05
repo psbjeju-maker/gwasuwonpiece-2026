@@ -11,6 +11,7 @@ window.GAME_DATA = {
   settings: {
     title: "황금 귤을 찾아라",
     subtitle: "과수원피스 · 2026.10.31",
+    eventDate: "2026-10-31",   // 행사 당일(한국 시간). 시간대 안내·LIVE 표시는 이 날짜에만
     /* 행사장 지도 이미지. 비워두면 내장 개념도(map.svg)를 쓴다.
        현장 위성사진이 준비되면 여기에 파일명을 넣는다. */
     mapImage: "map.jpg",
