@@ -1260,6 +1260,7 @@
 
   function renderHome() {
     renderHud();
+    renderPhase(); renderNotice(); renderHonor();
     checkScheduleQuests();
 
     var now = new Date(), nm = isEventDay() ? now.getHours() * 60 + now.getMinutes() : -1;
@@ -1323,11 +1324,12 @@
       ? "단서를 모두 모았어요! 완성된 질문의 답을 맞혀 보세요."
       : "단서 글자를 모아 최종 질문을 완성하세요. 다 모으지 않아도 답을 알겠다면 도전할 수 있어요.";
 
-    var html = "";
+    var html = "", L = T.letters || {};
     ids.forEach(function (id, i) {
-      html += '<div class="chip' + (sm[id] ? '' : ' empty') + '">' + (sm[id] ? (i + 1) : "?") + '</div>';
+      html += '<div class="chip' + (sm[id] ? '' : ' empty') + (L[id] ? ' letter' : '') + '">' + (sm[id] ? esc(L[id] || String(i + 1)) : "?") + '</div>';
     });
     $("pouch").innerHTML = html;
+    renderFinal(T, ids, L);
 
     /* 구역별 보물 현황 — 서버가 준 값만 그대로 */
     var zones = T.zones || {}, zcfg = (CFG.treasure && CFG.treasure.zones) || {}, zh = "";
@@ -1355,6 +1357,135 @@
 
     renderCompassGate();
     updateCompass();
+  }
+
+  /* ---------- 최종 질문 ----------
+     단서마다 질문 글자 한 개. 모은 글자로 질문을 완성하고 답을 맞히면 보너스 쿠지(서버가 정한 횟수)를 받는다. */
+  function renderFinal(T, ids, L) {
+    var F = T.final;
+    $("finalCard").hidden = !F;
+    if (!F) return;
+    var q = "";
+    ids.forEach(function (id) { q += '<span class="' + (L[id] ? 'on' : '') + '">' + (L[id] ? esc(L[id]) : "") + '</span>'; });
+    $("finalQ").innerHTML = q + '<em>?</em>';
+    var got = ids.filter(function (id) { return L[id]; }).length;
+    $("finalNote").textContent = F.solved ? "" : (got >= ids.length
+      ? "질문이 완성됐어요! 답을 맞혀 보세요."
+      : "글자를 " + got + "/" + ids.length + " 모았어요. 다 못 모아도 답을 알겠다면 도전해 보세요.");
+    $("finalForm").hidden = !!F.solved;
+    $("finalDone").hidden = !F.solved;
+    if (F.solved) $("finalDoneTitle").textContent = (F.solvedNo ? F.solvedNo + "번째로 " : "") + "정답을 맞혔어요!";
+  }
+  var finalBusy = false;
+  function submitFinalAnswer() {
+    var a = $("finalInput").value.trim();
+    if (!a) { setMsg("finalMsg", "답을 입력해 주세요."); return; }
+    if (finalBusy) return;
+    finalBusy = true; $("btnFinal").disabled = true; setMsg("finalMsg", "");
+    EV.submitFinal(EVENT, a).then(function (r) {
+      finalBusy = false; $("btnFinal").disabled = false;
+      if (!r || !r.correct) { setMsg("finalMsg", "아쉽지만 아니야. 모은 글자를 다시 읽어 봐!"); return; }
+      $("finalInput").value = "";
+      refresh().catch(function () {}).then(function () { renderMain(); renderHud(); });
+      if (r.already) { toast("이미 정답을 맞혔어요"); return; }
+      playEnding(r);
+    }, function (e) {
+      finalBusy = false; $("btnFinal").disabled = false;
+      e = errInfo(e);
+      if (e.reason === "pass-required") { showPassGate(); return; }
+      setMsg("finalMsg", e.reason === "final-locked" ? "잠깐 쉬었다가 다시 도전해 줘. (1분)" : errText(e));
+    });
+  }
+  /* 정답 엔딩 — 대사는 data.js endingLines 로 바꿀 수 있다 ({no}, {reward}) */
+  function playEnding(r) {
+    var lines = (D.endingLines && D.endingLines.length) ? D.endingLines : [
+      { expr: "surprised", text: "…맞혔어! 이 질문의 답을 알아낸 해적은 네가 {no}번째야." },
+      { expr: "thinking",  text: "사실 황금 귤은 땅에 묻혀 있지 않아. 쿠지 속 어딘가에서 주인을 기다리고 있지." },
+      { expr: "success",   text: "선물로 보너스 쿠지 {reward}번을 줄게. 황금 귤을 뽑으면 오늘의 명예 선장이 되는 거야!", btn: "보너스 쿠지 하러 가기" }
+    ];
+    var i = 0;
+    function next() {
+      var L = lines[i++];
+      if (!L) { go("scKuji"); return; }
+      var t = String(L.text).replace("{no}", r.no || "").replace("{reward}", r.rewardPlays || 0);
+      questLine(t, { expr: L.expr, okLabel: L.btn || (i < lines.length ? "다음" : "확인"), onOk: next });
+    }
+    try { if (Sound.isOn && !Sound.isOn()) throw 0; var au = new Audio("sfx/fanfare.mp3"); au.volume = 0.7; au.play()["catch"](function () {}); } catch (e) {}
+    next();
+  }
+
+  /* ---------- 진행 단계 · 공지 (운영자: evLive) ---------- */
+  var LIVE = null;
+  var PHASE_TEXT = {
+    pre:    ["출항 전", ""],
+    ready:  ["출항 준비", "패스 받고 항해일지 등록 · 10:30 오프닝"],
+    act1:   ["1막 · 탐험", "미션과 보물찾기로 mh머니를 모아요"],
+    lunch:  ["점심 시간", "앱 게임으로 mh머니 모으기 좋은 시간"],
+    stage:  ["2막 · 무대", "무대를 보고 투표에 참여해요"],
+    finale: ["피날레", "최종 질문 도전과 쿠지는 16:00까지"],
+    end:    ["귀항", "오늘 함께해 줘서 고마워!"]
+  };
+  function kstDayOf(t) { return new Date(t + 9 * 3600e3).toISOString().slice(0, 10); }
+  function nowMs() { return (ST && ST.serverTime) ? ST.serverTime + (Date.now() - (ST._recvAt || Date.now())) : Date.now(); }
+  function autoPhase() {
+    var day = (D.settings && D.settings.eventDate) || "2026-10-31", t = nowMs(), today = kstDayOf(t);
+    if (today < day) return "pre";
+    if (today > day) return "end";
+    var m = new Date(t + 9 * 3600e3), nm = m.getUTCHours() * 60 + m.getUTCMinutes();
+    return nm < 630 ? "ready" : nm < 720 ? "act1" : nm < 780 ? "lunch" : nm < 930 ? "stage" : nm < 960 ? "finale" : "end";
+  }
+  function currentPhase() { return (LIVE && LIVE.phase) || autoPhase(); }
+  function renderPhase() {
+    var ph = currentPhase(), T = PHASE_TEXT[ph] || PHASE_TEXT.pre;
+    var sub = T[1];
+    if (ph === "pre") {
+      var day = (D.settings && D.settings.eventDate) || "2026-10-31";
+      var dd = Math.round((Date.parse(day + "T00:00:00+09:00") - Date.parse(kstDayOf(nowMs()) + "T00:00:00+09:00")) / 864e5);
+      sub = "D-" + dd + " · 10월 31일 10:00 출항";
+    }
+    $("phaseTitle").textContent = T[0];
+    $("phaseSub").textContent = sub;
+    $("phaseBar").dataset.phase = ph;
+    $("phaseBar").hidden = false;
+  }
+  var seenNoticeAt = 0;
+  try { seenNoticeAt = +localStorage.getItem("ggg_notice_seen") || 0; } catch (e) {}
+  function renderNotice() {
+    var n = LIVE && LIVE.notice, at = (LIVE && LIVE.noticeAt) || 0;
+    var fresh = n && at > seenNoticeAt && (nowMs() - at) < 3 * 3600e3;
+    $("noticeBar").hidden = !fresh;
+    if (fresh) $("noticeText").textContent = n;
+  }
+  function onLive(v) {
+    var prevAt = LIVE && LIVE.noticeAt;
+    LIVE = v || {};
+    if (ST) { renderPhase(); renderNotice(); }
+    if (LIVE.notice && LIVE.noticeAt && prevAt !== undefined && LIVE.noticeAt !== prevAt && LIVE.noticeAt > seenNoticeAt) {
+      try { if (navigator.vibrate) navigator.vibrate([80, 60, 80]); } catch (e) {}
+    }
+  }
+
+  /* ---------- 오늘의 명예 선장 (hallOfFamePublic) ---------- */
+  var HONOR = [], honorIdx = 0, honorTimer = 0;
+  function renderHonor() {
+    var today = kstDayOf(nowMs());
+    var list = HONOR.filter(function (x) { return x.day === today; }).sort(function (a, b) { return a.at - b.at; });
+    $("honorBox").hidden = !list.length;
+    clearInterval(honorTimer);
+    if (!list.length) return;
+    function paint() {
+      var x = list[honorIdx % list.length];
+      var ph = $("honorPhoto");
+      ph.style.backgroundImage = x.photo ? 'url("' + x.photo + '")' : "";
+      ph.classList.toggle("nophoto", !x.photo);
+      $("honorName").textContent = x.nickname || "명예 선장";
+      $("honorPrize").textContent = (x.prize || "황금 귤") + " 당첨";
+      var d = "";
+      if (list.length > 1) list.forEach(function (_, i) { d += '<i' + (i === honorIdx % list.length ? ' class="on"' : '') + '></i>'; });
+      $("honorDots").innerHTML = d;
+    }
+    paint();
+    if (list.length > 1) honorTimer = setInterval(function () { honorIdx++; paint(); }, 4000);
   }
 
   /* ---------- 문제(단서) ---------- */
@@ -1490,6 +1621,10 @@
       : cost == null ? "1회에 필요한 코인은 현장 공지를 확인해 주세요"
       : ("1회 " + cost + "코인");
     $("btnPlayKuji").disabled = kujiBusy || !open || cost == null;
+    var bonus = w.bonusPlays || 0;
+    $("btnPlayBonus").hidden = !(bonus > 0);
+    $("btnPlayBonus").textContent = "보너스 이용권으로 뽑기 (" + bonus + "번 남음)";
+    $("btnPlayBonus").disabled = kujiBusy || !open;
     var paid = w.paidPlays || 0;
     $("btnPlayPaid").hidden = !(paid > 0);
     $("btnPlayPaid").textContent = "유료 이용권으로 뽑기 (" + paid + "장)";
@@ -1520,7 +1655,7 @@
     if (kujiBusy) return;
     if (!(CFG.kuji && CFG.kuji.pickNumber && window.KB)) { doKuji(source, cardIds); return; }
     kujiBusy = true; setMsg("kjErr", "");
-    $("btnPlayKuji").disabled = true; $("btnPlayPaid").disabled = true;
+    $("btnPlayKuji").disabled = true; $("btnPlayPaid").disabled = true; $("btnPlayBonus").disabled = true;
     var bookBefore = bookCopy();
     KB.open({
       title: "쿠지 번호를 골라 주세요",
@@ -1530,7 +1665,7 @@
         kujiBusy = false;
         kujiBookBefore = bookBefore;
         if (ST && ST.wallet && r.wallet) {
-          ST.wallet.coins = r.wallet.coins; ST.wallet.paidPlays = r.wallet.paidPlays; ST.wallet.playCount = r.wallet.playCount;
+          ST.wallet.coins = r.wallet.coins; ST.wallet.paidPlays = r.wallet.paidPlays; ST.wallet.bonusPlays = r.wallet.bonusPlays; ST.wallet.playCount = r.wallet.playCount;
         }
         refresh().catch(function () {}).then(function () { showKujiResult(r.play, r.duplicate, true); });
       },
@@ -1541,13 +1676,13 @@
   function doKuji(source, cardIds) {
     if (kujiBusy) return;
     kujiBusy = true; setMsg("kjErr", "");
-    $("btnPlayKuji").disabled = true; $("btnPlayPaid").disabled = true;
+    $("btnPlayKuji").disabled = true; $("btnPlayPaid").disabled = true; $("btnPlayBonus").disabled = true;
     var bookBefore = bookCopy();
     EV.playKuji(EVENT, source, null, cardIds).then(function (r) {
       kujiBusy = false;
       kujiBookBefore = bookBefore;
       if (ST && ST.wallet && r.wallet) {
-        ST.wallet.coins = r.wallet.coins; ST.wallet.paidPlays = r.wallet.paidPlays; ST.wallet.playCount = r.wallet.playCount;
+        ST.wallet.coins = r.wallet.coins; ST.wallet.paidPlays = r.wallet.paidPlays; ST.wallet.bonusPlays = r.wallet.bonusPlays; ST.wallet.playCount = r.wallet.playCount;
       }
       return refresh().catch(function () {}).then(function () { showKujiResult(r.play, r.duplicate); });
     }, function (e) {
@@ -1568,7 +1703,7 @@
     show("scResult");
     if (dup) toast("이미 처리된 결과예요. 다시 보여 드릴게요");
     revealStep(special ? "특별" : "카드", function () {
-      $("rsTitle").textContent = special ? "특별 상품 당첨!" : "직접 만든 트럼프 카드!";
+      $("rsTitle").textContent = play.honor ? "황금 귤 당첨! 오늘의 명예 선장" : special ? "특별 상품 당첨!" : "직접 만든 트럼프 카드!";
       $("rsDesc").textContent = play.name || "";
       var pim = $("rsPrizeImg"), pu = play.image;
       if (pim && special && typeof pu === "string" && /^(https?:\/\/|data:image\/(jpeg|png|webp);base64,)/.test(pu)) { pim.src = pu; pim.hidden = false; pim.style.display = "block"; }
@@ -1578,7 +1713,8 @@
         fillPickup(play.name || "", play.pickup, special ? "특별 상품" : "카드");
       }
       setNpc($("rsNpcImg"), special ? "surprised" : "success");
-      $("rsNpcText").textContent = play.demo ? "맛보기 결과야. 진짜 쿠지는 코인을 모아서 도전해 봐!"
+      $("rsNpcText").textContent = play.honor ? "축하해! 쿠지 부스에서 황금 귤을 받고 명예 선장 사진을 찍어 줘. 오늘 모든 해적의 폰에 네 이름이 걸릴 거야!"
+        : play.demo ? "맛보기 결과야. 진짜 쿠지는 코인을 모아서 도전해 봐!"
         : "수령 코드를 스태프에게 보여주면 받을 수 있어. 코드는 ‘내 카드’에서 다시 볼 수 있어.";
       $("rsNpc").hidden = false;
     }, skipTgr);
@@ -1817,6 +1953,18 @@
   $("msDim").addEventListener("click", closeMissionSheet);
   $("qrClose").addEventListener("click", function () { Scan.stop(); });
   $("btnScanTop").addEventListener("click", function () { openQrPicker(null); });
+  $("btnFinal").addEventListener("click", submitFinalAnswer);
+  $("finalInput").addEventListener("keydown", function (e) { if (e.key === "Enter") submitFinalAnswer(); });
+  $("btnFinalKuji").addEventListener("click", function () { go("scKuji"); });
+  $("btnPlayBonus").addEventListener("click", function () { startKuji("bonus"); });
+  $("honorBox").addEventListener("click", function () { var u = (D.settings && D.settings.hallOfFameUrl); if (u) location.href = u; });
+  $("noticeClose").addEventListener("click", function () {
+    seenNoticeAt = (LIVE && LIVE.noticeAt) || Date.now();
+    try { localStorage.setItem("ggg_notice_seen", String(seenNoticeAt)); } catch (e) {}
+    renderNotice();
+  });
+  if (window.EV && EV.onLive) EV.onLive(EVENT, onLive);
+  if (window.EV && EV.onHonor) EV.onHonor(EVENT, function (list) { HONOR = list || []; if (ST) renderHonor(); });
   $("btnPassScan").addEventListener("click", function () { Scan.open("pass"); });
   $("msClose").addEventListener("click", closeMissionSheet);
 

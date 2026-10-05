@@ -172,6 +172,20 @@
     /* 부스에 붙은 미션 QR 을 참가자가 직접 찍음 → 스태프 없이 완료 */
     claimMissionQr: function (eventId, token, missionId) { return withRid('q.' + eventId + '.' + missionId, 'claimMissionQr', { eventId: eventId, token: token, missionId: missionId }, true); },
     /* 매표소에서 산 항해 패스 카드(1장 1회)를 찍어 패스를 켠다 */
+    /* 최종 질문 정답 도전 → 맞히면 보너스 쿠지 이용권 */
+    submitFinal: function (eventId, answer) { return raw('submitFinal', { eventId: eventId, answer: answer }, true); },
+    /* 운영자가 넘기는 진행 단계·공지 (실시간) */
+    onLive: function (eventId, cb) {
+      boot().then(function (fb) { fb.firestore().doc('evLive/' + eventId).onSnapshot(function (d) { cb(d.exists ? d.data() : null); }, function () {}); }, function () {});
+    },
+    /* 명예의 전당 공개본 (실시간) */
+    onHonor: function (eventId, cb) {
+      boot().then(function (fb) {
+        fb.firestore().collection('hallOfFamePublic').where('eventId', '==', eventId).onSnapshot(function (q) {
+          cb(q.docs.map(function (d) { var x = d.data(); x.id = d.id; return x; }));
+        }, function () {});
+      }, function () {});
+    },
     claimPassCard: function (eventId, token) { return raw('claimPassCard', { eventId: eventId, token: token }, true); },
     submitClue: function (eventId, clueId, answer) { return raw('submitClue', { eventId: eventId, clueId: clueId, answer: answer }, true); },
     claimTreasure: function (eventId, code) { return withRid('t.' + eventId, 'claimTreasure', { eventId: eventId, answer: code }, true); },

@@ -7,10 +7,11 @@
 <link rel="icon" href="assets/icons/golden_tangerine.png">
 <link rel="apple-touch-icon" href="assets/icons/golden_tangerine.png">
 <title>황금 귤을 찾아라</title>
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
+<div class="notice" id="noticeBar" role="status" hidden><b>공지</b><span id="noticeText"></span><button type="button" id="noticeClose" aria-label="공지 닫기">닫기</button></div>
 <div class="net" id="netBadge" role="status">오프라인 — 연결되면 다시 시도해 주세요</div>
 <button class="soundtoggle" id="soundToggle" type="button" aria-label="소리 켜기/끄기" aria-pressed="true">🔊</button>
 
@@ -64,8 +65,9 @@
         <ol>
           <li>미션을 하면 <b class="coinname">귤코인</b>을 받아요.</li>
           <li>코인을 모아 <b>디지털 쿠지</b>에 도전해요. 결과는 바로 화면에 나와요.</li>
-          <li>기본 결과는 <b>직접 만든 트럼프 카드</b>, 운이 좋으면 <b>특별 상품(피규어)</b>이 나와요.</li>
-          <li>나침반을 따라 <b>단서</b>를 풀고, 캡슐 코드를 입력하면 <b>보물</b>을 받을 수 있어요.</li>
+          <li>기본 결과는 <b>직접 만든 트럼프 카드</b>예요. 운이 좋으면 <b>특별 상품</b>이 나와요.</li>
+          <li><b>1등은 황금 귤!</b> 안에 피규어나 굿즈가 들어 있고, 뽑은 해적은 <b>오늘의 명예 선장</b>이 돼요.</li>
+          <li>나침반으로 <b>단서</b>를 풀어 질문 글자를 모으고, <b>최종 질문</b>을 맞히면 <b>보너스 쿠지</b>를 받아요.</li>
           <li>상품은 화면의 <b>수령 코드</b>를 스태프에게 보여주고 받아요.</li>
         </ol>
       </div>
@@ -165,6 +167,27 @@
         <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
       </button>
     </header>
+
+    <!-- 진행 단계 -->
+    <div class="phase" id="phaseBar" hidden>
+      <span class="ph-dot" aria-hidden="true"></span>
+      <b id="phaseTitle"></b><span id="phaseSub"></span>
+    </div>
+
+    <!-- 오늘의 명예 선장 -->
+    <button class="honor" id="honorBox" type="button" hidden>
+      <span class="hn-frame">
+        <span class="hn-photo" id="honorPhoto"></span>
+        <img class="hn-fr" src="assets/honor/frame.webp" alt="" aria-hidden="true">
+        <img class="hn-sp" src="assets/honor/sparkles.webp" alt="" aria-hidden="true">
+      </span>
+      <span class="hn-text">
+        <span class="hn-eyebrow">오늘의 명예 선장</span>
+        <span class="hn-name" id="honorName"></span>
+        <span class="hn-prize" id="honorPrize"></span>
+        <span class="hn-dots" id="honorDots"></span>
+      </span>
+    </button>
 
     <!-- 메인 안내 카드 -->
     <div class="hero" id="hero">
@@ -340,6 +363,21 @@
         <div id="zoneList"></div>
       </div>
 
+      <div class="card finalcard" id="finalCard" hidden>
+        <div class="fc-head"><img src="assets/icons/clue.png" alt="" aria-hidden="true"><h2 class="card-title">최종 질문</h2></div>
+        <p class="fc-q" id="finalQ" aria-label="모은 글자로 만든 질문"></p>
+        <p class="privacy" id="finalNote" style="margin:6px 0 12px"></p>
+        <div id="finalForm">
+          <input id="finalInput" type="text" placeholder="질문의 답" autocomplete="off" spellcheck="false" enterkeyhint="done" aria-label="최종 정답">
+          <p class="formerr" id="finalMsg" role="status" hidden></p>
+          <button class="btn primary" id="btnFinal" type="button">정답 도전</button>
+        </div>
+        <div class="fc-done" id="finalDone" hidden>
+          <b id="finalDoneTitle"></b>
+          <button class="btn primary" id="btnFinalKuji" type="button">보너스 쿠지 하러 가기</button>
+        </div>
+      </div>
+
       <div class="card claimcard">
         <h2 class="card-title">보물 캡슐 코드</h2>
         <p class="privacy" style="margin:4px 0 12px">보물을 찾으면 캡슐 안의 코드를 입력하세요. 수령 코드가 나오면 스태프에게 보여주세요.</p>
@@ -442,6 +480,7 @@
       <p class="coin-cost" id="kjCost">1회 — 코인</p>
       <p class="formerr" id="kjErr" role="alert" hidden></p>
       <button class="btn primary" id="btnPlayKuji" type="button">쿠지 뽑기</button>
+      <button class="btn primary bonusbtn" id="btnPlayBonus" type="button" hidden>보너스 이용권으로 뽑기</button>
       <button class="btn ghost" id="btnPlayPaid" type="button" hidden>유료 이용권으로 뽑기</button>
       <button class="btn ghost" id="btnKujiToMission" type="button" hidden>코인 모으러 가기</button>
     </div>
@@ -557,10 +596,10 @@
 <script src="assets.js"></script>
 <script src="store.js"></script>
 <script src="qr.js"></script>
-<script src="ev-client.js?v=3"></script>
+<script src="ev-client.js?v=4"></script>
 <script src="mhcards.js?v=4"></script>
 <script src="kujiboard.js?v=2"></script>
 <script src="catch.js"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

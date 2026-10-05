@@ -622,3 +622,42 @@ body.sheet-open{overflow:hidden;}
 .pickrow span{flex:1;}
 .pickrow em{font-style:normal;font-size:12px;color:var(--teal-deep);background:var(--teal-soft);padding:1px 8px;border-radius:999px;}
 .pickrow em:empty{display:none;}
+
+/* ══ 2026-10-05 P3: 진행 단계 · 공지 · 명예 선장 · 최종 질문 ══ */
+.phase{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:10px 14px;border-radius:14px;background:var(--teal-soft);color:var(--teal-deep);font-size:14px;}
+.phase b{font-size:15px;}
+.phase span:last-child{color:var(--ink);opacity:.8;}
+.ph-dot{width:9px;height:9px;border-radius:50%;background:var(--teal);flex:none;animation:phPulse 1.6s ease-in-out infinite;}
+.phase[data-phase="pre"] .ph-dot,.phase[data-phase="end"] .ph-dot{animation:none;background:var(--muted);}
+@keyframes phPulse{50%{opacity:.35;transform:scale(.8)}}
+.notice{position:sticky;top:0;z-index:55;display:flex;align-items:center;gap:10px;max-width:480px;margin:0 auto;padding:10px 12px 10px 16px;
+  background:var(--gold-soft);border-bottom:2px solid var(--gold);color:var(--ink);font-size:15px;line-height:1.4;animation:fade .25s ease-out;}
+.notice b{flex:none;font-size:13px;color:#fff;background:var(--navy);padding:2px 8px;border-radius:999px;}
+.notice span{flex:1;font-weight:700;}
+.notice button{flex:none;min-height:36px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:13px;cursor:pointer;}
+.honor{display:flex;align-items:center;gap:14px;width:100%;margin-top:12px;padding:12px 14px;border:1px solid var(--gold);border-radius:var(--radius-card);
+  background:linear-gradient(135deg,#142439,#0E1929);color:#fff;text-align:left;cursor:pointer;box-shadow:var(--shadow);}
+.hn-frame{position:relative;width:92px;flex:none;aspect-ratio:941/1672;}
+.hn-photo{position:absolute;left:10.5%;right:10.5%;top:6%;bottom:7.3%;background:#24364f center/cover no-repeat;}
+.hn-photo.nophoto{background:#24364f url("assets/characters/success.png") center 30%/120% no-repeat;}
+.hn-fr{position:absolute;inset:0;width:100%;height:100%;}
+.hn-sp{position:absolute;left:-30%;top:-14%;width:160%;pointer-events:none;animation:hnTw 2.4s ease-in-out infinite;}
+@keyframes hnTw{50%{opacity:.45}}
+.hn-text{display:flex;flex-direction:column;min-width:0;}
+.hn-eyebrow{font-size:13px;font-weight:700;color:var(--gold-on-navy);letter-spacing:.06em;}
+.hn-name{font-size:24px;font-weight:700;line-height:1.25;margin-top:2px;}
+.hn-prize{font-size:14px;color:rgba(255,255,255,.75);}
+.hn-dots{display:flex;gap:5px;margin-top:8px;}
+.hn-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);}
+.hn-dots i.on{background:var(--gold-on-navy);}
+.chip.letter{font-size:22px;color:var(--navy);}
+.finalcard{border-color:var(--gold);}
+.fc-head{display:flex;align-items:center;gap:10px;}
+.fc-head img{width:40px;height:40px;object-fit:contain;}
+.fc-q{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px;font-size:22px;font-weight:700;color:var(--navy);}
+.fc-q span{display:inline-flex;align-items:center;justify-content:center;width:32px;height:40px;border-bottom:3px solid var(--line);}
+.fc-q span.on{border-color:var(--gold);}
+.fc-q em{font-style:normal;align-self:flex-end;}
+.fc-done{display:flex;flex-direction:column;gap:10px;}
+.fc-done b{font-size:18px;color:var(--teal-deep);}
+.bonusbtn{background:linear-gradient(135deg,#C99A4E,#B68B48)!important;}
