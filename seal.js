@@ -169,6 +169,19 @@ export const KujiSeal = (() => {
           vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40,
           life:0, max:.7+Math.random()*1.1, r:1+Math.random()*2.6 });
       }
+      if(G.rainbow){
+        S.stars=[]; S.conf=[]; S.rings=[0,.16,.32,.56].map(d=>({d}));
+        for(let i=0;i<46;i++){
+          const a=Math.random()*Math.PI*2, rr=(.12+Math.random()*.5)*Math.min(MW,MH)*1.1;
+          S.stars.push({ x:MW*.5+Math.cos(a)*rr*.9, y:MH*.40+Math.sin(a)*rr*1.05,
+            s:5+Math.random()*13, ph:Math.random()*6.28, sp:2.2+Math.random()*4, hue:Math.random()*360 });
+        }
+        for(let i=0;i<110;i++){
+          S.conf.push({ x:Math.random()*MW, y:-Math.random()*MH*.9-10, vy:130+Math.random()*220,
+            sw:Math.random()*6.28, sws:1.5+Math.random()*2.5, w:5+Math.random()*7, h:9+Math.random()*10,
+            rot:Math.random()*6.28, vr:(Math.random()-.5)*9, hue:Math.random()*360 });
+        }
+      }
       if(api.onDone) setTimeout(()=>{ if(alive && api.onDone) api.onDone(); }, 900);
     }
     // 바쁠 때 직원이 쓴다. 봉인지를 건너뛰고 바로 공개한다.
@@ -193,6 +206,10 @@ export const KujiSeal = (() => {
           p.life+=dt; p.vy+=320*dt; p.vx*=.985; p.vy*=.985;
           p.x+=p.vx*dt; p.y+=p.vy*dt;
           if(p.life>p.max) S.sparks.splice(i,1);
+        }
+        if(S.conf) for(const c of S.conf){
+          c.y+=c.vy*dt; c.sw+=c.sws*dt; c.x+=Math.sin(c.sw)*38*dt; c.rot+=c.vr*dt;
+          if(c.y>MH+20){ c.y=-20; c.x=Math.random()*MW; }
         }
       }
     }
@@ -336,8 +353,102 @@ export const KujiSeal = (() => {
       ctx.restore();
     }
 
+
+    /* ── 무지개(A상) 공개 연출: 회전 광선 · 충격파 링 · 반짝이 별 · 색종이 · 무지개 글자 ── */
+    const easeBack = t => { const c=1.70158; return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2); };
+    const rgbS = a => `rgb(${a[0]},${a[1]},${a[2]})`;
+    function rbBack(){
+      const t=S.rt, cx=MW*.5, cy=MH*.40, appear=easeOut(clamp(t/.8,0,1));
+      const R=Math.hypot(MW,MH)*.62*appear;
+      ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.translate(cx,cy);
+      for(let layer=0;layer<2;layer++){
+        const n=layer?10:18, dir=layer?-1:1, wd=layer?.34:.5;
+        for(let i=0;i<n;i++){
+          const a=dir*t*(layer?.28:.42)+i/n*Math.PI*2, hw=Math.PI/n*wd;
+          const [r,g,b]=hueRgb(i*360/n+t*90+layer*40);
+          const gr=ctx.createRadialGradient(0,0,0,0,0,R);
+          const al=(layer?.30:.46)*(0.8+0.2*Math.sin(t*3+i));
+          gr.addColorStop(0,`rgba(${r},${g},${b},${al})`);
+          gr.addColorStop(.55,`rgba(${r},${g},${b},${al*.4})`);
+          gr.addColorStop(1,`rgba(${r},${g},${b},0)`);
+          ctx.fillStyle=gr; ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,a-hw,a+hw); ctx.closePath(); ctx.fill();
+        }
+      }
+      const hr=Math.min(MW,MH)*(.30+.03*Math.sin(t*4))*appear;
+      const hg=ctx.createRadialGradient(0,0,0,0,0,hr);
+      hg.addColorStop(0,'rgba(255,255,255,.85)'); hg.addColorStop(.35,'rgba(255,255,255,.28)'); hg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(0,0,hr,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    function rbFront(){
+      const t=S.rt, cx=MW*.5, cy=MH*.40;
+      ctx.save(); ctx.globalCompositeOperation='lighter';
+      for(const rg of S.rings||[]){
+        const age=(t-rg.d)/1.15; if(age<=0||age>=1) continue;
+        const rr=easeOut(age)*MW*.95, al=(1-age)*(1-age);
+        ctx.lineWidth=Math.max(1,9*(1-age));
+        if(ctx.createConicGradient){
+          const cg=ctx.createConicGradient(t*2,cx,cy);
+          for(let i=0;i<=6;i++) cg.addColorStop(i/6,`rgba(${hueRgb(i*60).join(',')},${al})`);
+          ctx.strokeStyle=cg;
+        } else ctx.strokeStyle=`rgba(${hueRgb(t*200).join(',')},${al})`;
+        ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.stroke();
+      }
+      for(const st of S.stars||[]){
+        const tw=Math.max(0,Math.sin(t*st.sp+st.ph)); if(tw<.05) continue;
+        const sz=st.s*tw*clamp(t/.5,0,1), [r,g,b]=hueRgb(st.hue+t*60);
+        ctx.fillStyle=`rgba(255,255,255,${.9*tw})`;
+        ctx.beginPath();
+        ctx.moveTo(st.x,st.y-sz); ctx.quadraticCurveTo(st.x,st.y,st.x+sz*.55,st.y);
+        ctx.quadraticCurveTo(st.x,st.y,st.x,st.y+sz); ctx.quadraticCurveTo(st.x,st.y,st.x-sz*.55,st.y);
+        ctx.quadraticCurveTo(st.x,st.y,st.x,st.y-sz); ctx.fill();
+        ctx.fillStyle=`rgba(${r},${g},${b},${.35*tw})`;
+        ctx.beginPath(); ctx.arc(st.x,st.y,sz*.55,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+      for(const c of S.conf||[]){
+        const [r,g,b]=hueRgb(c.hue+t*40), sq=Math.abs(Math.cos(c.rot*.7));
+        ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.rot); ctx.scale(1,.35+.65*sq);
+        ctx.fillStyle=`rgba(${r},${g},${b},.92)`; ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+        ctx.restore();
+      }
+      const vg=ctx.createRadialGradient(cx,MH*.5,MH*.30,cx,MH*.5,MH*.78);
+      vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.55)');
+      ctx.fillStyle=vg; ctx.fillRect(0,0,MW,MH);
+    }
+    function rbLabel(fs,x,y){
+      const t=S.rt, pop=easeBack(clamp((t-.10)/.55,0,1)), lfs=Math.max(1,Math.round(fs*2.25*pop));
+      ctx.save(); ctx.globalAlpha=clamp((t-.08)/.18,0,1); ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+      ctx.font=`900 ${lfs}px "Pretendard","Malgun Gothic",sans-serif`;
+      const tw=ctx.measureText(item.label).width;
+      const gr=ctx.createLinearGradient(x-tw/2,0,x+tw/2,0);
+      for(let i=0;i<=6;i++) gr.addColorStop(i/6,rgbS(hueRgb(i*60+t*170)));
+      ctx.lineJoin='round'; ctx.lineWidth=Math.max(4,lfs*.11); ctx.strokeStyle='rgba(20,10,40,.92)';
+      ctx.strokeText(item.label,x,y);
+      ctx.shadowColor=rgbS(hueRgb(t*140)); ctx.shadowBlur=30+12*Math.sin(t*6);
+      ctx.fillStyle=gr; ctx.fillText(item.label,x,y);
+      ctx.shadowBlur=0;
+      ctx.lineWidth=Math.max(1.5,lfs*.035); ctx.strokeStyle='rgba(255,255,255,.95)'; ctx.strokeText(item.label,x,y);
+      const sx=x-tw*.8+((t*.9)%1.6)*tw*1.1, sg=ctx.createLinearGradient(sx-tw*.12,0,sx+tw*.12,0);
+      sg.addColorStop(0,'rgba(255,255,255,0)'); sg.addColorStop(.5,'rgba(255,255,255,.9)'); sg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.globalCompositeOperation='lighter'; ctx.fillStyle=sg; ctx.fillText(item.label,x,y);
+      ctx.restore();
+    }
+    function rbPlate(lines,fs,y0){
+      const t=S.rt; let mw=0; lines.forEach(l=>{ mw=Math.max(mw,ctx.measureText(l).width); });
+      const pw=Math.min(MW*.94,mw+fs*1.6), ph=fs*1.25*lines.length+fs*.55, x=MW*.5-pw/2, y=y0-fs*.95;
+      ctx.save(); ctx.shadowBlur=0;
+      roundRect(x,y,pw,ph,ph*.28);
+      ctx.fillStyle='rgba(10,8,26,.66)'; ctx.fill();
+      const bg=ctx.createLinearGradient(x,0,x+pw,0);
+      for(let i=0;i<=6;i++) bg.addColorStop(i/6,rgbS(hueRgb(i*60-t*150)));
+      ctx.lineWidth=3; ctx.strokeStyle=bg; ctx.stroke();
+      ctx.restore();
+    }
+
     function drawReveal(){
       const G=fx(), [r,g,b]=glowOf(G), [sr,sg,sb]=sparkOf(G);
+      if(G.rainbow) rbBack();
       if(G.flare>0){
         const k=clamp(S.rt/.5,0,1), al=G.flare*(0.85*Math.exp(-S.rt*1.6)+0.12);
         ctx.save(); ctx.globalCompositeOperation='lighter';
@@ -363,7 +474,8 @@ export const KujiSeal = (() => {
         const box=Math.min(MW*.76,MH*.42)*(0.86+0.14*e)*pop;
         const s=Math.min(box/pic.naturalWidth, box/pic.naturalHeight);
         const w=pic.naturalWidth*s, h=pic.naturalHeight*s;
-        ctx.drawImage(pic, MW*.5-w/2, MH*.40-h/2, w, h);
+        const bob=G.rainbow ? Math.sin(S.rt*2.4)*MH*.008 : 0;
+        ctx.drawImage(pic, MW*.5-w/2, MH*.40-h/2+bob, w, h);
         ctx.restore();
       }
 
@@ -377,6 +489,8 @@ export const KujiSeal = (() => {
 
       if(k>0){
         const fs=Math.round(Math.min(MW*.105,MH*.05));
+        if(G.rainbow) rbLabel(fs, MW*.5, MH*.70);
+        else {
         ctx.save();
         ctx.globalAlpha=e*.92; ctx.textAlign='center';
         ctx.font=`800 ${Math.round(fs*1.2)}px "Pretendard","Malgun Gothic",sans-serif`;
@@ -384,6 +498,7 @@ export const KujiSeal = (() => {
         ctx.shadowColor=`rgba(${r},${g},${b},.9)`; ctx.shadowBlur=18;
         ctx.fillText(item.label, MW*.5, MH*.70);
         ctx.restore();
+        }
         ctx.save();
         ctx.globalAlpha=e; ctx.textAlign='center'; ctx.textBaseline='middle';
         ctx.font=`800 ${fs}px "Pretendard","Malgun Gothic",sans-serif`;
@@ -396,9 +511,11 @@ export const KujiSeal = (() => {
           const sp=item.name.lastIndexOf(' ', Math.floor(item.name.length*0.62));
           if(sp>0) lines=[item.name.slice(0,sp), item.name.slice(sp+1)];
         }
+        if(G.rainbow) rbPlate(lines,fs,MH*.78);
         lines.forEach((ln,i)=>ctx.fillText(ln, MW*.5, MH*.78+i*fs*1.25));
         ctx.restore();
       }
+      if(G.rainbow) rbFront();
       if(S.flash>0){ ctx.fillStyle=`rgba(255,255,255,${S.flash*.9})`; ctx.fillRect(0,0,MW,MH); }
     }
 
@@ -431,7 +548,11 @@ export const KujiSeal = (() => {
         drawCard(); drawSeal(); drawHint();
         ctx.restore();
       }
-      if(S.revealed) drawReveal();
+      if(S.revealed){
+        const shake = fx().rainbow ? 10*Math.exp(-S.rt*6) : 0;
+        if(shake>.15){ ctx.save(); ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake); drawReveal(); ctx.restore(); }
+        else drawReveal();
+      }
       raf=requestAnimationFrame(frame);
     }
 
