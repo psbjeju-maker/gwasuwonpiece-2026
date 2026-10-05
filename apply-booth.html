@@ -17,8 +17,8 @@
   </div>
 
   <div class="hero">
-    <p class="eyebrow">Market Booth</p>
-    <h1>마켓 부스 신청</h1>
+    <p class="eyebrow" id="boothEyebrow">Market Booth</p>
+    <h1 id="boothTitle">마켓 부스 신청</h1>
     <p class="lede">행사장 마켓 존에서 하루 동안 판매하실 셀러를 모집합니다. 개인·업체 구분 없이 신청하실 수 있어요.</p>
     <p class="dday"><b data-dday>—</b><span>10월 31일(토) 행사까지</span></p>
   </div>
@@ -168,11 +168,18 @@
   var SC = A.SCHEDULE.booth;
 
   /* ── 일정 문구 ── */
+  var isExtra = Date.now() >= new Date(SC.extraFrom).getTime();
+  var resultTxt = isExtra ? SC.extraResult : SC.result;
   var texts = {
-    boothPeriod:      A.fmtDate(SC.open) + " ~ " + A.fmtDate(SC.close),
-    boothResult:      SC.result + " 문자로 개별 안내 (합격·불합격 모두)",
-    boothResultShort: SC.result
+    boothPeriod:      isExtra ? "추가 모집 " + A.fmtDate(SC.extraFrom) + " ~ " + A.fmtDate(SC.close)
+                              : A.fmtDate(SC.open) + " ~ " + A.fmtDate(SC.close),
+    boothResult:      resultTxt + " 문자로 개별 안내 (합격·불합격 모두)",
+    boothResultShort: resultTxt
   };
+  if (isExtra) {
+    A.el("boothEyebrow").textContent = "Market Booth · 추가 모집";
+    A.el("boothTitle").textContent   = "마켓 부스 추가 모집";
+  }
   Object.keys(texts).forEach(function (k) {
     document.querySelectorAll('[data-f="' + k + '"]').forEach(function (el) { el.textContent = texts[k]; });
   });
