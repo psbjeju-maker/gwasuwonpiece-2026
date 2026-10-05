@@ -395,7 +395,7 @@
       nav.style.display = "none";
     }
     document.body.classList.toggle("has-nav", !!NAV_SCREENS[id]);
-    $("codeBar").hidden = !(CODEBAR_SCREENS[id] && ST && ST.participant);
+    $("codeBar").hidden = true; // 참가코드는 더 이상 안 보여준다(미션은 QR)
     document.body.classList.toggle("has-codebar", !$("codeBar").hidden);
 
     var snd = $("soundToggle");
@@ -435,6 +435,7 @@
     return refreshing;
   }
   function updateCodeBar() {
+    $("codeBar").hidden = true; /* 2026-10-05: 참가코드는 손님에게 보여주지 않는다(미션은 QR로) */
     var p = ST && ST.participant;
     $("codeBarVal").textContent = p ? p.code : "------";
     $("codeBarNick").textContent = p ? p.nickname : "";
@@ -703,7 +704,7 @@
 
   /* 미션 묶음 — 부스(스태프 확인) / 앱 안에서 / 무대 투표 */
   var MGROUPS = [
-    { id: "booth", title: "부스 미션", sub: "부스 스태프에게 참가코드를 보여주세요" },
+    { id: "booth", title: "부스 미션", sub: "부스에 붙은 QR을 찍으면 바로 완료돼요" },
     { id: "app",   title: "앱 미션",   sub: "폰으로 바로 도전해요" },
     { id: "stage", title: "무대 투표", sub: "무대 시간에 열려요" }
   ];
@@ -712,6 +713,7 @@
     if (m.auto === "catch" || m.auto === "reaction" || m.auto === "treasureClear") return "app";
     return "booth";
   }
+  var QR_ICON = '<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4M7 12h10"/></svg>';
   function badgeSrc(m) { return A.BASE + "badges/" + m.id + ".webp"; }
 
   /* 미션 하나의 안내 문구(how)와 실행 버튼(action) */
@@ -726,8 +728,8 @@
       action = '<button type="button" class="btn primary" data-treasure="1">보물찾기로 가기</button>';
     } else if (c.verify === "staff") {
       var again = m.id === "m11" || (c.replayReward && c.replayMax > 1);
-      how = ok ? (again ? "또 도전하면 다시 받을 수 있어요" : "완료했어요") : "부스 스태프에게 참가코드를 보여주세요";
-      if ((!ok || again) && window.KB) action = '<button type="button" class="btn primary" data-staffpin="' + m.id + '">스태프 확인 (PIN 입력)</button>';
+      how = ok ? (again ? "또 도전하고 QR을 찍으면 다시 받아요" : "완료했어요") : "부스에 붙은 QR을 찍으면 완료돼요";
+      if (!ok || again) action = '<button type="button" class="btn primary" data-scan="1">' + QR_ICON + 'QR 찍기</button>';
     } else if (inApp) {
       if (pendingClaims[m.id]) action = '<button type="button" class="btn primary" data-retry="' + m.id + '">코인 받기 다시 시도</button>';
       else action = '<button type="button" class="btn primary" data-mid="' + m.id + '">' + (ok ? "다시 도전" : "도전하기") + '</button>';
@@ -742,7 +744,7 @@
   }
 
   function bindMissionActions(root, before) {
-    root.querySelectorAll("[data-mid],[data-retry],[data-votecoin],[data-votego],[data-staffpin],[data-treasure]").forEach(function (btn) {
+    root.querySelectorAll("[data-mid],[data-retry],[data-votecoin],[data-votego],[data-staffpin],[data-treasure],[data-scan]").forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.stopPropagation();
         if (before) before();
@@ -762,6 +764,8 @@
           askStaffPin(btn.dataset.staffpin);
         } else if (btn.dataset.treasure) {
           showTab("scMain");
+        } else if (btn.dataset.scan) {
+          Scan.open();
         }
       });
     });
@@ -803,18 +807,139 @@
     var m = (D.missions || []).filter(function (x) { return x.id === mid; })[0];
     if (!m) return;
     var a = missionAction(m), g = missionGroup(m), cnt = missionCount(m.id);
-    var code = ST && ST.participant ? ST.participant.code : "";
     $("msBody").innerHTML =
       '<img class="ms-badge' + (a.ok ? '' : ' todo') + '" src="' + badgeSrc(m) + '" alt="">' +
       '<h3 class="ms-name">' + esc(m.name) + '</h3>' +
       '<p class="ms-desc">' + esc(m.desc) + '</p>' +
       '<p class="ms-state ' + (a.ok ? 'done' : 'todo') + '">' + (a.ok ? (cnt > 1 ? '완료 ×' + cnt : '완료') : '도전 전') + (a.how ? ' · ' + esc(a.how) : '') + '</p>' +
-      (g === "booth" && code ? '<div class="ms-code"><span>내 참가코드</span><b>' + esc(code) + '</b></div>' : '') +
       (a.action || '');
     bindMissionActions($("msBody"), closeMissionSheet);
     $("msheet").hidden = false;
     document.body.classList.add("sheet-open");
   }
+
+  /* ---------- 미션 QR ----------
+     부스에 붙은 QR(주소 ?mq=토큰)을 찍으면 스태프 없이 완료된다. 판정·쿨다운은 서버가 한다.
+     앱 안 스캐너로 찍거나, 폰 카메라로 찍어 이 주소로 들어와도 된다. */
+  var MQ_KEY = "ggg_pending_mq";
+  function tokenFromText(t) {
+    t = String(t || "").trim();
+    var m = /[?&]mq=([A-Za-z0-9]+)/.exec(t);
+    if (m) return m[1].toUpperCase();
+    return /^[A-Za-z0-9]{10}$/.test(t) ? t.toUpperCase() : "";
+  }
+  function missionName(mid) {
+    var m = (D.missions || []).filter(function (x) { return x.id === mid; })[0];
+    return m ? m.name : "미션";
+  }
+  var mqBusy = false;
+  function handleMissionQr(token) {
+    if (!token || mqBusy) return;
+    mqBusy = true;
+    var before = bookCopy();
+    EV.claimMissionQr(EVENT, token).then(function (r) {
+      mqBusy = false;
+      var fresh = refresh().catch(function () {}).then(function () { renderMissions(); renderHud(); });
+      var name = missionName(r && r.missionId);
+      var cards = (r && r.cards) || [];
+      if (r && r.awarded > 0 && cards.length && window.MH) {
+        MH.reveal(cards, { book: before, title: name + " 완료!", onClose: function () { fresh.then(function () { showTab("scMissions"); }); } });
+      } else if (r && r.awarded > 0) {
+        fresh.then(function () { showTab("scMissions"); questLine(name + " 완료! " + claimMessage(r), { expr: "success" }); });
+      } else if (r && r.reason === "cooldown") {
+        var sec = r.retryAfterSec || 60;
+        questLine(name + "은(는) 방금 받았어. " + (sec >= 60 ? Math.ceil(sec / 60) + "분" : sec + "초") + " 뒤에 다시 찍어 줘!", { expr: "thinking" });
+      } else if (r && r.reason === "already-rewarded") {
+        questLine(name + "은(는) 이미 완료했어. 다른 미션에 도전해 봐!", { expr: "neutral" });
+      } else {
+        questLine(claimMessage(r), { expr: "neutral" });
+      }
+    }, function (e) {
+      mqBusy = false;
+      e = errInfo(e);
+      if (e.reason === "pass-required") { showPassGate(); return; }
+      if (e.reason === "qr-unknown") { questLine("이 QR은 과수원피스 미션 QR이 아니야. 부스에 붙은 QR을 다시 찍어 줘.", { expr: "thinking" }); return; }
+      toast(errText(e));
+    });
+  }
+  function takePendingMq() {
+    var t = null;
+    try { t = sessionStorage.getItem(MQ_KEY); sessionStorage.removeItem(MQ_KEY); } catch (e) {}
+    return t;
+  }
+
+  var Scan = (function () {
+    var stream = null, raf = 0, det = null, canvas = null, ctx = null, done = false;
+    function stop() {
+      cancelAnimationFrame(raf); raf = 0;
+      if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+      $("qrScan").hidden = true; document.body.classList.remove("sheet-open");
+    }
+    function loadJsQR() {
+      if (window.jsQR) return Promise.resolve();
+      return new Promise(function (ok, no) {
+        var s = document.createElement("script"); s.src = "jsqr.js"; s.onload = ok; s.onerror = no; document.head.appendChild(s);
+      });
+    }
+    function found(text) {
+      var tok = tokenFromText(text);
+      if (!tok) { $("qrScanHint").textContent = "미션 QR이 아니에요. 부스에 붙은 QR을 비춰 주세요."; return false; }
+      done = true;
+      try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) {}
+      stop();
+      handleMissionQr(tok);
+      return true;
+    }
+    function tick() {
+      if (done || !stream) return;
+      var v = $("qrVideo");
+      if (v.readyState >= 2) {
+        if (det) {
+          det.detect(v).then(function (codes) {
+            if (codes && codes.length && found(codes[0].rawValue)) return;
+            raf = requestAnimationFrame(tick);
+          }, function () {
+            det = null;
+            loadJsQR().then(function () { raf = requestAnimationFrame(tick); }, function () {});
+          });
+          return;
+        }
+        if (window.jsQR) {
+          var w = v.videoWidth, h = v.videoHeight, sc = Math.min(1, 640 / Math.max(w, h));
+          canvas.width = Math.round(w * sc); canvas.height = Math.round(h * sc);
+          ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+          var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          var c = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
+          if (c && c.data && found(c.data)) return;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function open() {
+      done = false;
+      $("qrScanHint").textContent = "부스에 붙은 미션 QR을 네모 안에 맞춰 주세요";
+      $("qrScan").hidden = false; document.body.classList.add("sheet-open");
+      canvas = canvas || document.createElement("canvas");
+      ctx = ctx || canvas.getContext("2d", { willReadFrequently: true });
+      det = null;
+      try { if ("BarcodeDetector" in window) det = new BarcodeDetector({ formats: ["qr_code"] }); } catch (e) { det = null; }
+      var jsq = det ? Promise.resolve() : loadJsQR();
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        $("qrScanHint").textContent = "이 브라우저는 카메라를 쓸 수 없어요. 폰 카메라 앱으로 QR을 찍어 주세요.";
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }).then(function (st) {
+        if ($("qrScan").hidden) { st.getTracks().forEach(function (t) { t.stop(); }); return; }
+        stream = st;
+        var v = $("qrVideo"); v.srcObject = st; v.setAttribute("playsinline", ""); v.muted = true;
+        v.play().catch(function () {});
+        jsq.then(function () { raf = requestAnimationFrame(tick); }, function () { $("qrScanHint").textContent = "스캐너를 불러오지 못했어요. 폰 카메라 앱으로 찍어 주세요."; });
+      }, function () {
+        $("qrScanHint").textContent = "카메라 권한이 필요해요. 허용하거나 폰 카메라 앱으로 QR을 찍어 주세요.";
+      });
+    }
+    return { open: open, stop: stop };
+  })();
 
   /* 스태프가 참가자 폰에 PIN 을 눌러 확인 → 카드 지급 */
   function askStaffPin(mid) {
@@ -1550,6 +1675,8 @@
     if (!hasPass()) { showPassGate(); return; }
     renderHome(); show("scHome");
     if (msg) toast(msg);
+    var mq = takePendingMq();
+    if (mq) setTimeout(function () { handleMissionQr(mq); }, 400);
   }
 
   /* ---------- 네트워크 배지 ---------- */
@@ -1591,6 +1718,11 @@
 
     var params = new URLSearchParams(location.search);
     var legacyQr = params.get("m") || params.get("p");
+    var mq = tokenFromText(location.search);
+    if (mq) {
+      try { sessionStorage.setItem(MQ_KEY, mq); } catch (e) {}
+      try { history.replaceState(null, "", location.pathname); } catch (e) {}
+    }
 
     refresh().then(function () {
       var rec = pendingRecovery();
@@ -1598,7 +1730,7 @@
       heroMode = "revisit";
       Sound.want("ocean");
       enterApp();
-      if (legacyQr) toast("미션 확인은 스태프에게 참가코드를 보여주세요");
+      if (legacyQr) toast("미션은 부스에 붙은 새 QR을 찍어 주세요");
     }, function (e) {
       if (e && e.reason === "not-registered") { showIntro(); return; }
       bootFail(e);
@@ -1619,6 +1751,8 @@
   $("inRecPhone").addEventListener("input", fmtPhoneInput);
   $("btnBootRetry").addEventListener("click", boot);
   $("msDim").addEventListener("click", closeMissionSheet);
+  $("qrClose").addEventListener("click", function () { Scan.stop(); });
+  $("btnScanTop").addEventListener("click", function () { Scan.open(); });
   $("msClose").addEventListener("click", closeMissionSheet);
 
   /* 닉네임을 3번 틀리면 서버가 잠그고 스태프에게 보낸다 — 더 눌러봤자 안 되니 입력을 막아둔다 */

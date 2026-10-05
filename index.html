@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/icons/golden_tangerine.png">
 <link rel="apple-touch-icon" href="assets/icons/golden_tangerine.png">
 <title>황금 귤을 찾아라</title>
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -249,8 +249,12 @@
     </div>
     <div class="npcrow npcrow-sm">
       <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
-      <div class="bubble"><p id="missionTip">마음에 드는 미션부터 골라 봐. 완료 확인은 현장 스태프에게 부탁해 줘.</p></div>
+      <div class="bubble"><p id="missionTip">부스 미션을 하고 나면 그 부스에 붙은 QR을 찍어 줘. 바로 완료돼!</p></div>
     </div>
+    <button class="btn primary scanbig" id="btnScanTop" type="button">
+      <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4M7 12h10"/></svg>
+      미션 QR 찍기
+    </button>
     <p class="formerr" id="missionErr" role="alert" hidden></p>
     <div class="mlist" id="mlist"></div>
   </section>
@@ -488,6 +492,14 @@
 
 </div>
 
+<!-- 미션 QR 스캐너 -->
+<div class="qrscan" id="qrScan" hidden>
+  <video id="qrVideo" playsinline muted></video>
+  <div class="qs-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <p class="qs-hint" id="qrScanHint">부스에 붙은 미션 QR을 네모 안에 맞춰 주세요</p>
+  <button class="qs-close" id="qrClose" type="button">닫기</button>
+</div>
+
 <!-- 미션 상세 시트 -->
 <div class="msheet" id="msheet" hidden>
   <div class="ms-dim" id="msDim"></div>
@@ -546,10 +558,10 @@
 <script src="assets.js"></script>
 <script src="store.js"></script>
 <script src="qr.js"></script>
-<script src="ev-client.js"></script>
+<script src="ev-client.js?v=2"></script>
 <script src="mhcards.js?v=4"></script>
 <script src="kujiboard.js?v=2"></script>
 <script src="catch.js"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

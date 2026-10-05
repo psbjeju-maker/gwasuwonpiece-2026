@@ -1,7 +1,7 @@
 /* 오프라인 대응 — 한 번 열어두면 신호가 없어도 QR이 열리고 채점까지 된다. */
-var CACHE = "ggg-v38";
+var CACHE = "ggg-v39";
 var FILES = [
-  "./", "./index.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./qr.js", "./ev-client.js", "./mhcards.js", "./kujiboard.js", "./seal.js", "./sfx.js", "./app.js", "./catch.js", "./map.jpg",
+  "./", "./index.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./qr.js", "./ev-client.js", "./mhcards.js", "./kujiboard.js", "./seal.js", "./sfx.js", "./app.js", "./catch.js", "./jsqr.js", "./map.jpg",
   "./guide.html",
   "./fonts/SCDream4.woff", "./fonts/SCDream5.woff", "./fonts/SCDream7.woff",
   /* 2026-09-28 디자인 팩(AI 시안) — 정식 작화로 바꿔도 같은 파일명이면 이 목록은 그대로 */

@@ -169,6 +169,8 @@
     kujiBoard: function (eventId) { return raw('kujiBoard', { eventId: eventId }, true); },
     /* 스태프가 참가자 폰에 PIN 을 눌러 확인 → 미션 카드 지급 (SNS 인증 등) */
     confirmMission: function (eventId, missionId, pin) { return withRid('c.' + eventId + '.' + missionId, 'confirmMission', { eventId: eventId, missionId: missionId, pin: pin }, true); },
+    /* 부스에 붙은 미션 QR 을 참가자가 직접 찍음 → 스태프 없이 완료 */
+    claimMissionQr: function (eventId, token) { return withRid('q.' + eventId + '.' + token, 'claimMissionQr', { eventId: eventId, token: token }, true); },
     submitClue: function (eventId, clueId, answer) { return raw('submitClue', { eventId: eventId, clueId: clueId, answer: answer }, true); },
     claimTreasure: function (eventId, code) { return withRid('t.' + eventId, 'claimTreasure', { eventId: eventId, answer: code }, true); },
     /* ---- 스태프 / 관리자 ---- */

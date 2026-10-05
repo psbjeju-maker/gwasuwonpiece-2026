@@ -595,3 +595,20 @@ body.sheet-open{overflow:hidden;}
 .fold > :not(summary){margin:0 12px 12px;}
 .fold .ttable,.fold .mapbox{box-shadow:none;}
 .soundtoggle svg{width:22px;height:22px;fill:none;stroke:var(--navy);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ══ 2026-10-05: 미션 QR 스캐너 ══ */
+.btn-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+.scanbig{min-height:60px;font-size:18px;margin:0 0 6px;box-shadow:0 6px 18px rgba(8,111,125,.28);}
+.scanbig .btn-ic{width:26px;height:26px;}
+.qrscan{position:fixed;inset:0;z-index:80;background:#000;display:flex;align-items:center;justify-content:center;}
+.qrscan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.qs-frame{position:relative;width:min(68vw,300px);aspect-ratio:1;box-shadow:0 0 0 100vmax rgba(0,0,0,.5);border-radius:18px;}
+.qs-frame i{position:absolute;width:42px;height:42px;border:5px solid var(--gold-on-navy);}
+.qs-frame i:nth-child(1){left:-3px;top:-3px;border-right:0;border-bottom:0;border-radius:18px 0 0 0;}
+.qs-frame i:nth-child(2){right:-3px;top:-3px;border-left:0;border-bottom:0;border-radius:0 18px 0 0;}
+.qs-frame i:nth-child(3){left:-3px;bottom:-3px;border-right:0;border-top:0;border-radius:0 0 0 18px;}
+.qs-frame i:nth-child(4){right:-3px;bottom:-3px;border-left:0;border-top:0;border-radius:0 0 18px 0;}
+.qs-hint{position:absolute;left:20px;right:20px;top:calc(18px + env(safe-area-inset-top,0px));color:#fff;text-align:center;font-size:16px;font-weight:700;
+  text-shadow:0 1px 4px rgba(0,0,0,.6);}
+.qs-close{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(28px + var(--safe-b));min-width:160px;min-height:52px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.5);background:rgba(20,36,57,.7);color:#fff;font-size:17px;font-weight:700;cursor:pointer;}
