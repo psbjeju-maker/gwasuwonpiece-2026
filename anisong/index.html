@@ -55,10 +55,13 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
 .preview{width:100%;background:var(--dk);color:#fff;font-size:24px;padding:18px;font-family:'Black Han Sans';font-weight:400}
 .hint{color:var(--mut);font-size:15px;margin-top:10px;text-align:center}
 .del{background:#fff;color:var(--end);border:2px solid #f3c3bf;font-size:15px;padding:8px 14px}
-.cands{display:flex;flex-wrap:wrap;gap:8px}
-.cand{background:#eef3fb;color:var(--dk);font-size:15px;padding:8px 12px;border-radius:999px;font-weight:700}
-.cand.used{opacity:.35;text-decoration:line-through}
-.yt{color:var(--c);font-weight:700;text-decoration:none;font-size:16px;white-space:nowrap}
+.filebox{background:var(--dk);color:#fff;border-radius:14px;padding:18px;margin:6px 0 14px;display:flex;align-items:center;gap:14px}
+.filebox .fn{flex:1;min-width:0;font-size:17px;word-break:break-all}
+.filebox .fn.miss{color:#ffb4ad}
+.fbtn{background:#2d4f86;color:#fff;font-size:16px;padding:10px 14px;flex:none}
+#seek{width:100%;height:34px;padding:0;border:0;accent-color:var(--c);margin-bottom:6px}
+.drop{border:3px dashed var(--c);border-radius:14px;padding:14px;text-align:center;color:var(--c);font-weight:700;margin-top:12px;background:#f3f7ff}
+body.dragging .drop{background:#dce9ff}
 
 /* 퀴즈 */
 #quiz{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
@@ -97,9 +100,8 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
   <h1>애니송 맞추기</h1>
   <button class="tab on" data-tab="edit">곡 편집</button>
   <button class="tab" data-tab="quiz">퀴즈 진행</button>
-    <button class="hdrbtn" id="linkBtn">행사장용 링크 복사</button>
-  <button class="hdrbtn" id="exportBtn">백업 저장</button>
-  <button class="hdrbtn" id="importBtn">백업 불러오기</button>
+  <button class="hdrbtn" id="exportBtn">구간 백업 저장</button>
+  <button class="hdrbtn" id="importBtn">구간 백업 불러오기</button>
   <input type="file" id="importFile" accept=".json" class="hide">
 </header>
 
@@ -108,15 +110,18 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
   <div class="panel">
     <h2>곡 목록 <span id="cnt" style="color:var(--mut);font-weight:400"></span></h2>
     <ul id="list"></ul>
-    <button class="addbtn" id="addBtn">+ 곡 추가</button>
+    <button class="addbtn" id="addBtn">+ 음악 파일 넣기 (여러 개 가능)</button>
+    <input type="file" id="addFiles" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" multiple class="hide">
+    <div class="drop">음악 파일을 이 화면에 끌어다 놓아도 됩니다</div>
   </div>
 
   <div>
     <div class="panel" id="editor">
       <div class="row"><label>정답(작품)</label><input id="fTitle" placeholder="예: 디지몬 어드벤처"></div>
       <div class="row"><label>곡명</label><input id="fSong" placeholder="예: 버터플라이 (선택)"></div>
-      <div class="row"><label>유튜브</label><input id="fUrl" placeholder="유튜브 주소 붙여넣기"><a class="yt" id="findYt" target="_blank" rel="noopener">유튜브에서 찾기 ↗</a></div>
-      <div class="vid"><div id="ePlayer"></div><div class="empty" id="eEmpty">유튜브 주소를 붙여넣으면 여기서 재생됩니다</div></div>
+      <div class="filebox"><span>🎵</span><span class="fn" id="fName">-</span><button class="fbtn" id="bSwap">파일 바꾸기</button></div>
+      <input type="file" id="swapFile" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" class="hide">
+      <input type="range" id="seek" min="0" max="100" step="0.1" value="0">
       <div class="now" id="eNow">0:00.0</div>
       <div class="ctrl">
         <button id="bBack">« 5초</button>
@@ -137,13 +142,8 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
       </div>
       <button class="preview" id="bPreview">구간 들어보기 (P)</button>
       <div class="hint">스페이스 = 재생/정지 · S = 시작 · E = 끝 · P = 구간 듣기 · ←/→ = 2초 이동</div>
-      <div class="row" style="margin-top:16px"><label>노래방 주소</label><input id="fKara" placeholder="비우면 '작품명 노래방'으로 유튜브 검색"></div>
+      <div class="row" style="margin-top:16px"><label>노래방 주소</label><input id="fKara" placeholder="나중에 넣어도 됨 · 비우면 '곡명 노래방' 유튜브 검색"></div>
       <div style="text-align:right"><button class="del" id="bDel">이 곡 삭제</button></div>
-    </div>
-
-    <div class="panel" style="margin-top:20px">
-      <h2>후보 작품 <span style="color:var(--mut);font-weight:400;font-size:15px">— 누르면 목록에 추가되고 유튜브 검색이 열립니다</span></h2>
-      <div class="cands" id="cands"></div>
     </div>
   </div>
 </section>
@@ -154,7 +154,6 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
       <button id="qShuffle">순서 섞기</button>
       <button id="qOrder">원래 순서</button>
       <button id="qReset">진행 초기화</button>
-      <button id="qShowVid">영상 보이기: 끔</button>
     </div>
     <div id="grid"></div>
   </div>
@@ -168,18 +167,18 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
       <a class="karaoke" id="qKara" target="_blank" rel="noopener">노래방 열기 🎤</a>
     </div>
     <div class="ans" id="ans"><div class="qm">?</div></div>
-    <div class="qvid" id="qVidWrap"><div id="qPlayer"></div></div>
-    <div class="keys hide" id="qHint" style="color:#ffd76a;font-size:17px">소리가 안 나오면 '영상 보이기'를 켜고 영상을 한 번 눌러주세요</div>
     <div class="keys">스페이스 = 듣기 · Enter = 정답 · → = 다음 문제</div>
   </div>
 </section>
 </main>
+<audio id="eAud" preload="auto"></audio>
+<audio id="qAud" preload="auto"></audio>
 
 <script>
-const CANDIDATES = ["포켓몬스터","디지몬 어드벤처","디지몬 테이머즈","카드캡터 체리","슬램덩크","짱구는 못말려","원피스","나루토","명탐정 코난","이누야샤","꼬마마법사 레미","웨딩피치","달빛천사","세일러문","개구리 중사 케로로","보노보노","피구왕 통키","축구왕 슛돌이","꾸러기 수비대","천사소녀 네티","탑블레이드","유희왕","마동왕 그랑죠","사이버 포뮬러","신비한 바다의 나디아","은하철도 999","미래소년 코난","달려라 하니","아기공룡 둘리","날아라 슈퍼보드","영심이","검정고무신","하얀마음 백구","도라에몽","아따맘마","드래곤볼","강철의 연금술사","쾌걸 조로리","안녕 자두야","마법천자문","터닝메카드","신비아파트"];
-const KEY = 'anisong-quiz-v1';
+const KEY = 'anisong-quiz-files-v1';
 let S = load();
 let selId = null, quizCur = null, quizOrder = null;
+const URLS = {};   // 파일이름 → 재생용 주소
 
 function load(){
   try{ const d = JSON.parse(localStorage.getItem(KEY)); if(d && d.songs) return d; }catch(e){}
@@ -189,113 +188,118 @@ function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} 
 const uid = () => Math.random().toString(36).slice(2,9);
 const $ = id => document.getElementById(id);
 function fmt(t){ if(t==null||isNaN(t)) return '-'; const m=Math.floor(t/60), s=(t%60); return m+':'+(s<10?'0':'')+s.toFixed(1); }
-function vidId(u){
-  if(!u) return null; u=u.trim();
-  if(/^[\w-]{11}$/.test(u)) return u;
-  const m = u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/);
-  return m ? m[1] : null;
-}
 function karaUrl(s){ return s.kara && s.kara.trim() ? s.kara.trim() : 'https://www.youtube.com/results?search_query='+encodeURIComponent((s.song||s.title)+' 노래방'); }
 const cur = () => S.songs.find(s=>s.id===selId);
+const hasFile = s => !!(s.file && URLS[s.file]);
+const ready = s => hasFile(s) && s.start!=null && s.end!=null && s.end>s.start;
+
+/* ---------- 음악 파일 보관 (이 브라우저의 IndexedDB, 새로고침해도 남음) ---------- */
+let idb=null;
+function openDB(){ return new Promise((res,rej)=>{ const r=indexedDB.open('anisong-files',1); r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+function idbPut(name,blob){ return new Promise(res=>{ if(!idb) return res(); const t=idb.transaction('files','readwrite'); t.objectStore('files').put(blob,name); t.oncomplete=res; t.onerror=res; }); }
+function idbDel(name){ if(!idb) return; idb.transaction('files','readwrite').objectStore('files').delete(name); }
+function idbAll(){ return new Promise(res=>{ if(!idb) return res(); const rq=idb.transaction('files').objectStore('files').openCursor(); rq.onsuccess=()=>{ const c=rq.result; if(c){ URLS[c.key]=URL.createObjectURL(c.value); c.continue(); } else res(); }; rq.onerror=()=>res(); }); }
+const stem = n => n.replace(/\.[^.]+$/,'').replace(/^\d+[\s._-]+/,'').trim();
+
+async function addFiles(files){
+  let first=null;
+  for(const f of files){
+    if(!/^audio\//.test(f.type) && !/\.(mp3|m4a|wav|ogg|flac|aac)$/i.test(f.name)) continue;
+    await idbPut(f.name,f);
+    if(URLS[f.name]) URL.revokeObjectURL(URLS[f.name]);
+    URLS[f.name]=URL.createObjectURL(f);
+    let s=S.songs.find(x=>x.file===f.name);          // 같은 이름 파일이면 기존 곡에 다시 연결 (찍어둔 구간 유지)
+    if(!s){ s={id:uid(),title:stem(f.name),song:'',file:f.name,start:null,end:null,kara:''}; S.songs.push(s); }
+    if(!first) first=s;
+  }
+  save(); if(first) select(first.id); else renderList();
+}
+$('addBtn').onclick=()=>$('addFiles').click();
+$('addFiles').onchange=e=>{ addFiles([...e.target.files]); e.target.value=''; };
+document.addEventListener('dragover',e=>{ e.preventDefault(); document.body.classList.add('dragging'); });
+document.addEventListener('dragleave',e=>{ if(!e.relatedTarget) document.body.classList.remove('dragging'); });
+document.addEventListener('drop',e=>{ e.preventDefault(); document.body.classList.remove('dragging'); if(e.dataTransfer&&e.dataTransfer.files.length) addFiles([...e.dataTransfer.files]); });
+$('bSwap').onclick=()=>$('swapFile').click();
+$('swapFile').onchange=async e=>{
+  const f=e.target.files[0], s=cur(); e.target.value=''; if(!f||!s) return;
+  await idbPut(f.name,f); URLS[f.name]=URL.createObjectURL(f);
+  s.file=f.name; s.start=null; s.end=null; save(); select(s.id);
+};
 
 /* ---------- 목록 ---------- */
 function renderList(){
   const ul=$('list'); ul.innerHTML='';
   S.songs.forEach((s,i)=>{
     const li=document.createElement('li'); if(s.id===selId) li.className='sel';
-    const ok = vidId(s.url) && s.start!=null && s.end!=null && s.end>s.start;
-    li.innerHTML=`<span class="no">${i+1}</span><span class="dot ${ok?'ok':''}"></span><span class="t"><b></b><small>${s.start!=null?fmt(s.start)+' ~ '+fmt(s.end)+' ('+(s.end!=null?(s.end-s.start).toFixed(1)+'초':'?')+')':'구간 미지정'}</small></span><button class="mv" data-up="${s.id}">▲</button>`;
+    const info=!hasFile(s)?'⚠ 파일 없음 — 다시 넣어주세요':(s.start!=null&&s.end!=null?fmt(s.start)+' ~ '+fmt(s.end)+' ('+(s.end-s.start).toFixed(1)+'초)':'구간 미지정');
+    li.innerHTML=`<span class="no">${i+1}</span><span class="dot ${ready(s)?'ok':''}"></span><span class="t"><b></b><small></small></span><button class="mv" data-up="1">▲</button>`;
     li.querySelector('b').textContent = s.title || '(제목 없음)';
+    li.querySelector('small').textContent = info;
     li.onclick=e=>{ if(e.target.dataset.up){ move(s.id); return; } select(s.id); };
     ul.appendChild(li);
   });
-  const ready=S.songs.filter(s=>vidId(s.url)&&s.start!=null&&s.end>s.start).length;
-  $('cnt').textContent=`${S.songs.length}곡 · 완료 ${ready}`;
-  renderCands();
+  $('cnt').textContent=`${S.songs.length}곡 · 완료 ${S.songs.filter(ready).length}`;
 }
 function move(id){ const i=S.songs.findIndex(s=>s.id===id); if(i>0){ [S.songs[i-1],S.songs[i]]=[S.songs[i],S.songs[i-1]]; save(); renderList(); } }
-function addSong(title){
-  const s={id:uid(),title:title||'',song:'',url:'',start:null,end:null,kara:''};
-  S.songs.push(s); save(); select(s.id); return s;
-}
+const EA=$('eAud'), QA=$('qAud');
 function select(id){
   selId=id; const s=cur(); renderList();
   $('editor').style.opacity = s?1:.4;
-  if(!s) return;
-  $('fTitle').value=s.title; $('fSong').value=s.song; $('fUrl').value=s.url; $('fKara').value=s.kara;
-  updateFind(); showMarks(); loadEdit();
+  EA.pause(); stopAt=null;
+  if(!s){ EA.removeAttribute('src'); return; }
+  $('fTitle').value=s.title; $('fSong').value=s.song||''; $('fKara').value=s.kara||'';
+  $('fName').textContent = s.file ? s.file + (hasFile(s)?'':' (이 기기에 파일 없음)') : '-';
+  $('fName').classList.toggle('miss', !hasFile(s));
+  if(hasFile(s)){ EA.src=URLS[s.file]; EA.currentTime=s.start||0; } else EA.removeAttribute('src');
+  showMarks();
 }
-function updateFind(){ const s=cur(); $('findYt').href='https://www.youtube.com/results?search_query='+encodeURIComponent(((s&&s.title)||'')+' 오프닝 한국어'); }
 function showMarks(){ const s=cur(); $('vStart').textContent=fmt(s&&s.start); $('vEnd').textContent=fmt(s&&s.end); }
-['fTitle','fSong','fUrl','fKara'].forEach(f=>$(f).addEventListener('input',()=>{
+['fTitle','fSong','fKara'].forEach(f=>$(f).addEventListener('input',()=>{
   const s=cur(); if(!s) return;
-  const k={fTitle:'title',fSong:'song',fUrl:'url',fKara:'kara'}[f];
-  s[k]=$(f).value; save(); renderList(); updateFind();
-  if(f==='fUrl') loadEdit();
+  s[{fTitle:'title',fSong:'song',fKara:'kara'}[f]]=$(f).value; save(); renderList();
 }));
-function renderCands(){
-  const used=new Set(S.songs.map(s=>s.title.trim()));
-  const box=$('cands'); box.innerHTML='';
-  CANDIDATES.forEach(c=>{
-    const a=document.createElement('a'); a.className='cand'+(used.has(c)?' used':''); a.textContent=c;
-    a.href='https://www.youtube.com/results?search_query='+encodeURIComponent(c+' 오프닝 한국어'); a.target='_blank'; a.rel='noopener';
-    a.onclick=()=>{ if(!used.has(c)) addSong(c); };
-    box.appendChild(a);
-  });
-}
-$('addBtn').onclick=()=>{ addSong(''); $('fTitle').focus(); };
 $('bDel').onclick=()=>{
   const s=cur(); if(!s) return;
-  const i=S.songs.indexOf(s); S.songs.splice(i,1); save();
+  const i=S.songs.indexOf(s); S.songs.splice(i,1);
+  if(s.file && !S.songs.some(x=>x.file===s.file)) idbDel(s.file);
+  save();
   const n=S.songs[Math.min(i,S.songs.length-1)]; selId=n?n.id:null;
   if(n) select(n.id); else { renderList(); $('editor').style.opacity=.4; }
 };
 
-/* ---------- 유튜브 ---------- */
-let eP=null, qP=null, ytReady=false, eLoaded=null, qLoaded=null;
-window.onYouTubeIframeAPIReady=()=>{
-  ytReady=true; loadEdit(); if(quizCur) pickQ(quizCur);
-};
-/* 플레이어는 영상 주소가 생겼을 때 그 영상으로 만든다 (빈 플레이어는 유튜브 오류 화면이 뜸) */
-let ePend=false, qPend=false;
-function loadEdit(){
-  const s=cur(); const id=s&&vidId(s.url);
-  $('eEmpty').classList.toggle('hide',!!id);
-  if(!ytReady||!id||id===eLoaded) return;
-  if(!eP){ if(ePend) return; ePend=true; eLoaded=id;
-    new YT.Player('ePlayer',{videoId:id,playerVars:{rel:0,playsinline:1,start:Math.floor(s.start||0)},events:{onReady:e=>{eP=e.target; const c=cur(), v=c&&vidId(c.url); if(v&&v!==eLoaded){eLoaded=v; eP.cueVideoById({videoId:v,startSeconds:c.start||0});}}}});
-    return; }
-  eLoaded=id; eP.cueVideoById({videoId:id,startSeconds:s.start||0});
-}
-const eTime=()=>eP&&eP.getCurrentTime?eP.getCurrentTime():0;
-let stopAt=null, fadeP=null;
+/* ---------- 편집 재생 ---------- */
+let stopAt=null, seeking=false;
+EA.addEventListener('loadedmetadata',()=>{ $('seek').max=EA.duration||100; });
+$('seek').addEventListener('input',()=>{ seeking=true; if(EA.src) EA.currentTime=+$('seek').value; });
+$('seek').addEventListener('change',()=>{ seeking=false; });
 setInterval(()=>{
-  if(eP&&eP.getCurrentTime) $('eNow').textContent=fmt(eTime());
-  // 편집 미리듣기 자동정지
-  if(stopAt!=null && eP && eTime()>=stopAt){ eP.pauseVideo(); stopAt=null; }
+  $('eNow').textContent=fmt(EA.currentTime||0);
+  if(!seeking) $('seek').value=EA.currentTime||0;
+  if(stopAt!=null && EA.currentTime>=stopAt){ EA.pause(); stopAt=null; }
   quizTick();
 },50);
+function togglePlay(){ if(!EA.src) return; stopAt=null; EA.paused?EA.play():EA.pause(); }
+function seekBy(d){ if(EA.src) EA.currentTime=Math.max(0,EA.currentTime+d); }
 $('bPlay').onclick=togglePlay;
-function togglePlay(){ if(!eP) return; stopAt=null; eP.getPlayerState()===1?eP.pauseVideo():eP.playVideo(); }
-function seekBy(d){ if(eP) eP.seekTo(Math.max(0,eTime()+d),true); }
 $('bBack').onclick=()=>seekBy(-5); $('bFwd').onclick=()=>seekBy(5);
-function markStart(){ const s=cur(); if(!s||!eP) return; s.start=+eTime().toFixed(1); if(s.end!=null&&s.end<=s.start) s.end=null; save(); showMarks(); renderList(); }
-function markEnd(){ const s=cur(); if(!s||!eP) return; const t=+eTime().toFixed(1); if(s.start!=null&&t<=s.start) return; s.end=t; eP.pauseVideo(); save(); showMarks(); renderList(); }
+function markStart(){ const s=cur(); if(!s||!EA.src) return; s.start=+EA.currentTime.toFixed(1); if(s.end!=null&&s.end<=s.start) s.end=null; save(); showMarks(); renderList(); }
+function markEnd(){ const s=cur(); if(!s||!EA.src) return; const t=+EA.currentTime.toFixed(1); if(s.start!=null&&t<=s.start) return; s.end=t; EA.pause(); save(); showMarks(); renderList(); }
 $('bStart').onclick=markStart; $('bEnd').onclick=markEnd;
 document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{
   const s=cur(); if(!s) return; const [k,d]=b.dataset.n.split(':');
   if(s[k]==null) return; s[k]=Math.max(0,+(s[k]+ +d).toFixed(1)); save(); showMarks(); renderList();
-  if(eP) eP.seekTo(s[k],true);
+  if(EA.src) EA.currentTime=s[k];
 });
-function preview(){ const s=cur(); if(!s||s.start==null||s.end==null||!eP) return; eP.seekTo(s.start,true); eP.playVideo(); stopAt=s.end; }
+function preview(){ const s=cur(); if(!s||s.start==null||s.end==null||!EA.src) return; EA.currentTime=s.start; EA.play(); stopAt=s.end; }
 $('bPreview').onclick=preview;
 
 /* ---------- 퀴즈 ---------- */
-const playable=()=>S.songs.filter(s=>vidId(s.url)&&s.start!=null&&s.end>s.start);
-function qList(){ const p=playable(); if(!quizOrder) return p; return quizOrder.map(id=>p.find(s=>s.id===id)).filter(Boolean).concat(p.filter(s=>!quizOrder.includes(s.id))); }
+function qList(){ const p=S.songs.filter(ready); if(!quizOrder) return p; return quizOrder.map(id=>p.find(s=>s.id===id)).filter(Boolean).concat(p.filter(s=>!quizOrder.includes(s.id))); }
 function renderGrid(){
   const g=$('grid'); g.innerHTML='';
-  qList().forEach((s,i)=>{
+  const l=qList();
+  if(!l.length) g.innerHTML='<p style="color:var(--mut)">곡 편집에서 시작·끝을 찍은 곡이 여기에 나옵니다</p>';
+  l.forEach((s,i)=>{
     const b=document.createElement('button'); b.className='q'+(S.done.includes(s.id)?' done':'')+(quizCur===s.id?' cur':'');
     b.textContent=i+1; b.onclick=()=>pickQ(s.id); g.appendChild(b);
   });
@@ -304,33 +308,23 @@ function pickQ(id){
   stopQuiz(); quizCur=id; const s=S.songs.find(x=>x.id===id); const n=qList().findIndex(x=>x.id===id)+1;
   $('qNo').textContent='Q'+n; $('ans').innerHTML='<div class="qm">?</div>';
   $('qKara').href=karaUrl(s); renderGrid();
-  const v=vidId(s.url);
-  $('qHint').classList.add('hide');
-  if(qP){ qP.cueVideoById({videoId:v,startSeconds:s.start}); qLoaded=v; }
-  else if(ytReady&&!qPend){ qPend=true; qLoaded=v;
-    new YT.Player('qPlayer',{videoId:v,playerVars:{rel:0,playsinline:1,controls:0,disablekb:1,start:Math.floor(s.start)},events:{onReady:e=>{qP=e.target; const c=S.songs.find(x=>x.id===quizCur), w=c&&vidId(c.url); if(w&&w!==qLoaded){qLoaded=w; qP.cueVideoById({videoId:w,startSeconds:c.start});}}}}); }
+  QA.src=URLS[s.file]; QA.currentTime=s.start;
 }
-let qStop=null, qFadeFrom=null;
+let qStop=null, qExtra=0;
 function qPlay(extra){
-  const s=S.songs.find(x=>x.id===quizCur); if(!s||!qP) return;
-  const v=vidId(s.url);
-  if(qLoaded!==v){ qP.loadVideoById({videoId:v,startSeconds:s.start}); qLoaded=v; }
-  else { qP.seekTo(s.start,true); qP.playVideo(); }
-  qP.setVolume(100); qP.unMute();
+  const s=S.songs.find(x=>x.id===quizCur); if(!s) return;
+  QA.currentTime=s.start; QA.volume=1; QA.play();
   qStop=s.end+(extra||0); $('eq').classList.add('on');
-  // 휴대폰은 영상을 한 번 직접 눌러야 재생되는 경우가 있음 → 안 나오면 안내
-  setTimeout(()=>{ if(qStop!=null&&qP&&[1,3].indexOf(qP.getPlayerState())<0) $('qHint').classList.remove('hide'); },1800);
 }
-let qExtra=0;
 $('qPlay').onclick=()=>{ qExtra=0; qPlay(0); };
 $('qLonger').onclick=()=>{ qExtra+=3; qPlay(qExtra); };
 function quizTick(){
-  if(qStop==null||!qP||!qP.getCurrentTime) return;
-  const t=qP.getCurrentTime(), left=qStop-t;
-  if(left<=0){ stopQuiz(); return; }
-  if(left<0.6) qP.setVolume(Math.max(0,Math.round(left/0.6*100)));  // 끝부분 살짝 페이드
+  if(qStop==null) return;
+  const left=qStop-QA.currentTime;
+  if(left<=0||QA.ended){ stopQuiz(); return; }
+  QA.volume = left<0.6 ? Math.max(0,left/0.6) : 1;   // 끝부분 살짝 페이드
 }
-function stopQuiz(){ if(qP&&qP.pauseVideo) qP.pauseVideo(); qStop=null; $('eq').classList.remove('on'); }
+function stopQuiz(){ QA.pause(); qStop=null; QA.volume=1; $('eq').classList.remove('on'); }
 function reveal(){
   const s=S.songs.find(x=>x.id===quizCur); if(!s) return;
   $('ans').innerHTML='<div class="a1"></div><div class="a2"></div>';
@@ -339,18 +333,16 @@ function reveal(){
 }
 $('qReveal').onclick=reveal;
 function nextQ(){ const l=qList(); const i=l.findIndex(s=>s.id===quizCur); const n=l.slice(i+1).find(s=>!S.done.includes(s.id))||l.find(s=>!S.done.includes(s.id)); if(n) pickQ(n.id); }
-$('qShuffle').onclick=()=>{ const p=playable().map(s=>s.id); for(let i=p.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[p[i],p[j]]=[p[j],p[i]];} quizOrder=p; renderGrid(); };
+$('qShuffle').onclick=()=>{ const p=qList().map(s=>s.id); for(let i=p.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[p[i],p[j]]=[p[j],p[i]];} quizOrder=p; renderGrid(); };
 $('qOrder').onclick=()=>{ quizOrder=null; renderGrid(); };
 $('qReset').onclick=()=>{ S.done=[]; save(); quizCur=null; $('qNo').textContent='Q'; $('ans').innerHTML='<div class="qm">?</div>'; renderGrid(); };
-let showVid=false;
-$('qShowVid').onclick=()=>{ showVid=!showVid; $('qVidWrap').classList.toggle('show',showVid); $('qShowVid').textContent='영상 보이기: '+(showVid?'켬':'끔'); };
 
 /* ---------- 탭/키 ---------- */
 let tab='edit';
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
   tab=b.dataset.tab; document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
   $('edit').classList.toggle('hide',tab!=='edit'); $('quiz').classList.toggle('hide',tab!=='quiz');
-  if(eP&&eP.pauseVideo) eP.pauseVideo(); stopQuiz();
+  EA.pause(); stopQuiz();
   if(tab==='quiz'){ renderGrid(); if(!quizCur){ const f=qList().find(s=>!S.done.includes(s.id)); if(f) pickQ(f.id); } }
 });
 document.addEventListener('keydown',e=>{
@@ -367,33 +359,22 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ---------- 백업 ---------- */
+/* ---------- 구간 백업 (음악 파일은 기기마다 따로 넣고, 같은 파일이름이면 구간이 자동 연결됨) ---------- */
 $('exportBtn').onclick=()=>{
   const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='애니송퀴즈_백업.json'; a.click();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='애니송퀴즈_구간백업.json'; a.click();
 };
 $('importBtn').onclick=()=>$('importFile').click();
 $('importFile').onchange=e=>{
   const f=e.target.files[0]; if(!f) return;
-  f.text().then(t=>{ try{ const d=JSON.parse(t); if(d.songs){ S={songs:d.songs,done:d.done||[]}; save(); select(S.songs[0]&&S.songs[0].id); } }catch(err){} });
+  f.text().then(t=>{ try{ const d=JSON.parse(t); if(d.songs){ S={songs:d.songs,done:d.done||[]}; save(); selId=null; if(S.songs[0]) select(S.songs[0].id); else renderList(); } }catch(err){} });
 };
 
-/* 링크 안에 곡 목록을 담아 다른 기기(행사장 노트북)로 옮긴다 */
-const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
-$('linkBtn').onclick=async()=>{
-  const url=location.origin+location.pathname+'#d='+enc({songs:S.songs.map(({id,title,song,url,start,end,kara})=>({id,title,song,url,start,end,kara}))});
-  try{ await navigator.clipboard.writeText(url); $('linkBtn').textContent='복사됨! 카톡 등으로 보내세요'; }
-  catch(e){ prompt('이 주소를 복사하세요',url); }
-  setTimeout(()=>$('linkBtn').textContent='행사장용 링크 복사',3000);
-};
 (async()=>{
-  const m=location.hash.match(/#d=([\w-]+)/);
-  if(m){ try{ const d=dec(m[1]); if(d.songs){ S={songs:d.songs,done:[]}; save(); history.replaceState(null,'',location.pathname); } }catch(e){} }
-  else if(!S.songs.length){ try{ const r=await fetch('songs.json',{cache:'no-store'}); if(r.ok){ const d=await r.json(); if(d.songs){ S={songs:d.songs,done:[]}; save(); } } }catch(e){} }
+  try{ idb=await openDB(); await idbAll(); }catch(e){}
+  try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
   if(S.songs[0]) select(S.songs[0].id); else { renderList(); $('editor').style.opacity=.4; }
 })();
 </script>
-<script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
