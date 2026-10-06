@@ -40,7 +40,7 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
 .row label{width:96px;flex:none;font-weight:700;color:var(--mut);font-size:16px}
 .vid{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin:6px 0 14px}
 .vid iframe,.vid>div{position:absolute;inset:0;width:100%;height:100%}
-.empty{display:flex;align-items:center;justify-content:center;color:#8aa;font-size:18px;text-align:center;padding:20px}
+.empty{z-index:2;background:#1b2433;display:flex;align-items:center;justify-content:center;color:#8aa;font-size:18px;text-align:center;padding:20px}
 .now{font-family:'Black Han Sans';font-size:44px;text-align:center;color:var(--dk);margin-bottom:10px}
 .ctrl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
 .ctrl button{background:#e8eef8;color:var(--dk);font-size:20px;padding:14px 20px}
@@ -89,7 +89,7 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
 .qtools{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .qtools button{background:#fff;color:var(--dk);border:2px solid var(--line);font-size:16px;padding:10px 14px}
 .keys{color:#7f9cc9;font-size:14px;margin-top:16px}
-@media (max-width:900px){#edit,#quiz{grid-template-columns:1fr}.stage{position:static}header{flex-wrap:wrap;position:static}header h1{width:100%}}
+@media (max-width:900px){#edit,#quiz{grid-template-columns:1fr}.stage{position:static}header{flex-wrap:wrap;position:static}header h1{width:100%}.row{flex-wrap:wrap}.row label{width:100%}.row input{flex:1;min-width:0}}
 </style>
 </head>
 <body>
@@ -169,6 +169,7 @@ main{padding:20px 24px;max-width:1500px;margin:0 auto}
     </div>
     <div class="ans" id="ans"><div class="qm">?</div></div>
     <div class="qvid" id="qVidWrap"><div id="qPlayer"></div></div>
+    <div class="keys hide" id="qHint" style="color:#ffd76a;font-size:17px">소리가 안 나오면 '영상 보이기'를 켜고 영상을 한 번 눌러주세요</div>
     <div class="keys">스페이스 = 듣기 · Enter = 정답 · → = 다음 문제</div>
   </div>
 </section>
@@ -253,14 +254,17 @@ $('bDel').onclick=()=>{
 /* ---------- 유튜브 ---------- */
 let eP=null, qP=null, ytReady=false, eLoaded=null, qLoaded=null;
 window.onYouTubeIframeAPIReady=()=>{
-  ytReady=true;
-  eP=new YT.Player('ePlayer',{playerVars:{rel:0,playsinline:1},events:{onReady:()=>loadEdit()}});
-  qP=new YT.Player('qPlayer',{playerVars:{rel:0,playsinline:1,controls:0,disablekb:1}});
+  ytReady=true; loadEdit(); if(quizCur) pickQ(quizCur);
 };
+/* 플레이어는 영상 주소가 생겼을 때 그 영상으로 만든다 (빈 플레이어는 유튜브 오류 화면이 뜸) */
+let ePend=false, qPend=false;
 function loadEdit(){
   const s=cur(); const id=s&&vidId(s.url);
   $('eEmpty').classList.toggle('hide',!!id);
-  if(!eP||!eP.cueVideoById||!id||id===eLoaded) return;
+  if(!ytReady||!id||id===eLoaded) return;
+  if(!eP){ if(ePend) return; ePend=true; eLoaded=id;
+    new YT.Player('ePlayer',{videoId:id,playerVars:{rel:0,playsinline:1,start:Math.floor(s.start||0)},events:{onReady:e=>{eP=e.target; const c=cur(), v=c&&vidId(c.url); if(v&&v!==eLoaded){eLoaded=v; eP.cueVideoById({videoId:v,startSeconds:c.start||0});}}}});
+    return; }
   eLoaded=id; eP.cueVideoById({videoId:id,startSeconds:s.start||0});
 }
 const eTime=()=>eP&&eP.getCurrentTime?eP.getCurrentTime():0;
@@ -301,7 +305,10 @@ function pickQ(id){
   $('qNo').textContent='Q'+n; $('ans').innerHTML='<div class="qm">?</div>';
   $('qKara').href=karaUrl(s); renderGrid();
   const v=vidId(s.url);
-  if(qP&&qP.cueVideoById){ qP.cueVideoById({videoId:v,startSeconds:s.start}); qLoaded=v; }
+  $('qHint').classList.add('hide');
+  if(qP){ qP.cueVideoById({videoId:v,startSeconds:s.start}); qLoaded=v; }
+  else if(ytReady&&!qPend){ qPend=true; qLoaded=v;
+    new YT.Player('qPlayer',{videoId:v,playerVars:{rel:0,playsinline:1,controls:0,disablekb:1,start:Math.floor(s.start)},events:{onReady:e=>{qP=e.target; const c=S.songs.find(x=>x.id===quizCur), w=c&&vidId(c.url); if(w&&w!==qLoaded){qLoaded=w; qP.cueVideoById({videoId:w,startSeconds:c.start});}}}}); }
 }
 let qStop=null, qFadeFrom=null;
 function qPlay(extra){
@@ -311,6 +318,8 @@ function qPlay(extra){
   else { qP.seekTo(s.start,true); qP.playVideo(); }
   qP.setVolume(100); qP.unMute();
   qStop=s.end+(extra||0); $('eq').classList.add('on');
+  // 휴대폰은 영상을 한 번 직접 눌러야 재생되는 경우가 있음 → 안 나오면 안내
+  setTimeout(()=>{ if(qStop!=null&&qP&&[1,3].indexOf(qP.getPlayerState())<0) $('qHint').classList.remove('hide'); },1800);
 }
 let qExtra=0;
 $('qPlay').onclick=()=>{ qExtra=0; qPlay(0); };
