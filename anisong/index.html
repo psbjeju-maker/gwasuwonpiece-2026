@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>애니송 맞추기</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--c:#1E5AA8;--dk:#0d2547;--bg:#f2f5fa;--card:#fff;--ink:#14213d;--mut:#6b7a90;--line:#d6deea;--start:#13a35a;--end:#e0453a;--gold:#f5b800}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:18px}
+button{font-family:inherit;cursor:pointer;border:0;border-radius:12px;font-weight:700}
+input{font-family:inherit;font-size:18px;padding:12px 14px;border:2px solid var(--line);border-radius:10px;width:100%}
+input:focus{outline:none;border-color:var(--c)}
+header{background:var(--dk);color:#fff;display:flex;align-items:center;gap:16px;padding:14px 24px;position:sticky;top:0;z-index:10}
+header h1{font-family:'Black Han Sans';font-weight:400;font-size:30px;margin:0;margin-right:auto}
+.tab{background:transparent;color:#cfe0ff;font-size:20px;padding:12px 22px;border:2px solid #2d4f86}
+.tab.on{background:var(--c);color:#fff;border-color:var(--c)}
+.hdrbtn{background:#1b3a6b;color:#fff;font-size:16px;padding:10px 14px}
+main{padding:20px 24px;max-width:1500px;margin:0 auto}
+.hide{display:none!important}
+
+/* 편집 */
+#edit{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}
+.panel{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(13,37,71,.07)}
+.panel h2{margin:0 0 12px;font-size:20px}
+#list{list-style:none;margin:0;padding:0;max-height:70vh;overflow:auto}
+#list li{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;border:2px solid transparent}
+#list li:hover{background:#eef3fb}
+#list li.sel{border-color:var(--c);background:#e6efff}
+#list .no{font-family:'Black Han Sans';font-size:22px;color:var(--c);width:34px;text-align:center}
+#list .t{flex:1;min-width:0}
+#list .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#list .t small{color:var(--mut);font-size:14px}
+.dot{width:12px;height:12px;border-radius:50%;background:#ccd4e0;flex:none}
+.dot.ok{background:var(--start)}
+.mv{background:#eef2f8;color:var(--mut);padding:4px 8px;font-size:14px}
+.addbtn{width:100%;background:var(--c);color:#fff;font-size:18px;padding:14px;margin-top:12px}
+.row{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.row label{width:96px;flex:none;font-weight:700;color:var(--mut);font-size:16px}
+.vid{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin:6px 0 14px}
+.vid iframe,.vid>div{position:absolute;inset:0;width:100%;height:100%}
+.empty{display:flex;align-items:center;justify-content:center;color:#8aa;font-size:18px;text-align:center;padding:20px}
+.now{font-family:'Black Han Sans';font-size:44px;text-align:center;color:var(--dk);margin-bottom:10px}
+.ctrl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.ctrl button{background:#e8eef8;color:var(--dk);font-size:20px;padding:14px 20px}
+.mark{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.mbox{border-radius:16px;padding:14px;text-align:center;border:3px solid}
+.mbox.s{border-color:var(--start);background:#eafaf1}
+.mbox.e{border-color:var(--end);background:#fdeeed}
+.mbox .big{width:100%;font-size:28px;padding:22px 10px;color:#fff;font-family:'Black Han Sans';font-weight:400}
+.mbox.s .big{background:var(--start)} .mbox.e .big{background:var(--end)}
+.mbox .val{font-family:'Black Han Sans';font-size:34px;margin:10px 0 6px}
+.mbox .nud button{background:#fff;color:var(--dk);font-size:16px;padding:8px 12px;border:2px solid var(--line)}
+.preview{width:100%;background:var(--dk);color:#fff;font-size:24px;padding:18px;font-family:'Black Han Sans';font-weight:400}
+.hint{color:var(--mut);font-size:15px;margin-top:10px;text-align:center}
+.del{background:#fff;color:var(--end);border:2px solid #f3c3bf;font-size:15px;padding:8px 14px}
+.cands{display:flex;flex-wrap:wrap;gap:8px}
+.cand{background:#eef3fb;color:var(--dk);font-size:15px;padding:8px 12px;border-radius:999px;font-weight:700}
+.cand.used{opacity:.35;text-decoration:line-through}
+.yt{color:var(--c);font-weight:700;text-decoration:none;font-size:16px;white-space:nowrap}
+
+/* 퀴즈 */
+#quiz{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px}
+.q{aspect-ratio:1;background:var(--c);color:#fff;font-family:'Black Han Sans';font-size:40px;font-weight:400;border-radius:16px}
+.q.done{background:#c3ccd9;color:#fff}
+.q.cur{outline:5px solid var(--gold)}
+.stage{background:var(--dk);color:#fff;border-radius:22px;padding:28px;text-align:center;position:sticky;top:96px}
+.qno{font-family:'Black Han Sans';font-size:96px;line-height:1;color:var(--gold)}
+.eq{display:flex;gap:8px;justify-content:center;align-items:flex-end;height:70px;margin:18px 0}
+.eq i{width:14px;background:#4f8de0;border-radius:4px;height:10px;transition:height .1s}
+.eq.on i{animation:eq .5s ease-in-out infinite alternate}
+.eq i:nth-child(2){animation-delay:.1s}.eq i:nth-child(3){animation-delay:.25s}.eq i:nth-child(4){animation-delay:.05s}.eq i:nth-child(5){animation-delay:.3s}.eq i:nth-child(6){animation-delay:.15s}.eq i:nth-child(7){animation-delay:.2s}
+@keyframes eq{from{height:10px}to{height:66px}}
+.sbtn{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.sbtn button,.sbtn a{font-size:26px;padding:22px 10px;font-family:'Black Han Sans';font-weight:400;border-radius:14px;text-decoration:none;display:block}
+.play{background:var(--gold);color:var(--dk);grid-column:1/3;font-size:34px!important}
+.again{background:#2d4f86;color:#fff}
+.reveal{background:#fff;color:var(--dk)}
+.karaoke{background:var(--end);color:#fff;grid-column:1/3}
+.ans{min-height:110px;margin-top:20px;display:flex;flex-direction:column;justify-content:center}
+.ans .a1{font-family:'Black Han Sans';font-size:46px}
+.ans .a2{font-size:22px;color:#b9cdf0;margin-top:6px}
+.ans .qm{font-family:'Black Han Sans';font-size:46px;color:#3d5f96}
+.qvid{position:absolute;width:320px;height:180px;left:-9999px;top:0}
+.qvid.show{position:relative;left:0;width:100%;height:auto;aspect-ratio:16/9;margin-top:16px;border-radius:12px;overflow:hidden}
+.qvid iframe{width:100%;height:100%}
+.qtools{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.qtools button{background:#fff;color:var(--dk);border:2px solid var(--line);font-size:16px;padding:10px 14px}
+.keys{color:#7f9cc9;font-size:14px;margin-top:16px}
+@media (max-width:900px){#edit,#quiz{grid-template-columns:1fr}.stage{position:static}header{flex-wrap:wrap;position:static}header h1{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <h1>애니송 맞추기</h1>
+  <button class="tab on" data-tab="edit">곡 편집</button>
+  <button class="tab" data-tab="quiz">퀴즈 진행</button>
+    <button class="hdrbtn" id="linkBtn">행사장용 링크 복사</button>
+  <button class="hdrbtn" id="exportBtn">백업 저장</button>
+  <button class="hdrbtn" id="importBtn">백업 불러오기</button>
+  <input type="file" id="importFile" accept=".json" class="hide">
+</header>
+
+<main>
+<section id="edit">
+  <div class="panel">
+    <h2>곡 목록 <span id="cnt" style="color:var(--mut);font-weight:400"></span></h2>
+    <ul id="list"></ul>
+    <button class="addbtn" id="addBtn">+ 곡 추가</button>
+  </div>
+
+  <div>
+    <div class="panel" id="editor">
+      <div class="row"><label>정답(작품)</label><input id="fTitle" placeholder="예: 디지몬 어드벤처"></div>
+      <div class="row"><label>곡명</label><input id="fSong" placeholder="예: 버터플라이 (선택)"></div>
+      <div class="row"><label>유튜브</label><input id="fUrl" placeholder="유튜브 주소 붙여넣기"><a class="yt" id="findYt" target="_blank" rel="noopener">유튜브에서 찾기 ↗</a></div>
+      <div class="vid"><div id="ePlayer"></div><div class="empty" id="eEmpty">유튜브 주소를 붙여넣으면 여기서 재생됩니다</div></div>
+      <div class="now" id="eNow">0:00.0</div>
+      <div class="ctrl">
+        <button id="bBack">« 5초</button>
+        <button id="bPlay">▶ 재생 / ⏸</button>
+        <button id="bFwd">5초 »</button>
+      </div>
+      <div class="mark">
+        <div class="mbox s">
+          <button class="big" id="bStart">시작 찍기 (S)</button>
+          <div class="val" id="vStart">-</div>
+          <div class="nud"><button data-n="start:-0.5">−0.5초</button> <button data-n="start:0.5">+0.5초</button></div>
+        </div>
+        <div class="mbox e">
+          <button class="big" id="bEnd">끝 찍기 (E)</button>
+          <div class="val" id="vEnd">-</div>
+          <div class="nud"><button data-n="end:-0.5">−0.5초</button> <button data-n="end:0.5">+0.5초</button></div>
+        </div>
+      </div>
+      <button class="preview" id="bPreview">구간 들어보기 (P)</button>
+      <div class="hint">스페이스 = 재생/정지 · S = 시작 · E = 끝 · P = 구간 듣기 · ←/→ = 2초 이동</div>
+      <div class="row" style="margin-top:16px"><label>노래방 주소</label><input id="fKara" placeholder="비우면 '작품명 노래방'으로 유튜브 검색"></div>
+      <div style="text-align:right"><button class="del" id="bDel">이 곡 삭제</button></div>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+      <h2>후보 작품 <span style="color:var(--mut);font-weight:400;font-size:15px">— 누르면 목록에 추가되고 유튜브 검색이 열립니다</span></h2>
+      <div class="cands" id="cands"></div>
+    </div>
+  </div>
+</section>
+
+<section id="quiz" class="hide">
+  <div>
+    <div class="qtools">
+      <button id="qShuffle">순서 섞기</button>
+      <button id="qOrder">원래 순서</button>
+      <button id="qReset">진행 초기화</button>
+      <button id="qShowVid">영상 보이기: 끔</button>
+    </div>
+    <div id="grid"></div>
+  </div>
+  <div class="stage">
+    <div class="qno" id="qNo">Q</div>
+    <div class="eq" id="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="sbtn">
+      <button class="play" id="qPlay">▶ 듣기</button>
+      <button class="again" id="qLonger">조금 더 (+3초)</button>
+      <button class="reveal" id="qReveal">정답 공개</button>
+      <a class="karaoke" id="qKara" target="_blank" rel="noopener">노래방 열기 🎤</a>
+    </div>
+    <div class="ans" id="ans"><div class="qm">?</div></div>
+    <div class="qvid" id="qVidWrap"><div id="qPlayer"></div></div>
+    <div class="keys">스페이스 = 듣기 · Enter = 정답 · → = 다음 문제</div>
+  </div>
+</section>
+</main>
+
+<script>
+const CANDIDATES = ["포켓몬스터","디지몬 어드벤처","디지몬 테이머즈","카드캡터 체리","슬램덩크","짱구는 못말려","원피스","나루토","명탐정 코난","이누야샤","꼬마마법사 레미","웨딩피치","달빛천사","세일러문","개구리 중사 케로로","보노보노","피구왕 통키","축구왕 슛돌이","꾸러기 수비대","천사소녀 네티","탑블레이드","유희왕","마동왕 그랑죠","사이버 포뮬러","신비한 바다의 나디아","은하철도 999","미래소년 코난","달려라 하니","아기공룡 둘리","날아라 슈퍼보드","영심이","검정고무신","하얀마음 백구","도라에몽","아따맘마","드래곤볼","강철의 연금술사","쾌걸 조로리","안녕 자두야","마법천자문","터닝메카드","신비아파트"];
+const KEY = 'anisong-quiz-v1';
+let S = load();
+let selId = null, quizCur = null, quizOrder = null;
+
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem(KEY)); if(d && d.songs) return d; }catch(e){}
+  return {songs:[], done:[]};
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+const uid = () => Math.random().toString(36).slice(2,9);
+const $ = id => document.getElementById(id);
+function fmt(t){ if(t==null||isNaN(t)) return '-'; const m=Math.floor(t/60), s=(t%60); return m+':'+(s<10?'0':'')+s.toFixed(1); }
+function vidId(u){
+  if(!u) return null; u=u.trim();
+  if(/^[\w-]{11}$/.test(u)) return u;
+  const m = u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+function karaUrl(s){ return s.kara && s.kara.trim() ? s.kara.trim() : 'https://www.youtube.com/results?search_query='+encodeURIComponent((s.song||s.title)+' 노래방'); }
+const cur = () => S.songs.find(s=>s.id===selId);
+
+/* ---------- 목록 ---------- */
+function renderList(){
+  const ul=$('list'); ul.innerHTML='';
+  S.songs.forEach((s,i)=>{
+    const li=document.createElement('li'); if(s.id===selId) li.className='sel';
+    const ok = vidId(s.url) && s.start!=null && s.end!=null && s.end>s.start;
+    li.innerHTML=`<span class="no">${i+1}</span><span class="dot ${ok?'ok':''}"></span><span class="t"><b></b><small>${s.start!=null?fmt(s.start)+' ~ '+fmt(s.end)+' ('+(s.end!=null?(s.end-s.start).toFixed(1)+'초':'?')+')':'구간 미지정'}</small></span><button class="mv" data-up="${s.id}">▲</button>`;
+    li.querySelector('b').textContent = s.title || '(제목 없음)';
+    li.onclick=e=>{ if(e.target.dataset.up){ move(s.id); return; } select(s.id); };
+    ul.appendChild(li);
+  });
+  const ready=S.songs.filter(s=>vidId(s.url)&&s.start!=null&&s.end>s.start).length;
+  $('cnt').textContent=`${S.songs.length}곡 · 완료 ${ready}`;
+  renderCands();
+}
+function move(id){ const i=S.songs.findIndex(s=>s.id===id); if(i>0){ [S.songs[i-1],S.songs[i]]=[S.songs[i],S.songs[i-1]]; save(); renderList(); } }
+function addSong(title){
+  const s={id:uid(),title:title||'',song:'',url:'',start:null,end:null,kara:''};
+  S.songs.push(s); save(); select(s.id); return s;
+}
+function select(id){
+  selId=id; const s=cur(); renderList();
+  $('editor').style.opacity = s?1:.4;
+  if(!s) return;
+  $('fTitle').value=s.title; $('fSong').value=s.song; $('fUrl').value=s.url; $('fKara').value=s.kara;
+  updateFind(); showMarks(); loadEdit();
+}
+function updateFind(){ const s=cur(); $('findYt').href='https://www.youtube.com/results?search_query='+encodeURIComponent(((s&&s.title)||'')+' 오프닝 한국어'); }
+function showMarks(){ const s=cur(); $('vStart').textContent=fmt(s&&s.start); $('vEnd').textContent=fmt(s&&s.end); }
+['fTitle','fSong','fUrl','fKara'].forEach(f=>$(f).addEventListener('input',()=>{
+  const s=cur(); if(!s) return;
+  const k={fTitle:'title',fSong:'song',fUrl:'url',fKara:'kara'}[f];
+  s[k]=$(f).value; save(); renderList(); updateFind();
+  if(f==='fUrl') loadEdit();
+}));
+function renderCands(){
+  const used=new Set(S.songs.map(s=>s.title.trim()));
+  const box=$('cands'); box.innerHTML='';
+  CANDIDATES.forEach(c=>{
+    const a=document.createElement('a'); a.className='cand'+(used.has(c)?' used':''); a.textContent=c;
+    a.href='https://www.youtube.com/results?search_query='+encodeURIComponent(c+' 오프닝 한국어'); a.target='_blank'; a.rel='noopener';
+    a.onclick=()=>{ if(!used.has(c)) addSong(c); };
+    box.appendChild(a);
+  });
+}
+$('addBtn').onclick=()=>{ addSong(''); $('fTitle').focus(); };
+$('bDel').onclick=()=>{
+  const s=cur(); if(!s) return;
+  const i=S.songs.indexOf(s); S.songs.splice(i,1); save();
+  const n=S.songs[Math.min(i,S.songs.length-1)]; selId=n?n.id:null;
+  if(n) select(n.id); else { renderList(); $('editor').style.opacity=.4; }
+};
+
+/* ---------- 유튜브 ---------- */
+let eP=null, qP=null, ytReady=false, eLoaded=null, qLoaded=null;
+window.onYouTubeIframeAPIReady=()=>{
+  ytReady=true;
+  eP=new YT.Player('ePlayer',{playerVars:{rel:0,playsinline:1},events:{onReady:()=>loadEdit()}});
+  qP=new YT.Player('qPlayer',{playerVars:{rel:0,playsinline:1,controls:0,disablekb:1}});
+};
+function loadEdit(){
+  const s=cur(); const id=s&&vidId(s.url);
+  $('eEmpty').classList.toggle('hide',!!id);
+  if(!eP||!eP.cueVideoById||!id||id===eLoaded) return;
+  eLoaded=id; eP.cueVideoById({videoId:id,startSeconds:s.start||0});
+}
+const eTime=()=>eP&&eP.getCurrentTime?eP.getCurrentTime():0;
+let stopAt=null, fadeP=null;
+setInterval(()=>{
+  if(eP&&eP.getCurrentTime) $('eNow').textContent=fmt(eTime());
+  // 편집 미리듣기 자동정지
+  if(stopAt!=null && eP && eTime()>=stopAt){ eP.pauseVideo(); stopAt=null; }
+  quizTick();
+},50);
+$('bPlay').onclick=togglePlay;
+function togglePlay(){ if(!eP) return; stopAt=null; eP.getPlayerState()===1?eP.pauseVideo():eP.playVideo(); }
+function seekBy(d){ if(eP) eP.seekTo(Math.max(0,eTime()+d),true); }
+$('bBack').onclick=()=>seekBy(-5); $('bFwd').onclick=()=>seekBy(5);
+function markStart(){ const s=cur(); if(!s||!eP) return; s.start=+eTime().toFixed(1); if(s.end!=null&&s.end<=s.start) s.end=null; save(); showMarks(); renderList(); }
+function markEnd(){ const s=cur(); if(!s||!eP) return; const t=+eTime().toFixed(1); if(s.start!=null&&t<=s.start) return; s.end=t; eP.pauseVideo(); save(); showMarks(); renderList(); }
+$('bStart').onclick=markStart; $('bEnd').onclick=markEnd;
+document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{
+  const s=cur(); if(!s) return; const [k,d]=b.dataset.n.split(':');
+  if(s[k]==null) return; s[k]=Math.max(0,+(s[k]+ +d).toFixed(1)); save(); showMarks(); renderList();
+  if(eP) eP.seekTo(s[k],true);
+});
+function preview(){ const s=cur(); if(!s||s.start==null||s.end==null||!eP) return; eP.seekTo(s.start,true); eP.playVideo(); stopAt=s.end; }
+$('bPreview').onclick=preview;
+
+/* ---------- 퀴즈 ---------- */
+const playable=()=>S.songs.filter(s=>vidId(s.url)&&s.start!=null&&s.end>s.start);
+function qList(){ const p=playable(); if(!quizOrder) return p; return quizOrder.map(id=>p.find(s=>s.id===id)).filter(Boolean).concat(p.filter(s=>!quizOrder.includes(s.id))); }
+function renderGrid(){
+  const g=$('grid'); g.innerHTML='';
+  qList().forEach((s,i)=>{
+    const b=document.createElement('button'); b.className='q'+(S.done.includes(s.id)?' done':'')+(quizCur===s.id?' cur':'');
+    b.textContent=i+1; b.onclick=()=>pickQ(s.id); g.appendChild(b);
+  });
+}
+function pickQ(id){
+  stopQuiz(); quizCur=id; const s=S.songs.find(x=>x.id===id); const n=qList().findIndex(x=>x.id===id)+1;
+  $('qNo').textContent='Q'+n; $('ans').innerHTML='<div class="qm">?</div>';
+  $('qKara').href=karaUrl(s); renderGrid();
+  const v=vidId(s.url);
+  if(qP&&qP.cueVideoById){ qP.cueVideoById({videoId:v,startSeconds:s.start}); qLoaded=v; }
+}
+let qStop=null, qFadeFrom=null;
+function qPlay(extra){
+  const s=S.songs.find(x=>x.id===quizCur); if(!s||!qP) return;
+  const v=vidId(s.url);
+  if(qLoaded!==v){ qP.loadVideoById({videoId:v,startSeconds:s.start}); qLoaded=v; }
+  else { qP.seekTo(s.start,true); qP.playVideo(); }
+  qP.setVolume(100); qP.unMute();
+  qStop=s.end+(extra||0); $('eq').classList.add('on');
+}
+let qExtra=0;
+$('qPlay').onclick=()=>{ qExtra=0; qPlay(0); };
+$('qLonger').onclick=()=>{ qExtra+=3; qPlay(qExtra); };
+function quizTick(){
+  if(qStop==null||!qP||!qP.getCurrentTime) return;
+  const t=qP.getCurrentTime(), left=qStop-t;
+  if(left<=0){ stopQuiz(); return; }
+  if(left<0.6) qP.setVolume(Math.max(0,Math.round(left/0.6*100)));  // 끝부분 살짝 페이드
+}
+function stopQuiz(){ if(qP&&qP.pauseVideo) qP.pauseVideo(); qStop=null; $('eq').classList.remove('on'); }
+function reveal(){
+  const s=S.songs.find(x=>x.id===quizCur); if(!s) return;
+  $('ans').innerHTML='<div class="a1"></div><div class="a2"></div>';
+  $('ans').querySelector('.a1').textContent=s.title; $('ans').querySelector('.a2').textContent=s.song||'';
+  if(!S.done.includes(s.id)){ S.done.push(s.id); save(); } renderGrid();
+}
+$('qReveal').onclick=reveal;
+function nextQ(){ const l=qList(); const i=l.findIndex(s=>s.id===quizCur); const n=l.slice(i+1).find(s=>!S.done.includes(s.id))||l.find(s=>!S.done.includes(s.id)); if(n) pickQ(n.id); }
+$('qShuffle').onclick=()=>{ const p=playable().map(s=>s.id); for(let i=p.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[p[i],p[j]]=[p[j],p[i]];} quizOrder=p; renderGrid(); };
+$('qOrder').onclick=()=>{ quizOrder=null; renderGrid(); };
+$('qReset').onclick=()=>{ S.done=[]; save(); quizCur=null; $('qNo').textContent='Q'; $('ans').innerHTML='<div class="qm">?</div>'; renderGrid(); };
+let showVid=false;
+$('qShowVid').onclick=()=>{ showVid=!showVid; $('qVidWrap').classList.toggle('show',showVid); $('qShowVid').textContent='영상 보이기: '+(showVid?'켬':'끔'); };
+
+/* ---------- 탭/키 ---------- */
+let tab='edit';
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  tab=b.dataset.tab; document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  $('edit').classList.toggle('hide',tab!=='edit'); $('quiz').classList.toggle('hide',tab!=='quiz');
+  if(eP&&eP.pauseVideo) eP.pauseVideo(); stopQuiz();
+  if(tab==='quiz'){ renderGrid(); if(!quizCur){ const f=qList().find(s=>!S.done.includes(s.id)); if(f) pickQ(f.id); } }
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  const k=e.key.toLowerCase();
+  if(tab==='edit'){
+    if(k===' '){e.preventDefault();togglePlay();}
+    else if(k==='s') markStart(); else if(k==='e') markEnd(); else if(k==='p') preview();
+    else if(k==='arrowleft') seekBy(-2); else if(k==='arrowright') seekBy(2);
+  } else {
+    if(k===' '){e.preventDefault(); qExtra=0; qPlay(0);}
+    else if(k==='enter'){e.preventDefault(); reveal();}
+    else if(k==='arrowright') nextQ();
+  }
+});
+
+/* ---------- 백업 ---------- */
+$('exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='애니송퀴즈_백업.json'; a.click();
+};
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  f.text().then(t=>{ try{ const d=JSON.parse(t); if(d.songs){ S={songs:d.songs,done:d.done||[]}; save(); select(S.songs[0]&&S.songs[0].id); } }catch(err){} });
+};
+
+/* 링크 안에 곡 목록을 담아 다른 기기(행사장 노트북)로 옮긴다 */
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
+$('linkBtn').onclick=async()=>{
+  const url=location.origin+location.pathname+'#d='+enc({songs:S.songs.map(({id,title,song,url,start,end,kara})=>({id,title,song,url,start,end,kara}))});
+  try{ await navigator.clipboard.writeText(url); $('linkBtn').textContent='복사됨! 카톡 등으로 보내세요'; }
+  catch(e){ prompt('이 주소를 복사하세요',url); }
+  setTimeout(()=>$('linkBtn').textContent='행사장용 링크 복사',3000);
+};
+(async()=>{
+  const m=location.hash.match(/#d=([\w-]+)/);
+  if(m){ try{ const d=dec(m[1]); if(d.songs){ S={songs:d.songs,done:[]}; save(); history.replaceState(null,'',location.pathname); } }catch(e){} }
+  else if(!S.songs.length){ try{ const r=await fetch('songs.json',{cache:'no-store'}); if(r.ok){ const d=await r.json(); if(d.songs){ S={songs:d.songs,done:[]}; save(); } } }catch(e){} }
+  if(S.songs[0]) select(S.songs[0].id); else { renderList(); $('editor').style.opacity=.4; }
+})();
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
