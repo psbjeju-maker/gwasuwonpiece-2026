@@ -6,375 +6,140 @@
 <title>애니송 맞추기</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--c:#1E5AA8;--dk:#0d2547;--bg:#f2f5fa;--card:#fff;--ink:#14213d;--mut:#6b7a90;--line:#d6deea;--start:#13a35a;--end:#e0453a;--gold:#f5b800}
+:root{--c:#1E5AA8;--dk:#0d2547;--bg:#f2f5fa;--ink:#14213d;--mut:#6b7a90;--line:#d6deea;--red:#e0453a;--gold:#f5b800}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:18px}
-button{font-family:inherit;cursor:pointer;border:0;border-radius:12px;font-weight:700}
-input{font-family:inherit;font-size:18px;padding:12px 14px;border:2px solid var(--line);border-radius:10px;width:100%}
-input:focus{outline:none;border-color:var(--c)}
-header{background:var(--dk);color:#fff;display:flex;align-items:center;gap:16px;padding:14px 24px;position:sticky;top:0;z-index:10}
-header h1{font-family:'Black Han Sans';font-weight:400;font-size:30px;margin:0;margin-right:auto}
-.tab{background:transparent;color:#cfe0ff;font-size:20px;padding:12px 22px;border:2px solid #2d4f86}
-.tab.on{background:var(--c);color:#fff;border-color:var(--c)}
-.hdrbtn{background:#1b3a6b;color:#fff;font-size:16px;padding:10px 14px}
-main{padding:20px 24px;max-width:1500px;margin:0 auto}
-.hide{display:none!important}
-
-/* 편집 */
-#edit{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}
-.panel{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(13,37,71,.07)}
-.panel h2{margin:0 0 12px;font-size:20px}
-#list{list-style:none;margin:0;padding:0;max-height:70vh;overflow:auto}
-#list li{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;border:2px solid transparent}
-#list li:hover{background:#eef3fb}
-#list li.sel{border-color:var(--c);background:#e6efff}
-#list .no{font-family:'Black Han Sans';font-size:22px;color:var(--c);width:34px;text-align:center}
-#list .t{flex:1;min-width:0}
-#list .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#list .t small{color:var(--mut);font-size:14px}
-.dot{width:12px;height:12px;border-radius:50%;background:#ccd4e0;flex:none}
-.dot.ok{background:var(--start)}
-.mv{background:#eef2f8;color:var(--mut);padding:4px 8px;font-size:14px}
-.addbtn{width:100%;background:var(--c);color:#fff;font-size:18px;padding:14px;margin-top:12px}
-.row{display:flex;gap:10px;align-items:center;margin-bottom:12px}
-.row label{width:96px;flex:none;font-weight:700;color:var(--mut);font-size:16px}
-.vid{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin:6px 0 14px}
-.vid iframe,.vid>div{position:absolute;inset:0;width:100%;height:100%}
-.empty{z-index:2;background:#1b2433;display:flex;align-items:center;justify-content:center;color:#8aa;font-size:18px;text-align:center;padding:20px}
-.now{font-family:'Black Han Sans';font-size:44px;text-align:center;color:var(--dk);margin-bottom:10px}
-.ctrl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
-.ctrl button{background:#e8eef8;color:var(--dk);font-size:20px;padding:14px 20px}
-.mark{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.mbox{border-radius:16px;padding:14px;text-align:center;border:3px solid}
-.mbox.s{border-color:var(--start);background:#eafaf1}
-.mbox.e{border-color:var(--end);background:#fdeeed}
-.mbox .big{width:100%;font-size:28px;padding:22px 10px;color:#fff;font-family:'Black Han Sans';font-weight:400}
-.mbox.s .big{background:var(--start)} .mbox.e .big{background:var(--end)}
-.mbox .val{font-family:'Black Han Sans';font-size:34px;margin:10px 0 6px}
-.mbox .nud button{background:#fff;color:var(--dk);font-size:16px;padding:8px 12px;border:2px solid var(--line)}
-.preview{width:100%;background:var(--dk);color:#fff;font-size:24px;padding:18px;font-family:'Black Han Sans';font-weight:400}
-.hint{color:var(--mut);font-size:15px;margin-top:10px;text-align:center}
-.del{background:#fff;color:var(--end);border:2px solid #f3c3bf;font-size:15px;padding:8px 14px}
-.filebox{background:var(--dk);color:#fff;border-radius:14px;padding:18px;margin:6px 0 14px;display:flex;align-items:center;gap:14px}
-.filebox .fn{flex:1;min-width:0;font-size:17px;word-break:break-all}
-.filebox .fn.miss{color:#ffb4ad}
-.fbtn{background:#2d4f86;color:#fff;font-size:16px;padding:10px 14px;flex:none}
-#seek{width:100%;height:34px;padding:0;border:0;accent-color:var(--c);margin-bottom:6px}
-.drop{border:3px dashed var(--c);border-radius:14px;padding:14px;text-align:center;color:var(--c);font-weight:700;margin-top:12px;background:#f3f7ff}
-body.dragging .drop{background:#dce9ff}
-
-/* 퀴즈 */
-#quiz{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
-#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px}
-.q{aspect-ratio:1;background:var(--c);color:#fff;font-family:'Black Han Sans';font-size:40px;font-weight:400;border-radius:16px}
-.q.done{background:#c3ccd9;color:#fff}
-.q.cur{outline:5px solid var(--gold)}
-.stage{background:var(--dk);color:#fff;border-radius:22px;padding:28px;text-align:center;position:sticky;top:96px}
-.qno{font-family:'Black Han Sans';font-size:96px;line-height:1;color:var(--gold)}
+button{font-family:inherit;cursor:pointer;border:0;border-radius:14px;font-weight:700}
+header{background:var(--dk);color:#fff;display:flex;align-items:center;gap:12px;padding:14px 24px;flex-wrap:wrap}
+header h1{font-family:'Black Han Sans';font-weight:400;font-size:32px;margin:0;margin-right:auto}
+.tool{background:#1b3a6b;color:#fff;font-size:16px;padding:10px 14px}
+main{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px;max-width:1500px;margin:0 auto;align-items:start}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:12px}
+.q{aspect-ratio:1;background:var(--c);color:#fff;font-family:'Black Han Sans';font-size:40px;font-weight:400}
+.q.done{background:#c3ccd9}
+.q.cur{outline:5px solid var(--gold);outline-offset:-5px}
+.stage{background:var(--dk);color:#fff;border-radius:24px;padding:28px;text-align:center;position:sticky;top:24px}
+.qno{font-family:'Black Han Sans';font-size:100px;line-height:1;color:var(--gold)}
 .eq{display:flex;gap:8px;justify-content:center;align-items:flex-end;height:70px;margin:18px 0}
-.eq i{width:14px;background:#4f8de0;border-radius:4px;height:10px;transition:height .1s}
+.eq i{width:14px;background:#4f8de0;border-radius:4px;height:10px}
 .eq.on i{animation:eq .5s ease-in-out infinite alternate}
 .eq i:nth-child(2){animation-delay:.1s}.eq i:nth-child(3){animation-delay:.25s}.eq i:nth-child(4){animation-delay:.05s}.eq i:nth-child(5){animation-delay:.3s}.eq i:nth-child(6){animation-delay:.15s}.eq i:nth-child(7){animation-delay:.2s}
 @keyframes eq{from{height:10px}to{height:66px}}
-.sbtn{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
-.sbtn button,.sbtn a{font-size:26px;padding:22px 10px;font-family:'Black Han Sans';font-weight:400;border-radius:14px;text-decoration:none;display:block}
-.play{background:var(--gold);color:var(--dk);grid-column:1/3;font-size:34px!important}
-.again{background:#2d4f86;color:#fff}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btns button,.btns a{font-family:'Black Han Sans';font-weight:400;font-size:30px;padding:24px 10px;border-radius:16px;text-decoration:none;display:block}
+.play{background:var(--gold);color:var(--dk)}
+.stop{background:#2d4f86;color:#fff}
 .reveal{background:#fff;color:var(--dk)}
-.karaoke{background:var(--end);color:#fff;grid-column:1/3}
-.ans{min-height:110px;margin-top:20px;display:flex;flex-direction:column;justify-content:center}
-.ans .a1{font-family:'Black Han Sans';font-size:46px}
-.ans .a2{font-size:22px;color:#b9cdf0;margin-top:6px}
-.ans .qm{font-family:'Black Han Sans';font-size:46px;color:#3d5f96}
-.qvid{position:absolute;width:320px;height:180px;left:-9999px;top:0}
-.qvid.show{position:relative;left:0;width:100%;height:auto;aspect-ratio:16/9;margin-top:16px;border-radius:12px;overflow:hidden}
-.qvid iframe{width:100%;height:100%}
-.qtools{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.qtools button{background:#fff;color:var(--dk);border:2px solid var(--line);font-size:16px;padding:10px 14px}
+.kara{background:var(--red);color:#fff}
+.ans{min-height:120px;margin-top:22px;display:flex;flex-direction:column;justify-content:center}
+.ans .a1{font-family:'Black Han Sans';font-size:52px}
+.ans .qm{font-family:'Black Han Sans';font-size:52px;color:#3d5f96}
+.vid{position:absolute;left:-9999px;top:0;width:320px;height:180px}
+.vid.show{position:relative;left:0;width:100%;height:auto;aspect-ratio:16/9;margin-top:16px;border-radius:12px;overflow:hidden}
+.vid iframe{width:100%;height:100%}
 .keys{color:#7f9cc9;font-size:14px;margin-top:16px}
-@media (max-width:900px){#edit,#quiz{grid-template-columns:1fr}.stage{position:static}header{flex-wrap:wrap;position:static}header h1{width:100%}.row{flex-wrap:wrap}.row label{width:100%}.row input{flex:1;min-width:0}}
+.hint{color:#ffd76a;font-size:17px;margin-top:12px}
+.hide{display:none!important}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:16px}.stage{position:static}.qno{font-size:72px}.btns button,.btns a{font-size:24px;padding:18px 8px}}
 </style>
 </head>
 <body>
 <header>
   <h1>애니송 맞추기</h1>
-  <button class="tab on" data-tab="edit">곡 편집</button>
-  <button class="tab" data-tab="quiz">퀴즈 진행</button>
-  <button class="hdrbtn" id="exportBtn">구간 백업 저장</button>
-  <button class="hdrbtn" id="importBtn">구간 백업 불러오기</button>
-  <input type="file" id="importFile" accept=".json" class="hide">
+  <button class="tool" id="tShuffle">순서 섞기</button>
+  <button class="tool" id="tOrder">원래 순서</button>
+  <button class="tool" id="tReset">진행 초기화</button>
+  <button class="tool" id="tVid">영상 보이기: 끔</button>
 </header>
-
 <main>
-<section id="edit">
-  <div class="panel">
-    <h2>곡 목록 <span id="cnt" style="color:var(--mut);font-weight:400"></span></h2>
-    <ul id="list"></ul>
-    <button class="addbtn" id="addBtn">+ 음악 파일 넣기 (여러 개 가능)</button>
-    <input type="file" id="addFiles" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" multiple class="hide">
-    <div class="drop">음악 파일을 이 화면에 끌어다 놓아도 됩니다</div>
-  </div>
-
-  <div>
-    <div class="panel" id="editor">
-      <div class="row"><label>정답(작품)</label><input id="fTitle" placeholder="예: 디지몬 어드벤처"></div>
-      <div class="row"><label>곡명</label><input id="fSong" placeholder="예: 버터플라이 (선택)"></div>
-      <div class="filebox"><span>🎵</span><span class="fn" id="fName">-</span><button class="fbtn" id="bSwap">파일 바꾸기</button></div>
-      <input type="file" id="swapFile" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" class="hide">
-      <input type="range" id="seek" min="0" max="100" step="0.1" value="0">
-      <div class="now" id="eNow">0:00.0</div>
-      <div class="ctrl">
-        <button id="bBack">« 5초</button>
-        <button id="bPlay">▶ 재생 / ⏸</button>
-        <button id="bFwd">5초 »</button>
-      </div>
-      <div class="mark">
-        <div class="mbox s">
-          <button class="big" id="bStart">시작 찍기 (S)</button>
-          <div class="val" id="vStart">-</div>
-          <div class="nud"><button data-n="start:-0.5">−0.5초</button> <button data-n="start:0.5">+0.5초</button></div>
-        </div>
-        <div class="mbox e">
-          <button class="big" id="bEnd">끝 찍기 (E)</button>
-          <div class="val" id="vEnd">-</div>
-          <div class="nud"><button data-n="end:-0.5">−0.5초</button> <button data-n="end:0.5">+0.5초</button></div>
-        </div>
-      </div>
-      <button class="preview" id="bPreview">구간 들어보기 (P)</button>
-      <div class="hint">스페이스 = 재생/정지 · S = 시작 · E = 끝 · P = 구간 듣기 · ←/→ = 2초 이동</div>
-      <div class="row" style="margin-top:16px"><label>노래방 주소</label><input id="fKara" placeholder="나중에 넣어도 됨 · 비우면 '곡명 노래방' 유튜브 검색"></div>
-      <div style="text-align:right"><button class="del" id="bDel">이 곡 삭제</button></div>
-    </div>
-  </div>
-</section>
-
-<section id="quiz" class="hide">
-  <div>
-    <div class="qtools">
-      <button id="qShuffle">순서 섞기</button>
-      <button id="qOrder">원래 순서</button>
-      <button id="qReset">진행 초기화</button>
-    </div>
-    <div id="grid"></div>
-  </div>
+  <div id="grid"></div>
   <div class="stage">
     <div class="qno" id="qNo">Q</div>
     <div class="eq" id="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="sbtn">
-      <button class="play" id="qPlay">▶ 듣기</button>
-      <button class="again" id="qLonger">조금 더 (+3초)</button>
-      <button class="reveal" id="qReveal">정답 공개</button>
-      <a class="karaoke" id="qKara" target="_blank" rel="noopener">노래방 열기 🎤</a>
+    <div class="btns">
+      <button class="play" id="bPlay">▶ 재생</button>
+      <button class="stop" id="bStop">■ 정지</button>
+      <button class="reveal" id="bReveal">정답 공개</button>
+      <a class="kara" id="bKara" target="_blank" rel="noopener">노래방 🎤</a>
     </div>
     <div class="ans" id="ans"><div class="qm">?</div></div>
-    <div class="keys">스페이스 = 듣기 · Enter = 정답 · → = 다음 문제</div>
+    <div class="vid" id="vid"><div id="player"></div></div>
+    <div class="hint hide" id="hint">소리가 안 나오면 위 '영상 보이기'를 켜고 영상을 한 번 눌러주세요</div>
+    <div class="keys">스페이스 = 재생/정지 · Enter = 정답 · → = 다음 문제</div>
   </div>
-</section>
 </main>
-<audio id="eAud" preload="auto"></audio>
-<audio id="qAud" preload="auto"></audio>
 
 <script>
-const KEY = 'anisong-quiz-files-v1';
-let S = load();
-let selId = null, quizCur = null, quizOrder = null;
-const URLS = {};   // 파일이름 → 재생용 주소
+// [작품, 노래 영상 ID, 노래방 영상 ID 또는 ?검색어]
+const SONGS = [["포켓몬스터","dosnQVuYIi0","?포켓몬스터 1기 오프닝 노래방"],["디지몬 어드벤처","9S0RV3901CQ","53pAgurV5ys"],["디지몬 테이머즈","ZSaZk5xv6jU","LtDdbois7I4"],["카드캡터 체리","e6zp5Qob9ko","MSaDEgrl9V4"],["슬램덩크","C0EZ09az1k4","5FRiopHehWw"],["짱구는 못말려","rL42J_1SfgY","mCPiBXnqz8w"],["원피스","etAtxvSVT78","ANdlcNgiYbk"],["나루토","5dmlf2PYj7A","f0g3JRrLqe0"],["명탐정 코난","vihrlRWrYHA","?명탐정 코난 1기 오프닝 노래방"],["이누야샤","Yjpj_DnqkQo","g1EHe-srDkI"],["꼬마마법사 레미","OGxFS6bGOoM","?꼬마마법사 레미 1기 오프닝 노래방"],["웨딩피치","schOL4QfoRc","MYQl6c_AiZc"],["달빛천사","eMWCQp3Sues","Q6NRkovmvnI"],["세일러문","xG6NtaLP2vQ","pEUmsBL-HnE"],["개구리 중사 케로로","FM6dwiFP0Us","ICVOBWERdlI"],["보노보노","vaTZnfpBDEI","?보노보노 지름길로 가고파 노래방"],["꾸러기 수비대","9J_3R2Nphac","snjAeJCkKBw"],["천사소녀 네티","oE28qvW6kj4","NUZeErR7Yqw"],["탑블레이드","JQRYbUnLbm4","NVpKGMU1xAg"],["유희왕","GM3eisuIEEA","Yr4B86y4HEw"],["마동왕 그랑죠","grAeFpEdtG4","MGbKmjpzBE4"],["사이버 포뮬러","zl2FVjPoerw","?사이버 포뮬러 한국 오프닝 노래방"],["미래소년 코난","wWRwnEAEklI","BIBMD3jG2d8"],["달려라 하니","mvvydE1Q5JI","qmaNnzOPgK8"],["아기공룡 둘리","5ZXYeCqixxw","7Zi4FPHNLME"],["날아라 슈퍼보드","y_6I5nz6_eM","WZEjgWW7VyA"],["검정고무신","HIi8_yp9Kno","u24XpJp31js"],["도라에몽","QISHFAP3I5Y","jptskqeXU3k"],["아따맘마","mS9g-WyKC7U","EAStVzXTfxM"],["드래곤볼","vLanxuRgnoI","?드래곤볼Z 한국 오프닝 노래방"],["강철의 연금술사","ZcNAbONjXfA","?강철의 연금술사 멜리사 노래방"],["안녕 자두야","pmY4VaPur_8","NcpX6TnwLgE"],["신비아파트","dUwgMcFlGRE","UwlofcneOmk"],["괴짜가족","d1C5VI71qaU","FeT-Xt_pujU"],["꿈빛 파티시엘","G0Il1Qz7giw","4OzU7_tfP3c"],["쾌걸 근육맨","Iz_lJA2iH7s","qwNLBfgv_pQ"]];
 
-function load(){
-  try{ const d = JSON.parse(localStorage.getItem(KEY)); if(d && d.songs) return d; }catch(e){}
-  return {songs:[], done:[]};
-}
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
-const uid = () => Math.random().toString(36).slice(2,9);
-const $ = id => document.getElementById(id);
-function fmt(t){ if(t==null||isNaN(t)) return '-'; const m=Math.floor(t/60), s=(t%60); return m+':'+(s<10?'0':'')+s.toFixed(1); }
-function karaUrl(s){ return s.kara && s.kara.trim() ? s.kara.trim() : 'https://www.youtube.com/results?search_query='+encodeURIComponent((s.song||s.title)+' 노래방'); }
-const cur = () => S.songs.find(s=>s.id===selId);
-const hasFile = s => !!(s.file && URLS[s.file]);
-const ready = s => hasFile(s) && s.start!=null && s.end!=null && s.end>s.start;
+const KEY='anisong-simple-v1';
+const $=id=>document.getElementById(id);
+let st={order:SONGS.map((_,i)=>i),done:[]};
+try{ const d=JSON.parse(localStorage.getItem(KEY)); if(d&&Array.isArray(d.order)&&d.order.length===SONGS.length) st=d; }catch(e){}
+const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} };
+let cur=null, P=null, pending=false, loaded=null, ytReady=false, playing=false;
 
-/* ---------- 음악 파일 보관 (이 브라우저의 IndexedDB, 새로고침해도 남음) ---------- */
-let idb=null;
-function openDB(){ return new Promise((res,rej)=>{ const r=indexedDB.open('anisong-files',1); r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-function idbPut(name,blob){ return new Promise(res=>{ if(!idb) return res(); const t=idb.transaction('files','readwrite'); t.objectStore('files').put(blob,name); t.oncomplete=res; t.onerror=res; }); }
-function idbDel(name){ if(!idb) return; idb.transaction('files','readwrite').objectStore('files').delete(name); }
-function idbAll(){ return new Promise(res=>{ if(!idb) return res(); const rq=idb.transaction('files').objectStore('files').openCursor(); rq.onsuccess=()=>{ const c=rq.result; if(c){ URLS[c.key]=URL.createObjectURL(c.value); c.continue(); } else res(); }; rq.onerror=()=>res(); }); }
-const stem = n => n.replace(/\.[^.]+$/,'').replace(/^\d+[\s._-]+/,'').trim();
+const karaUrl=k=>k[0]==='?'?'https://www.youtube.com/results?search_query='+encodeURIComponent(k.slice(1)):'https://www.youtube.com/watch?v='+k;
 
-async function addFiles(files){
-  let first=null;
-  for(const f of files){
-    if(!/^audio\//.test(f.type) && !/\.(mp3|m4a|wav|ogg|flac|aac)$/i.test(f.name)) continue;
-    await idbPut(f.name,f);
-    if(URLS[f.name]) URL.revokeObjectURL(URLS[f.name]);
-    URLS[f.name]=URL.createObjectURL(f);
-    let s=S.songs.find(x=>x.file===f.name);          // 같은 이름 파일이면 기존 곡에 다시 연결 (찍어둔 구간 유지)
-    if(!s){ s={id:uid(),title:stem(f.name),song:'',file:f.name,start:null,end:null,kara:''}; S.songs.push(s); }
-    if(!first) first=s;
-  }
-  save(); if(first) select(first.id); else renderList();
-}
-$('addBtn').onclick=()=>$('addFiles').click();
-$('addFiles').onchange=e=>{ addFiles([...e.target.files]); e.target.value=''; };
-document.addEventListener('dragover',e=>{ e.preventDefault(); document.body.classList.add('dragging'); });
-document.addEventListener('dragleave',e=>{ if(!e.relatedTarget) document.body.classList.remove('dragging'); });
-document.addEventListener('drop',e=>{ e.preventDefault(); document.body.classList.remove('dragging'); if(e.dataTransfer&&e.dataTransfer.files.length) addFiles([...e.dataTransfer.files]); });
-$('bSwap').onclick=()=>$('swapFile').click();
-$('swapFile').onchange=async e=>{
-  const f=e.target.files[0], s=cur(); e.target.value=''; if(!f||!s) return;
-  await idbPut(f.name,f); URLS[f.name]=URL.createObjectURL(f);
-  s.file=f.name; s.start=null; s.end=null; save(); select(s.id);
-};
-
-/* ---------- 목록 ---------- */
-function renderList(){
-  const ul=$('list'); ul.innerHTML='';
-  S.songs.forEach((s,i)=>{
-    const li=document.createElement('li'); if(s.id===selId) li.className='sel';
-    const info=!hasFile(s)?'⚠ 파일 없음 — 다시 넣어주세요':(s.start!=null&&s.end!=null?fmt(s.start)+' ~ '+fmt(s.end)+' ('+(s.end-s.start).toFixed(1)+'초)':'구간 미지정');
-    li.innerHTML=`<span class="no">${i+1}</span><span class="dot ${ready(s)?'ok':''}"></span><span class="t"><b></b><small></small></span><button class="mv" data-up="1">▲</button>`;
-    li.querySelector('b').textContent = s.title || '(제목 없음)';
-    li.querySelector('small').textContent = info;
-    li.onclick=e=>{ if(e.target.dataset.up){ move(s.id); return; } select(s.id); };
-    ul.appendChild(li);
-  });
-  $('cnt').textContent=`${S.songs.length}곡 · 완료 ${S.songs.filter(ready).length}`;
-}
-function move(id){ const i=S.songs.findIndex(s=>s.id===id); if(i>0){ [S.songs[i-1],S.songs[i]]=[S.songs[i],S.songs[i-1]]; save(); renderList(); } }
-const EA=$('eAud'), QA=$('qAud');
-function select(id){
-  selId=id; const s=cur(); renderList();
-  $('editor').style.opacity = s?1:.4;
-  EA.pause(); stopAt=null;
-  if(!s){ EA.removeAttribute('src'); return; }
-  $('fTitle').value=s.title; $('fSong').value=s.song||''; $('fKara').value=s.kara||'';
-  $('fName').textContent = s.file ? s.file + (hasFile(s)?'':' (이 기기에 파일 없음)') : '-';
-  $('fName').classList.toggle('miss', !hasFile(s));
-  if(hasFile(s)){ EA.src=URLS[s.file]; EA.currentTime=s.start||0; } else EA.removeAttribute('src');
-  showMarks();
-}
-function showMarks(){ const s=cur(); $('vStart').textContent=fmt(s&&s.start); $('vEnd').textContent=fmt(s&&s.end); }
-['fTitle','fSong','fKara'].forEach(f=>$(f).addEventListener('input',()=>{
-  const s=cur(); if(!s) return;
-  s[{fTitle:'title',fSong:'song',fKara:'kara'}[f]]=$(f).value; save(); renderList();
-}));
-$('bDel').onclick=()=>{
-  const s=cur(); if(!s) return;
-  const i=S.songs.indexOf(s); S.songs.splice(i,1);
-  if(s.file && !S.songs.some(x=>x.file===s.file)) idbDel(s.file);
-  save();
-  const n=S.songs[Math.min(i,S.songs.length-1)]; selId=n?n.id:null;
-  if(n) select(n.id); else { renderList(); $('editor').style.opacity=.4; }
-};
-
-/* ---------- 편집 재생 ---------- */
-let stopAt=null, seeking=false;
-EA.addEventListener('loadedmetadata',()=>{ $('seek').max=EA.duration||100; });
-$('seek').addEventListener('input',()=>{ seeking=true; if(EA.src) EA.currentTime=+$('seek').value; });
-$('seek').addEventListener('change',()=>{ seeking=false; });
-setInterval(()=>{
-  $('eNow').textContent=fmt(EA.currentTime||0);
-  if(!seeking) $('seek').value=EA.currentTime||0;
-  if(stopAt!=null && EA.currentTime>=stopAt){ EA.pause(); stopAt=null; }
-  quizTick();
-},50);
-function togglePlay(){ if(!EA.src) return; stopAt=null; EA.paused?EA.play():EA.pause(); }
-function seekBy(d){ if(EA.src) EA.currentTime=Math.max(0,EA.currentTime+d); }
-$('bPlay').onclick=togglePlay;
-$('bBack').onclick=()=>seekBy(-5); $('bFwd').onclick=()=>seekBy(5);
-function markStart(){ const s=cur(); if(!s||!EA.src) return; s.start=+EA.currentTime.toFixed(1); if(s.end!=null&&s.end<=s.start) s.end=null; save(); showMarks(); renderList(); }
-function markEnd(){ const s=cur(); if(!s||!EA.src) return; const t=+EA.currentTime.toFixed(1); if(s.start!=null&&t<=s.start) return; s.end=t; EA.pause(); save(); showMarks(); renderList(); }
-$('bStart').onclick=markStart; $('bEnd').onclick=markEnd;
-document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{
-  const s=cur(); if(!s) return; const [k,d]=b.dataset.n.split(':');
-  if(s[k]==null) return; s[k]=Math.max(0,+(s[k]+ +d).toFixed(1)); save(); showMarks(); renderList();
-  if(EA.src) EA.currentTime=s[k];
-});
-function preview(){ const s=cur(); if(!s||s.start==null||s.end==null||!EA.src) return; EA.currentTime=s.start; EA.play(); stopAt=s.end; }
-$('bPreview').onclick=preview;
-
-/* ---------- 퀴즈 ---------- */
-function qList(){ const p=S.songs.filter(ready); if(!quizOrder) return p; return quizOrder.map(id=>p.find(s=>s.id===id)).filter(Boolean).concat(p.filter(s=>!quizOrder.includes(s.id))); }
-function renderGrid(){
+function render(){
   const g=$('grid'); g.innerHTML='';
-  const l=qList();
-  if(!l.length) g.innerHTML='<p style="color:var(--mut)">곡 편집에서 시작·끝을 찍은 곡이 여기에 나옵니다</p>';
-  l.forEach((s,i)=>{
-    const b=document.createElement('button'); b.className='q'+(S.done.includes(s.id)?' done':'')+(quizCur===s.id?' cur':'');
-    b.textContent=i+1; b.onclick=()=>pickQ(s.id); g.appendChild(b);
+  st.order.forEach((si,n)=>{
+    const b=document.createElement('button');
+    b.className='q'+(st.done.includes(si)?' done':'')+(cur===si?' cur':'');
+    b.textContent=n+1; b.onclick=()=>pick(si); g.appendChild(b);
   });
 }
-function pickQ(id){
-  stopQuiz(); quizCur=id; const s=S.songs.find(x=>x.id===id); const n=qList().findIndex(x=>x.id===id)+1;
+function pick(si){
+  stop(); cur=si; const n=st.order.indexOf(si)+1;
   $('qNo').textContent='Q'+n; $('ans').innerHTML='<div class="qm">?</div>';
-  $('qKara').href=karaUrl(s); renderGrid();
-  QA.src=URLS[s.file]; QA.currentTime=s.start;
+  $('bKara').href=karaUrl(SONGS[si][2]); $('hint').classList.add('hide');
+  render(); cue();
 }
-let qStop=null, qExtra=0;
-function qPlay(extra){
-  const s=S.songs.find(x=>x.id===quizCur); if(!s) return;
-  QA.currentTime=s.start; QA.volume=1; QA.play();
-  qStop=s.end+(extra||0); $('eq').classList.add('on');
+// 플레이어는 첫 곡 영상으로 만든다 (빈 플레이어는 유튜브 오류 화면이 뜸)
+function cue(){
+  if(cur==null||!ytReady) return;
+  const v=SONGS[cur][1];
+  if(P){ if(loaded!==v){ P.cueVideoById(v); loaded=v; } return; }
+  if(pending) return; pending=true; loaded=v;
+  new YT.Player('player',{videoId:v,playerVars:{rel:0,playsinline:1,controls:1},events:{
+    onReady:e=>{ P=e.target; const w=cur!=null&&SONGS[cur][1]; if(w&&w!==loaded){ loaded=w; P.cueVideoById(w); } },
+    onStateChange:e=>{ playing=e.data===1; $('eq').classList.toggle('on',playing); if(playing) $('hint').classList.add('hide'); }
+  }});
 }
-$('qPlay').onclick=()=>{ qExtra=0; qPlay(0); };
-$('qLonger').onclick=()=>{ qExtra+=3; qPlay(qExtra); };
-function quizTick(){
-  if(qStop==null) return;
-  const left=qStop-QA.currentTime;
-  if(left<=0||QA.ended){ stopQuiz(); return; }
-  QA.volume = left<0.6 ? Math.max(0,left/0.6) : 1;   // 끝부분 살짝 페이드
+function play(){
+  if(cur==null||!P) return;
+  const v=SONGS[cur][1];
+  if(loaded!==v){ P.loadVideoById(v); loaded=v; } else P.playVideo();
+  P.unMute(); P.setVolume(100);
+  setTimeout(()=>{ if(P&&[1,3].indexOf(P.getPlayerState())<0) $('hint').classList.remove('hide'); },2000);
 }
-function stopQuiz(){ QA.pause(); qStop=null; QA.volume=1; $('eq').classList.remove('on'); }
+function stop(){ if(P&&P.pauseVideo) P.pauseVideo(); $('eq').classList.remove('on'); }
 function reveal(){
-  const s=S.songs.find(x=>x.id===quizCur); if(!s) return;
-  $('ans').innerHTML='<div class="a1"></div><div class="a2"></div>';
-  $('ans').querySelector('.a1').textContent=s.title; $('ans').querySelector('.a2').textContent=s.song||'';
-  if(!S.done.includes(s.id)){ S.done.push(s.id); save(); } renderGrid();
+  if(cur==null) return;
+  $('ans').innerHTML='<div class="a1"></div>'; $('ans').firstChild.textContent=SONGS[cur][0];
+  if(!st.done.includes(cur)){ st.done.push(cur); save(); } render();
 }
-$('qReveal').onclick=reveal;
-function nextQ(){ const l=qList(); const i=l.findIndex(s=>s.id===quizCur); const n=l.slice(i+1).find(s=>!S.done.includes(s.id))||l.find(s=>!S.done.includes(s.id)); if(n) pickQ(n.id); }
-$('qShuffle').onclick=()=>{ const p=qList().map(s=>s.id); for(let i=p.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[p[i],p[j]]=[p[j],p[i]];} quizOrder=p; renderGrid(); };
-$('qOrder').onclick=()=>{ quizOrder=null; renderGrid(); };
-$('qReset').onclick=()=>{ S.done=[]; save(); quizCur=null; $('qNo').textContent='Q'; $('ans').innerHTML='<div class="qm">?</div>'; renderGrid(); };
-
-/* ---------- 탭/키 ---------- */
-let tab='edit';
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
-  tab=b.dataset.tab; document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
-  $('edit').classList.toggle('hide',tab!=='edit'); $('quiz').classList.toggle('hide',tab!=='quiz');
-  EA.pause(); stopQuiz();
-  if(tab==='quiz'){ renderGrid(); if(!quizCur){ const f=qList().find(s=>!S.done.includes(s.id)); if(f) pickQ(f.id); } }
-});
+function next(){
+  const i=st.order.indexOf(cur);
+  const n=st.order.slice(i+1).find(s=>!st.done.includes(s)) ?? st.order.find(s=>!st.done.includes(s));
+  if(n!=null) pick(n);
+}
+$('bPlay').onclick=play; $('bStop').onclick=stop; $('bReveal').onclick=reveal;
+$('tShuffle').onclick=()=>{ const o=st.order; for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]];} save(); if(cur!=null) pick(cur); else render(); };
+$('tOrder').onclick=()=>{ st.order=SONGS.map((_,i)=>i); save(); if(cur!=null) pick(cur); else render(); };
+$('tReset').onclick=()=>{ st.done=[]; save(); render(); };
+let showVid=false;
+$('tVid').onclick=()=>{ showVid=!showVid; $('vid').classList.toggle('show',showVid); $('tVid').textContent='영상 보이기: '+(showVid?'켬':'끔'); };
 document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT') return;
-  const k=e.key.toLowerCase();
-  if(tab==='edit'){
-    if(k===' '){e.preventDefault();togglePlay();}
-    else if(k==='s') markStart(); else if(k==='e') markEnd(); else if(k==='p') preview();
-    else if(k==='arrowleft') seekBy(-2); else if(k==='arrowright') seekBy(2);
-  } else {
-    if(k===' '){e.preventDefault(); qExtra=0; qPlay(0);}
-    else if(k==='enter'){e.preventDefault(); reveal();}
-    else if(k==='arrowright') nextQ();
-  }
+  const k=e.key;
+  if(k===' '){ e.preventDefault(); playing?stop():play(); }
+  else if(k==='Enter'){ e.preventDefault(); reveal(); }
+  else if(k==='ArrowRight') next();
 });
-
-/* ---------- 구간 백업 (음악 파일은 기기마다 따로 넣고, 같은 파일이름이면 구간이 자동 연결됨) ---------- */
-$('exportBtn').onclick=()=>{
-  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='애니송퀴즈_구간백업.json'; a.click();
-};
-$('importBtn').onclick=()=>$('importFile').click();
-$('importFile').onchange=e=>{
-  const f=e.target.files[0]; if(!f) return;
-  f.text().then(t=>{ try{ const d=JSON.parse(t); if(d.songs){ S={songs:d.songs,done:d.done||[]}; save(); selId=null; if(S.songs[0]) select(S.songs[0].id); else renderList(); } }catch(err){} });
-};
-
-(async()=>{
-  try{ idb=await openDB(); await idbAll(); }catch(e){}
-  try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
-  if(S.songs[0]) select(S.songs[0].id); else { renderList(); $('editor').style.opacity=.4; }
-})();
+window.onYouTubeIframeAPIReady=()=>{ ytReady=true; cue(); };
+render(); pick(st.order.find(s=>!st.done.includes(s)) ?? st.order[0]);
 </script>
+<script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
