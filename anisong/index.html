@@ -8,7 +8,7 @@
 <style>
 :root{--c:#1E5AA8;--dk:#0d2547;--bg:#f2f5fa;--ink:#14213d;--mut:#6b7a90;--line:#dfe5ee;--red:#e0453a;--gold:#f5b800}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:18px;padding-bottom:110px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:18px;padding-bottom:150px}
 button,a.k{font-family:inherit;cursor:pointer;border:0;border-radius:12px;font-weight:700;text-decoration:none}
 header{background:var(--dk);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 header h1{font-family:'Black Han Sans';font-weight:400;font-size:26px;margin:0;margin-right:auto}
@@ -24,11 +24,16 @@ li.done{opacity:.45}
 .pl{background:var(--gold);color:var(--dk);font-size:18px;padding:12px 16px;flex:none;min-width:64px}
 li.on .pl{background:var(--dk);color:#fff}
 a.k{background:var(--red);color:#fff;font-size:16px;padding:12px 12px;flex:none}
-.bar{position:fixed;left:0;right:0;bottom:0;background:var(--dk);color:#fff;display:flex;align-items:center;gap:12px;padding:12px 16px;z-index:5}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--dk);color:#fff;padding:10px 16px 14px;z-index:5}
+.bar .r{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto}
+.bar .r+.r{margin-top:8px}
+.bar .tm{font-size:15px;color:#9fc0ef;flex:none;width:44px;text-align:center;font-variant-numeric:tabular-nums}
+#seek{flex:1;height:32px;accent-color:var(--gold)}
 .bar .now{flex:1;min-width:0;font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar button{background:var(--red);color:#fff;font-size:20px;padding:14px 22px}
+.bar button{background:var(--gold);color:var(--dk);font-size:18px;padding:12px 16px;flex:none}
+.bar button.x{background:var(--red);color:#fff}
 .vid{position:fixed;right:-9999px;bottom:0;width:320px;height:180px}
-.vid.show{right:16px;bottom:96px;width:300px;height:169px;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:6}
+.vid.show{right:16px;bottom:130px;width:300px;height:169px;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:6}
 .vid iframe{width:100%;height:100%}
 </style>
 </head>
@@ -40,7 +45,10 @@ a.k{background:var(--red);color:#fff;font-size:16px;padding:12px 12px;flex:none}
   <button id="tReset">체크 초기화</button>
 </header>
 <ul id="list"></ul>
-<div class="bar"><span class="now" id="now">대기 중</span><button id="bStop">■ 정지</button></div>
+<div class="bar">
+  <div class="r"><span class="now" id="now">대기 중</span><button id="bPause">⏸ 일시정지</button><button class="x" id="bStop">■ 정지</button></div>
+  <div class="r"><span class="tm" id="tCur">0:00</span><input type="range" id="seek" min="0" max="100" step="1" value="0"><span class="tm" id="tDur">0:00</span></div>
+</div>
 <div class="vid" id="vid"><div id="player"></div></div>
 
 <script>
@@ -81,6 +89,19 @@ function play(i){
 }
 function stop(){ if(P&&P.pauseVideo) P.pauseVideo(); cur=null; $('now').textContent='대기 중'; render(); }
 $('bStop').onclick=stop;
+// 재생바: 원하는 부분으로 끌어서 이동
+const mmss=t=>{ t=Math.max(0,Math.floor(t||0)); return Math.floor(t/60)+':'+String(t%60).padStart(2,'0'); };
+let dragging=false;
+$('seek').addEventListener('input',()=>{ dragging=true; $('tCur').textContent=mmss(+$('seek').value); });
+$('seek').addEventListener('change',()=>{ if(P&&P.seekTo&&cur!=null){ P.seekTo(+$('seek').value,true); P.playVideo(); } dragging=false; });
+$('bPause').onclick=()=>{ if(!P||cur==null) return; P.getPlayerState()===1?P.pauseVideo():P.playVideo(); };
+setInterval(()=>{
+  if(!P||!P.getCurrentTime) return;
+  const d=P.getDuration()||0, t=P.getCurrentTime()||0;
+  $('seek').max=Math.max(1,Math.floor(d)); $('tDur').textContent=mmss(d);
+  if(!dragging){ $('seek').value=Math.floor(t); $('tCur').textContent=mmss(t); }
+  $('bPause').textContent=P.getPlayerState()===1?'⏸ 일시정지':'▶ 계속';
+},300);
 $('tReset').onclick=()=>{ done=[]; save(); render(); };
 let showVid=false;
 $('tVid').onclick=()=>{ showVid=!showVid; $('vid').classList.toggle('show',showVid); $('tVid').textContent=showVid?'영상 숨기기':'영상 보기'; };
