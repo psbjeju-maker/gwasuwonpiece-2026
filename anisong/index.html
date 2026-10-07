@@ -8,7 +8,7 @@
 <style>
 :root{--c:#1E5AA8;--dk:#0d2547;--bg:#f2f5fa;--ink:#14213d;--mut:#6b7a90;--line:#dfe5ee;--red:#e0453a;--gold:#f5b800}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:18px;padding-bottom:150px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:18px;padding-bottom:160px}
 button,a.k{font-family:inherit;cursor:pointer;border:0;border-radius:12px;font-weight:700;text-decoration:none}
 header{background:var(--dk);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 header h1{font-family:'Black Han Sans';font-weight:400;font-size:26px;margin:0;margin-right:auto}
@@ -19,19 +19,19 @@ li{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;p
 li.on{border-color:var(--gold);background:#fff8dc}
 li.done{opacity:.45}
 .no{font-family:'Black Han Sans';font-size:22px;color:var(--c);width:34px;text-align:center;flex:none}
-.t{flex:1;min-width:0;font-weight:700;font-size:19px}
+.t{flex:1;min-width:0;font-weight:700;font-size:19px;cursor:pointer}
 .chk{width:30px;height:30px;flex:none;accent-color:var(--c)}
 .pl{background:var(--gold);color:var(--dk);font-size:18px;padding:12px 16px;flex:none;min-width:64px}
 li.on .pl{background:var(--dk);color:#fff}
 a.k{background:var(--red);color:#fff;font-size:16px;padding:12px 12px;flex:none}
-.bar{position:fixed;left:0;right:0;bottom:0;background:var(--dk);color:#fff;padding:10px 16px 14px;z-index:5}
+.bar{position:fixed;left:0;right:0;bottom:0;transform:translateY(110%);transition:transform .25s;background:var(--dk);color:#fff;padding:10px 16px 14px;z-index:5}
+.bar.show{transform:none}
 .bar .r{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto}
 .bar .r+.r{margin-top:8px}
 .bar .tm{font-size:15px;color:#9fc0ef;flex:none;width:44px;text-align:center;font-variant-numeric:tabular-nums}
 #seek{flex:1;height:32px;accent-color:var(--gold)}
 .bar .now{flex:1;min-width:0;font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar button{background:var(--gold);color:var(--dk);font-size:18px;padding:12px 16px;flex:none}
-.bar button.x{background:var(--red);color:#fff}
+.bar button{background:var(--gold);color:var(--dk);font-size:20px;padding:12px 20px;flex:none;min-width:150px}
 .vid{position:fixed;right:-9999px;bottom:0;width:320px;height:180px}
 .vid.show{right:16px;bottom:130px;width:300px;height:169px;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:6}
 .vid iframe{width:100%;height:100%}
@@ -45,8 +45,8 @@ a.k{background:var(--red);color:#fff;font-size:16px;padding:12px 12px;flex:none}
   <button id="tReset">체크 초기화</button>
 </header>
 <ul id="list"></ul>
-<div class="bar">
-  <div class="r"><span class="now" id="now">대기 중</span><button id="bPause">⏸ 일시정지</button><button class="x" id="bStop">■ 정지</button></div>
+<div class="bar" id="bar">
+  <div class="r"><span class="now" id="now">대기 중</span><button id="bPause">⏸ 일시정지</button></div>
   <div class="r"><span class="tm" id="tCur">0:00</span><input type="range" id="seek" min="0" max="100" step="1" value="0"><span class="tm" id="tDur">0:00</span></div>
 </div>
 <div class="vid" id="vid"><div id="player"></div></div>
@@ -66,41 +66,45 @@ function render(){
   SONGS.forEach(([t,v,k],i)=>{
     const li=document.createElement('li');
     li.className=(cur===i?'on ':'')+(done.includes(i)?'done':'');
-    li.innerHTML=`<span class="no">${i+1}</span><span class="t"></span><button class="pl">${cur===i?'■':'▶'}</button><a class="k" target="_blank" rel="noopener">노래방</a><input type="checkbox" class="chk" title="진행 완료">`;
+    const playing=cur===i&&P&&P.getPlayerState&&P.getPlayerState()===1;
+    li.innerHTML=`<span class="no">${i+1}</span><span class="t"></span><button class="pl">${playing?'⏸':'▶'}</button><a class="k" target="_blank" rel="noopener">노래방</a><input type="checkbox" class="chk" title="진행 완료">`;
     li.querySelector('.t').textContent=t;
     li.querySelector('.k').href=karaUrl(k);
     const c=li.querySelector('.chk'); c.checked=done.includes(i);
     c.onchange=()=>{ done=c.checked?[...done,i]:done.filter(x=>x!==i); save(); render(); };
-    li.querySelector('.pl').onclick=()=>cur===i?stop():play(i);
+    li.querySelector('.pl').onclick=()=>cur===i?toggle():play(i);
+    li.querySelector('.t').onclick=()=>{ if(cur!==i) play(i); };
     ul.appendChild(li);
   });
   $('count').textContent=`${done.length} / ${SONGS.length} 완료`;
 }
 function play(i){
-  cur=i; $('now').textContent='♪ '+(i+1)+'. '+SONGS[i][0]; render();
+  cur=i; $('bar').classList.add('show'); $('now').textContent='♪ '+(i+1)+'. '+SONGS[i][0]; render();
   const v=SONGS[i][1];
   if(!ytReady) return;
   if(!P){ if(pending) return; pending=true; loaded=v;
     new YT.Player('player',{videoId:v,playerVars:{rel:0,playsinline:1,autoplay:1},events:{
       onReady:e=>{ P=e.target; const w=cur!=null&&SONGS[cur][1]; if(w&&w!==loaded){ loaded=w; P.loadVideoById(w); } else P.playVideo(); },
-      onStateChange:e=>{ if(e.data===0) stop(); }
+      onStateChange:()=>sync()
     }}); return; }
   if(loaded!==v){ P.loadVideoById(v); loaded=v; } else { P.seekTo(0,true); P.playVideo(); }
 }
-function stop(){ if(P&&P.pauseVideo) P.pauseVideo(); cur=null; $('now').textContent='대기 중'; render(); }
-$('bStop').onclick=stop;
+// 재생/일시정지 하나로 (끝난 곡은 처음부터 다시)
+function toggle(){ if(!P||cur==null) return; const s=P.getPlayerState(); if(s===1) P.pauseVideo(); else if(s===0){ P.seekTo(0,true); P.playVideo(); } else P.playVideo(); }
+let lastSt=null;
+function sync(){ if(!P||!P.getPlayerState) return; const st=P.getPlayerState()===1; $('bPause').textContent=st?'⏸ 일시정지':'▶ 재생'; if(st!==lastSt){ lastSt=st; render(); } }
 // 재생바: 원하는 부분으로 끌어서 이동
 const mmss=t=>{ t=Math.max(0,Math.floor(t||0)); return Math.floor(t/60)+':'+String(t%60).padStart(2,'0'); };
 let dragging=false;
 $('seek').addEventListener('input',()=>{ dragging=true; $('tCur').textContent=mmss(+$('seek').value); });
 $('seek').addEventListener('change',()=>{ if(P&&P.seekTo&&cur!=null){ P.seekTo(+$('seek').value,true); P.playVideo(); } dragging=false; });
-$('bPause').onclick=()=>{ if(!P||cur==null) return; P.getPlayerState()===1?P.pauseVideo():P.playVideo(); };
+$('bPause').onclick=toggle;
 setInterval(()=>{
   if(!P||!P.getCurrentTime) return;
   const d=P.getDuration()||0, t=P.getCurrentTime()||0;
   $('seek').max=Math.max(1,Math.floor(d)); $('tDur').textContent=mmss(d);
   if(!dragging){ $('seek').value=Math.floor(t); $('tCur').textContent=mmss(t); }
-  $('bPause').textContent=P.getPlayerState()===1?'⏸ 일시정지':'▶ 계속';
+  sync();
 },300);
 $('tReset').onclick=()=>{ done=[]; save(); render(); };
 let showVid=false;
