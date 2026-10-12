@@ -84,8 +84,8 @@ html,body{background:#0a1622;color:var(--cream);
 
 <script>
 
-var EXPS = [["exp_default", "기본"], ["exp_happy", "활짝 웃음"], ["exp_smile", "부드러운 미소"], ["exp_wink", "윙크"], ["exp_think", "생각 중"], ["exp_fighting", "화이팅"], ["exp_found", "발견 (반짝)"], ["exp_surprise", "놀람 (!!)"], ["exp_search", "탐색 (망원경)"], ["exp_tease", "장난 (메롱)"], ["exp_sulk", "시무룩"], ["exp_warn", "경고 / 화남"]];
-var cur = "exp_default", mode = "intro";
+var EXPS = [["neutral", "기본"], ["greeting", "인사"], ["success", "성공"]];
+var cur = "neutral", mode = "intro";
 var av=document.getElementById("av"), tx=document.getElementById("tx"),
     ch=document.getElementById("ch"), ok=document.getElementById("ok"),
     card=document.getElementById("card"), grid=document.getElementById("grid");
@@ -93,7 +93,7 @@ var av=document.getElementById("av"), tx=document.getElementById("tx"),
 EXPS.forEach(function(e){
   var b=document.createElement("button");
   b.className="pv-pick"; b.type="button"; b.setAttribute("aria-pressed", e[0]===cur);
-  b.innerHTML='<img src="'+"captain/"+e[0]+".jpg"+'" alt=""><span>'+e[1]+'</span>';
+  b.innerHTML='<img src="'+"assets/characters/"+e[0]+".png"+'" alt=""><span>'+e[1]+'</span>';
   b.addEventListener("click", function(){ cur=e[0]; if(mode==="none") setMode("intro"); render(); });
   grid.appendChild(b);
 });
@@ -114,7 +114,7 @@ function render(){
     b.setAttribute("aria-pressed", EXPS[i][0]===cur && mode!=="none");
   });
   if(mode==="none"){ av.removeAttribute("src"); card.classList.add("no-avatar"); }
-  else { av.src="captain/"+cur+".jpg"; card.classList.remove("no-avatar"); }
+  else { av.src="assets/characters/"+cur+".png"; card.classList.remove("no-avatar"); }
 
   ch.innerHTML="";
   if(mode==="intro"){
