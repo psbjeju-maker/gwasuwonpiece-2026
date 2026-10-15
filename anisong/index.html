@@ -35,6 +35,15 @@ a.k{background:var(--red);color:#fff;font-size:16px;padding:12px 12px;flex:none}
 .vid{position:fixed;right:-9999px;bottom:0;width:320px;height:180px}
 .vid.show{right:16px;bottom:130px;width:300px;height:169px;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:6}
 .vid iframe{width:100%;height:100%}
+/* 노래방 화면: 가사 영상 크게 + 위에 곡 제목 */
+.kara{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
+.kara.show{display:flex}
+.kara .kt{display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--dk);color:#fff}
+.kara .kt b{font-family:'Black Han Sans';font-weight:400;font-size:clamp(26px,4vw,52px);margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kara .kt small{color:var(--gold);font-size:clamp(16px,2vw,26px);font-weight:900;flex:none}
+.kara .kt button{background:var(--gold);color:var(--dk);font-size:18px;padding:10px 16px;flex:none}
+.kara .ks{flex:1;min-height:0}
+.kara .ks iframe{width:100%;height:100%;border:0}
 </style>
 </head>
 <body>
@@ -50,10 +59,13 @@ a.k{background:var(--red);color:#fff;font-size:16px;padding:12px 12px;flex:none}
   <div class="r"><span class="tm" id="tCur">0:00</span><input type="range" id="seek" min="0" max="100" step="1" value="0"><span class="tm" id="tDur">0:00</span></div>
 </div>
 <div class="vid" id="vid"><div id="player"></div></div>
+<div class="kara" id="kara"><div class="kt"><small>🎤 노래방</small><b id="karaT"></b><button id="karaFs">전체화면</button><button id="karaX">✕ 닫기</button></div><div class="ks" id="karaS"></div></div>
 
 <script>
 // [작품, 노래 영상 ID, 노래방 영상 ID 또는 ?검색어]
 const SONGS = [["포켓몬스터","dosnQVuYIi0","?포켓몬스터 1기 오프닝 노래방"],["디지몬 어드벤처","9S0RV3901CQ","53pAgurV5ys"],["디지몬 테이머즈","ZSaZk5xv6jU","LtDdbois7I4"],["카드캡터 체리","e6zp5Qob9ko","MSaDEgrl9V4"],["슬램덩크","C0EZ09az1k4","5FRiopHehWw"],["짱구는 못말려","rL42J_1SfgY","mCPiBXnqz8w"],["원피스","etAtxvSVT78","ANdlcNgiYbk"],["나루토","5dmlf2PYj7A","f0g3JRrLqe0"],["명탐정 코난","vihrlRWrYHA","?명탐정 코난 1기 오프닝 노래방"],["이누야샤","Yjpj_DnqkQo","g1EHe-srDkI"],["꼬마마법사 레미","OGxFS6bGOoM","?꼬마마법사 레미 1기 오프닝 노래방"],["웨딩피치","schOL4QfoRc","MYQl6c_AiZc"],["달빛천사","eMWCQp3Sues","Q6NRkovmvnI"],["세일러문","xG6NtaLP2vQ","pEUmsBL-HnE"],["개구리 중사 케로로","FM6dwiFP0Us","ICVOBWERdlI"],["보노보노","vaTZnfpBDEI","?보노보노 지름길로 가고파 노래방"],["꾸러기 수비대","9J_3R2Nphac","snjAeJCkKBw"],["천사소녀 네티","oE28qvW6kj4","NUZeErR7Yqw"],["탑블레이드","JQRYbUnLbm4","NVpKGMU1xAg"],["유희왕","GM3eisuIEEA","Yr4B86y4HEw"],["마동왕 그랑죠","grAeFpEdtG4","MGbKmjpzBE4"],["사이버 포뮬러","zl2FVjPoerw","?사이버 포뮬러 한국 오프닝 노래방"],["미래소년 코난","wWRwnEAEklI","BIBMD3jG2d8"],["달려라 하니","mvvydE1Q5JI","qmaNnzOPgK8"],["아기공룡 둘리","5ZXYeCqixxw","7Zi4FPHNLME"],["날아라 슈퍼보드","y_6I5nz6_eM","WZEjgWW7VyA"],["검정고무신","HIi8_yp9Kno","u24XpJp31js"],["도라에몽","QISHFAP3I5Y","jptskqeXU3k"],["아따맘마","mS9g-WyKC7U","EAStVzXTfxM"],["드래곤볼","vLanxuRgnoI","?드래곤볼Z 한국 오프닝 노래방"],["강철의 연금술사","ZcNAbONjXfA","?강철의 연금술사 멜리사 노래방"],["안녕 자두야","pmY4VaPur_8","NcpX6TnwLgE"],["신비아파트","dUwgMcFlGRE","UwlofcneOmk"],["괴짜가족","d1C5VI71qaU","FeT-Xt_pujU"],["꿈빛 파티시엘","G0Il1Qz7giw","4OzU7_tfP3c"],["쾌걸 근육맨","Iz_lJA2iH7s","qwNLBfgv_pQ"],["뽀롱뽀롱 뽀로로","E0W5sJZ2d64","J9vaJdGwoKA"],["캐치! 티니핑","0RVLt9QdQ74","bJ_ykc_UTFE"],["내 꿈은 스타","tKJ454eiI3E","KSWA4Ux3iaA"],["에그엔젤 코코밍","4eiVl4OSE2M","HUB8YjLSKa4"]];
+// 퍼가기 막힌 노래방 영상(2026-10-15 확인) — 이 곡들은 유튜브 새 탭으로 연다
+const NOEMBED=['g1EHe-srDkI','MYQl6c_AiZc','pEUmsBL-HnE'];
 const KEY='anisong-staff-v1';
 const $=id=>document.getElementById(id);
 let done=[]; try{ done=JSON.parse(localStorage.getItem(KEY))||[]; }catch(e){}
@@ -67,9 +79,10 @@ function render(){
     const li=document.createElement('li');
     li.className=(cur===i?'on ':'')+(done.includes(i)?'done':'');
     const playing=cur===i&&P&&P.getPlayerState&&P.getPlayerState()===1;
-    li.innerHTML=`<span class="no">${i+1}</span><span class="t"></span><button class="pl">${playing?'⏸':'▶'}</button><a class="k" target="_blank" rel="noopener">노래방</a><input type="checkbox" class="chk" title="진행 완료">`;
+    li.innerHTML=`<span class="no">${i+1}</span><span class="t"></span><button class="pl">${playing?'⏸':'▶'}</button><a class="k" target="_blank" rel="noopener">🎤 노래방</a><input type="checkbox" class="chk" title="진행 완료">`;
     li.querySelector('.t').textContent=t;
     li.querySelector('.k').href=karaUrl(k);
+    if(k[0]!=='?'&&!NOEMBED.includes(k)) li.querySelector('.k').onclick=e=>{ e.preventDefault(); openKara(i); };
     const c=li.querySelector('.chk'); c.checked=done.includes(i);
     c.onchange=()=>{ done=c.checked?[...done,i]:done.filter(x=>x!==i); save(); render(); };
     li.querySelector('.pl').onclick=()=>cur===i?toggle():play(i);
@@ -106,6 +119,17 @@ setInterval(()=>{
   if(!dragging){ $('seek').value=Math.floor(t); $('tCur').textContent=mmss(t); }
   sync();
 },300);
+// 노래방: 이 화면 안에서 가사 영상을 크게 띄우고 제목을 위에 보여 준다
+function openKara(i){
+  if(P&&P.pauseVideo) P.pauseVideo();
+  $('karaT').textContent=(i+1)+'. '+SONGS[i][0];
+  $('karaS').innerHTML='<iframe allow="autoplay; fullscreen" allowfullscreen src="https://www.youtube.com/embed/'+SONGS[i][2]+'?autoplay=1&rel=0&playsinline=1"></iframe>';
+  $('kara').classList.add('show');
+}
+function closeKara(){ $('karaS').innerHTML=''; $('kara').classList.remove('show'); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }
+$('karaX').onclick=closeKara;
+$('karaFs').onclick=()=>{ const k=$('kara'); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); else if(k.requestFullscreen) k.requestFullscreen().catch(()=>{}); };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('kara').classList.contains('show')&&!document.fullscreenElement) closeKara(); });
 $('tReset').onclick=()=>{ done=[]; save(); render(); };
 let showVid=false;
 $('tVid').onclick=()=>{ showVid=!showVid; $('vid').classList.toggle('show',showVid); $('tVid').textContent=showVid?'영상 숨기기':'영상 보기'; };
