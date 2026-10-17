@@ -120,15 +120,26 @@ setInterval(()=>{
   sync();
 },300);
 // 노래방: 이 화면 안에서 가사 영상을 크게 띄우고 제목을 위에 보여 준다
+let karaPlaying=true;
+function karaCmd(f){ const fr=$('karaS').querySelector('iframe'); if(fr&&fr.contentWindow) fr.contentWindow.postMessage(JSON.stringify({event:'command',func:f,args:[]}),'*'); }
 function openKara(i){
   if(P&&P.pauseVideo) P.pauseVideo();
   $('karaT').textContent=(i+1)+'. '+SONGS[i][0];
-  $('karaS').innerHTML='<iframe allow="autoplay; fullscreen" allowfullscreen src="https://www.youtube.com/embed/'+SONGS[i][2]+'?autoplay=1&rel=0&playsinline=1"></iframe>';
+  $('karaS').innerHTML='<iframe allow="autoplay; fullscreen" allowfullscreen src="https://www.youtube.com/embed/'+SONGS[i][2]+'?autoplay=1&rel=0&playsinline=1&enablejsapi=1"></iframe>'; karaPlaying=true;
   $('kara').classList.add('show');
 }
 function closeKara(){ $('karaS').innerHTML=''; $('kara').classList.remove('show'); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }
 $('karaX').onclick=closeKara;
 $('karaFs').onclick=()=>{ const k=$('kara'); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); else if(k.requestFullscreen) k.requestFullscreen().catch(()=>{}); };
+// 스페이스바: 재생/정지 (노래방 화면이 열려 있으면 노래방 영상, 아니면 진행표 노래)
+document.addEventListener('keydown',e=>{
+  if(e.code!=='Space'||e.repeat) return;
+  const t=e.target; if(t&&(t.isContentEditable||(t.tagName==='INPUT'&&t.type!=='checkbox'&&t.type!=='range')||t.tagName==='TEXTAREA')) return;
+  e.preventDefault();
+  if($('kara').classList.contains('show')){ karaPlaying=!karaPlaying; karaCmd(karaPlaying?'playVideo':'pauseVideo'); }
+  else toggle();
+});
+document.addEventListener('keyup',e=>{ if(e.code==='Space'&&e.target&&e.target.tagName==='BUTTON') e.preventDefault(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('kara').classList.contains('show')&&!document.fullscreenElement) closeKara(); });
 $('tReset').onclick=()=>{ done=[]; save(); render(); };
 let showVid=false;
