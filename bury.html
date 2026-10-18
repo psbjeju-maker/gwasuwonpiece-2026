@@ -99,7 +99,7 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
       </div>
       <div class="row">
         <div><label for="total">전체 칸 (나머지는 꽝)</label><input id="total" type="number" min="1" value="50"></div>
-        <div><label for="radius">파기 가능 거리(m)</label><input id="radius" type="number" min="3" max="100" value="15"></div>
+        <div><label>파기 가능 거리</label><input value="5m (고정)" disabled></div>
       </div>
       <div class="row"><button class="btn btn--b" id="btnPool">상품판 새로 깔기</button></div>
       <p class="sub" style="margin-top:6px">새로 깔면 남은 칸이 처음 개수로 돌아가요. 퀴즈를 맞힌 사람만 이 판에서 1칸을 뽑고, 틀리면 판을 안 쓰고 꽝이에요.</p>
@@ -185,7 +185,7 @@ function render(r){
   $('#poolNow').textContent='지금 남은 칸 '+p.left+'/'+p.total+' · '+TIERS.concat('X').map(function(k){return TIER_TXT[k]+' '+s[k].left+'/'+s[k].count}).join(' · ')+' · 파기 거리 '+p.radiusM+'m';
   if(!poolFilled){
     TIERS.forEach(function(k){$('#pn'+k).value=s[k].name||'';$('#pc'+k).value=s[k].count});
-    $('#total').value=p.total; $('#radius').value=p.radiusM; poolFilled=true;
+    $('#total').value=p.total; poolFilled=true;
   }
   $('#winners').innerHTML=r.winners.length?'<table><tr><th>시각</th><th>닉네임</th><th>상품</th><th>코드</th><th></th></tr>'+
     r.winners.sort(function(a,b){return (b.at||0)-(a.at||0)}).map(function(w){return '<tr><td>'+dt(w.at).slice(6)+'</td><td>'+esc(w.nickname)+'</td><td>'+esc(TIER_TXT[w.tier])+' '+esc(w.prize)+'</td><td>'+esc(w.pickupCode)+'</td><td>'+(w.given?'지급':'')+'</td></tr>'}).join('')+'</table>':'<p class="sub">아직 없어요.</p>';
@@ -200,7 +200,7 @@ $('#spots').addEventListener('click',function(e){
 $('#btnPool').onclick=function(){
   var prizes={}, sum=0;
   TIERS.forEach(function(k){var n=parseInt($('#pc'+k).value,10)||0;prizes[k]={name:$('#pn'+k).value.trim(),count:n};sum+=n});
-  var total=parseInt($('#total').value,10)||50, radius=parseInt($('#radius').value,10)||15;
+  var total=parseInt($('#total').value,10)||50, radius=5;
   if(sum>total){msg($('#poolMsg'),'상품 개수('+sum+')가 전체 칸('+total+')보다 많아요.','bad');return}
   if(!confirm('상품판을 새로 깔까요? 전체 '+total+'칸 = 상품 '+sum+' + 꽝 '+(total-sum)+'\n남은 칸이 처음으로 돌아가요.')) return;
   var b=this; b.disabled=true;

@@ -198,13 +198,13 @@ function startGps(){
 
 function update(){
   var left=data.spots.filter(function(x){return !x.dug});
-  var R=data.pool.radiusM||15;
+  var R=data.pool.radiusM||5;
   if(!data.spots.length){setRadar('-', '아직 묻힌 보물이 없어요', '', null);$('btnDig').hidden=true;return}
   if(!left.length){setRadar('끝', '모든 자리를 다 팠어요!', '', null);$('btnDig').hidden=true;return}
   if(!pos){setRadar('…','위치 확인 중','',null);return}
   near=null; var best=1e12;
   left.forEach(function(s){var d=distM(pos,s); if(d<best){best=d;near=s}});
-  var allow=R+Math.min(pos.acc||0,20), d=Math.round(best);
+  var allow=R+Math.min(pos.acc||0,10), d=Math.round(best);
   var heat, word, color;
   if(best<=allow){word='바로 여기! 땅을 파 보세요';color='#FF8A3D'}
   else if(best<40){word='아주 뜨거워요!';color='#FF8A3D'}
@@ -278,15 +278,15 @@ function showResult(r){
   var win=r.tier&&r.tier!=='X';
   if(win){
     sfx('fanfare'); buzz([80,60,80,60,200]); burst();
-    $('stTitle').textContent='당첨!'; $('stSub').textContent='';
+    $('stTitle').textContent='정답입니다! 보물 당첨!'; $('stSub').textContent='';
     html='<div class="res"><img src="assets/icons/golden_tangerine.png" alt=""><div class="big">'+esc(TIER_TXT[r.tier])+'</div><div class="prize">'+esc(r.prize)+'</div>'+
       '<div class="code">'+esc(r.pickupCode||'')+'</div><p>이 화면을 스태프에게 보여주고 상품을 받아 주세요.</p>'+(r.given?'<p><b>이미 받은 상품이에요.</b></p>':'');
   } else if(!r.correct){
     $('stTitle').textContent='자물쇠가 안 열려요…'; $('stSub').textContent='';
     html='<div class="res"><img src="assets/characters/disappointed.png" alt="" style="width:110px"><div class="big">꽝</div><p>퀴즈를 틀려서 상자가 잠겨 버렸어요.</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물 자리를 찾아보세요!</p>';
   } else {
-    $('stTitle').textContent='상자가 열렸는데…'; $('stSub').textContent='';
-    html='<div class="res"><img src="assets/characters/surprised.png" alt="" style="width:110px"><div class="big">꽝</div><p>퀴즈는 맞혔지만 상자가 비어 있었어요.</p><p>다른 보물 자리에서 다시 도전해 보세요!</p>';
+    $('stTitle').textContent='정답입니다!'; $('stSub').textContent='';
+    html='<div class="res"><img src="assets/characters/surprised.png" alt="" style="width:110px"><div class="big">정답입니다!</div><p style="font-size:19px;color:var(--ink)"><b>하지만 보물은 꽝입니다.</b></p><p>다른 보물 자리에서 다시 도전해 보세요!</p>';
   }
   html+='<button class="btn btn-gold" id="btnBack">다른 보물 찾으러 가기</button></div>';
   s.innerHTML=html; s.className='sheet on';
