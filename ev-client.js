@@ -188,6 +188,8 @@
     },
     claimPassCard: function (eventId, token) { return raw('claimPassCard', { eventId: eventId, token: token }, true); },
     submitClue: function (eventId, clueId, answer) { return raw('submitClue', { eventId: eventId, clueId: clueId, answer: answer }, true); },
+    /* GPS 보물 파기 등 — 참가자 로그인으로 서버 함수 호출 */
+    call: function (name, data) { return raw(name, data, true); },
     claimTreasure: function (eventId, code) { return withRid('t.' + eventId, 'claimTreasure', { eventId: eventId, answer: code }, true); },
     /* ---- 스태프 / 관리자 ---- */
     pinLogin: async function (pin, role) {

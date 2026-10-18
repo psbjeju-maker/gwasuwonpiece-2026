@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>보물찾기 QR</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:#111;font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+.wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;max-width:900px;margin:0 auto;padding:24px 16px}
+.q{border:3px solid #142439;border-radius:20px;padding:20px;text-align:center;break-inside:avoid}
+.q.bury{border-color:#B8530A}
+.q h2{margin:0 0 4px;font-size:30px}
+.q p{margin:0 0 12px;color:#444;font-size:15px}
+.q img{width:100%;max-width:300px;height:auto;image-rendering:pixelated}
+.q small{display:block;color:#888;font-size:12px;word-break:break-all;margin-top:6px}
+.tag{display:inline-block;font-size:13px;font-weight:700;padding:3px 12px;border-radius:99px;background:#142439;color:#fff;margin-bottom:8px}
+.bury .tag{background:#B8530A}
+@media print{.wrap{padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="q">
+    <span class="tag">손님용</span>
+    <h2>보물 찾기</h2>
+    <p>찍고 보물 자리를 찾아 땅을 파 보세요!<br>오타쿠 퀴즈를 맞히면 상자가 열려요</p>
+    <img id="qDig" alt="보물 찾기 QR">
+    <small id="uDig"></small>
+  </div>
+  <div class="q bury">
+    <span class="tag">스태프 전용</span>
+    <h2>보물 묻기</h2>
+    <p>관리자 PIN으로 로그인 후<br>숨길 자리에서 「여기 묻기」</p>
+    <img id="qBury" alt="보물 묻기 QR">
+    <small id="uBury"></small>
+  </div>
+</div>
+<script src="qr.js"></script>
+<script>
+(function(){
+  var base=location.href.replace(/[^/]*([?#].*)?$/,'');
+  function put(img,cap,url){var q=qrcode(0,'M');q.addData(url);q.make();document.getElementById(img).src=q.createDataURL(10,2);document.getElementById(cap).textContent=url}
+  put('qDig','uDig',base+'dig.html');
+  put('qBury','uBury',base+'bury.html');
+})();
+</script>
+</body>
+</html>
