@@ -184,11 +184,11 @@ function start(){
   $('scLogin').hidden=!!i; $('hdr').hidden=!i; $('scTask').hidden=!i;
   if(!i) return;
   var task=i.role==='admin'?(adminView||'admin'):i.task;
-  $('hTask').textContent=i.role==='admin'?(adminView?'총괄 · '+(TASKS[adminView]||adminView):'총괄'):(i.taskName||TASKS[i.task]||i.task);
+  $('hTask').textContent=i.role==='admin'?(adminView?'총괄 · '+(TASKS[adminView]||(adminView==='rec'?'행사 기록':adminView)):'총괄'):(i.taskName||TASKS[i.task]||i.task);
   $('hLabel').textContent=(i.label?i.label+' · ':'')+new Date(i.exp).toTimeString().slice(0,5)+'까지 로그인';
   var box=$('scTask'); box.innerHTML='';
   if(i.role==='admin'&&adminView){var back=h('<button class="btn sm" type="button">← 총괄 화면</button>').firstChild;back.onclick=function(){adminView=null;start()};box.appendChild(back)}
-  (SCREENS[task.indexOf('npc:')===0?'npc':task]||SCREENS.none)(box,task);
+  (SCREENS[task.indexOf('npc:')===0?'npc':task.indexOf('rec')===0?'rec':task]||SCREENS.none)(box,task);
 }
 
 /* ---------- 업무 화면 ---------- */
@@ -349,28 +349,111 @@ SCREENS.votehelp=function(box){
   $('tGo').onclick=open; $('tCode').addEventListener('scanned',open);
 };
 
+/* ---------- 별도 행사 기록 담당: 정해진 입력 1종 → 저장 ---------- */
+var REC_KIND={score:'점수',join:'참여 확인',text:'번호·메모'};
+SCREENS.rec=function(box,task){
+  var admin=task==='rec'; /* 총괄이 열어 본 경우: 항목을 고르고, 정정도 할 수 있다 */
+  box.appendChild(h('<div class="card" id="rHead"><p class="muted">기록 항목 불러오는 중…</p></div><div id="rBody"></div>'));
+  var recId=null, item=null;
+  function q(fn,d){return call(fn,Object.assign(admin?{recId:recId}:{},d||{}))}
+  if(admin){
+    call('recInfo',{}).then(function(r){
+      var ids=Object.keys(r.items||{});
+      if(!ids.length){$('rHead').innerHTML='<p class="muted">기록 항목이 없어요. 총괄 화면 「행사 기록 항목」에서 먼저 만들어 주세요.</p>';return}
+      $('rHead').innerHTML='<h2>행사 기록 결과·정정</h2><label for="rPick">기록 항목</label><select id="rPick">'+ids.map(function(k){return '<option value="'+esc(k)+'">'+esc(r.items[k].name)+'</option>'}).join('')+'</select>';
+      $('rPick').onchange=function(){recId=this.value;load()}; recId=ids[0]; load();
+    },function(e){$('rHead').innerHTML='<p class="muted">'+esc(errMsg(e))+'</p>'});
+  } else load();
+  function load(){
+    q('recInfo').then(function(r){
+      var first=!item||item.id!==r.item.id; item=r.item;
+      if(!admin){
+        $('hTask').textContent=item.name;
+        $('rHead').innerHTML='<h2>'+esc(item.name)+'</h2><p class="muted">'+esc(item.help||('참가번호(또는 손목띠)를 확인하고 '+(item.kind==='join'?'참여를 저장해요.':REC_KIND[item.kind]+'를 넣어 저장해요.')))+'</p>'+
+          (item.active===false?'<div class="res no"><div class="big">지금은 기록을 받지 않아요</div><div class="sub">총괄에게 문의해 주세요</div></div>':'');
+      }
+      if(first) form();
+      list(r);
+    },function(e){$('rHead').innerHTML='<p class="muted">'+esc(errMsg(e))+'</p>'});
+  }
+  function valInput(id){return item.kind==='join'?'':'<label for="'+id+'">'+esc(REC_KIND[item.kind])+(item.unit?' ('+esc(item.unit)+')':'')+'</label><input id="'+id+'" '+(item.kind==='score'?'inputmode="numeric"':'maxlength="30"')+' autocomplete="off">'}
+  function form(){
+    $('rBody').innerHTML='';
+    if(!admin){
+      $('rBody').appendChild(h('<div class="card"><label>참가번호 또는 손목띠</label>'+codeRow('rCode')+valInput('rVal')+'<button class="btn p mt" id="rGo" type="button">저장</button><div id="rRes"></div></div>'));
+      var save=function(){
+        var c=$('rCode').value.trim(); if(!c){res($('rRes'),'no','번호를 입력하세요');return}
+        var v=$('rVal')?$('rVal').value.trim():true;
+        if(item.kind!=='join'&&v===''){res($('rRes'),'no',REC_KIND[item.kind]+'를 넣어 주세요');$('rVal').focus();return}
+        busy($('rGo'),call('recSave',{code:c,value:v})).then(function(r){
+          res($('rRes'),r.already?'info':'ok',r.already?'이미 기록했습니다':'저장 완료',esc(r.nickname||'')+(item.kind==='join'?'':' · <b>'+esc(r.value)+esc(item.unit||'')+'</b>')+(r.already?'<br>바꿔야 하면 총괄에게 말해 주세요':''));
+          $('rCode').value='';if($('rVal'))$('rVal').value='';$('rCode').focus();load();
+        },function(e){res($('rRes'),'no',errMsg(e))});
+      };
+      $('rGo').onclick=save;
+      $('rCode').addEventListener('keydown',function(e){if(e.key==='Enter'){if($('rVal'))$('rVal').focus();else save()}});
+      $('rCode').addEventListener('scanned',function(){if($('rVal'))$('rVal').focus();else save()});
+      if($('rVal'))$('rVal').addEventListener('keydown',function(e){if(e.key==='Enter')save()});
+    } else {
+      $('rBody').appendChild(h('<div class="card"><h2>기록 정정 (총괄만)</h2><label>참가번호 또는 손목띠</label>'+codeRow('fCode')+valInput('fVal')+'<input id="fWhy" class="mt" placeholder="사유 (꼭 적기)">'+
+        '<div class="two mt">'+(item.kind==='join'?'<button class="btn p" id="fGo" type="button">참여로 기록</button>':'<button class="btn p" id="fGo" type="button">값 바꾸기</button>')+'<button class="btn d" id="fDel" type="button">기록 지우기</button></div><div id="fRes"></div></div>'));
+      var fix=function(remove,btn){
+        busy(btn,q('recFix',{code:$('fCode').value.trim(),value:$('fVal')?$('fVal').value.trim():true,remove:remove,reason:$('fWhy').value.trim()})).then(function(r){
+          res($('fRes'),'ok',r.removed?'기록을 지웠어요':'정정 완료','사유가 기록에 남았어요');$('fCode').value='';if($('fVal'))$('fVal').value='';$('fWhy').value='';load();
+        },function(e){res($('fRes'),'no',errMsg(e))});
+      };
+      $('fGo').onclick=function(){fix(false,this)};
+      $('fDel').onclick=function(){if(confirm('이 참가자의 기록을 지울까요?'))fix(true,this)};
+    }
+    $('rBody').appendChild(h('<div class="card"><h2 id="rCnt">기록</h2><div class="list" id="rList"></div></div>'));
+  }
+  function list(r){
+    $('rCnt').textContent='기록 '+r.count+'건'+(item.kind==='score'?' · 높은 순':' · 최근 순')+(r.count>r.rows.length?' (위 '+r.rows.length+'건)':'');
+    $('rList').innerHTML=r.rows.length?r.rows.map(function(x,i){return '<div class="row"><div><b>'+(item.kind==='score'?(i+1)+'. ':'')+esc(x.nickname||'(이름 없음)')+'</b><br><small>'+(x.code?'참가번호 '+esc(x.code):'')+(x.bandNo?' · 손목띠 '+x.bandNo:'')+' · '+new Date(x.at).toTimeString().slice(0,5)+(x.fixed?' · 정정됨':'')+'</small></div>'+
+      (item.kind==='join'?'<span class="chip ok">참여</span>':'<b style="font-size:20px">'+esc(x.value)+esc(item.unit||'')+'</b>')+'</div>'}).join(''):'<p class="muted">아직 기록이 없어요.</p>';
+  }
+  if(!admin) setInterval(function(){if(!$('scTask').hidden&&$('rList')&&document.activeElement!==$('rCode')&&document.activeElement!==$('rVal'))load()},20000);
+};
+
 /* ---------- 총괄 ---------- */
 SCREENS.admin=function(box){
   box.appendChild(h('<div class="card"><h2>업무 화면 열어 보기</h2><div class="two" id="aViews"></div></div>'+
     '<div class="card"><h2>담당 PIN</h2><p class="muted">담당자에게 PIN을 주면 그 업무 화면만 열려요. PIN은 만들 때 한 번만 보여요.</p>'+
-    '<label>업무</label><select id="aTask"></select><input id="aNpc" placeholder="NPC 아이디 (예: n1)" class="mt" hidden><label>담당자 이름</label><input id="aLabel" placeholder="예) 민수">'+
+    '<label>업무</label><select id="aTask"></select><input id="aNpc" placeholder="NPC 아이디 (예: n1)" class="mt" hidden><select id="aRec" class="mt" hidden></select><label>담당자 이름</label><input id="aLabel" placeholder="예) 민수">'+
     '<button class="btn p mt" id="aMake" type="button">PIN 만들기</button><div id="aPin"></div><div class="list mt" id="aPins"></div></div>'+
+    '<div class="card"><h2>행사 기록 항목</h2><p class="muted">「행사 기록」 담당이 저장할 입력 1종을 정해요. 항목마다 담당 PIN을 따로 만들어요. 기록은 보상과 연결되지 않아요.</p><div id="recItems"></div><div class="two mt"><button class="btn" id="recAdd" type="button">항목 추가</button><button class="btn p" id="recSaveCfg" type="button">항목 저장</button></div><div id="recRes"></div></div>'+
     '<div class="card"><h2>손목띠</h2><label>새로 만들 개수</label><input id="bCount" type="number" value="50" min="1" max="500"><div class="two mt"><button class="btn p" id="bMake" type="button">만들기</button><button class="btn" id="bPrint" type="button">전체 인쇄</button></div><div id="bRes"></div></div>'+
     '<div class="card"><h2>정정 (총괄만)</h2><label>손목띠 재발급: 기존 → 새 손목띠</label>'+codeRow('rOld','기존 손목띠')+'<div class="mt"></div>'+codeRow('rNew','새 손목띠 QR')+'<input id="rWhy" class="mt" placeholder="사유 (예: 분실)"><button class="btn mt" id="rGo" type="button">재발급</button>'+
     '<label>패스 취소 (결제 취소·잘못된 활성화)</label>'+codeRow('xCode')+'<input id="xWhy" class="mt" placeholder="사유"><button class="btn d mt" id="xGo" type="button">패스 취소</button>'+
     '<button class="btn mt" id="vReset" type="button">투표 초기화(표 전부 삭제)</button><div id="rRes"></div></div>'+
     '<div class="card"><h2>보물 장소·상품판·NPC</h2><a class="btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="bury.html">보물 관리 화면 열기</a></div>'));
-  $('aViews').innerHTML=Object.keys(TASKS).map(function(k){return '<button class="btn sm" data-view="'+k+'" type="button" style="width:100%">'+TASKS[k]+'</button>'}).join('');
+  $('aViews').innerHTML=Object.keys(TASKS).concat('rec').map(function(k){return '<button class="btn sm" data-view="'+k+'" type="button" style="width:100%">'+(TASKS[k]||'행사 기록')+'</button>'}).join('');
   $('aViews').onclick=function(e){var b=e.target.closest('[data-view]');if(b){adminView=b.dataset.view;start()}};
-  $('aTask').innerHTML=Object.keys(TASKS).map(function(k){return '<option value="'+k+'">'+TASKS[k]+'</option>'}).join('')+'<option value="npc">NPC 미션</option>';
-  $('aTask').onchange=function(){$('aNpc').hidden=this.value!=='npc'};
+  $('aTask').innerHTML=Object.keys(TASKS).map(function(k){return '<option value="'+k+'">'+TASKS[k]+'</option>'}).join('')+'<option value="npc">NPC 미션</option><option value="rec">행사 기록</option>';
+  $('aTask').onchange=function(){$('aNpc').hidden=this.value!=='npc';$('aRec').hidden=this.value!=='rec'};
+  /* 행사 기록 항목 편집 */
+  var RECS={};
+  function recRow(id,it){return '<div class="who rrow" data-id="'+esc(id)+'"><div class="two"><input class="rn" placeholder="항목 이름" value="'+esc(it.name||'')+'"><select class="rk">'+Object.keys(REC_KIND).map(function(k){return '<option value="'+k+'"'+(it.kind===k?' selected':'')+'>'+REC_KIND[k]+'</option>'}).join('')+'</select></div>'+
+    '<div class="two mt"><input class="ru" placeholder="단위 (예: 점)" value="'+esc(it.unit||'')+'"><label class="check" style="margin:0"><input type="checkbox" class="ra"'+(it.active===false?'':' checked')+'> 받는 중</label></div><input class="rh mt" placeholder="담당 안내 한 줄 (선택)" value="'+esc(it.help||'')+'"><small class="muted">아이디 '+esc(id)+'</small></div>'}
+  function recDraw(){
+    var ids=Object.keys(RECS);
+    $('recItems').innerHTML=ids.length?ids.map(function(k){return recRow(k,RECS[k])}).join(''):'<p class="muted">아직 항목이 없어요.</p>';
+    var saved=ids.filter(function(k){return RECS[k].name});
+    $('aRec').innerHTML=saved.map(function(k){return '<option value="'+esc(k)+'">'+esc(RECS[k].name)+'</option>'}).join('')||'<option value="">(항목을 먼저 저장하세요)</option>';
+  }
+  function recRead(){var o={};$('recItems').querySelectorAll('.rrow').forEach(function(r){o[r.dataset.id]={name:r.querySelector('.rn').value.trim(),kind:r.querySelector('.rk').value,unit:r.querySelector('.ru').value.trim(),help:r.querySelector('.rh').value.trim(),active:r.querySelector('.ra').checked}});return o}
+  call('ownerRecCfg',{}).then(function(r){RECS=r.items||{};recDraw();pins()},function(e){res($('recRes'),'no',errMsg(e))});
+  $('recAdd').onclick=function(){RECS=recRead();var n=1;while(RECS['r'+n])n++;RECS['r'+n]={name:'',kind:'score',active:true};recDraw()};
+  $('recSaveCfg').onclick=function(){busy(this,call('ownerRecCfg',{items:recRead()})).then(function(r){RECS=r.items||{};recDraw();res($('recRes'),'ok','저장했어요','이름이 빈 항목은 빠져요')},function(e){res($('recRes'),'no',errMsg(e))})};
+  function taskLabel(t){return TASKS[t]||(t.indexOf('rec:')===0?'행사 기록 · '+((RECS[t.slice(4)]||{}).name||t.slice(4)):t.indexOf('npc:')===0?'NPC 미션 · '+t.slice(4):t)}
   function pins(){EV.staff('ownerTaskPins',{}).then(function(r){
-    $('aPins').innerHTML=r.items.filter(function(p){return p.active}).map(function(p){return '<div class="row"><div><b>'+esc(TASKS[p.task]||p.task)+'</b> '+esc(p.label||'')+'<br><small>PIN ··'+esc(p.last2)+'</small></div><button class="btn sm d" data-rv="'+esc(p.id)+'" type="button">회수</button></div>'}).join('')||'<p class="muted">발급한 PIN이 없어요.</p>';
+    $('aPins').innerHTML=r.items.filter(function(p){return p.active}).map(function(p){return '<div class="row"><div><b>'+esc(taskLabel(p.task))+'</b> '+esc(p.label||'')+'<br><small>PIN ··'+esc(p.last2)+'</small></div><button class="btn sm d" data-rv="'+esc(p.id)+'" type="button">회수</button></div>'}).join('')||'<p class="muted">발급한 PIN이 없어요.</p>';
   })}
   $('aMake').onclick=function(){
     var t=$('aTask').value; if(t==='npc') t='npc:'+$('aNpc').value.trim();
+    if(t==='rec'){if(!$('aRec').value){res($('aPin'),'no','행사 기록 항목을 먼저 저장해 주세요');return}t='rec:'+$('aRec').value}
     busy(this,EV.staff('ownerTaskPins',{action:'create',task:t,label:$('aLabel').value.trim()})).then(function(r){
-      res($('aPin'),'ok','PIN '+r.pin,esc(TASKS[r.task]||r.task)+' · '+esc(r.label||'')+'<br>지금 담당자에게 전달하세요. 다시 볼 수 없어요.');$('aLabel').value='';pins();
+      res($('aPin'),'ok','PIN '+r.pin,esc(taskLabel(r.task))+' · '+esc(r.label||'')+'<br>지금 담당자에게 전달하세요. 다시 볼 수 없어요.');$('aLabel').value='';pins();
     },function(e){res($('aPin'),'no',errMsg(e))});
   };
   $('aPins').onclick=function(e){var b=e.target.closest('[data-rv]');if(!b||!confirm('이 PIN을 회수할까요? 로그인 중인 화면도 바로 끊겨요.'))return;busy(b,EV.staff('ownerTaskPins',{action:'revoke',id:b.dataset.rv})).then(pins)};
