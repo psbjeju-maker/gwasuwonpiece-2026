@@ -265,17 +265,17 @@ SCREENS.hq=function(box){
 };
 
 SCREENS.draw=function(box){
-  box.appendChild(h('<div class="card"><h2>뽑기 1회</h2><p class="muted">번호 조회 → 무료권 사용 또는 결제 확인 후 1회.</p>'+codeRow('dCode')+
+  box.appendChild(h('<div class="card"><h2>무료권 뽑기</h2><p class="muted">번호 조회 → 무료권 사용. 오늘은 유료 뽑기를 팔지 않아요.</p>'+codeRow('dCode')+
     '<button class="btn mt" id="dLook" type="button">조회</button><div id="dWho"></div>'+
-    '<div id="dAct" hidden><div class="two mt"><button class="btn g" id="dFree" type="button">무료권 사용</button><button class="btn p" id="dPaid" type="button">결제 확인 후 1회</button></div>'+
-    '<label class="check"><input type="checkbox" id="dPaidOk"> 현장 결제 받았어요 (결제 버튼용)</label></div><div id="dRes"></div></div>'));
+    '<div id="dAct" hidden><div class="two mt"><button class="btn g" id="dFree" type="button">무료권 사용</button><button class="btn p" id="dPaid" type="button" hidden>결제 확인 후 1회</button></div>'+
+    '<label class="check" id="dPaidRow" hidden><input type="checkbox" id="dPaidOk"> 현장 결제 받았어요 (결제 버튼용)</label></div><div id="dRes"></div></div>'));
   var cur=null, reqId=null;
   function look(){
     var c=$('dCode').value.trim(); if(!c) return;
     busy($('dLook'),call('drawInfo',{code:c})).then(function(r){
       cur=c; reqId=null;
-      $('dWho').innerHTML=whoHtml(r)+'<p class="muted" style="margin-top:8px">무료 뽑기권 <b style="font-size:20px;color:var(--ink)">'+r.free+'장</b> · 남은 뽑기 '+r.poolLeft+' (결제 판매 가능 '+r.paidLeft+')</p>';
-      $('dAct').hidden=false; $('dFree').disabled=r.free<1; $('dRes').innerHTML='';
+      $('dWho').innerHTML=whoHtml(r)+'<p class="muted" style="margin-top:8px">무료 뽑기권 <b style="font-size:20px;color:var(--ink)">'+r.free+'장</b> · 남은 뽑기 '+r.poolLeft+(r.paidDraw?' (결제 판매 가능 '+r.paidLeft+')':'')+'</p>';
+      $('dAct').hidden=false; $('dFree').disabled=r.free<1; $('dPaid').hidden=$('dPaidRow').hidden=!r.paidDraw; $('dRes').innerHTML='';
     },function(e){res($('dRes'),'no',errMsg(e))});
   }
   $('dLook').onclick=look; $('dCode').addEventListener('scanned',look); $('dCode').addEventListener('keydown',function(e){if(e.key==='Enter')look()});

@@ -119,6 +119,7 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
         <div><label for="rotateMin">위치 바꾸는 간격(분)</label><input id="rotateMin" type="number" min="5"></div>
       </div>
       <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input id="freeOn" type="checkbox" style="width:24px;min-height:24px"> 무료 뽑기권 지급 켜기 (운영자 확정 후)</label>
+      <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input id="paidOn" type="checkbox" style="width:24px;min-height:24px"> 유료 뽑기(현장 결제) 판매 켜기 — 당일 사용 안 함</label>
       <div><label for="freePer">1인 무료권 한도 (0 = 제한 없음)</label><input id="freePer" type="number" min="0"></div>
       <h3 style="margin:16px 0 4px;font-size:15px">NPC 목록</h3>
       <p class="sub">한 줄에 하나: 아이디 | 이름 | 장소 | 미션 문장 | 활동(O/X). NPC 담당 PIN은 스태프 화면 총괄에서 "NPC 미션 + 아이디"로 만들어요.</p>
@@ -233,7 +234,7 @@ $('#btnPool').onclick=function(){
 };
 
 function fillCfg(){
-  $('#maxActive').value=CFG.maxActive||0; $('#rotateMin').value=CFG.rotateMin||30; $('#freeOn').checked=!!CFG.freeEnabled; $('#freePer').value=CFG.freePerPerson||0;
+  $('#maxActive').value=CFG.maxActive||0; $('#rotateMin').value=CFG.rotateMin||30; $('#freeOn').checked=!!CFG.freeEnabled; $('#paidOn').checked=!!CFG.paidDraw; $('#freePer').value=CFG.freePerPerson||0;
   var n=CFG.npcs||{}; $('#npcs').value=Object.keys(n).map(function(k){var x=n[k];return [k,x.name,x.place,x.line,x.active===false?'X':'O'].join(' | ')}).join('\n');
   $('#npcId').innerHTML=Object.keys(n).map(function(k){return '<option value="'+esc(k)+'">'+esc(k+' · '+n[k].name)+'</option>'}).join('')||'<option value="">NPC 먼저 등록</option>';
 }
@@ -242,7 +243,7 @@ $('#btnCfg').onclick=function(){
   var npcs={};
   $('#npcs').value.split('\n').forEach(function(l){var c=l.split('|').map(function(x){return x.trim()});if(!c[0])return;npcs[c[0]]={name:c[1]||c[0],place:c[2]||'',line:c[3]||'',active:(c[4]||'O').toUpperCase()!=='X'}});
   var b=this; b.disabled=true;
-  EV.staff('ownerDigCfg',{eventId:EID,maxActive:parseInt($('#maxActive').value,10)||0,rotateMin:parseInt($('#rotateMin').value,10)||30,freeEnabled:$('#freeOn').checked,freePerPerson:parseInt($('#freePer').value,10)||0,npcs:npcs}).then(function(c){
+  EV.staff('ownerDigCfg',{eventId:EID,maxActive:parseInt($('#maxActive').value,10)||0,rotateMin:parseInt($('#rotateMin').value,10)||30,freeEnabled:$('#freeOn').checked,paidDraw:$('#paidOn').checked,freePerPerson:parseInt($('#freePer').value,10)||0,npcs:npcs}).then(function(c){
     b.disabled=false; CFG=c; fillCfg(); msg($('#cfgMsg'),'저장했어요.','ok'); load();
   },function(e){b.disabled=false;msg($('#cfgMsg'),e.message||'저장 못 했어요','bad')});
 };
