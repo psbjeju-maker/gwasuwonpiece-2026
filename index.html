@@ -2,604 +2,445 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#F6F3EC">
-<link rel="icon" href="assets/icons/golden_tangerine.png">
-<link rel="apple-touch-icon" href="assets/icons/golden_tangerine.png">
-<title>황금 귤을 찾아라</title>
-<link rel="stylesheet" href="style.css?v=6">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#142439">
+<title>황금 귤을 찾아라 — 과수원피스</title>
+<style>
+@font-face{font-family:"SCDream";font-weight:400;font-display:swap;src:url('fonts/SCDream4.woff') format('woff');}
+@font-face{font-family:"SCDream";font-weight:700;font-display:swap;src:url('fonts/SCDream7.woff') format('woff');}
+:root{--page:#F6F3EC;--surface:#FFFDFA;--surface-2:#F1ECE2;--navy:#142439;--navy-deep:#0E1929;--ink:#17283A;--muted:#5C6670;
+  --teal:#086F7D;--teal-soft:#E3F0F1;--gold:#B68B48;--gold-soft:#F4EAD7;--gold-on-navy:#E2C489;--orange:#E8742A;--line:#DDD7CC;
+  --danger:#B23A30;--ok:#2F7A4F;--ok-soft:#E5F3EA;--shadow:0 1px 2px rgba(20,36,57,.06),0 4px 14px rgba(20,36,57,.06);--safe-b:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:"SCDream",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--page);color:var(--ink);font-size:16px;line-height:1.55;overscroll-behavior:none}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+[hidden]{display:none!important}
+.scr{max-width:520px;margin:0 auto;padding:16px 18px calc(28px + var(--safe-b))}
+.top{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
+.top h1{flex:1;font-size:21px;margin:0;color:var(--navy)}
+.back{min-height:44px;padding:0 12px;border-radius:12px;background:var(--surface-2);font-weight:700}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-weight:700;font-size:14px}
+.pill b{letter-spacing:.08em;font-size:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;margin-top:12px;box-shadow:var(--shadow)}
+.card h2{font-size:17px;margin:0 0 6px}
+.muted{color:var(--muted);font-size:14px;margin:0}
+.btn{min-height:52px;border-radius:14px;font-weight:700;font-size:17px;padding:0 18px;width:100%;background:var(--surface-2)}
+.btn.p{background:var(--teal);color:#fff}
+.btn.big{min-height:88px;font-size:24px;border-radius:22px;background:linear-gradient(180deg,#F2D59B,#D9AE5F);color:#2A1A04;box-shadow:0 6px 0 #9A7232;margin-top:16px}
+.btn.big:active{transform:translateY(3px);box-shadow:0 3px 0 #9A7232}
+.btn:disabled{opacity:.45}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.row2 .btn{min-height:64px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.row2 .btn small{display:block;font-size:13px;color:var(--muted);font-weight:400}
+input{width:100%;min-height:54px;border:1.5px solid var(--line);border-radius:14px;background:#fff;padding:0 14px;font-size:18px;margin-top:6px;-webkit-user-select:text;user-select:text}
+label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top:12px}
+.err{color:var(--danger);font-weight:700;min-height:1.4em;margin:10px 0 0}
+.hero{background:var(--navy);color:#fff;border-radius:24px;padding:18px;display:flex;gap:12px;align-items:center;margin-top:4px}
+.hero img{width:92px;height:auto;flex:0 0 auto}
+.hero p{margin:0;font-size:15px;line-height:1.5}
+.hero b{color:var(--gold-on-navy)}
+.passno{border:2px dashed var(--gold);background:var(--gold-soft)}
+.passno .code{font-size:34px;font-weight:700;letter-spacing:.18em;text-align:center;margin:8px 0}
+.passno img{display:block;margin:6px auto 0;width:150px;image-rendering:pixelated}
+.notice{background:var(--teal-soft);border-color:transparent}
+.vote{border:2px solid var(--teal)}
+.chip{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--surface-2)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.no{background:#FBE9E7;color:var(--danger)}
+
+/* 보물 탐색 */
+.hunt{background:var(--navy-deep);color:#F4EFE6;min-height:100vh}
+.hunt .top h1{color:var(--gold-on-navy)}
+.hunt .back{background:rgba(255,255,255,.1)}
+.radar{position:relative;width:min(70vw,280px);aspect-ratio:1;margin:8px auto 4px;border-radius:50%;
+  background:radial-gradient(circle,rgba(226,196,137,.18) 0 22%,rgba(226,196,137,.08) 22% 48%,rgba(226,196,137,.04) 48% 72%,transparent 72%);border:2px solid rgba(226,196,137,.35)}
+.radar::before,.radar::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--heat,rgba(226,196,137,.5));animation:ping 2.4s ease-out infinite;opacity:0}
+.radar::after{animation-delay:1.2s}
+@keyframes ping{0%{transform:scale(.25);opacity:.9}100%{transform:scale(1.05);opacity:0}}
+.radar .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.radar .dist{font-size:48px;font-weight:700;line-height:1;color:var(--heat,#F4EFE6)}
+.radar .unit{font-size:14px;color:#C9D1DB;margin-top:6px}
+.heat{text-align:center;font-size:19px;font-weight:700;margin:4px 0 0;min-height:1.5em;color:var(--heat,#F4EFE6)}
+.gpsline{text-align:center;font-size:12.5px;color:#8C98A6;margin:2px 0 0}
+.hunt .btn.big{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.03)}}
+.tlist{margin-top:14px}
+.tl{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px 14px;margin-top:8px}
+.tl div{flex:1;min-width:0}
+.tl b{display:block}
+.tl small{color:#AEB8C4}
+.tl .d{font-weight:700;color:var(--gold-on-navy);white-space:nowrap}
+.tl button{min-height:40px;padding:0 12px;border-radius:10px;background:var(--gold-on-navy);color:#2A1A04;font-weight:700;font-size:14px}
+.hunt .err{color:#FF9C8F}
+
+/* 파기 무대 */
+#stage{position:fixed;inset:0;z-index:20;background:linear-gradient(#1b2d44 0 38%,#5a3a1e 38%,#3e2712);overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#stage .st{position:absolute;top:calc(env(safe-area-inset-top,0px) + 22px);left:0;right:0;text-align:center;font-size:22px;font-weight:700;color:var(--gold-on-navy);padding:0 16px}
+#stage .ss{position:absolute;top:calc(env(safe-area-inset-top,0px) + 58px);left:0;right:0;text-align:center;font-size:15px;color:#D7DEE7;padding:0 16px}
+.ground{position:absolute;left:0;right:0;top:38%;bottom:0}
+.hole{position:absolute;left:50%;top:22%;width:var(--hw,40px);height:calc(var(--hw,40px) * .42);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(ellipse at 50% 35%,#120a03,#2a1808 70%);box-shadow:inset 0 6px 14px rgba(0,0,0,.7);transition:width .25s,height .25s}
+.chest{position:absolute;left:50%;top:22%;width:150px;transform:translate(-50%,10%) scale(.3);opacity:0;transition:transform .7s cubic-bezier(.2,1.6,.4,1),opacity .3s}
+.chest.up{transform:translate(-50%,-78%) scale(1);opacity:1}
+.chest.shake{animation:cshake .5s ease-in-out infinite}
+@keyframes cshake{0%,100%{transform:translate(-50%,-78%) rotate(0)}25%{transform:translate(-50%,-78%) rotate(-5deg)}75%{transform:translate(-50%,-78%) rotate(5deg)}}
+.shovel{position:absolute;left:58%;top:2%;width:120px;transform-origin:20% 90%;transform:rotate(18deg);transition:transform .12s}
+.shovel.hit{transform:rotate(-22deg) translateY(30px)}
+.taps{position:absolute;left:0;right:0;bottom:calc(var(--safe-b) + 40px);text-align:center}
+.taps .bar{width:min(70vw,280px);height:14px;border-radius:7px;background:rgba(0,0,0,.35);margin:10px auto 0;overflow:hidden}
+.taps .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#F2D59B,#E8742A);transition:width .15s}
+.taps b{font-size:28px;color:#FFF;text-shadow:0 2px 0 rgba(0,0,0,.4);animation:pulse .8s infinite;display:inline-block}
+.dirt{position:absolute;width:12px;height:12px;border-radius:40%;background:#7a5228;pointer-events:none}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);color:var(--ink);border-radius:24px 24px 0 0;padding:22px 18px calc(22px + var(--safe-b));transform:translateY(105%);transition:transform .45s cubic-bezier(.2,.9,.3,1);max-height:74%;overflow:auto}
+.sheet.on{transform:none}
+.tag{display:inline-block;background:var(--gold-soft);color:#7A5520;font-weight:700;font-size:13px;padding:4px 12px;border-radius:99px}
+.q{font-size:20px;font-weight:700;line-height:1.45;margin:12px 0 14px}
+.ch{display:block;width:100%;text-align:left;min-height:56px;border-radius:14px;border:2px solid var(--line);background:#fff;padding:12px 16px;font-size:17px;font-weight:700;margin-top:8px}
+.ch.pick{border-color:var(--teal)}
+.res{text-align:center}
+.res .big{font-size:32px;font-weight:700;margin:6px 0}
+.res .prize{font-size:22px;font-weight:700;color:var(--orange)}
+.res .code{font-size:32px;letter-spacing:.2em;font-weight:700;background:var(--gold-soft);border-radius:14px;padding:12px;margin:12px 0 6px;color:#2A1A04}
+.res p{color:var(--muted);margin:6px 0}
+.res img{width:110px;height:auto}
+.res .btn{margin-top:12px}
+.burst{position:absolute;left:50%;top:30%;width:10px;height:10px;pointer-events:none}
+.burst i{position:absolute;width:10px;height:14px;border-radius:2px;animation:conf 1.4s ease-out forwards}
+@keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+.mycode{font-size:30px;font-weight:700;letter-spacing:.18em;text-align:center;background:var(--gold-soft);border-radius:14px;padding:10px;margin:10px 0}
+
+/* 내 보상 */
+.rw{display:flex;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
+.rw:first-child{border-top:0}
+.rw div{flex:1;min-width:0}
+.rw .c{font-weight:700;letter-spacing:.12em;font-size:18px}
+
+/* 투표 시트 */
+#voteSheet{position:fixed;inset:0;z-index:30;background:rgba(14,25,41,.55);display:flex;align-items:flex-end}
+#voteSheet .in{background:var(--surface);width:100%;max-width:520px;margin:0 auto;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + var(--safe-b));max-height:85vh;overflow:auto}
+.team{display:block;width:100%;min-height:62px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:19px;font-weight:700;text-align:left;padding:0 16px;margin-top:8px}
+.team.on{border-color:var(--teal);background:var(--teal-soft)}
+.team .n{float:right;color:var(--teal)}
+</style>
 </head>
 <body>
 
-<div class="notice" id="noticeBar" role="status" hidden><b>공지</b><span id="noticeText"></span><button type="button" id="noticeClose" aria-label="공지 닫기">닫기</button></div>
-<div class="net" id="netBadge" role="status">오프라인 — 연결되면 다시 시도해 주세요</div>
-<button class="soundtoggle" id="soundToggle" type="button" aria-label="소리 켜기/끄기" aria-pressed="true">🔊</button>
+<section class="scr" id="scBoot"><div class="top"><h1>황금 귤을 찾아라</h1></div><p class="muted" id="bootMsg">불러오는 중…</p><button class="btn" id="btnRetry" hidden>다시 시도</button></section>
 
-<div class="app">
+<!-- 등록 / 이어하기 -->
+<section class="scr" id="scReg" hidden>
+  <div class="top"><h1>황금 귤을 찾아라</h1></div>
+  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영해!<br>닉네임과 번호로 시작하면 <b>참가번호</b>가 나와.</p></div>
+  <div class="card" id="regBox">
+    <label for="inNick">닉네임</label><input id="inNick" maxlength="12" autocomplete="nickname">
+    <label for="inPhone">휴대폰 번호</label><input id="inPhone" inputmode="numeric" maxlength="13" placeholder="010-0000-0000">
+    <button class="btn p" id="btnReg" type="button" style="margin-top:16px">시작하기</button>
+    <p class="err" id="regErr"></p>
+    <button class="btn" id="toRec" type="button" style="background:none;color:var(--teal);min-height:44px">이미 등록했어요 (이어하기)</button>
+  </div>
+  <div class="card" id="recBox" hidden>
+    <h2>이어하기</h2><p class="muted">등록했던 번호와 닉네임을 넣어 주세요.</p>
+    <label for="rcPhone">휴대폰 번호</label><input id="rcPhone" inputmode="numeric" maxlength="13">
+    <label for="rcNick">닉네임</label><input id="rcNick" maxlength="12">
+    <button class="btn p" id="btnRec" type="button" style="margin-top:16px">이어하기</button>
+    <p class="err" id="recErr"></p>
+    <button class="btn" id="toReg" type="button" style="background:none;color:var(--teal);min-height:44px">처음이에요</button>
+  </div>
+</section>
 
-  <!-- 참가코드: 로그인한 뒤 내비가 있는 모든 화면 위에 계속 보인다(스태프 조회용) -->
-  <div class="codebar" id="codeBar" hidden>
-    <span class="cb-lbl">참가코드</span>
-    <b class="cb-code" id="codeBarVal">------</b>
-    <span class="cb-nick" id="codeBarNick"></span>
+<!-- 홈 -->
+<section class="scr" id="scHome" hidden>
+  <div class="top"><h1>황금 귤을 찾아라</h1><span class="pill">참가번호 <b id="hCode">-</b></span></div>
+  <div class="card notice" id="hNotice" hidden><p style="margin:0;font-weight:700" id="hNoticeText"></p></div>
+  <div class="card vote" id="hVote" hidden><h2 id="hVoteTitle">노래방 인기투표</h2><p class="muted" id="hVoteSub"></p><button class="btn p" id="hVoteGo" type="button" style="margin-top:10px">투표하기</button></div>
+
+  <div id="hNoPass" hidden>
+    <div class="hero"><img src="assets/characters/thinking.png" alt=""><p>보물찾기는 <b>당일 패스</b>가 있어야 할 수 있어.<br>패스 판매처에서 손목띠를 사고, 아래 번호를 보여줘!</p></div>
+    <div class="card passno"><p class="muted" style="text-align:center">패스 판매처에 보여주세요</p><div class="code" id="npCode">-</div><img id="npQr" alt="참가번호 QR"></div>
+    <button class="btn" id="btnRecheck" type="button" style="margin-top:12px">패스 받았어요 (새로고침)</button>
   </div>
 
-  <!-- ══ 0. 서버 확인 중 ══ -->
-  <section class="screen on" id="scBoot">
-    <div class="bootbox">
-      <img class="boot-ic" src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
-      <p class="boot-msg" id="bootMsg">항해일지를 불러오는 중…</p>
-      <button class="btn primary" id="btnBootRetry" type="button" hidden>다시 시도</button>
-    </div>
-  </section>
-
-  <!-- ══ 1. 인트로 / 등록 / 복구 ══ -->
-  <section class="screen" id="scIntro">
-
-    <!-- 첫 만남 — 항해 기록관 전신 + 대사 -->
-    <div class="cine" id="cine">
-      <button class="cine-skip" id="cineSkip" type="button">건너뛰기</button>
-      <div class="cine-stage">
-        <img class="cine-cap" id="cineCap" src="assets/characters/full_body.png" alt="항해 기록관">
-      </div>
-      <div class="cine-box">
-        <div class="nametag" id="cineWho">항해 기록관</div>
-        <p class="cine-text" id="cineText"></p>
-        <div class="cine-choices" id="cineChoices"></div>
-        <button class="btn primary cine-next" id="cineNext" type="button">항해일지 작성</button>
-      </div>
-    </div>
-
-    <div class="intro-form" id="introForm">
-      <div class="logbook-head">
-        <img class="logbook-ic" src="assets/icons/mission.png" alt="" aria-hidden="true">
-        <div>
-          <p class="eyebrow" id="introSub">과수원피스 · 2026.10.31</p>
-          <h1 id="introTitle">황금 귤을 찾아라</h1>
-          <p class="logbook-sub">항해일지 첫 장에 이름을 적어 주세요</p>
-        </div>
-      </div>
-
-      <div class="card rules">
-        <h2 class="card-title">이렇게 진행돼요</h2>
-        <ol>
-          <li>미션을 하면 <b class="coinname">귤코인</b>을 받아요.</li>
-          <li>코인을 모아 <b>디지털 쿠지</b>에 도전해요. 결과는 바로 화면에 나와요.</li>
-          <li>기본 결과는 <b>직접 만든 트럼프 카드</b>예요. 운이 좋으면 <b>특별 상품</b>이 나와요.</li>
-          <li><b>1등은 황금 귤!</b> 안에 피규어나 굿즈가 들어 있고, 뽑은 해적은 <b>오늘의 명예 선장</b>이 돼요.</li>
-          <li>나침반으로 <b>단서</b>를 풀어 질문 글자를 모으고, <b>최종 질문</b>을 맞히면 <b>보너스 쿠지</b>를 받아요.</li>
-          <li>상품은 화면의 <b>수령 코드</b>를 스태프에게 보여주고 받아요.</li>
-        </ol>
-      </div>
-
-      <div class="card logbook" id="registerBox">
-        <div class="field">
-          <label for="inNick">닉네임</label>
-          <input id="inNick" type="text" placeholder="게임에서 쓸 이름" autocomplete="nickname" maxlength="12">
-        </div>
-        <div class="field">
-          <label for="inPhone">전화번호</label>
-          <input id="inPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
-        </div>
-        <p class="privacy">
-          전화번호는 <b>참가 확인과 상품 수령 확인 목적으로만</b> 사용하며,
-          행사 종료 후 7일 이내에 삭제합니다.
-        </p>
-        <p class="formerr" id="joinErr" role="alert" hidden></p>
-        <button class="btn primary" id="btnJoin" type="button">항해일지에 기록하기</button>
-        <button class="btn ghost" id="btnShowRecover" type="button">이미 참가했어요 (전화번호로 이어하기)</button>
-      </div>
-
-      <div class="card logbook" id="recoverBox" hidden>
-        <h2 class="card-title">이어서 하기</h2>
-        <p class="privacy">처음 등록할 때 쓴 <b>닉네임과 전화번호</b>를 입력하면 이어서 할 수 있어요.</p>
-        <div class="field">
-          <label for="inRecNick">닉네임</label>
-          <input id="inRecNick" type="text" placeholder="등록한 닉네임" autocomplete="off" maxlength="20">
-        </div>
-        <div class="field">
-          <label for="inRecPhone">전화번호</label>
-          <input id="inRecPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
-        </div>
-        <p class="formerr" id="recErr" role="alert" hidden></p>
-        <button class="btn primary" id="btnRecover" type="button">이어서 하기</button>
-        <button class="btn ghost" id="btnHideRecover" type="button">처음 등록하기</button>
-        <p class="privacy" style="margin-top:12px">번호가 바뀌었다면 현장 스태프에게 문의해 주세요.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ 1-A. 등록 직후: 참가코드 · 복구 코드 저장 ══ -->
-  <section class="screen" id="scCode">
-    <div class="npcrow">
-      <img class="npc-img" src="assets/characters/greeting.png" alt="항해 기록관">
-      <div class="bubble">
-        <div class="nametag">항해 기록관</div>
-        <p id="codeLine">항해일지에 기록했어. 이 참가코드는 스태프에게 보여줘야 해!</p>
-      </div>
-    </div>
-
-    <div class="card codecard">
-      <p class="cc-lbl">참가코드 <small>스태프에게 보여주는 번호</small></p>
-      <div class="cc-big" id="ccCode">------</div>
-      <p class="cc-why">폰을 바꾸거나 브라우저 기록이 지워져도 <b>등록한 전화번호</b>로 이어서 할 수 있어요.</p>
-      <button class="btn primary" id="btnCodeOk" type="button">모험 시작하기</button>
-    </div>
-  </section>
-
-  <!-- ══ 1-B. 항해 패스 대기 ══ -->
-  <section class="screen" id="scPass">
-    <div class="npcrow">
-      <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
-      <div class="bubble">
-        <div class="nametag">항해 기록관</div>
-        <p id="passLine">이 모험은 패스가 필요해. 안내를 확인해 줘.</p>
-      </div>
-    </div>
-
-    <div class="card pass-card">
-      <h1 class="pass-title">항해 패스가 필요합니다</h1>
-      <p class="pass-sub" id="passSub">—</p>
-      <ol class="pass-steps">
-        <li><b id="passDesk">매표소</b>에서 항해 패스 카드를 받아요.</li>
-        <li>아래 버튼을 눌러 카드의 QR을 찍으면 바로 항해 시작!</li>
-      </ol>
-      <button class="btn primary scanbig" id="btnPassScan" type="button">
-        <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4M7 12h10"/></svg>
-        패스 카드 QR 찍기
-      </button>
-      <p class="pass-what">패스가 있어야 미션·보물찾기·투표를 하고, 코인으로 <b>디지털 쿠지</b>를 할 수 있어요.</p>
-    </div>
-
-    <p class="formerr" id="passErr" role="alert" hidden></p>
-    <button class="btn ghost" id="btnPassAgain" type="button">패스 등록했어요 (다시 확인)</button>
-  </section>
-
-  <!-- ══ 2. 홈 ══ -->
-  <section class="screen" id="scHome">
-
-    <header class="topbar">
-      <div class="logo" id="hudCrest" aria-label="과수원피스">과수원<span>피스</span></div>
-      <span class="sound-slot" id="homeSoundSlot"></span>
-      <button class="ticketpill" id="btnTopCoins" type="button">
-        <img src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
-        <span class="coinname">귤코인</span> <b id="topCoins">0</b>
-        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
-    </header>
-
-    <!-- 진행 단계 -->
-    <div class="phase" id="phaseBar" hidden>
-      <span class="ph-dot" aria-hidden="true"></span>
-      <b id="phaseTitle"></b><span id="phaseSub"></span>
-    </div>
-
-    <!-- 오늘의 명예 선장 -->
-    <button class="honor" id="honorBox" type="button" hidden>
-      <span class="hn-frame">
-        <span class="hn-photo" id="honorPhoto"></span>
-        <img class="hn-fr" src="assets/honor/frame.webp" alt="" aria-hidden="true">
-        <img class="hn-sp" src="assets/honor/sparkles.webp" alt="" aria-hidden="true">
-      </span>
-      <span class="hn-text">
-        <span class="hn-eyebrow">오늘의 명예 선장</span>
-        <span class="hn-name" id="honorName"></span>
-        <span class="hn-prize" id="honorPrize"></span>
-        <span class="hn-dots" id="honorDots"></span>
-      </span>
-    </button>
-
-    <!-- 메인 안내 카드 -->
-    <div class="hero" id="hero">
-      <div class="hero-text">
-        <div class="hero-eyebrow"><span class="eb-t"><span id="hudName">나</span>의 항해일지</span></div>
-        <h1 class="hero-title" id="qbTitle">황금 귤을 찾아라</h1>
-        <p class="hero-line" id="heroLine"></p>
-      </div>
-      <img class="hero-npc npc-img" id="heroNpc" src="assets/characters/neutral.png" alt="항해 기록관">
-      <button class="btn primary hero-btn" id="heroGo" type="button">모험 시작하기</button>
-    </div>
-
-    <!-- 진행 요약 -->
-    <div class="stat3" id="statsStrip">
-      <button class="s3" type="button" data-go="scMissions">
-        <span class="s3-lbl">미션</span>
-        <span class="s3-num"><b id="mDoneNum">0</b><small>/<span id="mAllNum">0</span></small></span>
-      </button>
-      <button class="s3" type="button" data-go="scMain">
-        <span class="s3-lbl">단서</span>
-        <span class="s3-num"><b id="clueNum">0</b><small>/<span id="clueAllNum">0</span></small></span>
-      </button>
-      <button class="s3" type="button" data-go="scKuji">
-        <span class="s3-lbl coinname">mh머니</span>
-        <span class="s3-num"><b id="coinNum">0</b><small>장</small></span>
-      </button>
-    </div>
-
-    <!-- 주요 행동 -->
-    <div class="acts4">
-      <button class="actcard" id="goTreasure" type="button">
-        <img src="assets/icons/compass.png" alt="" aria-hidden="true">
-        <span class="act-title">보물찾기</span>
-        <span class="act-sub" id="treasureSub">다음 단서를 찾아서</span>
-      </button>
-      <button class="actcard" id="goMissions" type="button">
-        <img src="assets/icons/mission.png" alt="" aria-hidden="true">
-        <span class="act-title">미션</span>
-        <span class="act-sub" id="missionSub">오늘의 도전 확인</span>
-      </button>
-      <button class="actcard" id="goKuji" type="button">
-        <img src="assets/icons/ticket.png" alt="" aria-hidden="true">
-        <span class="act-title">디지털 쿠지</span>
-        <span class="act-sub" id="kujiSub">카드 3장으로 1번</span>
-      </button>
-      <button class="actcard" id="goCards" type="button">
-        <img src="assets/icons/treasure_chest.png" alt="" aria-hidden="true">
-        <span class="act-title">내 카드</span>
-        <span class="act-sub" id="cardsSub">모은 카드와 상품</span>
-      </button>
-    </div>
-
-    <!-- 행사 정보 — 접어 두고 필요할 때 연다 -->
-    <details class="fold" id="secVote">
-      <summary><img src="assets/icons/vote.png" alt="" aria-hidden="true"><span>실시간 투표</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-      <div class="votecards" id="voteCards"></div>
-    </details>
-    <details class="fold" id="secTime">
-      <summary><svg class="fold-ic" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="25" r="16"/><path d="M24 16v10l7 4"/></svg><span>오늘 타임테이블</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-      <div class="ttable" id="timetable"></div>
-    </details>
-    <details class="fold" id="secMap">
-      <summary><img src="assets/icons/map.png" alt="" aria-hidden="true"><span>행사 지도</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-      <div class="mapbox" id="homeMapBox"></div>
-    </details>
-  </section>
-
-  <!-- ══ 2-1. 미션 ══ -->
-  <section class="screen" id="scMissions">
-    <div class="tabbar" id="tabbar1" role="tablist">
-      <span class="tabind" id="tabInd1"></span>
-      <button class="tabbtn on" id="tabMission" type="button" role="tab">미션</button>
-      <button class="tabbtn" id="tabTreasure" type="button" role="tab">보물찾기</button>
-    </div>
-    <div class="progress">
-      <div class="row">
-        <span class="lbl">해 본 미션</span>
-        <span class="cnt"><b id="mNow">0</b> / <span id="mAll">0</span></span>
-      </div>
-      <div class="bar"><i id="mBar"></i></div>
-    </div>
-    <div class="npcrow npcrow-sm">
-      <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
-      <div class="bubble"><p id="missionTip">미션을 마치면 미션을 고르고, 스태프가 보여 주는 QR을 찍어 줘. 바로 완료돼!</p></div>
-    </div>
-    <button class="btn primary scanbig" id="btnScanTop" type="button">
-      <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4M7 12h10"/></svg>
-      미션 QR 찍기
-    </button>
-    <p class="formerr" id="missionErr" role="alert" hidden></p>
-    <div class="mlist" id="mlist"></div>
-  </section>
-
-  <!-- ══ 3. 보물찾기 ══ -->
-  <section class="screen" id="scMain">
-    <div class="tabbar" id="tabbar2" role="tablist">
-      <span class="tabind" id="tabInd2"></span>
-      <button class="tabbtn" id="tabMission2" type="button" role="tab">미션</button>
-      <button class="tabbtn on" id="tabTreasure2" type="button" role="tab">보물찾기</button>
-    </div>
-
-    <div class="card" id="treasureOff" hidden>
-      <h2 class="card-title">보물찾기는 아직 열리지 않았어요</h2>
-      <p class="privacy" style="margin:6px 0 0">시작 시간은 현장 공지를 확인해 주세요.</p>
-    </div>
-
-    <div id="treasureBody">
-      <div class="progress">
-        <div class="row">
-          <span class="lbl">모은 단서</span>
-          <span class="cnt"><b id="pgNow">0</b> / <span id="pgAll">0</span></span>
-        </div>
-        <div class="bar"><i id="pgBar"></i></div>
-        <p class="pg-note" id="pgNote"></p>
-      </div>
-
-      <div class="card compass-gate" id="compassGate">
-        <div class="npcrow npcrow-sm">
-          <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
-          <div class="bubble"><p>주변 단서를 찾으려면 현재 위치가 필요해.</p></div>
-        </div>
-        <p class="gate-why">위치와 방향 센서는 <b>다음 단서까지의 거리와 방향</b>을 보여 줄 때만 씁니다. 위치 기록은 서버에 저장하지 않아요.</p>
-        <p class="gate-err" id="gateErr" role="alert" hidden></p>
-        <button class="btn primary" id="btnCompassStart" type="button">위치 허용하기</button>
-      </div>
-
-      <div class="compass-wrap" id="compassWrap" style="display:none">
-        <div class="compass-dial nofix" id="compassDial">
-          <span class="compass-fwd">정면</span>
-          <svg viewBox="0 0 300 300" aria-hidden="true">
-            <circle cx="150" cy="150" r="140" fill="var(--surface)" stroke="var(--gold)" stroke-width="1.5"/>
-            <circle cx="150" cy="150" r="112" fill="none" stroke="var(--line)" stroke-width="1"/>
-            <g stroke="var(--muted)" stroke-width="2" stroke-linecap="round">
-              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(0 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(30 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(60 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(90 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(120 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(150 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(180 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(210 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(240 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(270 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(300 150 150)"/>
-              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(330 150 150)"/>
-            </g>
-            <g id="compassNeedle">
-              <path d="M150,52 L168,158 L150,142 L132,158 Z" fill="var(--teal)"/>
-              <circle cx="150" cy="150" r="9" fill="var(--navy)"/>
-            </g>
-          </svg>
-        </div>
-        <div class="compass-dist">
-          <span class="num" id="compassDist">—</span>
-          <span class="cap">다음 단서까지</span>
-        </div>
-        <div class="npcrow npcrow-sm" id="treasureTip">
-          <img class="npc-img" id="treasureTipImg" src="assets/characters/thinking.png" alt="항해 기록관">
-          <div class="bubble"><p id="compassStatus">아직 위치를 확인하고 있어. 잠시 뒤 다시 확인해 줘.</p></div>
-        </div>
-      </div>
-
-      <div class="card pouch">
-        <div class="pouch-head">
-          <img src="assets/icons/clue.png" alt="" aria-hidden="true">
-          <h2 class="card-title">단서 기록</h2>
-        </div>
-        <div class="chips" id="pouch"></div>
-      </div>
-
-      <div class="card zonecard" id="zoneCard" hidden>
-        <h2 class="card-title">구역별 보물 현황</h2>
-        <div id="zoneList"></div>
-      </div>
-
-      <div class="card finalcard" id="finalCard" hidden>
-        <div class="fc-head"><img src="assets/icons/clue.png" alt="" aria-hidden="true"><h2 class="card-title">최종 질문</h2></div>
-        <p class="fc-q" id="finalQ" aria-label="모은 글자로 만든 질문"></p>
-        <p class="privacy" id="finalNote" style="margin:6px 0 12px"></p>
-        <div id="finalForm">
-          <input id="finalInput" type="text" placeholder="질문의 답" autocomplete="off" spellcheck="false" enterkeyhint="done" aria-label="최종 정답">
-          <p class="formerr" id="finalMsg" role="status" hidden></p>
-          <button class="btn primary" id="btnFinal" type="button">정답 도전</button>
-        </div>
-        <div class="fc-done" id="finalDone" hidden>
-          <b id="finalDoneTitle"></b>
-          <button class="btn primary" id="btnFinalKuji" type="button">보너스 쿠지 하러 가기</button>
-        </div>
-      </div>
-
-      <div class="card claimcard">
-        <h2 class="card-title">보물 캡슐 코드</h2>
-        <p class="privacy" style="margin:4px 0 12px">보물을 찾으면 캡슐 안의 코드를 입력하세요. 수령 코드가 나오면 스태프에게 보여주세요.</p>
-        <input id="tcInput" type="text" placeholder="캡슐 코드" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" aria-label="캡슐 코드">
-        <p class="formerr" id="tcMsg" role="status" hidden></p>
-        <button class="btn primary" id="btnClaimTreasure" type="button">코드 확인</button>
-        <div class="claimlist" id="claimList"></div>
-      </div>
-
-      <div class="stack">
-        <button class="btn ghost" id="btnHowScan" type="button">나침반은 어떻게 쓰나요?</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ 2-2. 실시간 투표 ══ -->
-  <section class="screen" id="scVote">
-    <div class="pagehead">
-      <img src="assets/icons/vote.png" alt="" aria-hidden="true">
-      <div>
-        <h1 id="voteTitle">투표</h1>
-        <p id="voteWhen"></p>
-      </div>
-    </div>
-    <div id="voteBody"></div>
-    <p class="formerr" id="voteErr" role="alert" hidden></p>
-    <button class="btn ghost" id="btnVoteBack" type="button">홈으로</button>
-  </section>
-
-  <!-- ══ 3. 퀴즈 ══ -->
-  <section class="screen" id="scQuiz">
-    <div class="card qcard" id="qCard">
-      <div class="qid"><span>단서 지점 도착</span><span id="qCode"></span></div>
-      <p class="qflavor" id="qZone"></p>
-      <h2 id="qText"></h2>
-      <input id="qInput" type="text" placeholder="답을 입력하세요" autocomplete="off"
-             autocapitalize="off" spellcheck="false" enterkeyhint="done">
-      <button class="btn primary" id="btnAnswer" type="button">제출</button>
-      <p class="wrongmsg" id="qWrong" role="status"></p>
-    </div>
-    <button class="btn ghost" id="btnQuizBack" type="button">나중에 풀기</button>
-  </section>
-
-  <!-- ══ 4. 결과 연출 (단서 / 쿠지 / 수령 코드) ══ -->
-  <section class="screen" id="scResult">
-    <div class="result">
-      <div class="burst" id="rsBurst"></div>
-      <div class="big" id="rsBig"></div>
-      <div class="tgr" id="tgrBox">
-        <div class="tgr-fruit" id="tgrFruit">
-          <div class="tgr-crackline"></div>
-          <img class="tgr-half tgr-half-l" src="assets/icons/golden_tangerine.png" alt="">
-          <img class="tgr-half tgr-half-r" src="assets/icons/golden_tangerine.png" alt="">
-          <div class="tgr-burst"></div>
-          <div class="tgr-paper">
-            <div class="tgr-paper-card">
-              <div class="tgr-flap tgr-flap-l"></div>
-              <div class="tgr-flap tgr-flap-r"></div>
-              <div class="tgr-text" id="tgrText"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <h2 id="rsTitle"></h2>
-      <p id="rsDesc"></p>
-      <img id="rsPrizeImg" alt="" hidden style="margin:10px auto;max-width:200px;max-height:200px;border-radius:12px;object-fit:contain">
-
-      <div class="coupon pickup" id="rsPickup" hidden>
-        <div class="stamp" id="rsStamp">수령 완료</div>
-        <div class="kind" id="rsKind">PICKUP CODE</div>
-        <h2 id="rsItem"></h2>
-        <div class="who" id="rsWho"></div>
-        <div class="line"></div>
-        <div class="no" id="rsCode"></div>
-        <div class="qrbox"><img id="rsQr" alt="수령 코드 QR"></div>
-        <p class="note" id="rsNote">스태프에게 이 화면과 참가코드를 보여주세요.</p>
-      </div>
-
-      <div class="npcrow npcrow-sm rs-npc" id="rsNpc" hidden>
-        <img class="npc-img" id="rsNpcImg" src="assets/characters/surprised.png" alt="항해 기록관">
-        <div class="bubble"><p id="rsNpcText"></p></div>
-      </div>
-      <button class="btn primary" id="btnResultOk" type="button">확인</button>
-    </div>
-  </section>
-
-  <!-- ══ 5. 디지털 쿠지 ══ -->
-  <section class="screen" id="scKuji">
-    <h1 class="pagetitle">디지털 쿠지</h1>
-    <p class="pagesub" id="kujiSubTitle">코인을 내고 한 번 뽑아요. 결과는 바로 나와요.</p>
-
-    <div class="card coincard">
-      <div class="cc-row">
-        <img src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
-        <div>
-          <p class="cc-lbl coinname">귤코인</p>
-          <div class="coin-big"><b id="kjCoins">0</b><small>개</small></div>
-        </div>
-      </div>
-      <p class="coin-cost" id="kjCost">1회 — 코인</p>
-      <p class="formerr" id="kjErr" role="alert" hidden></p>
-      <button class="btn primary" id="btnPlayKuji" type="button">쿠지 뽑기</button>
-      <button class="btn primary bonusbtn" id="btnPlayBonus" type="button" hidden>보너스 이용권으로 뽑기</button>
-      <button class="btn ghost" id="btnPlayPaid" type="button" hidden>유료 이용권으로 뽑기</button>
-      <button class="btn ghost" id="btnKujiToMission" type="button" hidden>코인 모으러 가기</button>
-    </div>
-
-    <div class="card kujiinfo">
-      <h2 class="card-title">이렇게 나와요</h2>
-      <ul class="plainlist">
-        <li>기본 결과는 <b>직접 만든 트럼프 카드</b>예요.</li>
-        <li>운이 좋으면 <b>특별 상품(피규어)</b>이 나와요.</li>
-        <li>결과 화면의 <b>수령 코드</b>를 스태프에게 보여주면 상품을 받을 수 있어요.</li>
-        <li>수령 코드는 <b>내 카드</b> 화면에서 다시 볼 수 있어요.</li>
-      </ul>
-      <p class="privacy" id="kjPaidNote" style="margin:10px 0 0" hidden>유료 쿠지는 1회 2,000원이에요. 계좌이체 후 스태프에게 참가코드를 보여주면 이용권을 넣어 드려요.</p>
-    </div>
-  </section>
-
-  <!-- ══ 6. 내 카드 ══ -->
-  <section class="screen" id="scCards">
-    <h1 class="pagetitle">내 카드</h1>
-    <p class="pagesub">쿠지로 받은 결과예요. 수령 코드를 스태프에게 보여주면 받을 수 있어요.</p>
-    <p class="formerr" id="cardsErr" role="alert" hidden></p>
-
-    <h2 class="secttl" style="margin-top:8px">트럼프 카드</h2>
-    <div class="cardbook" id="cardBook"></div>
-
-    <h2 class="secttl">특별 상품</h2>
-    <div class="cardbook" id="specialList"></div>
-
-    <h2 class="secttl">쿠지 기록</h2>
-    <div class="playlist" id="playList"></div>
-
-    <button class="btn ghost" id="btnCardsRefresh" type="button">새로고침</button>
-  </section>
-
-  <!-- ══ 7. 반응속도게임 (미션) ══ -->
-  <section class="screen" id="scReaction">
-    <h1 class="pagetitle">반응속도게임</h1>
-    <p class="pagesub" id="reactRound">라운드 1 / 3</p>
-    <div class="reactpad wait" id="reactPad" role="button" tabindex="0"><span id="reactPadTxt">준비하세요</span></div>
-    <div id="reactDoneBox" style="display:none">
-      <p class="react-avg" id="reactAvg"></p>
-      <p class="formerr" id="reactErr" role="alert" hidden></p>
-      <button class="btn primary" id="btnReactFinish" type="button">미션 완료 처리</button>
-    </div>
-    <button class="btn ghost" id="btnReactBack" type="button">미션 목록으로</button>
-  </section>
-
-</div>
-
-<!-- 미션 QR 스캐너 -->
-<div class="qrscan" id="qrScan" hidden>
-  <video id="qrVideo" playsinline muted></video>
-  <div class="qs-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-  <p class="qs-hint" id="qrScanHint">부스에 붙은 미션 QR을 네모 안에 맞춰 주세요</p>
-  <button class="qs-close" id="qrClose" type="button">닫기</button>
-</div>
-
-<!-- 미션 상세 시트 -->
-<div class="msheet" id="msheet" hidden>
-  <div class="ms-dim" id="msDim"></div>
-  <div class="ms-panel" role="dialog" aria-modal="true" aria-label="미션 상세">
-    <button class="ms-close" id="msClose" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <div id="msBody"></div>
+  <div id="hPass" hidden>
+    <div class="hero"><img id="hNpc" src="assets/characters/neutral.png" alt=""><p id="hLine">보물 자리에 가까이 가면 땅을 팔 수 있어. 상자는 <b>오타쿠 퀴즈</b>나 <b>NPC 미션</b>을 통과해야 열려!</p></div>
+    <button class="btn big" id="btnHunt" type="button">보물찾기 시작</button>
   </div>
-</div>
 
-<nav class="navbar" id="navbar" aria-label="주요 화면">
-  <button class="navbtn" data-nav="scHome" type="button">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>홈
-  </button>
-  <button class="navbtn" data-nav="scMissions" type="button">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>미션·보물
-  </button>
-  <button class="navbtn" data-nav="scKuji" type="button">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V21h14v-8.5M12 8.5V21"/><path d="M12 8.5C10 4 6.5 4.5 7.5 7c.6 1.3 2.6 1.5 4.5 1.5M12 8.5c2-4.5 5.5-4 4.5-1.5-.6 1.3-2.6 1.5-4.5 1.5"/></svg>쿠지
-  </button>
-  <button class="navbtn" data-nav="scCards" type="button">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="11" height="15" rx="2"/><path d="M8 21h9a2 2 0 0 0 2-2V8"/></svg>내 카드
-  </button>
-</nav>
-
-<!-- 황금귤 캐치(미션) — catch.js가 여닫는다 -->
-<div class="catch-stage" id="catchStage" hidden>
-  <div class="catch-bar">
-    <span id="catchTitle">황금귤 캐치</span>
-    <button class="catch-x" id="catchClose" type="button" aria-label="게임 닫기">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
+  <div class="row2">
+    <button class="btn" id="btnRewards" type="button">내 보상<small id="hRwSub">-</small></button>
+    <a class="btn" href="guide.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;color:inherit">이용 안내<small>행사 진행</small></a>
   </div>
-  <div class="catch-wrap" id="catchWrap"><canvas id="catchCv"></canvas></div>
-</div>
+  <p class="muted" style="text-align:center;margin-top:16px" id="hPassLine"></p>
+</section>
 
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- 보물 탐색 -->
+<div class="hunt" id="scHunt" hidden><section class="scr">
+  <div class="top"><button class="back" id="huntBack" type="button">← 홈</button><h1>보물 탐색</h1></div>
+  <div class="radar"><div class="mid"><div class="dist" id="dist">…</div><div class="unit" id="unit">위치 확인 중</div></div></div>
+  <p class="heat" id="heat"></p>
+  <p class="gpsline" id="gpsline"></p>
+  <button class="btn big" id="btnDig" type="button" hidden>보물 파기!</button>
+  <p class="err" id="huntErr"></p>
+  <div class="tlist" id="tlist"></div>
+  <p class="gpsline" id="rotLine" style="margin-top:12px"></p>
+</section></div>
 
-<div class="quest-overlay" id="questOverlay" role="dialog" aria-modal="true" aria-labelledby="questWho" aria-describedby="questText">
-  <div class="quest-card">
-    <img class="quest-avatar npc-img" id="questAvatar" alt="">
-    <div class="quest-body">
-      <div class="nametag" id="questWho">항해 기록관</div>
-      <p class="quest-text" id="questText"></p>
-      <div class="quest-choices" id="questChoices"></div>
-      <button class="btn primary" id="questOk" type="button">확인</button>
-    </div>
+<!-- 내 보상 -->
+<section class="scr" id="scRewards" hidden>
+  <div class="top"><button class="back" id="rwBack" type="button">← 홈</button><h1>내 보상</h1></div>
+  <div class="card passno"><p class="muted" style="text-align:center">상품 받을 때·뽑기할 때 이 번호를 보여주세요</p><div class="code" id="rwCode">-</div><img id="rwQr" alt="참가번호 QR"></div>
+  <div class="card" id="rwFree" hidden><h2>무료 뽑기권 <span id="rwFreeN"></span>장</h2><p class="muted">뽑기 부스에서 번호를 보여주면 유료 뽑기 1회를 무료로 할 수 있어요. 오늘만 쓸 수 있어요.</p></div>
+  <div class="card"><h2>당첨 내역</h2><div id="rwList"></div></div>
+</section>
+
+<!-- 파기 무대 -->
+<div id="stage" hidden>
+  <div class="st" id="stTitle">땅을 파세요!</div>
+  <div class="ss" id="stSub">화면을 계속 두드리면 삽질해요</div>
+  <div class="ground" id="ground">
+    <div class="hole" id="hole"></div>
+    <img class="chest" id="chest" src="assets/icons/treasure_chest.png" alt="보물상자">
+    <svg class="shovel" id="shovel" viewBox="0 0 60 120" aria-hidden="true"><rect x="27" y="0" width="6" height="70" rx="3" fill="#9a6a3a"/><rect x="18" y="0" width="24" height="8" rx="4" fill="#6b4626"/><path d="M14 70h32v22c0 14-8 24-16 28-8-4-16-14-16-28z" fill="#c9ced6" stroke="#8b929c" stroke-width="2"/></svg>
   </div>
+  <div class="taps" id="taps"><b>탭! 탭! 탭!</b><div class="bar"><i id="tapBar"></i></div></div>
+  <div class="sheet" id="sheet"></div>
 </div>
 
-<audio id="bgmOpening" src="audio/opening.mp3" loop preload="none"></audio>
-<audio id="bgmOcean" src="audio/ocean.mp3" loop preload="none"></audio>
+<!-- 투표 -->
+<div id="voteSheet" hidden><div class="in" id="voteIn"></div></div>
 
-<!-- 코인·미션·쿠지·단서·수령은 전부 서버가 기록한다(ev-client.js가 Firebase SDK를 스스로 불러온다) -->
-<script>['gesturestart','gesturechange','gestureend'].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault()},{passive:false})});var _lt=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-_lt<300)e.preventDefault();_lt=n},{passive:false});</script>
-<script src="data.js"></script>
-<script src="assets.js"></script>
-<script src="store.js"></script>
 <script src="qr.js"></script>
-<script src="ev-client.js?v=4"></script>
-<script src="mhcards.js?v=4"></script>
-<script src="kujiboard.js?v=2"></script>
-<script src="catch.js"></script>
-<script src="app.js?v=6"></script>
+<script src="ev-client.js?v=6"></script>
+<script>
+(function(){
+'use strict';
+var EID='gwasu', TAPS=8;
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var SCR=['scBoot','scReg','scHome','scHunt','scRewards'];
+function show(id){SCR.forEach(function(s){$(s).hidden=s!==id});window.scrollTo(0,0);if(id!=='scHunt')stopGps()}
+var SFX={};function sfx(n){try{var a=SFX[n]||(SFX[n]=new Audio('sfx/'+n+'.mp3'));a.currentTime=0;a.play().catch(function(){})}catch(e){}}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+var TIER={TOP:'상위 상품',A:'A상',B:'B상',C:'C상',D:'D상',FREE:'무료 뽑기권',X:'꽝'};
+function qr(img,text){try{var q=qrcode(0,'M');q.addData(text);q.make();img.src=q.createDataURL(5,2)}catch(e){}}
+function hm(ms){var d=new Date(ms);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
+
+var HOME=null;
+/* ---------- 시작 ---------- */
+function boot(){
+  show('scBoot'); $('bootMsg').textContent='불러오는 중…'; $('btnRetry').hidden=true;
+  return EV.call('myHome',{eventId:EID}).then(function(r){HOME=r;renderHome();route()},function(e){
+    if(e&&e.reason==='not-registered'){show('scReg');return}
+    $('bootMsg').textContent=e.message||'불러오지 못했어요.';$('btnRetry').hidden=false;
+  });
+}
+$('btnRetry').onclick=boot;
+function route(){var h=location.hash; if(h==='#hunt'&&canHunt()) openHunt(); else if(h==='#rewards') openRewards(); else show('scHome')}
+window.addEventListener('hashchange',function(){if(HOME)route()});
+function go(hash){if(location.hash===hash)route();else location.hash=hash}
+
+/* ---------- 등록 ---------- */
+function fmtPhone(e){var v=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=v.length>7?v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7):v.length>3?v.slice(0,3)+'-'+v.slice(3):v}
+$('inPhone').addEventListener('input',fmtPhone);$('rcPhone').addEventListener('input',fmtPhone);
+$('toRec').onclick=function(){$('regBox').hidden=true;$('recBox').hidden=false};
+$('toReg').onclick=function(){$('regBox').hidden=false;$('recBox').hidden=true};
+$('btnReg').onclick=function(){
+  var b=this,n=$('inNick').value.trim(),p=$('inPhone').value.replace(/\D/g,'');
+  if(!n){$('regErr').textContent='닉네임을 적어 주세요.';return}
+  b.disabled=true;$('regErr').textContent='';
+  EV.register(n,p).then(function(){b.disabled=false;boot()},function(e){b.disabled=false;$('regErr').textContent=e.message||'등록하지 못했어요.'});
+};
+$('btnRec').onclick=function(){
+  var b=this;b.disabled=true;$('recErr').textContent='';
+  EV.recover($('rcPhone').value.replace(/\D/g,''),$('rcNick').value.trim()).then(function(){b.disabled=false;boot()},function(e){b.disabled=false;$('recErr').textContent=e.message||'이어하지 못했어요.'});
+};
+
+/* ---------- 홈 ---------- */
+function canHunt(){return HOME&&(HOME.pass||!HOME.passRequired)}
+function renderHome(){
+  var h=HOME;
+  $('hCode').textContent=h.code; $('npCode').textContent=h.code; $('rwCode').textContent=h.code;
+  qr($('npQr'),'PSBP-'+h.code); qr($('rwQr'),'PSBP-'+h.code);
+  $('hNoPass').hidden=canHunt(); $('hPass').hidden=!canHunt();
+  $('hPassLine').textContent=h.pass?'당일 패스 확인됨'+(h.bandNo?' · 손목띠 '+h.bandNo:''):(h.passRequired?'':'지금은 패스 없이 체험할 수 있어요');
+  var wins=h.rewards.filter(function(r){return !r.given}).length;
+  $('hRwSub').textContent=(h.free?'무료권 '+h.free+'장 · ':'')+(wins?'받을 상품 '+wins+'개':'당첨 '+h.rewards.length+'개');
+  var notice=h.live&&h.live.notice; $('hNotice').hidden=!notice; if(notice)$('hNoticeText').textContent=notice;
+  var v=h.vote||{}; $('hVote').hidden=!(v.status==='open'||v.status==='published');
+  $('hVoteTitle').textContent=v.title||'노래방 인기투표';
+  $('hVoteSub').textContent=v.status==='open'?'지금 투표 중이에요. 패스 하나당 한 팀, 마감 전까지 바꿀 수 있어요.':'결과가 공개됐어요!';
+  $('hVoteGo').textContent=v.status==='open'?'투표하기':'결과 보기';
+  if(h.dugCount){$('hLine').innerHTML='보물 <b>'+h.dugCount+'곳</b>을 팠어. 다음 보물도 찾아보자!';$('hNpc').src='assets/characters/success.png'}
+}
+$('btnRecheck').onclick=boot;
+$('btnHunt').onclick=function(){go('#hunt')};
+$('btnRewards').onclick=function(){go('#rewards')};
+$('huntBack').onclick=$('rwBack').onclick=function(){location.hash='';refreshHome()};
+function refreshHome(){EV.call('myHome',{eventId:EID}).then(function(r){HOME=r;renderHome();if(!$('scRewards').hidden)renderRewards()},function(){})}
+setInterval(function(){if(!$('scHome').hidden)refreshHome()},30000);
+
+/* ---------- 내 보상 ---------- */
+function openRewards(){show('scRewards');renderRewards();refreshHome()}
+function renderRewards(){
+  var h=HOME; $('rwFree').hidden=!h.free; $('rwFreeN').textContent=h.free;
+  $('rwList').innerHTML=h.rewards.length?h.rewards.map(function(r){
+    return '<div class="rw"><div><b>'+esc(r.tier?TIER[r.tier]+' · ':'')+esc(r.name)+'</b><br><span class="muted">'+esc(r.from)+'</span></div>'+
+      (r.code?'<div style="text-align:right"><div class="c">'+esc(r.code)+'</div><span class="chip '+(r.given?'ok':'')+'">'+(r.given?'받음':'수령 전')+'</span></div>':'')+'</div>';
+  }).join(''):'<p class="muted">아직 없어요. 보물을 찾아 상자를 열어 보세요!</p>';
+}
+
+/* ---------- 보물 탐색 ---------- */
+var data=null,pos=null,near=null,watchId=null;
+function openHunt(){
+  show('scHunt'); $('huntErr').textContent='';
+  EV.call('digSpots',{eventId:EID}).then(function(r){data=r;startGps();update()},function(e){$('huntErr').textContent=e.message||'불러오지 못했어요.'});
+}
+function distM(a,b){var R=6371000,r=function(x){return x*Math.PI/180},dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng);
+  var q=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return 2*R*Math.asin(Math.sqrt(q))}
+function startGps(){
+  if(watchId!=null) return;
+  if(!navigator.geolocation){$('huntErr').textContent='이 폰 브라우저는 위치 확인이 안 돼요.';return}
+  watchId=navigator.geolocation.watchPosition(function(p){pos={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};$('huntErr').textContent='';update()},
+    function(e){$('huntErr').textContent='위치를 못 받았어요. 브라우저 위치 권한을 허용해 주세요.'},{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
+}
+function stopGps(){if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null}}
+function setRadar(n,u,w,c){$('dist').textContent=n;$('unit').textContent=u;$('heat').textContent=w;document.documentElement.style.setProperty('--heat',c||'rgba(226,196,137,.5)')}
+var DUG={X:'꽝',wrong:'퀴즈 실패',quiz:'퀴즈 중',npc:'NPC 미션 중',open:'상자 열기 전'};
+function update(){
+  if(!data) return;
+  var R=data.pool.radiusM||5, live=data.spots.filter(function(s){return s.live&&!s.dug});
+  $('rotLine').textContent=data.nextAt?'보물 위치는 '+hm(data.nextAt)+'에 바뀌어요':'';
+  /* 목록: 열린 보물 + 진행 중/끝난 보물 */
+  $('tlist').innerHTML=data.spots.map(function(s){
+    var d=pos?Math.round(distM(pos,s)):null, st=s.dug?(TIER[s.dug]||DUG[s.dug]||'진행 중'):'';
+    var pending=s.dug==='npc'||s.dug==='open'||s.dug==='quiz';
+    return '<div class="tl"><div><b>'+esc(s.name||'보물')+'</b><small>'+esc(s.hint||'힌트 없음')+'</small></div>'+
+      (pending?'<button data-cont="'+esc(s.id)+'" type="button">이어하기</button>':s.dug?'<span class="chip">'+esc(st)+'</span>':(d!=null?'<span class="d">'+(d>=1000?(d/1000).toFixed(1)+'km':d+'m')+'</span>':''))+'</div>';
+  }).join('')||'<p class="gpsline">지금 열린 보물이 없어요. 잠시 후 다시 확인해 주세요.</p>';
+  if(!live.length){setRadar('-','지금 찾을 보물이 없어요','',null);$('btnDig').hidden=true;return}
+  if(!pos){setRadar('…','위치 확인 중','',null);return}
+  near=null;var best=1e12;live.forEach(function(s){var d=distM(pos,s);if(d<best){best=d;near=s}});
+  var allow=R+Math.min(pos.acc||0,10),d=Math.round(best),word,color;
+  if(best<=allow){word='바로 여기! 땅을 파 보세요';color='#FF8A3D'}
+  else if(best<30){word='아주 뜨거워요!';color='#FF8A3D'}
+  else if(best<70){word='따뜻해요';color='#F2C14E'}
+  else if(best<200){word='미지근해요';color='#E2C489'}
+  else{word='차가워요… 다른 쪽으로';color='#7FB3D5'}
+  setRadar(d>=1000?(best/1000).toFixed(1):String(d),(d>=1000?'km':'m')+' · 가장 가까운 보물',word,color);
+  $('gpsline').textContent='내 위치 오차 약 ±'+Math.round(pos.acc||0)+'m';
+  $('btnDig').hidden=!(best<=allow);
+}
+
+/* ---------- 파기 → 과제 → 상자 ---------- */
+var taps=0,digging=false,task=null,spot=null,answering=false;
+$('btnDig').onclick=function(){
+  if(!near||!pos) return;
+  spot=near;taps=0;task=null;digging=true;
+  $('stage').hidden=false;$('sheet').className='sheet';$('sheet').innerHTML='';
+  $('chest').className='chest';$('hole').style.setProperty('--hw','40px');$('tapBar').style.width='0';
+  $('taps').hidden=false;$('stTitle').textContent='땅을 파세요!';$('stSub').textContent='화면을 계속 두드리면 삽질해요';
+  EV.call('digStart',{eventId:EID,spotId:spot.id,lat:pos.lat,lng:pos.lng,acc:pos.acc}).then(function(r){task=r;if(taps>=TAPS)afterDig()},
+    function(e){digging=false;closeStage();$('huntErr').textContent=e.message||'파지 못했어요.';if(e.reason==='spot-moved')openHunt()});
+};
+$('stage').addEventListener('pointerdown',function(){
+  if(!digging||taps>=TAPS) return;
+  taps++;sfx('pop');buzz(30);
+  var sh=$('shovel');sh.classList.add('hit');setTimeout(function(){sh.classList.remove('hit')},120);
+  $('hole').style.setProperty('--hw',(40+taps*22)+'px');$('tapBar').style.width=(taps/TAPS*100)+'%';dirt();
+  if(taps>=TAPS){$('taps').hidden=true;$('stSub').textContent='뭔가 걸렸어요…';if(task)afterDig()}
+});
+function dirt(){
+  var g=$('ground'),r=g.getBoundingClientRect();
+  for(var i=0;i<9;i++){var d=document.createElement('i');d.className='dirt';d.style.left=r.width/2+'px';d.style.top=r.height*.22+'px';g.appendChild(d);
+    var dx=(Math.random()-.5)*260,dy=-60-Math.random()*140;
+    d.animate([{transform:'translate(0,0)'},{transform:'translate('+dx*.6+'px,'+dy+'px)',offset:.45},{transform:'translate('+dx+'px,'+(dy+220)+'px)',opacity:0}],{duration:700+Math.random()*300,easing:'ease-out'}).onfinish=(function(n){return function(){n.remove()}})(d)}
+}
+function afterDig(){
+  digging=false;var c=$('chest');c.classList.add('up');sfx('boom');buzz([40,60,40]);
+  $('stTitle').textContent='보물상자 발견!';
+  setTimeout(function(){showTask(task)},900);
+}
+function showTask(t){
+  var c=$('chest');
+  if(t.done){showResult(t.result);return}
+  if(t.open){$('stSub').textContent='미션 완료! 상자를 열 수 있어요';sheet('<span class="tag">NPC 미션 완료</span><div class="q">상자를 열어 볼까요?</div><button class="btn p" id="btnOpen" type="button">상자 열기</button><p class="err" id="qErr"></p>');$('btnOpen').onclick=function(){answer(null,this)};return}
+  c.classList.add('shake');
+  if(t.npc){
+    $('stSub').textContent='자물쇠를 열려면 NPC 미션을 해야 해요';
+    sheet('<span class="tag">NPC 미션</span><div class="q">'+esc(t.npc.name)+(t.npc.place?'<br><span style="font-size:15px;color:var(--muted)">'+esc(t.npc.place)+'</span>':'')+'</div>'+
+      (t.npc.line?'<p style="margin:0 0 8px">'+esc(t.npc.line)+'</p>':'')+'<p class="muted">미션을 마치면 NPC에게 이 번호를 보여주세요</p><div class="mycode">'+esc(HOME.code)+'</div>'+
+      '<button class="btn p" id="btnNpcChk" type="button">미션 완료했어요 (확인)</button><button class="btn" id="btnLater" type="button" style="margin-top:8px">나중에 하기</button><p class="err" id="qErr"></p>');
+    $('btnNpcChk').onclick=function(){var b=this;b.disabled=true;EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0}).then(function(r){b.disabled=false;if(r.open||r.done){task=r;showTask(r)}else $('qErr').textContent='아직 완료 처리가 안 됐어요. NPC에게 번호를 보여주세요.'},function(e){b.disabled=false;$('qErr').textContent=e.message||''})};
+    $('btnLater').onclick=function(){closeStage();openHunt()};
+    return;
+  }
+  $('stSub').textContent='자물쇠를 열려면 오타쿠 퀴즈를 맞혀야 해요';
+  var q=t.quiz;
+  sheet('<span class="tag">오타쿠 퀴즈 · 틀리면 꽝!</span><div class="q">'+esc(q.q)+'</div>'+q.choices.map(function(ch,i){return '<button class="ch" data-i="'+i+'" type="button">'+(i+1)+'. '+esc(ch)+'</button>'}).join('')+'<p class="err" id="qErr"></p>');
+  $('sheet').querySelectorAll('.ch').forEach(function(b){b.onclick=function(){answer(+b.dataset.i,b)}});
+}
+function sheet(html){var s=$('sheet');s.innerHTML=html;s.className='sheet on'}
+function answer(i,b){
+  if(answering) return;answering=true;b.classList.add('pick');b.disabled=true;
+  EV.call('digAnswer',{eventId:EID,spotId:spot.id,choice:i}).then(function(r){answering=false;showResult(r.result)},
+    function(e){answering=false;b.classList.remove('pick');b.disabled=false;$('qErr').textContent=e.message||'다시 눌러 주세요.'});
+}
+function showResult(r){
+  $('chest').classList.remove('shake');
+  var win=r.tier&&r.tier!=='X',html;
+  if(win){
+    sfx('fanfare');buzz([80,60,80,60,200]);burst();
+    $('stTitle').textContent=r.task==='quiz'?'정답입니다! 보물 당첨!':'보물 당첨!';$('stSub').textContent='';
+    html='<div class="res"><img src="assets/icons/golden_tangerine.png" alt=""><div class="big">'+esc(TIER[r.tier])+'</div><div class="prize">'+esc(r.prize)+'</div>'+
+      (r.free?'<p>뽑기 부스에서 참가번호를 보여주면 1회 무료!</p>':'<div class="code">'+esc(r.pickupCode||'')+'</div><p>상품 수령처에서 참가번호를 보여주세요.</p>')+(r.given?'<p><b>이미 받은 상품이에요.</b></p>':'');
+  }else if(!r.correct){
+    $('stTitle').textContent='자물쇠가 안 열려요…';$('stSub').textContent='';
+    html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝</div><p>퀴즈를 틀려서 상자가 잠겨 버렸어요.</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물을 찾아보세요!</p>';
+  }else{
+    $('stTitle').textContent=r.task==='quiz'?'정답입니다!':'상자가 열렸는데…';$('stSub').textContent='';
+    html='<div class="res"><img src="assets/characters/surprised.png" alt=""><div class="big">'+(r.task==='quiz'?'정답입니다!':'꽝')+'</div><p style="font-size:19px;color:var(--ink)"><b>하지만 보물은 꽝입니다.</b></p><p>다른 보물에서 다시 도전해 보세요!</p>';
+  }
+  html+='<button class="btn p" id="btnNext" type="button">다음 보물 찾으러 가기</button></div>';
+  sheet(html);
+  $('btnNext').onclick=function(){closeStage();openHunt();refreshHome()};
+}
+function burst(){
+  var b=document.createElement('div');b.className='burst';var cols=['#F2D59B','#E8742A','#FFF','#7FD1B9','#FF6B6B'];
+  for(var i=0;i<40;i++){var p=document.createElement('i'),a=Math.random()*Math.PI*2,d=120+Math.random()*180;p.style.background=cols[i%cols.length];p.style.setProperty('--x',Math.cos(a)*d+'px');p.style.setProperty('--y',Math.sin(a)*d+'px');p.style.setProperty('--r',(Math.random()*720)+'deg');b.appendChild(p)}
+  $('stage').appendChild(b);setTimeout(function(){b.remove()},1600);
+}
+function closeStage(){$('stage').hidden=true;$('sheet').className='sheet'}
+
+/* 진행 중인 NPC 보물은 목록에서 바로 이어서 */
+$('tlist').addEventListener('click',function(e){
+  var b=e.target.closest('[data-cont]'); if(!b) return;
+  spot=data.spots.find(function(s){return s.id===b.dataset.cont}); if(!spot) return;
+  digging=false; $('stage').hidden=false; $('taps').hidden=true; $('sheet').className='sheet'; $('hole').style.setProperty('--hw','216px');
+  $('chest').className='chest up'; $('stTitle').textContent='보물상자'; $('stSub').textContent='';
+  EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0}).then(function(r){task=r;showTask(r)},function(er){closeStage();$('huntErr').textContent=er.message||''});
+});
+
+/* ---------- 투표 ---------- */
+$('hVoteGo').onclick=function(){
+  $('voteSheet').hidden=false;$('voteIn').innerHTML='<p class="muted">불러오는 중…</p>';
+  EV.call('voteGet',{eventId:EID}).then(renderVote,function(e){$('voteIn').innerHTML='<p class="err">'+esc(e.message||'')+'</p><button class="btn" data-vclose type="button">닫기</button>'});
+};
+function renderVote(v){
+  var pub=v.status==='published',pick=v.myTeam;
+  $('voteIn').innerHTML='<h2 style="margin:0 0 4px">'+esc(v.title)+'</h2><p class="muted">'+(pub?'투표 결과':v.status==='open'?'한 팀만 고를 수 있어요. 마감 전까지 바꿀 수 있어요.':'지금은 투표 시간이 아니에요.')+'</p>'+
+    v.teams.map(function(t){return '<button class="team'+(t.no===pick?' on':'')+'" data-team="'+t.no+'" type="button"'+(v.status!=='open'?' disabled':'')+'>'+t.no+'. '+esc(t.name)+(pub?'<span class="n">'+((v.counts||{})[t.no]||0)+'표</span>':'')+'</button>'}).join('')+
+    (v.status==='open'?'<button class="btn p" id="vCast" type="button" style="margin-top:14px"'+(pick?'':' disabled')+'>투표하기</button>':'')+
+    '<p class="err" id="vErr"></p><button class="btn" data-vclose type="button" style="margin-top:8px">닫기</button>';
+  var sel=pick;
+  $('voteIn').querySelectorAll('[data-team]').forEach(function(b){b.onclick=function(){$('voteIn').querySelectorAll('[data-team]').forEach(function(x){x.classList.remove('on')});b.classList.add('on');sel=+b.dataset.team;$('vCast').disabled=false}});
+  if($('vCast'))$('vCast').onclick=function(){var b=this;b.disabled=true;EV.call('voteCast',{eventId:EID,team:sel}).then(function(r){
+    $('voteIn').innerHTML='<div class="res"><img src="assets/characters/success.png" alt=""><div class="big" style="font-size:24px">'+esc(r.name)+'에 투표했습니다</div><p>마감 전까지 다시 바꿀 수 있어요.</p><button class="btn" data-vclose type="button">닫기</button></div>';
+  },function(e){b.disabled=false;$('vErr').textContent=e.message||''})};
+}
+$('voteSheet').addEventListener('click',function(e){if(e.target.id==='voteSheet'||e.target.closest('[data-vclose]'))$('voteSheet').hidden=true});
+
+boot();
+})();
+</script>
 </body>
 </html>

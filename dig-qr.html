@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>보물찾기 QR</title>
+<title>과수원피스 QR</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#fff;color:#111;font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
@@ -24,16 +24,23 @@ html,body{margin:0;background:#fff;color:#111;font-family:-apple-system,"Malgun 
 <div class="wrap">
   <div class="q">
     <span class="tag">손님용</span>
-    <h2>보물 찾기</h2>
-    <p>찍고 보물 자리를 찾아 땅을 파 보세요!<br>오타쿠 퀴즈를 맞히면 상자가 열려요</p>
-    <img id="qDig" alt="보물 찾기 QR">
+    <h2>황금 귤을 찾아라</h2>
+    <p>찍고 참가번호를 받은 뒤<br>보물을 찾아 상자를 열어 보세요!</p>
+    <img id="qDig" alt="참가자 앱 QR">
     <small id="uDig"></small>
   </div>
   <div class="q bury">
     <span class="tag">스태프 전용</span>
-    <h2>보물 묻기</h2>
-    <p>관리자 PIN으로 로그인 후<br>숨길 자리에서 「여기 묻기」</p>
-    <img id="qBury" alt="보물 묻기 QR">
+    <h2>스태프</h2>
+    <p>담당 PIN으로 로그인하면<br>내 업무 화면만 열려요</p>
+    <img id="qStaff" alt="스태프 QR">
+    <small id="uStaff"></small>
+  </div>
+  <div class="q bury">
+    <span class="tag">총괄 전용</span>
+    <h2>보물 관리</h2>
+    <p>관리자 PIN으로 로그인 후<br>후보 장소에서 「여기 등록」</p>
+    <img id="qBury" alt="보물 관리 QR">
     <small id="uBury"></small>
   </div>
 </div>
@@ -42,7 +49,8 @@ html,body{margin:0;background:#fff;color:#111;font-family:-apple-system,"Malgun 
 (function(){
   var base=location.href.replace(/[^/]*([?#].*)?$/,'');
   function put(img,cap,url){var q=qrcode(0,'M');q.addData(url);q.make();document.getElementById(img).src=q.createDataURL(10,2);document.getElementById(cap).textContent=url}
-  put('qDig','uDig',base+'dig.html');
+  put('qDig','uDig',base);
+  put('qStaff','uStaff',base+'staff.html');
   put('qBury','uBury',base+'bury.html');
 })();
 </script>

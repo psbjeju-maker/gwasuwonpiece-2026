@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#F6F3EC">
+<link rel="icon" href="assets/icons/golden_tangerine.png">
+<link rel="apple-touch-icon" href="assets/icons/golden_tangerine.png">
+<title>황금 귤을 찾아라</title>
+<link rel="stylesheet" href="style.css?v=6">
+</head>
+<body>
+
+<div class="notice" id="noticeBar" role="status" hidden><b>공지</b><span id="noticeText"></span><button type="button" id="noticeClose" aria-label="공지 닫기">닫기</button></div>
+<div class="net" id="netBadge" role="status">오프라인 — 연결되면 다시 시도해 주세요</div>
+<button class="soundtoggle" id="soundToggle" type="button" aria-label="소리 켜기/끄기" aria-pressed="true">🔊</button>
+
+<div class="app">
+
+  <!-- 참가코드: 로그인한 뒤 내비가 있는 모든 화면 위에 계속 보인다(스태프 조회용) -->
+  <div class="codebar" id="codeBar" hidden>
+    <span class="cb-lbl">참가코드</span>
+    <b class="cb-code" id="codeBarVal">------</b>
+    <span class="cb-nick" id="codeBarNick"></span>
+  </div>
+
+  <!-- ══ 0. 서버 확인 중 ══ -->
+  <section class="screen on" id="scBoot">
+    <div class="bootbox">
+      <img class="boot-ic" src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
+      <p class="boot-msg" id="bootMsg">항해일지를 불러오는 중…</p>
+      <button class="btn primary" id="btnBootRetry" type="button" hidden>다시 시도</button>
+    </div>
+  </section>
+
+  <!-- ══ 1. 인트로 / 등록 / 복구 ══ -->
+  <section class="screen" id="scIntro">
+
+    <!-- 첫 만남 — 항해 기록관 전신 + 대사 -->
+    <div class="cine" id="cine">
+      <button class="cine-skip" id="cineSkip" type="button">건너뛰기</button>
+      <div class="cine-stage">
+        <img class="cine-cap" id="cineCap" src="assets/characters/full_body.png" alt="항해 기록관">
+      </div>
+      <div class="cine-box">
+        <div class="nametag" id="cineWho">항해 기록관</div>
+        <p class="cine-text" id="cineText"></p>
+        <div class="cine-choices" id="cineChoices"></div>
+        <button class="btn primary cine-next" id="cineNext" type="button">항해일지 작성</button>
+      </div>
+    </div>
+
+    <div class="intro-form" id="introForm">
+      <div class="logbook-head">
+        <img class="logbook-ic" src="assets/icons/mission.png" alt="" aria-hidden="true">
+        <div>
+          <p class="eyebrow" id="introSub">과수원피스 · 2026.10.31</p>
+          <h1 id="introTitle">황금 귤을 찾아라</h1>
+          <p class="logbook-sub">항해일지 첫 장에 이름을 적어 주세요</p>
+        </div>
+      </div>
+
+      <div class="card rules">
+        <h2 class="card-title">이렇게 진행돼요</h2>
+        <ol>
+          <li>미션을 하면 <b class="coinname">귤코인</b>을 받아요.</li>
+          <li>코인을 모아 <b>디지털 쿠지</b>에 도전해요. 결과는 바로 화면에 나와요.</li>
+          <li>기본 결과는 <b>직접 만든 트럼프 카드</b>예요. 운이 좋으면 <b>특별 상품</b>이 나와요.</li>
+          <li><b>1등은 황금 귤!</b> 안에 피규어나 굿즈가 들어 있고, 뽑은 해적은 <b>오늘의 명예 선장</b>이 돼요.</li>
+          <li>나침반으로 <b>단서</b>를 풀어 질문 글자를 모으고, <b>최종 질문</b>을 맞히면 <b>보너스 쿠지</b>를 받아요.</li>
+          <li>상품은 화면의 <b>수령 코드</b>를 스태프에게 보여주고 받아요.</li>
+        </ol>
+      </div>
+
+      <div class="card logbook" id="registerBox">
+        <div class="field">
+          <label for="inNick">닉네임</label>
+          <input id="inNick" type="text" placeholder="게임에서 쓸 이름" autocomplete="nickname" maxlength="12">
+        </div>
+        <div class="field">
+          <label for="inPhone">전화번호</label>
+          <input id="inPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
+        </div>
+        <p class="privacy">
+          전화번호는 <b>참가 확인과 상품 수령 확인 목적으로만</b> 사용하며,
+          행사 종료 후 7일 이내에 삭제합니다.
+        </p>
+        <p class="formerr" id="joinErr" role="alert" hidden></p>
+        <button class="btn primary" id="btnJoin" type="button">항해일지에 기록하기</button>
+        <button class="btn ghost" id="btnShowRecover" type="button">이미 참가했어요 (전화번호로 이어하기)</button>
+      </div>
+
+      <div class="card logbook" id="recoverBox" hidden>
+        <h2 class="card-title">이어서 하기</h2>
+        <p class="privacy">처음 등록할 때 쓴 <b>닉네임과 전화번호</b>를 입력하면 이어서 할 수 있어요.</p>
+        <div class="field">
+          <label for="inRecNick">닉네임</label>
+          <input id="inRecNick" type="text" placeholder="등록한 닉네임" autocomplete="off" maxlength="20">
+        </div>
+        <div class="field">
+          <label for="inRecPhone">전화번호</label>
+          <input id="inRecPhone" type="tel" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" maxlength="13">
+        </div>
+        <p class="formerr" id="recErr" role="alert" hidden></p>
+        <button class="btn primary" id="btnRecover" type="button">이어서 하기</button>
+        <button class="btn ghost" id="btnHideRecover" type="button">처음 등록하기</button>
+        <p class="privacy" style="margin-top:12px">번호가 바뀌었다면 현장 스태프에게 문의해 주세요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 1-A. 등록 직후: 참가코드 · 복구 코드 저장 ══ -->
+  <section class="screen" id="scCode">
+    <div class="npcrow">
+      <img class="npc-img" src="assets/characters/greeting.png" alt="항해 기록관">
+      <div class="bubble">
+        <div class="nametag">항해 기록관</div>
+        <p id="codeLine">항해일지에 기록했어. 이 참가코드는 스태프에게 보여줘야 해!</p>
+      </div>
+    </div>
+
+    <div class="card codecard">
+      <p class="cc-lbl">참가코드 <small>스태프에게 보여주는 번호</small></p>
+      <div class="cc-big" id="ccCode">------</div>
+      <p class="cc-why">폰을 바꾸거나 브라우저 기록이 지워져도 <b>등록한 전화번호</b>로 이어서 할 수 있어요.</p>
+      <button class="btn primary" id="btnCodeOk" type="button">모험 시작하기</button>
+    </div>
+  </section>
+
+  <!-- ══ 1-B. 항해 패스 대기 ══ -->
+  <section class="screen" id="scPass">
+    <div class="npcrow">
+      <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
+      <div class="bubble">
+        <div class="nametag">항해 기록관</div>
+        <p id="passLine">이 모험은 패스가 필요해. 안내를 확인해 줘.</p>
+      </div>
+    </div>
+
+    <div class="card pass-card">
+      <h1 class="pass-title">항해 패스가 필요합니다</h1>
+      <p class="pass-sub" id="passSub">—</p>
+      <ol class="pass-steps">
+        <li><b id="passDesk">매표소</b>에서 항해 패스 카드를 받아요.</li>
+        <li>아래 버튼을 눌러 카드의 QR을 찍으면 바로 항해 시작!</li>
+      </ol>
+      <button class="btn primary scanbig" id="btnPassScan" type="button">
+        <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4M7 12h10"/></svg>
+        패스 카드 QR 찍기
+      </button>
+      <p class="pass-what">패스가 있어야 미션·보물찾기·투표를 하고, 코인으로 <b>디지털 쿠지</b>를 할 수 있어요.</p>
+    </div>
+
+    <p class="formerr" id="passErr" role="alert" hidden></p>
+    <button class="btn ghost" id="btnPassAgain" type="button">패스 등록했어요 (다시 확인)</button>
+  </section>
+
+  <!-- ══ 2. 홈 ══ -->
+  <section class="screen" id="scHome">
+
+    <header class="topbar">
+      <div class="logo" id="hudCrest" aria-label="과수원피스">과수원<span>피스</span></div>
+      <span class="sound-slot" id="homeSoundSlot"></span>
+      <button class="ticketpill" id="btnTopCoins" type="button">
+        <img src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
+        <span class="coinname">귤코인</span> <b id="topCoins">0</b>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </header>
+
+    <!-- 진행 단계 -->
+    <div class="phase" id="phaseBar" hidden>
+      <span class="ph-dot" aria-hidden="true"></span>
+      <b id="phaseTitle"></b><span id="phaseSub"></span>
+    </div>
+
+    <!-- 오늘의 명예 선장 -->
+    <button class="honor" id="honorBox" type="button" hidden>
+      <span class="hn-frame">
+        <span class="hn-photo" id="honorPhoto"></span>
+        <img class="hn-fr" src="assets/honor/frame.webp" alt="" aria-hidden="true">
+        <img class="hn-sp" src="assets/honor/sparkles.webp" alt="" aria-hidden="true">
+      </span>
+      <span class="hn-text">
+        <span class="hn-eyebrow">오늘의 명예 선장</span>
+        <span class="hn-name" id="honorName"></span>
+        <span class="hn-prize" id="honorPrize"></span>
+        <span class="hn-dots" id="honorDots"></span>
+      </span>
+    </button>
+
+    <!-- 메인 안내 카드 -->
+    <div class="hero" id="hero">
+      <div class="hero-text">
+        <div class="hero-eyebrow"><span class="eb-t"><span id="hudName">나</span>의 항해일지</span></div>
+        <h1 class="hero-title" id="qbTitle">황금 귤을 찾아라</h1>
+        <p class="hero-line" id="heroLine"></p>
+      </div>
+      <img class="hero-npc npc-img" id="heroNpc" src="assets/characters/neutral.png" alt="항해 기록관">
+      <button class="btn primary hero-btn" id="heroGo" type="button">모험 시작하기</button>
+    </div>
+
+    <!-- 진행 요약 -->
+    <div class="stat3" id="statsStrip">
+      <button class="s3" type="button" data-go="scMissions">
+        <span class="s3-lbl">미션</span>
+        <span class="s3-num"><b id="mDoneNum">0</b><small>/<span id="mAllNum">0</span></small></span>
+      </button>
+      <button class="s3" type="button" data-go="scMain">
+        <span class="s3-lbl">단서</span>
+        <span class="s3-num"><b id="clueNum">0</b><small>/<span id="clueAllNum">0</span></small></span>
+      </button>
+      <button class="s3" type="button" data-go="scKuji">
+        <span class="s3-lbl coinname">mh머니</span>
+        <span class="s3-num"><b id="coinNum">0</b><small>장</small></span>
+      </button>
+    </div>
+
+    <!-- 주요 행동 -->
+    <div class="acts4">
+      <button class="actcard" id="goTreasure" type="button">
+        <img src="assets/icons/compass.png" alt="" aria-hidden="true">
+        <span class="act-title">보물찾기</span>
+        <span class="act-sub" id="treasureSub">다음 단서를 찾아서</span>
+      </button>
+      <button class="actcard" id="goMissions" type="button">
+        <img src="assets/icons/mission.png" alt="" aria-hidden="true">
+        <span class="act-title">미션</span>
+        <span class="act-sub" id="missionSub">오늘의 도전 확인</span>
+      </button>
+      <button class="actcard" id="goKuji" type="button">
+        <img src="assets/icons/ticket.png" alt="" aria-hidden="true">
+        <span class="act-title">디지털 쿠지</span>
+        <span class="act-sub" id="kujiSub">카드 3장으로 1번</span>
+      </button>
+      <button class="actcard" id="goCards" type="button">
+        <img src="assets/icons/treasure_chest.png" alt="" aria-hidden="true">
+        <span class="act-title">내 카드</span>
+        <span class="act-sub" id="cardsSub">모은 카드와 상품</span>
+      </button>
+    </div>
+
+    <!-- 행사 정보 — 접어 두고 필요할 때 연다 -->
+    <details class="fold" id="secVote">
+      <summary><img src="assets/icons/vote.png" alt="" aria-hidden="true"><span>실시간 투표</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="votecards" id="voteCards"></div>
+    </details>
+    <details class="fold" id="secTime">
+      <summary><svg class="fold-ic" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="25" r="16"/><path d="M24 16v10l7 4"/></svg><span>오늘 타임테이블</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="ttable" id="timetable"></div>
+    </details>
+    <details class="fold" id="secMap">
+      <summary><img src="assets/icons/map.png" alt="" aria-hidden="true"><span>행사 지도</span><svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="mapbox" id="homeMapBox"></div>
+    </details>
+  </section>
+
+  <!-- ══ 2-1. 미션 ══ -->
+  <section class="screen" id="scMissions">
+    <div class="tabbar" id="tabbar1" role="tablist">
+      <span class="tabind" id="tabInd1"></span>
+      <button class="tabbtn on" id="tabMission" type="button" role="tab">미션</button>
+      <button class="tabbtn" id="tabTreasure" type="button" role="tab">보물찾기</button>
+    </div>
+    <div class="progress">
+      <div class="row">
+        <span class="lbl">해 본 미션</span>
+        <span class="cnt"><b id="mNow">0</b> / <span id="mAll">0</span></span>
+      </div>
+      <div class="bar"><i id="mBar"></i></div>
+    </div>
+    <div class="npcrow npcrow-sm">
+      <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
+      <div class="bubble"><p id="missionTip">미션을 마치면 미션을 고르고, 스태프가 보여 주는 QR을 찍어 줘. 바로 완료돼!</p></div>
+    </div>
+    <button class="btn primary scanbig" id="btnScanTop" type="button">
+      <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4M7 12h10"/></svg>
+      미션 QR 찍기
+    </button>
+    <p class="formerr" id="missionErr" role="alert" hidden></p>
+    <div class="mlist" id="mlist"></div>
+  </section>
+
+  <!-- ══ 3. 보물찾기 ══ -->
+  <section class="screen" id="scMain">
+    <div class="tabbar" id="tabbar2" role="tablist">
+      <span class="tabind" id="tabInd2"></span>
+      <button class="tabbtn" id="tabMission2" type="button" role="tab">미션</button>
+      <button class="tabbtn on" id="tabTreasure2" type="button" role="tab">보물찾기</button>
+    </div>
+
+    <div class="card" id="treasureOff" hidden>
+      <h2 class="card-title">보물찾기는 아직 열리지 않았어요</h2>
+      <p class="privacy" style="margin:6px 0 0">시작 시간은 현장 공지를 확인해 주세요.</p>
+    </div>
+
+    <div id="treasureBody">
+      <div class="progress">
+        <div class="row">
+          <span class="lbl">모은 단서</span>
+          <span class="cnt"><b id="pgNow">0</b> / <span id="pgAll">0</span></span>
+        </div>
+        <div class="bar"><i id="pgBar"></i></div>
+        <p class="pg-note" id="pgNote"></p>
+      </div>
+
+      <div class="card compass-gate" id="compassGate">
+        <div class="npcrow npcrow-sm">
+          <img class="npc-img" src="assets/characters/neutral.png" alt="항해 기록관">
+          <div class="bubble"><p>주변 단서를 찾으려면 현재 위치가 필요해.</p></div>
+        </div>
+        <p class="gate-why">위치와 방향 센서는 <b>다음 단서까지의 거리와 방향</b>을 보여 줄 때만 씁니다. 위치 기록은 서버에 저장하지 않아요.</p>
+        <p class="gate-err" id="gateErr" role="alert" hidden></p>
+        <button class="btn primary" id="btnCompassStart" type="button">위치 허용하기</button>
+      </div>
+
+      <div class="compass-wrap" id="compassWrap" style="display:none">
+        <div class="compass-dial nofix" id="compassDial">
+          <span class="compass-fwd">정면</span>
+          <svg viewBox="0 0 300 300" aria-hidden="true">
+            <circle cx="150" cy="150" r="140" fill="var(--surface)" stroke="var(--gold)" stroke-width="1.5"/>
+            <circle cx="150" cy="150" r="112" fill="none" stroke="var(--line)" stroke-width="1"/>
+            <g stroke="var(--muted)" stroke-width="2" stroke-linecap="round">
+              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(0 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(30 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(60 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(90 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(120 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(150 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(180 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(210 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(240 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="30" transform="rotate(270 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(300 150 150)"/>
+              <line x1="150" y1="16" x2="150" y2="24" transform="rotate(330 150 150)"/>
+            </g>
+            <g id="compassNeedle">
+              <path d="M150,52 L168,158 L150,142 L132,158 Z" fill="var(--teal)"/>
+              <circle cx="150" cy="150" r="9" fill="var(--navy)"/>
+            </g>
+          </svg>
+        </div>
+        <div class="compass-dist">
+          <span class="num" id="compassDist">—</span>
+          <span class="cap">다음 단서까지</span>
+        </div>
+        <div class="npcrow npcrow-sm" id="treasureTip">
+          <img class="npc-img" id="treasureTipImg" src="assets/characters/thinking.png" alt="항해 기록관">
+          <div class="bubble"><p id="compassStatus">아직 위치를 확인하고 있어. 잠시 뒤 다시 확인해 줘.</p></div>
+        </div>
+      </div>
+
+      <div class="card pouch">
+        <div class="pouch-head">
+          <img src="assets/icons/clue.png" alt="" aria-hidden="true">
+          <h2 class="card-title">단서 기록</h2>
+        </div>
+        <div class="chips" id="pouch"></div>
+      </div>
+
+      <div class="card zonecard" id="zoneCard" hidden>
+        <h2 class="card-title">구역별 보물 현황</h2>
+        <div id="zoneList"></div>
+      </div>
+
+      <div class="card finalcard" id="finalCard" hidden>
+        <div class="fc-head"><img src="assets/icons/clue.png" alt="" aria-hidden="true"><h2 class="card-title">최종 질문</h2></div>
+        <p class="fc-q" id="finalQ" aria-label="모은 글자로 만든 질문"></p>
+        <p class="privacy" id="finalNote" style="margin:6px 0 12px"></p>
+        <div id="finalForm">
+          <input id="finalInput" type="text" placeholder="질문의 답" autocomplete="off" spellcheck="false" enterkeyhint="done" aria-label="최종 정답">
+          <p class="formerr" id="finalMsg" role="status" hidden></p>
+          <button class="btn primary" id="btnFinal" type="button">정답 도전</button>
+        </div>
+        <div class="fc-done" id="finalDone" hidden>
+          <b id="finalDoneTitle"></b>
+          <button class="btn primary" id="btnFinalKuji" type="button">보너스 쿠지 하러 가기</button>
+        </div>
+      </div>
+
+      <div class="card claimcard">
+        <h2 class="card-title">보물 캡슐 코드</h2>
+        <p class="privacy" style="margin:4px 0 12px">보물을 찾으면 캡슐 안의 코드를 입력하세요. 수령 코드가 나오면 스태프에게 보여주세요.</p>
+        <input id="tcInput" type="text" placeholder="캡슐 코드" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" aria-label="캡슐 코드">
+        <p class="formerr" id="tcMsg" role="status" hidden></p>
+        <button class="btn primary" id="btnClaimTreasure" type="button">코드 확인</button>
+        <div class="claimlist" id="claimList"></div>
+      </div>
+
+      <div class="stack">
+        <button class="btn ghost" id="btnHowScan" type="button">나침반은 어떻게 쓰나요?</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 2-2. 실시간 투표 ══ -->
+  <section class="screen" id="scVote">
+    <div class="pagehead">
+      <img src="assets/icons/vote.png" alt="" aria-hidden="true">
+      <div>
+        <h1 id="voteTitle">투표</h1>
+        <p id="voteWhen"></p>
+      </div>
+    </div>
+    <div id="voteBody"></div>
+    <p class="formerr" id="voteErr" role="alert" hidden></p>
+    <button class="btn ghost" id="btnVoteBack" type="button">홈으로</button>
+  </section>
+
+  <!-- ══ 3. 퀴즈 ══ -->
+  <section class="screen" id="scQuiz">
+    <div class="card qcard" id="qCard">
+      <div class="qid"><span>단서 지점 도착</span><span id="qCode"></span></div>
+      <p class="qflavor" id="qZone"></p>
+      <h2 id="qText"></h2>
+      <input id="qInput" type="text" placeholder="답을 입력하세요" autocomplete="off"
+             autocapitalize="off" spellcheck="false" enterkeyhint="done">
+      <button class="btn primary" id="btnAnswer" type="button">제출</button>
+      <p class="wrongmsg" id="qWrong" role="status"></p>
+    </div>
+    <button class="btn ghost" id="btnQuizBack" type="button">나중에 풀기</button>
+  </section>
+
+  <!-- ══ 4. 결과 연출 (단서 / 쿠지 / 수령 코드) ══ -->
+  <section class="screen" id="scResult">
+    <div class="result">
+      <div class="burst" id="rsBurst"></div>
+      <div class="big" id="rsBig"></div>
+      <div class="tgr" id="tgrBox">
+        <div class="tgr-fruit" id="tgrFruit">
+          <div class="tgr-crackline"></div>
+          <img class="tgr-half tgr-half-l" src="assets/icons/golden_tangerine.png" alt="">
+          <img class="tgr-half tgr-half-r" src="assets/icons/golden_tangerine.png" alt="">
+          <div class="tgr-burst"></div>
+          <div class="tgr-paper">
+            <div class="tgr-paper-card">
+              <div class="tgr-flap tgr-flap-l"></div>
+              <div class="tgr-flap tgr-flap-r"></div>
+              <div class="tgr-text" id="tgrText"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 id="rsTitle"></h2>
+      <p id="rsDesc"></p>
+      <img id="rsPrizeImg" alt="" hidden style="margin:10px auto;max-width:200px;max-height:200px;border-radius:12px;object-fit:contain">
+
+      <div class="coupon pickup" id="rsPickup" hidden>
+        <div class="stamp" id="rsStamp">수령 완료</div>
+        <div class="kind" id="rsKind">PICKUP CODE</div>
+        <h2 id="rsItem"></h2>
+        <div class="who" id="rsWho"></div>
+        <div class="line"></div>
+        <div class="no" id="rsCode"></div>
+        <div class="qrbox"><img id="rsQr" alt="수령 코드 QR"></div>
+        <p class="note" id="rsNote">스태프에게 이 화면과 참가코드를 보여주세요.</p>
+      </div>
+
+      <div class="npcrow npcrow-sm rs-npc" id="rsNpc" hidden>
+        <img class="npc-img" id="rsNpcImg" src="assets/characters/surprised.png" alt="항해 기록관">
+        <div class="bubble"><p id="rsNpcText"></p></div>
+      </div>
+      <button class="btn primary" id="btnResultOk" type="button">확인</button>
+    </div>
+  </section>
+
+  <!-- ══ 5. 디지털 쿠지 ══ -->
+  <section class="screen" id="scKuji">
+    <h1 class="pagetitle">디지털 쿠지</h1>
+    <p class="pagesub" id="kujiSubTitle">코인을 내고 한 번 뽑아요. 결과는 바로 나와요.</p>
+
+    <div class="card coincard">
+      <div class="cc-row">
+        <img src="assets/icons/golden_tangerine.png" alt="" aria-hidden="true">
+        <div>
+          <p class="cc-lbl coinname">귤코인</p>
+          <div class="coin-big"><b id="kjCoins">0</b><small>개</small></div>
+        </div>
+      </div>
+      <p class="coin-cost" id="kjCost">1회 — 코인</p>
+      <p class="formerr" id="kjErr" role="alert" hidden></p>
+      <button class="btn primary" id="btnPlayKuji" type="button">쿠지 뽑기</button>
+      <button class="btn primary bonusbtn" id="btnPlayBonus" type="button" hidden>보너스 이용권으로 뽑기</button>
+      <button class="btn ghost" id="btnPlayPaid" type="button" hidden>유료 이용권으로 뽑기</button>
+      <button class="btn ghost" id="btnKujiToMission" type="button" hidden>코인 모으러 가기</button>
+    </div>
+
+    <div class="card kujiinfo">
+      <h2 class="card-title">이렇게 나와요</h2>
+      <ul class="plainlist">
+        <li>기본 결과는 <b>직접 만든 트럼프 카드</b>예요.</li>
+        <li>운이 좋으면 <b>특별 상품(피규어)</b>이 나와요.</li>
+        <li>결과 화면의 <b>수령 코드</b>를 스태프에게 보여주면 상품을 받을 수 있어요.</li>
+        <li>수령 코드는 <b>내 카드</b> 화면에서 다시 볼 수 있어요.</li>
+      </ul>
+      <p class="privacy" id="kjPaidNote" style="margin:10px 0 0" hidden>유료 쿠지는 1회 2,000원이에요. 계좌이체 후 스태프에게 참가코드를 보여주면 이용권을 넣어 드려요.</p>
+    </div>
+  </section>
+
+  <!-- ══ 6. 내 카드 ══ -->
+  <section class="screen" id="scCards">
+    <h1 class="pagetitle">내 카드</h1>
+    <p class="pagesub">쿠지로 받은 결과예요. 수령 코드를 스태프에게 보여주면 받을 수 있어요.</p>
+    <p class="formerr" id="cardsErr" role="alert" hidden></p>
+
+    <h2 class="secttl" style="margin-top:8px">트럼프 카드</h2>
+    <div class="cardbook" id="cardBook"></div>
+
+    <h2 class="secttl">특별 상품</h2>
+    <div class="cardbook" id="specialList"></div>
+
+    <h2 class="secttl">쿠지 기록</h2>
+    <div class="playlist" id="playList"></div>
+
+    <button class="btn ghost" id="btnCardsRefresh" type="button">새로고침</button>
+  </section>
+
+  <!-- ══ 7. 반응속도게임 (미션) ══ -->
+  <section class="screen" id="scReaction">
+    <h1 class="pagetitle">반응속도게임</h1>
+    <p class="pagesub" id="reactRound">라운드 1 / 3</p>
+    <div class="reactpad wait" id="reactPad" role="button" tabindex="0"><span id="reactPadTxt">준비하세요</span></div>
+    <div id="reactDoneBox" style="display:none">
+      <p class="react-avg" id="reactAvg"></p>
+      <p class="formerr" id="reactErr" role="alert" hidden></p>
+      <button class="btn primary" id="btnReactFinish" type="button">미션 완료 처리</button>
+    </div>
+    <button class="btn ghost" id="btnReactBack" type="button">미션 목록으로</button>
+  </section>
+
+</div>
+
+<!-- 미션 QR 스캐너 -->
+<div class="qrscan" id="qrScan" hidden>
+  <video id="qrVideo" playsinline muted></video>
+  <div class="qs-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <p class="qs-hint" id="qrScanHint">부스에 붙은 미션 QR을 네모 안에 맞춰 주세요</p>
+  <button class="qs-close" id="qrClose" type="button">닫기</button>
+</div>
+
+<!-- 미션 상세 시트 -->
+<div class="msheet" id="msheet" hidden>
+  <div class="ms-dim" id="msDim"></div>
+  <div class="ms-panel" role="dialog" aria-modal="true" aria-label="미션 상세">
+    <button class="ms-close" id="msClose" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div id="msBody"></div>
+  </div>
+</div>
+
+<nav class="navbar" id="navbar" aria-label="주요 화면">
+  <button class="navbtn" data-nav="scHome" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>홈
+  </button>
+  <button class="navbtn" data-nav="scMissions" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>미션·보물
+  </button>
+  <button class="navbtn" data-nav="scKuji" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V21h14v-8.5M12 8.5V21"/><path d="M12 8.5C10 4 6.5 4.5 7.5 7c.6 1.3 2.6 1.5 4.5 1.5M12 8.5c2-4.5 5.5-4 4.5-1.5-.6 1.3-2.6 1.5-4.5 1.5"/></svg>쿠지
+  </button>
+  <button class="navbtn" data-nav="scCards" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="11" height="15" rx="2"/><path d="M8 21h9a2 2 0 0 0 2-2V8"/></svg>내 카드
+  </button>
+</nav>
+
+<!-- 황금귤 캐치(미션) — catch.js가 여닫는다 -->
+<div class="catch-stage" id="catchStage" hidden>
+  <div class="catch-bar">
+    <span id="catchTitle">황금귤 캐치</span>
+    <button class="catch-x" id="catchClose" type="button" aria-label="게임 닫기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="catch-wrap" id="catchWrap"><canvas id="catchCv"></canvas></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="quest-overlay" id="questOverlay" role="dialog" aria-modal="true" aria-labelledby="questWho" aria-describedby="questText">
+  <div class="quest-card">
+    <img class="quest-avatar npc-img" id="questAvatar" alt="">
+    <div class="quest-body">
+      <div class="nametag" id="questWho">항해 기록관</div>
+      <p class="quest-text" id="questText"></p>
+      <div class="quest-choices" id="questChoices"></div>
+      <button class="btn primary" id="questOk" type="button">확인</button>
+    </div>
+  </div>
+</div>
+
+<audio id="bgmOpening" src="audio/opening.mp3" loop preload="none"></audio>
+<audio id="bgmOcean" src="audio/ocean.mp3" loop preload="none"></audio>
+
+<!-- 코인·미션·쿠지·단서·수령은 전부 서버가 기록한다(ev-client.js가 Firebase SDK를 스스로 불러온다) -->
+<script>['gesturestart','gesturechange','gestureend'].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault()},{passive:false})});var _lt=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-_lt<300)e.preventDefault();_lt=n},{passive:false});</script>
+<script src="data.js"></script>
+<script src="assets.js"></script>
+<script src="store.js"></script>
+<script src="qr.js"></script>
+<script src="ev-client.js?v=4"></script>
+<script src="mhcards.js?v=4"></script>
+<script src="kujiboard.js?v=2"></script>
+<script src="catch.js"></script>
+<script src="app.js?v=6"></script>
+</body>
+</html>

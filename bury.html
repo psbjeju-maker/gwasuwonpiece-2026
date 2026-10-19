@@ -56,8 +56,8 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
 </head>
 <body>
 <div class="wrap">
-  <h1>보물 묻기</h1>
-  <p class="sub">과수원피스 · 보물 숨길 자리에 서서 「여기 묻기」를 누르면 그 GPS 위치가 보물 자리가 돼요.</p>
+  <h1>보물 관리</h1>
+  <p class="sub">과수원피스 · 후보 장소에 서서 「여기 등록」을 누르면 그 GPS 위치가 보물 후보가 돼요. 시스템이 후보 중에서 무작위로 보물을 열어요.</p>
 
   <div class="card" id="loginBox">
     <h2>관리자 로그인</h2>
@@ -71,18 +71,23 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     <div class="who"><span id="who"></span><button class="btn btn--sm" id="btnLogout">로그아웃</button></div>
 
     <div class="card">
-      <h2>여기에 보물 묻기</h2>
+      <h2>여기를 보물 후보로 등록</h2>
       <div class="gps" id="gpsBox">위치 확인 중…</div>
       <label for="name">자리 이름 (손님에게 보여요, 비워도 됨)</label>
       <input id="name" placeholder="예) 귤나무 언덕" maxlength="30">
+      <label for="hint">힌트 (손님에게 보여요)</label>
+      <input id="hint" placeholder="예) 빨간 우체통 근처" maxlength="120">
+      <label for="task">상자 과제</label>
+      <select id="task"><option value="quiz">오타쿠 퀴즈</option><option value="npc">NPC 미션</option></select>
+      <select id="npcId" style="margin-top:8px" hidden></select>
       <label for="memo">위치 메모 (관리자만 봐요)</label>
       <textarea id="memo" placeholder="예) 3번째 귤나무 왼쪽 돌 밑"></textarea>
-      <div class="row"><button class="btn btn--p btn--b" id="btnBury" disabled>여기 묻기</button></div>
+      <div class="row"><button class="btn btn--p btn--b" id="btnBury" disabled>여기 등록</button></div>
       <p class="msg" id="buryMsg"></p>
     </div>
 
     <div class="card">
-      <div class="row" style="margin-top:0;align-items:center"><h2 style="margin:0">묻어 둔 자리</h2><button class="btn btn--sm" id="btnReload" style="flex:0 0 auto">새로고침</button></div>
+      <div class="row" style="margin-top:0;align-items:center"><h2 style="margin:0">보물 후보</h2><button class="btn btn--sm" id="btnReload" style="flex:0 0 auto">새로고침</button></div>
       <div id="spots"><p class="sub">불러오는 중…</p></div>
     </div>
 
@@ -96,6 +101,7 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
         <span>B</span><input id="pnB"><input id="pcB" type="number" min="0">
         <span>C</span><input id="pnC"><input id="pcC" type="number" min="0">
         <span>D</span><input id="pnD"><input id="pcD" type="number" min="0">
+        <span>무료권</span><input id="pnFREE"><input id="pcFREE" type="number" min="0">
       </div>
       <div class="row">
         <div><label for="total">전체 칸 (나머지는 꽝)</label><input id="total" type="number" min="1" value="50"></div>
@@ -107,6 +113,21 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     </div>
 
     <div class="card">
+      <h2>운영 설정</h2>
+      <div class="row">
+        <div><label for="maxActive">동시에 열 보물 수 (0 = 후보 전부)</label><input id="maxActive" type="number" min="0"></div>
+        <div><label for="rotateMin">위치 바꾸는 간격(분)</label><input id="rotateMin" type="number" min="5"></div>
+      </div>
+      <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input id="freeOn" type="checkbox" style="width:24px;min-height:24px"> 무료 뽑기권 지급 켜기 (운영자 확정 후)</label>
+      <div><label for="freePer">1인 무료권 한도 (0 = 제한 없음)</label><input id="freePer" type="number" min="0"></div>
+      <h3 style="margin:16px 0 4px;font-size:15px">NPC 목록</h3>
+      <p class="sub">한 줄에 하나: 아이디 | 이름 | 장소 | 미션 문장 | 활동(O/X). NPC 담당 PIN은 스태프 화면 총괄에서 "NPC 미션 + 아이디"로 만들어요.</p>
+      <textarea id="npcs" style="min-height:120px;font-size:14px" placeholder="n1 | 해적 선장 | 무대 옆 | 선장에게 해적왕이 되겠다고 외치기 | O"></textarea>
+      <div class="row"><button class="btn btn--b" id="btnCfg">설정 저장</button></div>
+      <p class="msg" id="cfgMsg"></p>
+    </div>
+
+    <div class="card">
       <h2>당첨자</h2>
       <div id="winners"><p class="sub">-</p></div>
       <p class="sub" style="margin-top:8px">상품 지급은 스태프 콘솔 「수령 처리」에서 당첨 코드로 해요.</p>
@@ -115,12 +136,13 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
 </div>
 
 
-<script src="ev-client.js?v=5"></script>
+<script src="ev-client.js?v=6"></script>
 <script>
 (function(){
 'use strict';
-var EID='gwasu', TIERS=['TOP','A','B','C','D'];
-var TIER_TXT={TOP:'상위',A:'A',B:'B',C:'C',D:'D',X:'꽝'};
+var EID='gwasu', TIERS=['TOP','A','B','C','D','FREE'];
+var TIER_TXT={TOP:'상위',A:'A',B:'B',C:'C',D:'D',FREE:'무료권',X:'꽝'};
+var CFG=null;
 var $=function(s){return document.querySelector(s)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function msg(el,t,cls){el.textContent=t||'';el.className='msg'+(cls?' '+cls:'')}
@@ -159,9 +181,9 @@ function startGps(){
 $('#btnBury').onclick=function(){
   if(!pos) return;
   var b=this; b.disabled=true; msg($('#buryMsg'),'묻는 중…');
-  EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat,lng:pos.lng,acc:pos.acc,name:$('#name').value.trim(),memo:$('#memo').value.trim()}).then(function(r){
+  EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat,lng:pos.lng,acc:pos.acc,name:$('#name').value.trim(),hint:$('#hint').value.trim(),task:$('#task').value,npcId:$('#npcId').value,memo:$('#memo').value.trim()}).then(function(r){
     b.disabled=false; msg($('#buryMsg'),'묻었어요! ('+(r.name||r.id)+' · 오차 ±'+r.acc+'m)','ok');
-    $('#name').value=''; $('#memo').value=''; load();
+    $('#name').value=''; $('#hint').value=''; $('#memo').value=''; load();
   },function(e){b.disabled=false;msg($('#buryMsg'),e.message||'묻지 못했어요','bad')});
 };
 
@@ -174,19 +196,21 @@ function render(r){
   var sp=r.spots.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
   $('#spots').innerHTML=sp.length?sp.map(function(x,i){
     var d=pos?Math.round(distM(pos,x)):null;
-    return '<div class="item"><div class="top"><b>'+(i+1)+'. '+esc(x.name||('자리 '+x.id))+'</b><span class="chip '+x.status+'">'+(x.status==='active'?'열림':'닫힘')+'</span>'+
-      '<button class="btn btn--sm" data-st="'+(x.status==='active'?'off':'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'닫기':'열기')+'</button>'+
+    return '<div class="item"><div class="top"><b>'+(i+1)+'. '+esc(x.name||('자리 '+x.id))+'</b><span class="chip '+x.status+'">'+(x.status!=='active'?'후보 제외':x.live?'지금 열림':'대기')+'</span><span class="chip">'+(x.task==='npc'?'NPC '+esc(x.npcId):'퀴즈')+'</span>'+
+      '<button class="btn btn--sm" data-st="'+(x.status==='active'?'off':'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'빼기':'넣기')+'</button>'+
       '<button class="btn btn--sm" data-st="delete" data-id="'+esc(x.id)+'">삭제</button></div>'+
-      '<div class="note">'+(x.memo?esc(x.memo)+' · ':'')+'판 사람 '+x.digs+' · 당첨 '+x.wins+(d!=null?' · 지금 여기서 '+d+'m':'')+
+      '<div class="note">'+(x.hint?'힌트: '+esc(x.hint)+' · ':'')+(x.memo?esc(x.memo)+' · ':'')+'판 사람 '+x.digs+' · 당첨 '+x.wins+(d!=null?' · 지금 여기서 '+d+'m':'')+
       ' · <a target="_blank" rel="noopener" href="https://maps.google.com/?q='+x.lat+','+x.lng+'">지도</a></div></div>';
   }).join(''):'<p class="sub">아직 묻은 자리가 없어요.</p>';
 
   var p=r.pool, s=p.slots;
+  if(!CFG){CFG=r.cfg;fillCfg()}
   $('#poolNow').textContent='지금 남은 칸 '+p.left+'/'+p.total+' · '+TIERS.concat('X').map(function(k){return TIER_TXT[k]+' '+s[k].left+'/'+s[k].count}).join(' · ')+' · 파기 거리 '+p.radiusM+'m';
   if(!poolFilled){
     TIERS.forEach(function(k){$('#pn'+k).value=s[k].name||'';$('#pc'+k).value=s[k].count});
     $('#total').value=p.total; poolFilled=true;
   }
+  $('#poolNow').textContent+=(r.nextAt?' · 다음 위치 변경 '+new Date(r.nextAt).toTimeString().slice(0,5):'')+(r.stats&&r.stats.freeIssued?' · 무료권 발급 '+r.stats.freeIssued+' / 사용 '+(r.stats.freeUsed||0):'');
   $('#winners').innerHTML=r.winners.length?'<table><tr><th>시각</th><th>닉네임</th><th>상품</th><th>코드</th><th></th></tr>'+
     r.winners.sort(function(a,b){return (b.at||0)-(a.at||0)}).map(function(w){return '<tr><td>'+dt(w.at).slice(6)+'</td><td>'+esc(w.nickname)+'</td><td>'+esc(TIER_TXT[w.tier])+' '+esc(w.prize)+'</td><td>'+esc(w.pickupCode)+'</td><td>'+(w.given?'지급':'')+'</td></tr>'}).join('')+'</table>':'<p class="sub">아직 없어요.</p>';
 }
@@ -206,6 +230,21 @@ $('#btnPool').onclick=function(){
   var b=this; b.disabled=true;
   EV.staff('ownerDigPool',{eventId:EID,total:total,radiusM:radius,prizes:prizes}).then(function(){b.disabled=false;msg($('#poolMsg'),'새로 깔았어요.','ok');poolFilled=false;load()},
     function(e){b.disabled=false;msg($('#poolMsg'),e.message||'저장 못 했어요','bad')});
+};
+
+function fillCfg(){
+  $('#maxActive').value=CFG.maxActive||0; $('#rotateMin').value=CFG.rotateMin||30; $('#freeOn').checked=!!CFG.freeEnabled; $('#freePer').value=CFG.freePerPerson||0;
+  var n=CFG.npcs||{}; $('#npcs').value=Object.keys(n).map(function(k){var x=n[k];return [k,x.name,x.place,x.line,x.active===false?'X':'O'].join(' | ')}).join('\n');
+  $('#npcId').innerHTML=Object.keys(n).map(function(k){return '<option value="'+esc(k)+'">'+esc(k+' · '+n[k].name)+'</option>'}).join('')||'<option value="">NPC 먼저 등록</option>';
+}
+$('#task').onchange=function(){$('#npcId').hidden=this.value!=='npc'};
+$('#btnCfg').onclick=function(){
+  var npcs={};
+  $('#npcs').value.split('\n').forEach(function(l){var c=l.split('|').map(function(x){return x.trim()});if(!c[0])return;npcs[c[0]]={name:c[1]||c[0],place:c[2]||'',line:c[3]||'',active:(c[4]||'O').toUpperCase()!=='X'}});
+  var b=this; b.disabled=true;
+  EV.staff('ownerDigCfg',{eventId:EID,maxActive:parseInt($('#maxActive').value,10)||0,rotateMin:parseInt($('#rotateMin').value,10)||30,freeEnabled:$('#freeOn').checked,freePerPerson:parseInt($('#freePer').value,10)||0,npcs:npcs}).then(function(c){
+    b.disabled=false; CFG=c; fillCfg(); msg($('#cfgMsg'),'저장했어요.','ok'); load();
+  },function(e){b.disabled=false;msg($('#cfgMsg'),e.message||'저장 못 했어요','bad')});
 };
 
 function distM(a,b){var R=6371000,r=function(x){return x*Math.PI/180},dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng);

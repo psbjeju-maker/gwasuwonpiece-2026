@@ -197,6 +197,12 @@
       try { sessionStorage.setItem(SESSION_KEY, r.session); sessionStorage.setItem(SESSION_KEY + '.info', JSON.stringify({ role: r.role, exp: r.expiresAt })); } catch (e) {}
       return r;
     },
+    /* 담당 업무 PIN 로그인(2026-10-19) — 로그인한 담당 화면만 열린다. 서버도 담당을 확인한다 */
+    taskLogin: async function (pin) {
+      var r = await raw('taskLogin', { pin: pin }, false);
+      try { sessionStorage.setItem(SESSION_KEY, r.session); sessionStorage.setItem(SESSION_KEY + '.info', JSON.stringify({ role: 'task', task: r.task, taskName: r.taskName, label: r.label, exp: r.expiresAt })); } catch (e) {}
+      return r;
+    },
     logout: function () { try { sessionStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY + '.info'); } catch (e) {} },
     sessionInfo: function () { try { var i = JSON.parse(sessionStorage.getItem(SESSION_KEY + '.info') || 'null'); return session() && i && i.exp > Date.now() ? i : null; } catch (e) { return null; } },
     /* 행사 공개 설정(evCfg) 읽기 — 누구나 읽을 수 있는 문서 */
