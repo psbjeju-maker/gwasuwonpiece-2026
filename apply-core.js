@@ -20,6 +20,10 @@ window.Apply = (function () {
       open:   "2026-10-01T20:00",   // 10월 1일 오후 8시
       close:  "2026-10-24T23:59"
     },
+    bus: {
+      open:   "2026-10-19T00:00",   // 셔틀버스 신청
+      close:  "2026-10-30T23:59"    // 행사 전날까지
+    },
     presale: {
       open:   "2026-10-17T00:00",   // 항해 패스 사전 판매 시작일 — 필요하면 이 날짜만 고치면 됨
       close:  "2026-10-30T23:59"    // 행사 전날까지
@@ -137,7 +141,7 @@ window.Apply = (function () {
 
   /* ── 접수번호 ── */
   function receipt(type, phone){
-    var prefix = { booth:"B", stage:"S" }[type] || "A";
+    var prefix = { booth:"B", stage:"S", bus:"T" }[type] || "A";
     return prefix + "-" + normPhone(phone).slice(-4) + "-" +
            Date.now().toString(36).slice(-3).toUpperCase();
   }

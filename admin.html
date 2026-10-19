@@ -255,6 +255,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
           <option value="">전체</option>
           <option value="booth">마켓 부스</option>
           <option value="stage">노래방 · 댄스 대회</option>
+          <option value="bus">셔틀버스</option>
         </select>
       </div>
       <div>
@@ -346,7 +347,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
 
   /* ── 참가 신청 관리 (apply.html → Firestore) ── */
   var AP_COL   = "gwasuwonpiece_applications";
-  var AP_LABEL = { booth:"마켓 부스", song:"노래방 대회", dance:"댄스 대회", stage:"노래 · 댄스" };
+  var AP_LABEL = { booth:"마켓 부스", song:"노래방 대회", dance:"댄스 대회", stage:"노래 · 댄스", bus:"셔틀버스" };
   var AP_STAGE_LIMIT = 10;   // 무대는 노래·댄스 합쳐 선착순 정원
   var apCache  = [];
 
@@ -401,6 +402,12 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
       return r.type==="stage" && r.status!=="rejected" && r.slot!=="wait" && r.genre===g; }).length;
   }
 
+  /* 버스 탑승 인원 — 반려한 건은 빼고 센다 */
+  function apBus(stop){
+    return apCache.reduce(function(s,r){
+      return s + (r.type==="bus" && r.status!=="rejected" && r.stop===stop ? (Number(r.people)||1) : 0); }, 0);
+  }
+
   function apFiltered(){
     var t = $("apType").value, st = $("apStatus").value;
     return apCache.filter(function(r){
@@ -418,7 +425,8 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
       stat("부스 대기/선정", n("booth","pending")+" / "+n("booth","accepted")) +
       stat("무대 확정", apStageTaken()+" / "+AP_STAGE_LIMIT+"팀") +
       stat("무대 대기", apStageWait()+"팀") +
-      stat("노래 / 댄스", apGenre("노래")+" / "+apGenre("댄스"));
+      stat("노래 / 댄스", apGenre("노래")+" / "+apGenre("댄스")) +
+      stat("버스 시청 / 남녕고", apBus("시청")+" / "+apBus("남녕고")+"명");
 
     if (!rows.length) { $("apList").innerHTML = "<div class='note'>해당하는 신청이 없습니다.</div>"; return; }
 
@@ -441,6 +449,8 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
         lines.push(["전기", esc(r.power)]);
         lines.push(["판매 품목", esc(r.items)]);
         if (r.snsUrl) lines.push(["채널", "<a href='"+esc(r.snsUrl)+"' target='_blank' rel='noopener'>"+esc(r.snsUrl)+"</a>"]);
+      } else if (r.type==="bus") {
+        lines.push(["탑승", esc(r.stop)+" · "+esc(r.people||1)+"명 ("+(Number(r.fee)||(Number(r.people)||1)*10000).toLocaleString()+"원)"]);
       } else {
         if (r.genre) lines.push(["종목", esc(r.genre)]);
         lines.push(["곡", esc(r.songTitle)+" — "+esc(r.songArtist)]);
@@ -479,7 +489,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
     var rows = apFiltered();
     if (!rows.length) { alert("내려받을 신청이 없습니다."); return; }
     var cols = ["code","type","status","slot","waitNo","genre","teamName","name","phone","zone","tables","power",
-                "items","snsUrl","songTitle","songArtist","mr","mrUrl","memo","createdAt"];
+                "items","snsUrl","stop","people","fee","songTitle","songArtist","mr","mrUrl","memo","createdAt"];
     var q = function(v){ return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'; };
     var csv = "\ufeff" + cols.join(",") + "\n" +
       rows.map(function(r){ return cols.map(function(c){ return q(r[c]); }).join(","); }).join("\n");

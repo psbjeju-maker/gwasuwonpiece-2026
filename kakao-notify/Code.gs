@@ -17,7 +17,7 @@ function doPost(e) {
 }
 
 function buildMessage(d) {
-  var typeLabel = d.type === "stage" ? "🎤 무대 신청" : "🏴 부스 신청";
+  var typeLabel = d.type === "stage" ? "🎤 무대 신청" : d.type === "bus" ? "🚌 버스 신청" : "🏴 부스 신청";
   var lines = [typeLabel + " 도착!"];
   lines.push((d.teamName || d.name || "이름 없음"));
   if (d.name && d.teamName) lines.push("대표자: " + d.name);

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>셔틀버스 신청 · 과수원피스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="apply.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="back-bar">
+    <a class="back-link" href="guide.html">← 이용 가이드로 돌아가기</a>
+  </div>
+
+  <div class="hero">
+    <p class="eyebrow">Shuttle Bus</p>
+    <h1>셔틀버스 신청</h1>
+    <p class="lede">제주시내에서 과수원피스(금능석물원)까지 버스로 편하게 오세요.<br>
+    시청 · 남녕고 두 곳에서 타고, 끝나면 같은 곳에 내려드립니다.</p>
+    <p class="dday"><b data-dday>—</b><span>10월 31일(토) 행사까지</span></p>
+  </div>
+
+  <div id="stOpen">
+
+    <dl class="facts">
+      <div class="fact"><dt>가는 편</dt><dd><b>09:15 시청</b> → <b>09:30 남녕고</b> → 과수원피스</dd></div>
+      <div class="fact"><dt>오는 편</dt><dd><b>16:10</b> 과수원피스 출발 → <b>17:10 남녕고</b> → <b>17:25 시청</b></dd></div>
+      <div class="fact"><dt>요금</dt><dd><b>1인 10,000원</b></dd></div>
+      <div class="fact"><dt>접수 기간</dt><dd class="mono" data-f="busPeriod">—</dd></div>
+    </dl>
+
+    <div class="notice warn">
+      <span class="mark">시간</span>
+      <span>버스는 <strong>정해진 시각에 바로 출발</strong>합니다. 5분 전까지 탑승 위치에 와 주세요.</span>
+    </div>
+
+    <!-- 접수 전 -->
+    <div class="gate" id="stBefore" hidden>
+      <p class="gate-lab">신청 오픈</p>
+      <p class="gate-when" id="openAt">—</p>
+      <p class="gate-count" id="countdown"></p>
+    </div>
+
+    <!-- 접수 마감 -->
+    <div class="gate shut" id="stClosed" hidden>
+      <p class="gate-lab">접수 마감</p>
+      <p class="gate-when">버스 신청이 마감됐습니다</p>
+      <p class="gate-sub">문의는 <a href="tel:064-742-0083">064-742-0083</a>으로 전화 주세요.</p>
+    </div>
+
+    <form id="fBus" novalidate>
+      <div class="form-head"><h3>신청서</h3><span class="line"></span></div>
+
+      <div class="row2">
+        <div class="f"><label>이름<span class="req">*</span></label>
+          <input type="text" name="name" maxlength="20" autocomplete="name">
+          <p class="err">이름을 입력해 주세요.</p></div>
+        <div class="f"><label>전화번호<span class="req">*</span></label>
+          <input type="tel" name="phone" placeholder="010-0000-0000" inputmode="numeric" autocomplete="tel">
+          <p class="err">연락 가능한 휴대폰 번호를 정확히 입력해 주세요.</p></div>
+      </div>
+
+      <div class="f"><label>탑승 위치<span class="req">*</span></label>
+        <div class="opts">
+          <label class="opt-c"><input type="radio" name="stop" value="시청"><span><span class="ot">시청</span><span class="od">갈 때 09:15 탑승 · 올 때 17:25 하차</span></span></label>
+          <label class="opt-c"><input type="radio" name="stop" value="남녕고"><span><span class="ot">남녕고</span><span class="od">갈 때 09:30 탑승 · 올 때 17:10 하차</span></span></label>
+        </div>
+        <p class="err">탑승 위치를 선택해 주세요.</p></div>
+
+      <div class="f"><label>인원<span class="req">*</span></label>
+        <p class="hint">함께 타는 분까지 합친 인원입니다.</p>
+        <select name="people">
+          <option value="1">1명 · 10,000원</option>
+          <option value="2">2명 · 20,000원</option>
+          <option value="3">3명 · 30,000원</option>
+          <option value="4">4명 · 40,000원</option>
+          <option value="5">5명 · 50,000원</option>
+        </select></div>
+
+      <div class="agree">
+        <h4>개인정보 수집·이용 안내</h4>
+        <p>수집 항목은 <strong>이름 · 전화번호 · 탑승 위치</strong>이며, <strong>셔틀버스 탑승 안내 목적</strong>으로만 사용합니다. 행사 종료 후 <strong>1개월 이내에 파기</strong>합니다.</p>
+        <label class="opt-c"><input type="checkbox" name="agree"><span class="ot">위 내용에 동의합니다</span></label>
+        <p class="err" style="margin-top:8px">동의가 필요합니다.</p>
+      </div>
+
+      <div class="submit-bar">
+        <button class="btn" type="submit">버스 신청하기</button>
+        <p class="submit-note">같은 번호로 다시 신청하시면 내용이 갱신됩니다.</p>
+        <div class="form-msg bad"></div>
+      </div>
+    </form>
+  </div>
+
+  <!-- 제출 완료 -->
+  <div class="state" id="stDone">
+    <div class="seal">🚌</div>
+    <h2>버스 신청이 접수됐습니다</h2>
+    <p id="doneTxt">—</p>
+    <div class="code" id="doneCode">—</div>
+    <p class="code-cap">접수번호 — 문의하실 때 알려주시면 빠릅니다</p>
+  </div>
+
+  <div class="closing">
+    <h3>궁금한 점이 있다면</h3>
+    <p><a href="tel:064-742-0083">064-742-0083</a>으로 전화 주시거나<br>
+    <a href="https://litt.ly/psb_jeju" target="_blank" rel="noopener">박서방 제주지점 SNS</a>로 문의해 주세요.</p>
+  </div>
+
+  <footer>과수원피스 · 2026.10.31 (토) 금능석물원</footer>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="apply-core.js"></script>
+<script>
+(function () {
+  var A  = window.Apply;
+  var SC = A.SCHEDULE.bus;
+  var TIMES = { "시청": ["09:15", "17:25"], "남녕고": ["09:30", "17:10"] };
+
+  document.querySelectorAll('[data-f="busPeriod"]').forEach(function (el) {
+    el.textContent = "~ " + A.fmtDate(SC.close) + " " + A.fmtTime(SC.close);
+  });
+  A.paintDday();
+
+  function applyWindow() {
+    var st = A.windowState("bus");
+    A.el("fBus").hidden     = (st !== "open");
+    A.el("stBefore").hidden = (st !== "before");
+    A.el("stClosed").hidden = (st !== "closed");
+    if (st === "before") {
+      A.el("openAt").textContent    = A.fmtFull(SC.open);
+      A.el("countdown").textContent = A.untilText("bus");
+    }
+    return st;
+  }
+  if (applyWindow() === "before") {
+    var tick = setInterval(function () { if (applyWindow() === "open") clearInterval(tick); }, 20000);
+  }
+
+  var RULES = [["name","text"],["phone","phone"],["stop","radio"],["agree","check"]];
+  var form  = A.el("fBus");
+  var msg   = form.querySelector(".form-msg");
+  var btn   = form.querySelector(".btn");
+  var label = btn.textContent;
+  A.liveClear(form);
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    msg.classList.remove("show");
+    if (!A.check(form, RULES)) return;
+    if (!A.db) { fail(A.netErr()); return; }
+
+    var data = { type: "bus", status: "pending", createdAt: new Date().toISOString() };
+    new FormData(form).forEach(function (v, k) { if (k !== "agree") data[k] = String(v).trim(); });
+    data.phone    = A.normPhone(data.phone);
+    data.people   = Number(data.people) || 1;
+    data.fee      = data.people * 10000;
+    data.code     = A.receipt("bus", data.phone);
+    data.agreedAt = data.createdAt;
+
+    btn.disabled = true; btn.textContent = "접수하는 중…";
+
+    A.db.collection(A.COL).doc("bus_" + data.phone).set(data, { merge: true })
+      .then(function () {
+        var t = TIMES[data.stop];
+        A.el("stOpen").hidden = true;
+        A.el("doneTxt").innerHTML = "<b>" + data.stop + "</b>에서 <b>" + data.people + "명</b> 탑승 · " +
+          data.fee.toLocaleString() + "원<br>갈 때 <b>" + t[0] + "</b> 탑승, 올 때 <b>" + t[1] + "</b> 하차입니다.";
+        A.el("doneCode").textContent = data.code;
+        A.show("stDone");
+        A.el("stDone").scrollIntoView({ behavior: "smooth", block: "center" });
+        /* 카톡 알림 스크립트가 아직 버스 종류를 몰라도 내용이 보이도록 genre 칸에 요약을 싣는다 */
+        A.notify(Object.assign({}, data, { genre: "🚌 버스 " + data.stop + " " + data.people + "명" }));
+      })
+      .catch(function () { fail(A.netErr()); });
+  });
+
+  function fail(html) {
+    btn.disabled = false; btn.textContent = label;
+    msg.innerHTML = html; msg.classList.add("show");
+  }
+})();
+</script>
+</body>
+</html>
