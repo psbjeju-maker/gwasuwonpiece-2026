@@ -193,8 +193,8 @@
         A.el("doneCode").textContent = data.code;
         A.show("stDone");
         A.el("stDone").scrollIntoView({ behavior: "smooth", block: "center" });
-        /* 카톡 알림 스크립트가 아직 버스 종류를 몰라도 내용이 보이도록 genre 칸에 요약을 싣는다 */
-        A.notify(Object.assign({}, data, { genre: "🚌 버스 " + data.stop + " " + data.people + "명" }));
+        /* 옛 알림 스크립트는 type을 몰라 "부스 신청"으로 보낸다 → 팀명 칸에 셔틀버스를 크게 박아 둔다 */
+        A.notify(Object.assign({}, data, { teamName: "🚌 셔틀버스 신청 (부스 아님)", genre: "셔틀버스 " + data.stop + " 탑승" }));
       })
       .catch(function (e) {
         if (e && e.dup) { btn.disabled = false; btn.textContent = label; A.showDup(msg, e.dup, form); }

@@ -17,8 +17,16 @@ function doPost(e) {
 }
 
 function buildMessage(d) {
-  var typeLabel = d.type === "stage" ? "🎤 무대 신청" : d.type === "bus" ? "🚌 버스 신청" : "🏴 부스 신청";
-  var lines = [typeLabel + " 도착!"];
+  var typeLabel = d.type === "stage" ? "🎤 무대 신청" : d.type === "bus" ? "🚌 셔틀버스 신청" : "🏴 부스 신청";
+  var lines = [typeLabel + (d.edited ? " 내용 수정" : " 도착!")];
+  if (d.type === "bus") {
+    lines.push(d.name || "이름 없음");
+    if (d.stop) lines.push("탑승: " + d.stop);
+    if (d.phone) lines.push("연락처: " + d.phone);
+    if (d.code) lines.push("접수번호: " + d.code);
+    return lines.join("
+");
+  }
   lines.push((d.teamName || d.name || "이름 없음"));
   if (d.name && d.teamName) lines.push("대표자: " + d.name);
   if (d.zone) lines.push("존: " + d.zone);
