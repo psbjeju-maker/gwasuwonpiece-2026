@@ -130,7 +130,7 @@
 
       <div class="submit-bar">
         <button class="btn" type="submit">부스 신청서 제출</button>
-        <p class="submit-note">제출 후에도 같은 번호로 다시 신청하시면 내용이 갱신됩니다.</p>
+        <p class="submit-note">이미 신청한 번호로 다시 내면 접수 내역을 먼저 알려드려요.</p>
         <div class="form-msg bad"></div>
       </div>
     </form>
@@ -212,6 +212,7 @@
   var btn  = form.querySelector(".btn");
   var label = btn.textContent;
   A.liveClear(form);
+  A.paintMine("booth", form);
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -227,15 +228,20 @@
 
     btn.disabled = true; btn.textContent = "접수하는 중…";
 
-    A.db.collection(A.COL).doc("booth_" + data.phone).set(data, { merge: true })
+    A.guard("booth", data, form)
+      .then(function () { return A.db.collection(A.COL).doc("booth_" + data.phone).set(data, { merge: true }); })
       .then(function () {
+        A.remember("booth", data);
         A.el("stOpen").hidden = true;
         A.el("doneCode").textContent = data.code;
         A.show("stDone");
         A.el("stDone").scrollIntoView({ behavior: "smooth", block: "center" });
         A.notify(data);
       })
-      .catch(function () { fail(A.netErr()); });
+      .catch(function (e) {
+        if (e && e.dup) { btn.disabled = false; btn.textContent = label; A.showDup(msg, e.dup, form); }
+        else fail(A.netErr());
+      });
   });
 
   function fail(html) {

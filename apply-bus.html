@@ -84,7 +84,7 @@
 
       <div class="submit-bar">
         <button class="btn" type="submit">버스 신청하기</button>
-        <p class="submit-note">같은 번호로 다시 신청하시면 내용이 갱신됩니다.</p>
+        <p class="submit-note">이미 신청한 번호로 다시 내면 접수 내역을 먼저 알려드려요.</p>
         <div class="form-msg bad"></div>
       </div>
     </form>
@@ -157,6 +157,7 @@
   var btn   = form.querySelector(".btn");
   var label = btn.textContent;
   A.liveClear(form);
+  A.paintMine("bus", form);
   paintSeats();
 
   form.addEventListener("submit", function (e) {
@@ -175,7 +176,7 @@
 
     btn.disabled = true; btn.textContent = "자리 확인 중…";
 
-    A.countBus("bus_" + data.phone).then(function (c) {
+    A.guard("bus", data, form).then(function () { return A.countBus("bus_" + data.phone); }).then(function (c) {
       if (data.people > c.left) {
         paintSeats();
         throw { seat: c.left };
@@ -184,6 +185,7 @@
       return A.db.collection(A.COL).doc("bus_" + data.phone).set(data, { merge: true });
     })
       .then(function () {
+        A.remember("bus", data);
         var t = TIMES[data.stop];
         A.el("stOpen").hidden = true;
         A.el("doneTxt").innerHTML = "<b>" + data.stop + "</b>에서 <b>" + data.people + "명</b> 탑승 · " +
@@ -195,7 +197,8 @@
         A.notify(Object.assign({}, data, { genre: "🚌 버스 " + data.stop + " " + data.people + "명" }));
       })
       .catch(function (e) {
-        if (e && e.seat !== undefined) fail(e.seat > 0 ? "남은 자리가 <b>" + e.seat + "석</b>이에요." : "죄송해요, 30석이 모두 찼습니다.");
+        if (e && e.dup) { btn.disabled = false; btn.textContent = label; A.showDup(msg, e.dup, form); }
+        else if (e && e.seat !== undefined) fail(e.seat > 0 ? "남은 자리가 <b>" + e.seat + "석</b>이에요." : "죄송해요, 30석이 모두 찼습니다.");
         else fail(A.netErr());
       });
   });

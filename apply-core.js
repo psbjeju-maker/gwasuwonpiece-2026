@@ -206,6 +206,58 @@ window.Apply = (function () {
     return d > 0 ? "D-" + d : "오늘";
   }
 
+  /* ── 중복 신청 막기 ──
+     문서 ID가 type_전화번호라 같은 번호는 원래 한 건으로 덮이지만, "안 된 줄 알고" 다시 누르면
+     상태(선정)·접수번호·접수시각이 새 값으로 초기화되고 알림도 또 갔다.
+     → 이미 있으면 멈추고 알려준 뒤, "내용 고쳐서 다시 내기"를 눌렀을 때만 덮는다(상태·번호·시각은 유지). */
+  function mineKey(type){ return "gwasu_apply_" + type; }
+  function remember(type, data){
+    try { localStorage.setItem(mineKey(type), JSON.stringify({ code: data.code, at: data.createdAt })); } catch (e) {}
+  }
+  function recall(type){
+    try { return JSON.parse(localStorage.getItem(mineKey(type)) || "null"); } catch (e) { return null; }
+  }
+  function whenTxt(iso){
+    var d = new Date(iso); if (isNaN(d)) return "";
+    return (d.getMonth()+1) + "월 " + d.getDate() + "일 " + String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  }
+  function guard(type, data, form){
+    return db.collection(COL).doc(type + "_" + data.phone).get().then(function(s){
+      var prev = s.exists ? (s.data() || {}) : null;
+      if (!prev) return null;
+      if (!form._editOk) throw { dup: prev };
+      data.status    = prev.status || "pending";
+      data.createdAt = prev.createdAt || data.createdAt;
+      data.code      = prev.code || data.code;
+      data.updatedAt = new Date().toISOString();
+      data.edited    = true;
+      return prev;
+    });
+  }
+  /* 이미 신청한 경우 안내 + 수정 버튼. resubmit: 버튼 눌렀을 때 다시 제출할 함수 */
+  function showDup(msg, prev, form){
+    msg.innerHTML = "<b>이미 접수된 신청이 있어요.</b> " +
+      (prev.createdAt ? whenTxt(prev.createdAt) + " 접수" : "") +
+      (prev.code ? " · 접수번호 <b>" + prev.code + "</b>" : "") +
+      "<br>다시 신청하지 않으셔도 됩니다. 내용을 바꾸려는 경우에만 아래 버튼을 눌러 주세요." +
+      '<br><button type="button" class="dup-edit" style="margin-top:10px;font:inherit;padding:8px 14px;border:1px solid currentColor;background:transparent;border-radius:4px;cursor:pointer">내용 고쳐서 다시 내기</button>';
+    msg.classList.add("show");
+    msg.querySelector(".dup-edit").addEventListener("click", function(){
+      form._editOk = true;
+      if (form.requestSubmit) form.requestSubmit(); else form.dispatchEvent(new Event("submit", { cancelable: true }));
+    });
+  }
+  /* 이 폰에서 이미 낸 적이 있으면 폼 위에 알려준다 */
+  function paintMine(type, form){
+    var m = recall(type); if (!m || !form) return;
+    var b = document.createElement("div");
+    b.className = "form-msg show";
+    b.style.cssText = "margin:0 0 16px;border:1px solid currentColor";
+    b.innerHTML = "이 폰에서 이미 신청하셨어요" + (m.at ? " (" + whenTxt(m.at) + ")" : "") +
+      (m.code ? " · 접수번호 <b>" + m.code + "</b>" : "") + ". 다시 내지 않으셔도 됩니다.";
+    form.insertBefore(b, form.firstChild);
+  }
+
   function el(id){ return document.getElementById(id); }
   function show(id){ var e = el(id); if (e) e.classList.add("on"); }
   function hide(id){ var e = el(id); if (e) e.classList.remove("on"); }
@@ -213,6 +265,7 @@ window.Apply = (function () {
   /* 신청 성공 직후 호출 — 실패해도(오프라인 등) 신청 자체엔 영향 없도록 조용히 무시한다. */
   function notify(data){
     if (!KAKAO_WEBHOOK_URL) return;
+    if (data && data.edited) data = Object.assign({}, data, { name: "[수정] " + (data.name || "") });
     try {
       fetch(KAKAO_WEBHOOK_URL, {
         method: "POST",
@@ -225,6 +278,7 @@ window.Apply = (function () {
 
   return {
     db: db, COL: COL, SCHEDULE: SCHEDULE, STAGE_LIMIT: STAGE_LIMIT, BUS_LIMIT: BUS_LIMIT, countBus: countBus,
+    guard: guard, showDup: showDup, remember: remember, paintMine: paintMine,
     fmtDate: fmtDate, fmtTime: fmtTime, fmtFull: fmtFull,
     windowState: windowState, untilText: untilText,
     dday: dday, paintDday: paintDday, openDday: openDday,

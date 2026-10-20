@@ -135,7 +135,7 @@
 
       <div class="submit-bar">
         <button class="btn" type="submit">무대 신청하기</button>
-        <p class="submit-note">제출 후에도 같은 번호로 다시 신청하시면 내용이 갱신됩니다.</p>
+        <p class="submit-note">이미 신청한 번호로 다시 내면 접수 내역을 먼저 알려드려요.</p>
         <div class="form-msg bad"></div>
       </div>
     </form>
@@ -242,6 +242,7 @@
   var btn   = form.querySelector(".btn");
   var label = btn.textContent;
   A.liveClear(form);
+  A.paintMine("stage", form);
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -261,7 +262,8 @@
 
     /* 이미 낸 사람이 고쳐 내는 경우는 자리·순번을 그대로 유지한다.
        새로 내는 경우에만 쓰기 직전에 정원을 다시 세어 확정/대기를 가른다. */
-    ref.get()
+    A.guard("stage", data, form)
+      .then(function () { return ref.get(); })
       .then(function (mine) {
         if (mine.exists) {
           var prev = mine.data() || {};
@@ -278,6 +280,7 @@
       })
       .then(function () { return ref.set(data, { merge: true }); })
       .then(function () {
+        A.remember("stage", data);
         A.el("stOpen").hidden = true;
         if (data.slot === "wait") {
           A.el("waitCode").textContent = data.code;
@@ -291,7 +294,10 @@
         }
         A.notify(data);
       })
-      .catch(function () { fail(A.netErr()); });
+      .catch(function (e) {
+        if (e && e.dup) { btn.disabled = false; btn.textContent = label; A.showDup(msg, e.dup, form); }
+        else fail(A.netErr());
+      });
   });
 
   function fail(html) {
