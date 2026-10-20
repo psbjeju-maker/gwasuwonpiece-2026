@@ -29,7 +29,7 @@
     <dl class="facts">
       <div class="fact"><dt>가는 편</dt><dd>제주시청 <b>09:15</b> 출발<br>남녕고 <b>09:30</b> 출발</dd></div>
       <div class="fact"><dt>오는 편</dt><dd>과수원피스 <b>16:10</b> 출발<br>남녕고 <b>17:10</b> 도착<br>제주시청 <b>17:25</b> 도착</dd></div>
-      <div class="fact"><dt>요금</dt><dd><b>1인 10,000원</b> · 1인 1신청</dd></div>
+      <div class="fact"><dt>요금</dt><dd><b>1인 10,000원</b> · 1인 1신청<br>결제 방법은 인원이 확정되면 <b>문자로 개별 안내</b>드려요</dd></div>
       <div class="fact"><dt>좌석</dt><dd>전체 <b>30석</b> 선착순 · <span id="seatLeft">남은 자리 확인 중…</span></dd></div>
       <div class="fact"><dt>접수 기간</dt><dd class="mono" data-f="busPeriod">—</dd></div>
     </dl>
@@ -189,7 +189,7 @@
         var t = TIMES[data.stop];
         A.el("stOpen").hidden = true;
         A.el("doneTxt").innerHTML = "<b>" + data.stop + "</b>에서 <b>" + data.people + "명</b> 탑승 · " +
-          data.fee.toLocaleString() + "원<br>갈 때 <b>" + t[0] + "</b> 탑승, 올 때 <b>" + t[1] + "</b> 하차입니다.";
+          data.fee.toLocaleString() + "원<br>갈 때 <b>" + t[0] + "</b> 탑승, 올 때 <b>" + t[1] + "</b> 하차입니다.<br>결제 방법은 인원이 확정되면 <b>문자로 따로 안내</b>드릴게요.";
         A.el("doneCode").textContent = data.code;
         A.show("stDone");
         A.el("stDone").scrollIntoView({ behavior: "smooth", block: "center" });
