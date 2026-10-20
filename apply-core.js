@@ -30,6 +30,7 @@ window.Apply = (function () {
     }
   };
 
+  var BUS_LIMIT = 30;               // 셔틀버스 전체 좌석(시청+남녕고 합산)
   var STAGE_LIMIT = 10;             // 노래·댄스 합쳐 선착순 확정 인원
   var EVENT_DAY   = "2026-10-31";   // 행사 당일 — D-day 표시 기준
 
@@ -162,6 +163,20 @@ window.Apply = (function () {
     });
   }
 
+  /* ── 버스 좌석 세기 ── 반려(rejected) 건은 빼고, 같은 번호 재신청은 본인 건을 빼고 센다 */
+  function countBus(exceptId){
+    if (!db) return Promise.reject(new Error("no-db"));
+    return db.collection(COL).where("type","==","bus").get().then(function(snap){
+      var taken = 0;
+      snap.forEach(function(d){
+        var r = d.data() || {};
+        if (r.status === "rejected" || d.id === exceptId) return;
+        taken += Number(r.people) || 1;
+      });
+      return { taken: taken, left: Math.max(0, BUS_LIMIT - taken), limit: BUS_LIMIT };
+    });
+  }
+
   /* ── 행사까지 D-day ── */
   function dday(){
     var t = new Date(EVENT_DAY + "T00:00:00");
@@ -209,7 +224,7 @@ window.Apply = (function () {
   }
 
   return {
-    db: db, COL: COL, SCHEDULE: SCHEDULE, STAGE_LIMIT: STAGE_LIMIT,
+    db: db, COL: COL, SCHEDULE: SCHEDULE, STAGE_LIMIT: STAGE_LIMIT, BUS_LIMIT: BUS_LIMIT, countBus: countBus,
     fmtDate: fmtDate, fmtTime: fmtTime, fmtFull: fmtFull,
     windowState: windowState, untilText: untilText,
     dday: dday, paintDday: paintDday, openDday: openDday,

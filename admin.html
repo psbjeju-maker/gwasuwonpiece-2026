@@ -426,7 +426,8 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;font-variant-numer
       stat("무대 확정", apStageTaken()+" / "+AP_STAGE_LIMIT+"팀") +
       stat("무대 대기", apStageWait()+"팀") +
       stat("노래 / 댄스", apGenre("노래")+" / "+apGenre("댄스")) +
-      stat("버스 시청 / 남녕고", apBus("시청")+" / "+apBus("남녕고")+"명");
+      stat("버스 시청 / 남녕고", apBus("시청")+" / "+apBus("남녕고")+"명") +
+      stat("버스 좌석", (apBus("시청")+apBus("남녕고"))+" / 30석");
 
     if (!rows.length) { $("apList").innerHTML = "<div class='note'>해당하는 신청이 없습니다.</div>"; return; }
 

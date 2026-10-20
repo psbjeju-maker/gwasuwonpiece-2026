@@ -30,6 +30,7 @@
       <div class="fact"><dt>가는 편</dt><dd>제주시청 <b>09:15</b> 출발<br>남녕고 <b>09:30</b> 출발</dd></div>
       <div class="fact"><dt>오는 편</dt><dd>과수원피스 <b>16:10</b> 출발<br>남녕고 <b>17:10</b> 도착<br>제주시청 <b>17:25</b> 도착</dd></div>
       <div class="fact"><dt>요금</dt><dd><b>1인 10,000원</b></dd></div>
+      <div class="fact"><dt>좌석</dt><dd>전체 <b>30석</b> 선착순 · <span id="seatLeft">남은 자리 확인 중…</span></dd></div>
       <div class="fact"><dt>접수 기간</dt><dd class="mono" data-f="busPeriod">—</dd></div>
     </dl>
 
@@ -48,7 +49,7 @@
     <!-- 접수 마감 -->
     <div class="gate shut" id="stClosed" hidden>
       <p class="gate-lab">접수 마감</p>
-      <p class="gate-when">버스 신청이 마감됐습니다</p>
+      <p class="gate-when" id="closedTxt">버스 신청이 마감됐습니다</p>
       <p class="gate-sub">문의는 <a href="tel:064-742-0083">064-742-0083</a>으로 전화 주세요.</p>
     </div>
 
@@ -140,6 +141,20 @@
     }
     return st;
   }
+
+  /* 좌석 30석 — 남은 자리보다 많은 인원은 고를 수 없게, 다 차면 마감 화면 */
+  var seatsLeft = null;
+  function paintSeats(){
+    return A.countBus().then(function(c){
+      seatsLeft = c.left;
+      A.el("seatLeft").innerHTML = c.left > 0 ? "남은 자리 <b>" + c.left + "석</b>" : "<b>좌석 마감</b>";
+      form.querySelectorAll('select[name="people"] option').forEach(function(o){ o.disabled = Number(o.value) > c.left; });
+      if (c.left <= 0 && A.windowState("bus") === "open") {
+        A.el("fBus").hidden = true; A.el("stClosed").hidden = false;
+        A.el("closedTxt").textContent = "30석이 모두 찼습니다";
+      }
+    }).catch(function(){ A.el("seatLeft").textContent = ""; });
+  }
   if (applyWindow() === "before") {
     var tick = setInterval(function () { if (applyWindow() === "open") clearInterval(tick); }, 20000);
   }
@@ -150,6 +165,7 @@
   var btn   = form.querySelector(".btn");
   var label = btn.textContent;
   A.liveClear(form);
+  paintSeats();
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -165,9 +181,16 @@
     data.code     = A.receipt("bus", data.phone);
     data.agreedAt = data.createdAt;
 
-    btn.disabled = true; btn.textContent = "접수하는 중…";
+    btn.disabled = true; btn.textContent = "자리 확인 중…";
 
-    A.db.collection(A.COL).doc("bus_" + data.phone).set(data, { merge: true })
+    A.countBus("bus_" + data.phone).then(function (c) {
+      if (data.people > c.left) {
+        paintSeats();
+        throw { seat: c.left };
+      }
+      btn.textContent = "접수하는 중…";
+      return A.db.collection(A.COL).doc("bus_" + data.phone).set(data, { merge: true });
+    })
       .then(function () {
         var t = TIMES[data.stop];
         A.el("stOpen").hidden = true;
@@ -179,7 +202,10 @@
         /* 카톡 알림 스크립트가 아직 버스 종류를 몰라도 내용이 보이도록 genre 칸에 요약을 싣는다 */
         A.notify(Object.assign({}, data, { genre: "🚌 버스 " + data.stop + " " + data.people + "명" }));
       })
-      .catch(function () { fail(A.netErr()); });
+      .catch(function (e) {
+        if (e && e.seat !== undefined) fail(e.seat > 0 ? "남은 자리가 <b>" + e.seat + "석</b>이에요. 인원을 줄여서 다시 신청해 주세요." : "죄송해요, 30석이 모두 찼습니다.");
+        else fail(A.netErr());
+      });
   });
 
   function fail(html) {
