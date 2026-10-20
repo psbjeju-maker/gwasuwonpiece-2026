@@ -1441,7 +1441,7 @@
     if (ph === "pre") {
       var day = (D.settings && D.settings.eventDate) || "2026-10-31";
       var dd = Math.round((Date.parse(day + "T00:00:00+09:00") - Date.parse(kstDayOf(nowMs()) + "T00:00:00+09:00")) / 864e5);
-      sub = "D-" + dd + " · 10월 31일 10:30 출항";
+      sub = "D-" + dd + " · 10월 31일 10:00 출항";
     }
     $("phaseTitle").textContent = T[0];
     $("phaseSub").textContent = sub;
