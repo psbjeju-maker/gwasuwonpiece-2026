@@ -116,10 +116,15 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 /* 실제 삽질처럼: 손잡이는 오른쪽 위, 날은 왼쪽 아래로 낮게 눕혀 잡고(날 끝이 회전축)
    탭마다 자루 방향으로 찔러 넣기 → 날을 들어 퍼 올리기 → 뒤로 빼기 */
 .shovel{position:absolute;left:calc(50% - 38px);top:calc(22% - 190px);width:100px;transform-origin:50% 99%;transform:translate(46px,-30px) rotate(56deg)}
-.shovel.dig{animation:dig .44s ease-in-out}
+.shovel.diga{animation:dig .44s ease-in-out}
+.shovel.digb{animation:dig2 .44s ease-in-out}
 .shovel .load{opacity:0}
-.shovel.dig .load{animation:load .44s linear}
+.shovel.diga .load{animation:load .44s linear}
+.shovel.digb .load{animation:load2 .44s linear}
 @keyframes load{0%,52%{opacity:0}58%,84%{opacity:1}92%,100%{opacity:0}}
+@keyframes load2{0%,52%{opacity:0}58%,84%{opacity:1}92%,100%{opacity:0}}
+/* 같은 동작을 이름만 바꿔 번갈아 걸어야 탭마다 확실히 처음부터 다시 돈다(SVG는 offsetWidth 리플로우가 안 먹음) */
+@keyframes dig2{0%{transform:translate(46px,-30px) rotate(56deg)}38%{transform:translate(0,0) rotate(58deg)}55%{transform:translate(-2px,2px) rotate(61deg)}80%{transform:translate(16px,-44px) rotate(42deg)}100%{transform:translate(46px,-30px) rotate(56deg)}}
 @keyframes dig{0%{transform:translate(46px,-30px) rotate(56deg)}38%{transform:translate(0,0) rotate(58deg)}55%{transform:translate(-2px,2px) rotate(61deg)}80%{transform:translate(16px,-44px) rotate(42deg)}100%{transform:translate(46px,-30px) rotate(56deg)}}
 .taps{position:absolute;left:0;right:0;bottom:calc(var(--safe-b) + 40px);text-align:center}
 .taps .bar{width:min(70vw,280px);height:14px;border-radius:7px;background:rgba(0,0,0,.35);margin:10px auto 0;overflow:hidden}
@@ -463,7 +468,7 @@ function update(){
 var taps=0,digging=false,task=null,spot=null,answering=false;
 $('btnDig').onclick=function(){
   if(!near||!pos) return;
-  spot=near;taps=0;task=null;digging=true;
+  spot=near;taps=0;task=null;digging=true;digQ=0;digRun=false;
   $('stage').hidden=false;$('sheet').className='sheet';$('sheet').innerHTML='';
   $('chest').className='chest';$('hole').style.setProperty('--hw','40px');$('tapBar').style.width='0';
   $('taps').hidden=false;$('stTitle').textContent='땅을 파세요!';$('stSub').textContent='화면을 계속 두드리면 삽질해요';
@@ -473,9 +478,20 @@ $('btnDig').onclick=function(){
 $('stage').addEventListener('pointerdown',function(){
   if(!digging||taps>=TAPS) return;
   taps++;sfx('pop');buzz(30);
-  var sh=$('shovel');sh.classList.remove('dig');void sh.offsetWidth;sh.classList.add('dig');
-  $('hole').style.setProperty('--hw',(40+taps*22)+'px');$('tapBar').style.width=(taps/TAPS*100)+'%';setTimeout(dirt,240);
+  shovelGo();
+  $('hole').style.setProperty('--hw',(40+taps*22)+'px');$('tapBar').style.width=(taps/TAPS*100)+'%';
   if(taps>=TAPS){$('taps').hidden=true;$('stSub').textContent='뭔가 걸렸어요…';if(task)afterDig()}
+});
+/* 삽질 한 번 = 찔러 넣기→퍼 올리기 한 바퀴. 빨리 두드리면 끊지 않고 다음 바퀴로 이어서(최대 2번 대기) */
+var digQ=0,digRun=false,digAlt=false;
+function shovelGo(){
+  if(digRun){digQ=Math.min(digQ+1,2);return}
+  digRun=true;digAlt=!digAlt;$('shovel').setAttribute('class','shovel '+(digAlt?'diga':'digb'));
+  setTimeout(dirt,240);
+}
+$('shovel').addEventListener('animationend',function(e){
+  if(e.target!==this||e.animationName.indexOf('dig')!==0) return;
+  digRun=false; if(digQ>0){digQ--;shovelGo()}
 });
 function dirt(){
   var g=$('ground'),r=g.getBoundingClientRect();
