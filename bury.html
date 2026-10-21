@@ -129,6 +129,16 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     </div>
 
     <div class="card">
+      <h2>손님 홈 시간표</h2>
+      <p class="sub">손님 앱 홈에는 지금 시간대의 큰 버튼 하나만 떠요. 한 줄에 하나: 시작-끝 | 종류 | 제목 | 선장 대사(비우면 기본) | 버튼 글자 | 링크<br>종류: <b>보물찾기</b> · <b>투표</b>(노래방 진행자가 시작해야 열림) · <b>안내</b>(버튼 없음) · <b>링크</b>(버튼 → 주소). 비워 두면 하루 종일 보물찾기예요.</p>
+      <textarea id="sched" style="min-height:140px;font-size:14px" placeholder="13:00-15:00 | 보물찾기 | 보물찾기 시간
+15:00-15:40 | 안내 | 노래방 무대 | 무대 앞으로 오라멍!
+15:40-16:00 | 투표 | 노래방 인기투표"></textarea>
+      <div class="row"><button class="btn btn--b" id="btnSched">시간표 저장</button></div>
+      <p class="msg" id="schedMsg"></p>
+    </div>
+
+    <div class="card">
       <h2>당첨자</h2>
       <div id="winners"><p class="sub">-</p></div>
       <p class="sub" style="margin-top:8px">상품 지급은 스태프 콘솔 「수령 처리」에서 당첨 코드로 해요.</p>
@@ -188,7 +198,23 @@ $('#btnBury').onclick=function(){
   },function(e){b.disabled=false;msg($('#buryMsg'),e.message||'묻지 못했어요','bad')});
 };
 
+var KIND={'보물찾기':'hunt','투표':'vote','안내':'info','링크':'link'},KIND_TXT={hunt:'보물찾기',vote:'투표',info:'안내',link:'링크'};
+function fillSched(c){$('#sched').value=(c.slots||[]).map(function(x){return [x.from+'-'+x.to,KIND_TXT[x.kind],x.title,x.line,x.btn,x.url].join(' | ').replace(/( \| )+$/,'')}).join('\n')}
+var schedLoaded=false;
+$('#btnSched').onclick=function(){
+  var bad=null,slots=$('#sched').value.split('\n').map(function(l){return l.trim()}).filter(Boolean).map(function(l){
+    var c=l.split('|').map(function(x){return x.trim()}),t=(c[0]||'').split(/[-~]/).map(function(x){x=x.trim();return x.length===4?'0'+x:x});
+    if(!KIND[c[1]]&&!KIND_TXT[c[1]])bad=l;
+    return {from:t[0],to:t[1],kind:KIND[c[1]]||c[1],title:c[2]||'',line:c[3]||'',btn:c[4]||'',url:c[5]||''};
+  });
+  if(bad){msg($('#schedMsg'),'종류를 확인해 주세요: '+bad,'bad');return}
+  var b=this;b.disabled=true;
+  EV.staff('ownerHomeCfg',{eventId:EID,slots:slots}).then(function(c){b.disabled=false;fillSched(c);msg($('#schedMsg'),'저장했어요. 손님 앱에 30초 안에 반영돼요.','ok')},
+    function(e){b.disabled=false;msg($('#schedMsg'),e.message||'저장 못 했어요','bad')});
+};
+
 function load(){
+  if(!schedLoaded)EV.staff('ownerHomeCfg',{eventId:EID}).then(function(c){schedLoaded=true;fillSched(c)},function(){});
   EV.staff('staffDigStatus',{eventId:EID}).then(render,function(e){$('#spots').innerHTML='<p class="msg bad">'+esc(e.message||'못 불러왔어요')+'</p>'});
 }
 $('#btnReload').onclick=load;

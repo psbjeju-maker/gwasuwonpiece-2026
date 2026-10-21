@@ -39,7 +39,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .err{color:var(--danger);font-weight:700;min-height:1.4em;margin:10px 0 0}
 .hero{background:var(--navy);color:#fff;border-radius:24px;padding:18px;display:flex;gap:12px;align-items:center;margin-top:4px}
 .hero img{width:92px;height:auto;flex:0 0 auto}
-.hero p{margin:0;font-size:15px;line-height:1.5}
+.hero p{margin:0;font-size:15px;line-height:1.5;word-break:keep-all}
 .hero b{color:var(--gold-on-navy)}
 .passno{border:2px dashed var(--gold);background:var(--gold-soft)}
 .passno .code{font-size:34px;font-weight:700;letter-spacing:.18em;text-align:center;margin:8px 0}
@@ -49,6 +49,23 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .chip{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--surface-2)}
 .chip.ok{background:var(--ok-soft);color:var(--ok)}
 .chip.no{background:#FBE9E7;color:var(--danger)}
+
+/* 홈: 지금 시간대 */
+.now{text-align:center;margin:6px 0 12px}
+.now .nowt{display:inline-block;font-size:13px;font-weight:700;color:var(--teal);background:var(--teal-soft);border-radius:99px;padding:3px 12px}
+.now b{display:block;font-size:28px;color:var(--navy);margin-top:6px;letter-spacing:-.5px}
+.next{text-align:center;color:var(--muted);font-size:14px;margin:14px 0 0;min-height:1.4em}
+.mini{display:block;margin:18px auto 0;min-height:40px;padding:0 18px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:14px;color:var(--muted);position:relative}
+.mini .dot{position:absolute;top:6px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--orange)}
+#board{position:fixed;inset:0;z-index:30;background:rgba(14,25,41,.55);display:flex;align-items:flex-end}
+#board .in{background:var(--surface);width:100%;max-width:520px;margin:0 auto;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + var(--safe-b));max-height:85vh;overflow:auto}
+.tt{margin-top:12px}
+.tt div{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:12px;margin-top:4px}
+.tt div span{font-weight:700;font-size:14px;color:var(--muted);white-space:nowrap;width:96px}
+.tt div b{flex:1}
+.tt .on{background:var(--gold-soft)}
+.tt .on span{color:#7A5520}
+.tt .past{opacity:.45}
 
 /* 보물 탐색 */
 .hunt{background:var(--navy-deep);color:#F4EFE6;min-height:100vh}
@@ -131,7 +148,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 <!-- 등록 / 이어하기 -->
 <section class="scr" id="scReg" hidden>
   <div class="top"><h1>황금 귤을 찾아라</h1></div>
-  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영해!<br>닉네임과 번호로 시작하면 <b>참가번호</b>가 나와.</p></div>
+  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영한다멍!<br>닉네임과 번호로 시작하면 <b>참가번호</b>가 나와.</p></div>
   <div class="card" id="regBox">
     <label for="inNick">닉네임</label><input id="inNick" maxlength="12" autocomplete="nickname">
     <label for="inPhone">휴대폰 번호</label><input id="inPhone" inputmode="numeric" maxlength="13" placeholder="010-0000-0000">
@@ -153,25 +170,28 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 <section class="scr" id="scHome" hidden>
   <div class="top"><h1>황금 귤을 찾아라</h1><span class="pill">참가번호 <b id="hCode">-</b></span></div>
   <div class="card notice" id="hNotice" hidden><p style="margin:0;font-weight:700" id="hNoticeText"></p></div>
-  <div class="card vote" id="hVote" hidden><h2 id="hVoteTitle">노래방 인기투표</h2><p class="muted" id="hVoteSub"></p><button class="btn p" id="hVoteGo" type="button" style="margin-top:10px">투표하기</button></div>
+  <!-- 지금 시간대: 큰 버튼 하나만 -->
+  <div class="now" id="hNow"><span class="nowt" id="hNowTime"></span><b id="hNowTitle">보물찾기</b></div>
+  <div class="hero"><img id="hNpc" src="assets/characters/neutral.png" alt=""><p id="hLine"></p></div>
 
   <div id="hNoPass" hidden>
-    <div class="hero"><img src="assets/characters/thinking.png" alt=""><p>보물찾기는 <b>당일 패스</b>가 있어야 할 수 있어.<br>패스 판매처에서 손목띠를 사고, 아래 번호를 보여줘!</p></div>
     <div class="card passno"><p class="muted" style="text-align:center">패스 판매처에 보여주세요</p><div class="code" id="npCode">-</div><img id="npQr" alt="참가번호 QR"></div>
     <button class="btn" id="btnRecheck" type="button" style="margin-top:12px">패스 받았어요 (새로고침)</button>
   </div>
+  <button class="btn big" id="btnMain" type="button" hidden>보물찾기 시작</button>
 
-  <div id="hPass" hidden>
-    <div class="hero"><img id="hNpc" src="assets/characters/neutral.png" alt=""><p id="hLine">보물 자리에 가까이 가면 땅을 팔 수 있어. 상자는 <b>오타쿠 퀴즈</b>나 <b>NPC 미션</b>을 통과해야 열려!</p></div>
-    <button class="btn big" id="btnHunt" type="button">보물찾기 시작</button>
-  </div>
-
-  <div class="row2">
-    <button class="btn" id="btnRewards" type="button">내 보상<small id="hRwSub">-</small></button>
-    <a class="btn" href="guide.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;color:inherit">이용 안내<small>행사 진행</small></a>
-  </div>
-  <p class="muted" style="text-align:center;margin-top:16px" id="hPassLine"></p>
+  <p class="next" id="hNext"></p>
+  <button class="mini" id="btnBoard" type="button">현황판<span class="dot" id="hBadge" hidden></span></button>
 </section>
+
+<!-- 현황판 -->
+<div id="board" hidden><div class="in">
+  <h2 style="margin:0 0 2px">현황판</h2><p class="muted" id="bdPass"></p>
+  <div class="tt" id="bdTT"></div>
+  <button class="btn p" id="btnRewards" type="button" style="margin-top:14px">내 보상 <span id="hRwSub"></span></button>
+  <a class="btn" href="guide.html" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit;margin-top:8px">이용 안내</a>
+  <button class="btn" data-bclose type="button" style="margin-top:8px;background:none">닫기</button>
+</div></div>
 
 <!-- 보물 탐색 -->
 <div class="hunt" id="scHunt" hidden><section class="scr">
@@ -235,7 +255,7 @@ function boot(){
   });
 }
 $('btnRetry').onclick=boot;
-function route(){var h=location.hash; if(h==='#hunt'&&canHunt()) openHunt(); else if(h==='#rewards') openRewards(); else show('scHome')}
+function route(){var h=location.hash; if(h==='#hunt'&&canHunt()&&curSlot().kind==='hunt') openHunt(); else if(h==='#rewards') openRewards(); else show('scHome')}
 window.addEventListener('hashchange',function(){if(HOME)route()});
 function go(hash){if(location.hash===hash)route();else location.hash=hash}
 
@@ -257,24 +277,67 @@ $('btnRec').onclick=function(){
 
 /* ---------- 홈 ---------- */
 function canHunt(){return HOME&&(HOME.pass||!HOME.passRequired)}
+/* 시간표에서 지금 할 일 하나를 고른다. 시간표가 비어 있으면 보물찾기 */
+var OFF=0;
+function nowHM(){var d=new Date(Date.now()+OFF);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
+function curSlot(){
+  var s=(HOME.schedule||[]),t=nowHM(),v=HOME.vote||{};
+  if(v.status==='open') return {kind:'vote',title:v.title||'노래방 인기투표',live:true};
+  if(!s.length) return {kind:'hunt',title:'보물찾기',live:true};
+  for(var i=0;i<s.length;i++) if(t>=s[i].from&&t<s[i].to) return Object.assign({live:true},s[i]);
+  var nx=s.filter(function(x){return x.from>t})[0];
+  return nx?{kind:'wait',title:t<s[0].from?'곧 시작해요':'잠깐 쉬는 시간',next:nx}:{kind:'end',title:'오늘 행사 끝'};
+}
+var LINE={
+  hunt:'보물 자리에 가까이 가면 땅을 팔 수 있다멍! 상자는 <b>오타쿠 퀴즈</b>나 <b>NPC 미션</b>을 통과해야 열려.',
+  vote:'노래방 무대에서 제일 멋졌던 팀을 골라 줘! 한 사람당 <b>한 표</b>다멍.',
+  info:'지금은 무대를 즐기는 시간이다멍. 앞쪽으로 와서 같이 봐!',
+  link:'지금 할 수 있는 미션이 열렸다멍! 아래 버튼을 눌러 봐.',
+  end:'오늘 같이 놀아 줘서 고맙다멍! 받을 상품이 있으면 잊지 말고 챙겨 가.',
+  nopass:'이건 <b>당일 패스</b>가 있어야 할 수 있다멍. 판매처에서 손목띠를 사고 아래 번호를 보여줘!'
+};
 function renderHome(){
-  var h=HOME;
+  var h=HOME; if(h.serverTime) OFF=h.serverTime-Date.now();
   $('hCode').textContent=h.code; $('npCode').textContent=h.code; $('rwCode').textContent=h.code;
   qr($('npQr'),'PSBP-'+h.code); qr($('rwQr'),'PSBP-'+h.code);
-  $('hNoPass').hidden=canHunt(); $('hPass').hidden=!canHunt();
-  $('hPassLine').textContent=h.pass?'당일 패스 확인됨'+(h.bandNo?' · 손목띠 '+h.bandNo:''):(h.passRequired?'':'지금은 패스 없이 체험할 수 있어요');
-  var wins=h.rewards.filter(function(r){return !r.given}).length;
-  $('hRwSub').textContent=(h.free?'무료권 '+h.free+'장 · ':'')+(wins?'받을 상품 '+wins+'개':'당첨 '+h.rewards.length+'개');
   var notice=h.live&&h.live.notice; $('hNotice').hidden=!notice; if(notice)$('hNoticeText').textContent=notice;
-  var v=h.vote||{}; $('hVote').hidden=!(v.status==='open'||v.status==='published');
-  $('hVoteTitle').textContent=v.title||'노래방 인기투표';
-  $('hVoteSub').textContent=v.status==='open'?'지금 투표 중이에요. 패스 하나당 한 팀, 마감 전까지 바꿀 수 있어요.':'결과가 공개됐어요!';
-  $('hVoteGo').textContent=v.status==='open'?'투표하기':'결과 보기';
-  if(h.dugCount){$('hLine').innerHTML='보물 <b>'+h.dugCount+'곳</b>을 팠어. 다음 보물도 찾아보자!';$('hNpc').src='assets/characters/success.png'}
+  var wins=h.rewards.filter(function(r){return !r.given}).length;
+  $('hRwSub').textContent=(h.free?'· 무료권 '+h.free+'장 ':'')+(wins?'· 받을 상품 '+wins+'개':'');
+  $('hBadge').hidden=!wins&&!h.free;
+
+  var c=curSlot(), needPass=(c.kind==='hunt'||c.kind==='vote')&&!canHunt(), v=h.vote||{}, btn=$('btnMain'), img='neutral', line;
+  $('hNowTime').textContent=c.from?c.from+' ~ '+c.to+' · 지금':(c.kind==='wait'?'다음 '+c.next.from:c.live?'지금':'');
+  $('hNowTitle').textContent=c.title||{hunt:'보물찾기',vote:'노래방 투표',info:'안내',link:'미션'}[c.kind]||'';
+  btn.hidden=true; btn.dataset.k=c.kind; btn.dataset.url=c.url||'';
+  if(c.kind==='wait'){line='잠깐 기다려 줘! <b>'+c.next.from+'</b>에 「'+esc(c.next.title||'다음 순서')+'」 시작이다멍.';img='thinking'}
+  else if(c.kind==='end'){line=LINE.end;img='success';if(h.rewards.length){btn.hidden=false;btn.textContent='내 보상 보기';btn.dataset.k='rewards'}}
+  else{
+    line=c.line?esc(c.line):LINE[c.kind]||'';
+    if(c.kind==='hunt'){btn.textContent='보물찾기 시작';if(h.dugCount&&!c.line){line='벌써 보물 <b>'+h.dugCount+'곳</b>을 팠다멍! 다음 보물도 찾아보자.';img='success'}}
+    if(c.kind==='vote'){btn.textContent=v.status==='published'?'결과 보기':'투표하기';img='greeting'}
+    if(c.kind==='link'){btn.textContent=c.btn||'미션 하러 가기';img='greeting'}
+    if(c.btn&&c.kind!=='link') btn.textContent=c.btn;
+    btn.hidden=c.kind==='info'||(c.kind==='link'&&!c.url);
+  }
+  if(needPass){line=LINE.nopass;img='thinking';btn.hidden=true}
+  $('hNoPass').hidden=!needPass;
+  $('hLine').innerHTML=line; $('hNpc').src='assets/characters/'+img+'.png';
+  var s=h.schedule||[],t=nowHM(),nx=c.kind==='wait'?null:s.filter(function(x){return x.from>t})[0];
+  $('hNext').textContent=nx?'다음 '+nx.from+' · '+(nx.title||''):'';
+  /* 현황판 */
+  $('bdPass').textContent=h.pass?'당일 패스 확인됨'+(h.bandNo?' · 손목띠 '+h.bandNo:''):(h.passRequired?'아직 패스가 없어요':'지금은 패스 없이 체험할 수 있어요');
+  $('bdTT').innerHTML=s.length?s.map(function(x){var cls=t>=x.from&&t<x.to?'on':t>=x.to?'past':'';
+    return '<div class="'+cls+'"><span>'+x.from+' ~ '+x.to+'</span><b>'+esc(x.title||'')+'</b>'+(cls==='on'?'<span class="chip ok" style="width:auto">지금</span>':'')+'</div>'}).join(''):'<p class="muted">시간표는 곧 올라와요.</p>';
 }
 $('btnRecheck').onclick=boot;
-$('btnHunt').onclick=function(){go('#hunt')};
-$('btnRewards').onclick=function(){go('#rewards')};
+$('btnMain').onclick=function(){
+  var k=this.dataset.k;
+  if(k==='hunt') go('#hunt'); else if(k==='vote') openVote(); else if(k==='rewards') go('#rewards');
+  else if(k==='link'&&this.dataset.url) location.href=this.dataset.url;
+};
+$('btnBoard').onclick=function(){$('board').hidden=false};
+$('board').addEventListener('click',function(e){if(e.target.id==='board'||e.target.closest('[data-bclose]'))$('board').hidden=true});
+$('btnRewards').onclick=function(){$('board').hidden=true;go('#rewards')};
 $('huntBack').onclick=$('rwBack').onclick=function(){location.hash='';refreshHome()};
 function refreshHome(){EV.call('myHome',{eventId:EID}).then(function(r){HOME=r;renderHome();if(!$('scRewards').hidden)renderRewards()},function(){})}
 setInterval(function(){if(!$('scHome').hidden)refreshHome()},30000);
@@ -395,10 +458,10 @@ function showResult(r){
       (r.free?'<p>뽑기 부스에서 참가번호를 보여주면 1회 무료!</p>':'<div class="code">'+esc(r.pickupCode||'')+'</div><p>상품 수령처에서 참가번호를 보여주세요.</p>')+(r.given?'<p><b>이미 받은 상품이에요.</b></p>':'');
   }else if(!r.correct){
     $('stTitle').textContent='자물쇠가 안 열려요…';$('stSub').textContent='';
-    html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝</div><p>퀴즈를 틀려서 상자가 잠겨 버렸어요.</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물을 찾아보세요!</p>';
+    html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝</div><p>퀴즈를 틀려서 상자가 잠겨 버렸다멍…</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물을 찾으러 가자!</p>';
   }else{
     $('stTitle').textContent=r.task==='quiz'?'정답입니다!':'상자가 열렸는데…';$('stSub').textContent='';
-    html='<div class="res"><img src="assets/characters/surprised.png" alt=""><div class="big">'+(r.task==='quiz'?'정답입니다!':'꽝')+'</div><p style="font-size:19px;color:var(--ink)"><b>하지만 보물은 꽝입니다.</b></p><p>다른 보물에서 다시 도전해 보세요!</p>';
+    html='<div class="res"><img src="assets/characters/surprised.png" alt=""><div class="big">'+(r.task==='quiz'?'정답입니다!':'꽝')+'</div><p style="font-size:19px;color:var(--ink)"><b>하지만 보물은 꽝입니다.</b></p><p>다른 보물에서 다시 도전해 보자멍!</p>';
   }
   html+='<button class="btn p" id="btnNext" type="button">다음 보물 찾으러 가기</button></div>';
   sheet(html);
@@ -421,7 +484,7 @@ $('tlist').addEventListener('click',function(e){
 });
 
 /* ---------- 투표 ---------- */
-$('hVoteGo').onclick=function(){
+function openVote(){
   $('voteSheet').hidden=false;$('voteIn').innerHTML='<p class="muted">불러오는 중…</p>';
   EV.call('voteGet',{eventId:EID}).then(renderVote,function(e){$('voteIn').innerHTML='<p class="err">'+esc(e.message||'')+'</p><button class="btn" data-vclose type="button">닫기</button>'});
 };
