@@ -173,7 +173,7 @@ window.CatchGame = (function () {
     document.body.classList.add("catch-on");
     document.getElementById("catchTitle").textContent = title;
     var w = document.getElementById("catchWrap");
-    cv.width = w.clientWidth * 2; cv.height = w.clientHeight * 2;
+    var sc = w.clientWidth < 700 ? 1.6 : 2; cv.width = Math.round(w.clientWidth * sc); cv.height = Math.round(w.clientHeight * sc);
   }
   function stopGame() {
     if (raf) cancelAnimationFrame(raf); raf = null;
@@ -181,15 +181,30 @@ window.CatchGame = (function () {
     stage.hidden = true;
     document.body.classList.remove("catch-on");
   }
+  var _bufs = {}, _loading = {};
+  function actx() { _actx = _actx || new (window.AudioContext || window.webkitAudioContext)(); if (_actx.state === "suspended") _actx.resume(); return _actx; }
+  function loadSfx(n) {
+    if (_loading[n]) return; _loading[n] = 1;
+    try {
+      fetch("sfx/" + n + ".mp3").then(function (r) { return r.arrayBuffer(); })
+        .then(function (b) { return new Promise(function (ok, no) { actx().decodeAudioData(b, ok, no); }); })
+        .then(function (buf) { _bufs[n] = buf; }, function () { _loading[n] = 0; });
+    } catch (e) { _loading[n] = 0; }
+  }
   function sfx(name, vol) {
     if (!soundOn()) return;
-    try { var a = new Audio("sfx/" + name + ".mp3"); a.volume = vol == null ? 0.75 : vol; a.play()["catch"](function () {}); } catch (e) {}
+    try {
+      var b = _bufs[name]; if (!b) { loadSfx(name); return; }
+      var c = actx(), s = c.createBufferSource(), g = c.createGain();
+      g.gain.value = vol == null ? 0.75 : vol; s.buffer = b; s.connect(g); g.connect(c.destination); s.start();
+    } catch (e) {}
   }
+  function preloadSfx() { if (soundOn()) ["slice", "pop", "boom", "bonus", "fanfare"].forEach(loadSfx); }
   var _actx = null;
   function beep(freq, dur, type, vol) {
     if (!soundOn()) return;
     try {
-      _actx = _actx || new (window.AudioContext || window.webkitAudioContext)();
+      actx();
       var t0 = _actx.currentTime, osc = _actx.createOscillator(), g = _actx.createGain();
       osc.type = type || "square";
       osc.frequency.setValueAtTime(freq, t0);
@@ -255,7 +270,9 @@ function catchRank(s){
   return '귤밭 견습생';
 }
 
+var _bgC=null,_vigC=null;
 function gCatch(){
+  preloadSfx();
   openStage('귤 자르기 랭킹전');
   var W=cv.width,H=cv.height,dur=30000;
   /* 화면 크기 보정 — 375css px 폰(W=750) 기준으로 오브젝트·글자 크기와 낙하 속도를 맞춘다 */
@@ -275,7 +292,7 @@ function gCatch(){
 
   /* ---- 배경: 해 질 무렵 제주 귤밭. 한 번만 오프스크린에 그려두고 매 프레임 복사만 한다 ---- */
   function makeBg(){
-    var c=document.createElement('canvas');c.width=W;c.height=H;var g=c.getContext('2d');
+    if(_bgC&&_bgC.width===W&&_bgC.height===H&&_bgC._ok)return _bgC;var c=_bgC||document.createElement('canvas');_bgC=c;c.width=W;c.height=H;var g=c.getContext('2d');
     var sky=g.createLinearGradient(0,0,0,H);
     sky.addColorStop(0,'#F2B76B');sky.addColorStop(0.42,'#F6D7A1');sky.addColorStop(0.62,'#C9C39A');sky.addColorStop(1,'#5D7A4A');
     g.fillStyle=sky;g.fillRect(0,0,W,H);
@@ -303,6 +320,7 @@ function gCatch(){
     /* 채도·대비 낮추는 안개 — 배경은 장식일 뿐, 떨어지는 귤이 훨씬 선명해야 한다 */
     var haze=g.createLinearGradient(0,0,0,H);haze.addColorStop(0,'rgba(255,236,210,.28)');haze.addColorStop(0.55,'rgba(235,225,205,.36)');haze.addColorStop(1,'rgba(70,80,60,.42)');
     g.fillStyle=haze;g.fillRect(0,0,W,H);
+    c._ok=!!(wall&&fence);
     return c;
   }
 
@@ -470,7 +488,7 @@ function gCatch(){
       ctx.restore();
     });
     ctx.restore();
-    if(it.k.gold&&Math.random()<0.25){var a=Math.random()*6.283,d=r*(0.9+Math.random()*0.5);sprites.push({im:'spark_small',x:it.x+Math.cos(a)*d,y:it.y+Math.sin(a)*d,vx:0,vy:-0.5,w:14+Math.random()*16,life:1,dec:0.05,add:true})}
+    if(it.k.gold&&sprites.length<60&&Math.random()<0.15){var a=Math.random()*6.283,d=r*(0.9+Math.random()*0.5);sprites.push({im:'spark_small',x:it.x+Math.cos(a)*d,y:it.y+Math.sin(a)*d,vx:0,vy:-0.5,w:14+Math.random()*16,life:1,dec:0.05,add:true})}
   }
   /* 반쪽 — 원본 귤을 절단선 기준으로 클립 + 절단면(과육) 이미지 */
   function drawPiece(p){
@@ -518,8 +536,9 @@ function gCatch(){
       ctx.restore();
     }
     if(fever){/* 금빛 가장자리 비네트 */
-      var vg=ctx.createRadialGradient(W/2,H/2,H*0.35,W/2,H/2,H*0.75);vg.addColorStop(0,'rgba(255,200,80,0)');vg.addColorStop(1,'rgba(255,190,60,'+(0.22+Math.sin(elapsed/160)*0.06)+')');
-      ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+      if(!_vigC||_vigC.width!==W||_vigC.height!==H){_vigC=_vigC||document.createElement('canvas');_vigC.width=W;_vigC.height=H;var vgx=_vigC.getContext('2d');
+        var vg=vgx.createRadialGradient(W/2,H/2,H*0.35,W/2,H/2,H*0.75);vg.addColorStop(0,'rgba(255,200,80,0)');vg.addColorStop(1,'rgba(255,190,60,1)');vgx.fillStyle=vg;vgx.fillRect(0,0,W,H)}
+      ctx.globalAlpha=0.22+Math.sin(elapsed/160)*0.06;ctx.drawImage(_vigC,0,0);ctx.globalAlpha=1;
     }
     ctx.restore();
   }
@@ -606,11 +625,11 @@ function gCatch(){
     items.forEach(function(it){it.y+=it.v*2.4*mul;it.rot+=it.vr*mul;if(it.wob>0)it.wob=Math.max(0,it.wob-0.06*mul)});
     items=items.filter(function(it){return it.y<H+it.r+40});
     pieces.forEach(function(p){p.x+=p.vx*mul;p.y+=p.vy*mul;p.vy+=0.22*mul;p.rot+=p.vr*mul;p.life-=0.016*mul});
-    pieces=pieces.filter(function(p){return p.life>0&&p.y<H+120});
+    pieces=pieces.filter(function(p){return p.life>0&&p.y<H+120});if(pieces.length>40)pieces.splice(0,pieces.length-40);
     fx.forEach(function(p){p.x+=p.vx*2*mul;p.y+=p.vy*2*mul;p.vy+=0.17*mul;p.l-=p.dec*mul});
-    fx=fx.filter(function(p){return p.l>0});
+    fx=fx.filter(function(p){return p.l>0});if(fx.length>160)fx.splice(0,fx.length-160);
     sprites.forEach(function(s){if(s.vx)s.x+=s.vx*mul;if(s.vy)s.y+=s.vy*mul;if(s.grav)s.vy+=0.12*mul;s.life-=s.dec*mul});
-    sprites=sprites.filter(function(s){return s.life>0});
+    sprites=sprites.filter(function(s){return s.life>0});if(sprites.length>90)sprites.splice(0,sprites.length-90);
     flashes.forEach(function(f){f.t+=mul});flashes=flashes.filter(function(f){return f.t<18});
     popups.forEach(function(p){p.y+=p.vy*mul;p.life-=0.02*mul});popups=popups.filter(function(p){return p.life>0});
     clouds.forEach(function(c){c.x+=c.s*mul;if(c.x-c.w/2>W)c.x=-c.w/2});
