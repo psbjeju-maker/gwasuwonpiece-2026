@@ -138,6 +138,21 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 @keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
 .mycode{font-size:30px;font-weight:700;letter-spacing:.18em;text-align:center;background:var(--gold-soft);border-radius:14px;padding:10px;margin:10px 0}
 
+.bx{position:relative;height:250px;margin:6px auto 0;max-width:300px;touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab}
+.bx img.bx-body,.bx img.bx-lid{position:absolute;left:50%;top:0;width:250px;margin-left:-125px;pointer-events:none}
+.bx .bx-body{clip-path:inset(45.5% 0 0 0)}
+.bx .bx-lid{clip-path:inset(0 0 53.5% 0);transform-origin:50% 46%;will-change:transform;filter:brightness(1)}
+.bx-in{position:absolute;left:50%;top:37%;width:132px;height:34px;margin-left:-68px;border-radius:12px 12px 4px 4px;background:linear-gradient(#120a03,#3a2410);opacity:0;pointer-events:none}
+.bx-glow{position:absolute;left:50%;top:22%;width:220px;height:140px;border-radius:50%;background:radial-gradient(ellipse,rgba(255,226,140,.95),rgba(255,190,70,.45) 45%,transparent 70%);opacity:0;transform:translateX(-50%) scale(.6);pointer-events:none}
+.bx-prize{position:absolute;left:50%;top:30%;display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;z-index:1}
+.bx-prize img{width:84px;height:auto;filter:drop-shadow(0 4px 10px rgba(255,170,40,.7))}
+.bx-prize b{font-size:22px;color:#7A4A06;background:#FFE7A8;border-radius:99px;padding:2px 14px;margin-top:4px}
+.bx-prize b.x{font-size:30px;color:var(--muted);background:var(--surface-2)}
+.bx-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-weight:700;color:var(--teal);background:var(--teal-soft);border-radius:99px;padding:4px 14px;animation:bxh 1s ease-in-out infinite;transition:opacity .2s}
+@keyframes bxh{50%{transform:translate(-50%,-8px)}}
+.bx.win .bx-glow{animation:bxw .9s ease-out}
+@keyframes bxw{0%{filter:brightness(1)}40%{filter:brightness(1.8)}100%{filter:brightness(1)}}
+.bx .bx-prize{transition:none}
 /* 내 보상 */
 .rw{display:flex;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
 .rw:first-child{border-top:0}
@@ -477,25 +492,43 @@ function answer(i,b){
   EV.call('digAnswer',{eventId:EID,spotId:spot.id,choice:i}).then(function(r){answering=false;r.result.correct&&!r.duplicate?peel(r.result):showResult(r.result)},
     function(e){answering=false;b.classList.remove('pick');b.disabled=false;$('qErr').textContent=e.message||'다시 눌러 주세요.'});
 }
-/* 정답(또는 NPC 완료) → "정답입니다!" → 이치방쿠지처럼 봉인지를 왼쪽에서 오른쪽으로 밀어 상자 열기 (seal.js 재사용) */
-var SEAL=null, POWER={TOP:'무지개',A:'무지개',B:'강',C:'강',D:'중',E:'약',FREE:'약',X:'약'};
+/* 정답(또는 NPC 완료) → "정답입니다!" → 상자 뚜껑을 손가락으로 위로 밀어 연다.
+   상자 그림 한 장을 뚜껑(위)·몸통(아래)으로 잘라 뚜껑만 경첩(띠 줄)을 축으로 젖힌다. 60% 넘게 밀면 나머지는 알아서 열림 */
+var BOX_HINGE=46; /* treasure_chest.png 에서 뚜껑과 몸통 경계(%) */
 function peel(r){
   var win=r.tier&&r.tier!=='X';
   $('chest').classList.remove('shake');
   $('stTitle').textContent=r.task==='quiz'?'정답입니다!':'미션 완료!';$('stSub').textContent='';
   sfx('pop');buzz([40,40,40]);
-  sheet('<div class="res"><div class="big">'+(r.task==='quiz'?'정답입니다!':'미션 완료!')+'</div><p>상자 봉인지를 손가락으로 <b>왼쪽에서 오른쪽</b>으로 밀어서 떼 봐!</p></div>'+
-    '<div id="sealHost" style="position:relative;height:230px;margin:4px -8px 0"></div><button class="btn" id="sealSkip" type="button" style="margin-top:6px;background:none;min-height:40px;font-size:14px;color:var(--muted)">바로 열기</button>');
-  var done=false; function fin(){if(done)return;done=true;showResult(r)}
-  $('sealSkip').onclick=function(){if(SEAL)SEAL.skip();else fin()};
-  (SEAL_MOD||(SEAL_MOD=import('./seal.js').then(function(m){return m.KujiSeal}))).then(function(KS){
-    if(!$('sealHost')) return;
-    SEAL=KS.mount($('sealHost'));
-    SEAL.load({label:win?TIER[r.tier]:'꽝',name:win?r.prize:'하지만 보물은 꽝',img:win?'assets/icons/golden_tangerine.png':'',power:POWER[r.tier]||'약'});
-    SEAL.onDone=function(){var s=SEAL;SEAL=null;fin();try{s.destroy()}catch(e){}};
-  },fin);
+  sheet('<div class="res"><div class="big">'+(r.task==='quiz'?'정답입니다!':'미션 완료!')+'</div><p>상자 뚜껑을 손가락으로 <b>위로 밀어서</b> 열어 봐!</p></div>'+
+    '<div class="bx" id="bx"><div class="bx-in" id="bxIn"></div><div class="bx-glow" id="bxGlow"></div>'+
+    '<div class="bx-prize" id="bxPrize">'+(win?'<img src="assets/icons/golden_tangerine.png" alt=""><b>'+esc(TIER[r.tier])+'</b>':'<b class="x">꽝</b>')+'</div>'+
+    '<img class="bx-body" src="assets/icons/treasure_chest.png" alt="">'+
+    '<img class="bx-lid" id="bxLid" src="assets/icons/treasure_chest.png" alt="">'+
+    '<div class="bx-hint" id="bxHint">⇧ 위로 밀기</div></div>'+
+    '<button class="btn" id="bxSkip" type="button" style="margin-top:4px;background:none;min-height:40px;font-size:14px;color:var(--muted)">바로 열기</button>');
+  var bx=$('bx'),lid=$('bxLid'),glow=$('bxGlow'),prize=$('bxPrize'),p=0,y0=null,auto=false,done=false;
+  function draw(){
+    lid.style.transform='perspective(420px) translateY('+(-p*34)+'px) rotateX('+(p*62)+'deg)';
+    $('bxIn').style.opacity=Math.min(1,p*4); glow.style.opacity=Math.min(1,p*1.6); glow.style.transform='translateX(-50%) scale('+(.6+p*.7)+')';
+    prize.style.opacity=p>.35?Math.min(1,(p-.35)/.4):0; prize.style.transform='translate(-50%,'+(-p*58)+'%) scale('+(.6+p*.5)+')';
+    $('bxHint').style.opacity=p>.05?0:1;
+  }
+  function open(){
+    if(auto) return; auto=true; var from=p,t0=performance.now();
+    (function step(now){var k=Math.min(1,(now-t0)/260);p=from+(1-from)*(1-Math.pow(1-k,3));draw();if(k<1)requestAnimationFrame(step);else fin()})(t0);
+  }
+  function fin(){
+    if(done) return; done=true; sfx(win?'boom':'pop'); buzz(win?[60,40,120]:[30]);
+    bx.classList.add(win?'win':'lose'); setTimeout(function(){showResult(r)},win?1100:800);
+  }
+  bx.addEventListener('pointerdown',function(e){if(auto)return;y0=e.clientY;try{bx.setPointerCapture(e.pointerId)}catch(_){}});
+  bx.addEventListener('pointermove',function(e){if(y0==null||auto)return;p=Math.max(0,Math.min(1,(y0-e.clientY)/150));draw();if(p>=.6){y0=null;open()}});
+  function up(){if(y0==null)return;y0=null;if(p>=.6)open();else{var from=p,t0=performance.now();(function back(now){var k=Math.min(1,(now-t0)/180);p=from*(1-k);draw();if(k<1&&!auto)requestAnimationFrame(back)})(t0)}}
+  bx.addEventListener('pointerup',up);bx.addEventListener('pointercancel',up);
+  $('bxSkip').onclick=open;
+  draw();
 }
-var SEAL_MOD=null;
 function showResult(r){
   $('chest').classList.remove('shake');
   var win=r.tier&&r.tier!=='X',html;
