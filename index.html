@@ -113,8 +113,14 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .chest.shake{animation:cshake .5s ease-in-out infinite}
 @keyframes cshake{0%,100%{transform:translate(-50%,-78%) rotate(0)}25%{transform:translate(-50%,-78%) rotate(-5deg)}75%{transform:translate(-50%,-78%) rotate(5deg)}}
 /* 손잡이(위)를 축으로 돌려 날(아래)이 구멍에 꽂히게 */
-.shovel{position:absolute;left:calc(50% + 40px);top:calc(22% - 175px);width:120px;transform-origin:50% 2%;transform:translateY(-40px) rotate(-6deg);transition:transform .12s}
-.shovel.hit{transform:translateY(0) rotate(28deg)}
+/* 실제 삽질처럼: 손잡이는 오른쪽 위, 날은 왼쪽 아래로 낮게 눕혀 잡고(날 끝이 회전축)
+   탭마다 자루 방향으로 찔러 넣기 → 날을 들어 퍼 올리기 → 뒤로 빼기 */
+.shovel{position:absolute;left:calc(50% - 38px);top:calc(22% - 190px);width:100px;transform-origin:50% 99%;transform:translate(46px,-30px) rotate(56deg)}
+.shovel.dig{animation:dig .44s ease-in-out}
+.shovel .load{opacity:0}
+.shovel.dig .load{animation:load .44s linear}
+@keyframes load{0%,52%{opacity:0}58%,84%{opacity:1}92%,100%{opacity:0}}
+@keyframes dig{0%{transform:translate(46px,-30px) rotate(56deg)}38%{transform:translate(0,0) rotate(58deg)}55%{transform:translate(-2px,2px) rotate(61deg)}80%{transform:translate(16px,-44px) rotate(42deg)}100%{transform:translate(46px,-30px) rotate(56deg)}}
 .taps{position:absolute;left:0;right:0;bottom:calc(var(--safe-b) + 40px);text-align:center}
 .taps .bar{width:min(70vw,280px);height:14px;border-radius:7px;background:rgba(0,0,0,.35);margin:10px auto 0;overflow:hidden}
 .taps .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#F2D59B,#E8742A);transition:width .15s}
@@ -140,8 +146,8 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 
 .bx{position:relative;margin:4px auto 0;touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab;overflow:visible}
 .bx-l{position:absolute;pointer-events:none;height:auto;will-change:transform}
-#bxOpen{transform-origin:50% 80%}
-#bxLid{transform-origin:50% 100%;transition:opacity .08s}
+#bxOpen{transform-origin:50% 85%}
+#bxLid{transform-origin:50% 100%}
 #bxGlow{transform-origin:50% 87%;mix-blend-mode:screen}
 #bxLock{transition:transform .5s cubic-bezier(.3,.6,.5,1),opacity .5s}
 #bxLock.off{transform:translate(30px,90px) rotate(38deg);opacity:0}
@@ -251,7 +257,22 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
   <div class="ground" id="ground">
     <div class="hole" id="hole"></div>
     <img class="chest" id="chest" src="assets/box/closed.webp" alt="보물상자">
-    <svg class="shovel" id="shovel" viewBox="0 0 60 120" aria-hidden="true"><rect x="27" y="0" width="6" height="70" rx="3" fill="#9a6a3a"/><rect x="18" y="0" width="24" height="8" rx="4" fill="#6b4626"/><path d="M14 70h32v22c0 14-8 24-16 28-8-4-16-14-16-28z" fill="#c9ced6" stroke="#8b929c" stroke-width="2"/></svg>
+    <svg class="shovel" id="shovel" viewBox="0 0 60 120" aria-hidden="true">
+      <defs>
+        <linearGradient id="shW" x1="0" x2="1"><stop offset="0" stop-color="#c98a45"/><stop offset=".5" stop-color="#a86a2c"/><stop offset="1" stop-color="#7a4a1c"/></linearGradient>
+        <linearGradient id="shM" x1="0" x2="1"><stop offset="0" stop-color="#f4f7fa"/><stop offset=".45" stop-color="#c3ccd5"/><stop offset="1" stop-color="#7d8894"/></linearGradient>
+        <linearGradient id="shG" x1="0" x2="1"><stop offset="0" stop-color="#f6d77a"/><stop offset="1" stop-color="#b8862c"/></linearGradient>
+      </defs>
+      <g stroke="#1d1309" stroke-width="2" stroke-linejoin="round">
+        <path d="M18 3h24a5 5 0 0 1 5 5v5a5 5 0 0 1-5 5H18a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5zM21 8v5h18V8z" fill="url(#shW)" fill-rule="evenodd"/>
+        <rect x="26.5" y="17" width="7" height="55" rx="2" fill="url(#shW)"/>
+        <path d="M23 70h14l2 9H21z" fill="url(#shG)"/>
+        <path d="M13 79h34v17c0 11-7 19-17 23-10-4-17-12-17-23z" fill="url(#shM)"/>
+      </g>
+      <path d="M18 83v12c0 7 3 12 7 16" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="30" cy="74.5" r="1.4" fill="#7a5414"/>
+      <path class="load" d="M15 92c3-7 9-10 15-10s12 3 15 10c-4 5-26 5-30 0z" fill="#6b4220" stroke="#1d1309" stroke-width="1.5"/>
+    </svg>
   </div>
   <div class="taps" id="taps"><b>탭! 탭! 탭!</b><div class="bar"><i id="tapBar"></i></div></div>
   <div class="sheet" id="sheet"></div>
@@ -452,8 +473,8 @@ $('btnDig').onclick=function(){
 $('stage').addEventListener('pointerdown',function(){
   if(!digging||taps>=TAPS) return;
   taps++;sfx('pop');buzz(30);
-  var sh=$('shovel');sh.classList.add('hit');setTimeout(function(){sh.classList.remove('hit')},120);
-  $('hole').style.setProperty('--hw',(40+taps*22)+'px');$('tapBar').style.width=(taps/TAPS*100)+'%';dirt();
+  var sh=$('shovel');sh.classList.remove('dig');void sh.offsetWidth;sh.classList.add('dig');
+  $('hole').style.setProperty('--hw',(40+taps*22)+'px');$('tapBar').style.width=(taps/TAPS*100)+'%';setTimeout(dirt,240);
   if(taps>=TAPS){$('taps').hidden=true;$('stSub').textContent='뭔가 걸렸어요…';if(task)afterDig()}
 });
 function dirt(){
@@ -496,11 +517,17 @@ function answer(i,b){
    그림(assets/box): body 몸통 · lid 닫힌 뚜껑 · lid_open 열린 뚜껑(몸통 뒤) · lock 자물쇠 · glow 빛.
    좌표는 몸통 폭 640 기준으로 잰 값(앞 테두리 y182, 뒤 테두리 y58). 60% 넘게 밀면 나머지는 알아서 열림 */
 function peel(r){
-  var win=r.tier&&r.tier!=='X';
   $('chest').classList.remove('shake');
-  $('stTitle').textContent=r.task==='quiz'?'정답입니다!':'미션 완료!';$('stSub').textContent='';
+  var ok=r.task==='quiz'?'정답입니다!':'미션 완료!';
+  $('stTitle').textContent=ok;$('stSub').textContent='';
   sfx('pop');buzz([40,40,40]);
-  sheet('<div class="res"><div class="big">'+(r.task==='quiz'?'정답입니다!':'미션 완료!')+'</div><p>상자 뚜껑을 손가락으로 <b>위로 밀어서</b> 열어 봐!</p></div>'+
+  sheet('<div class="res"><img src="assets/characters/success.png" alt=""><div class="big">'+ok+'</div><p style="font-size:18px;color:var(--ink)">이제 상자를 열어 볼까요?</p><button class="btn p" id="btnBox" type="button">상자 열어 보기</button></div>');
+  $('btnBox').onclick=function(){openBox(r)};
+}
+function openBox(r){
+  var win=r.tier&&r.tier!=='X';
+  $('stTitle').textContent='상자를 열어 봐!';
+  sheet('<div class="res"><p style="font-size:17px;color:var(--ink)">상자 뚜껑을 손가락으로 <b>위로 밀어서</b> 열어 봐!</p></div>'+
     '<div class="bx" id="bx">'+
       '<img class="bx-l" id="bxOpen" src="assets/box/lid_open.webp" alt="">'+
       '<img class="bx-l" id="bxGlow" src="assets/box/glow.webp" alt="">'+
@@ -520,8 +547,9 @@ function peel(r){
   var p=0,y0=null,auto=false,done=false,lockOff=false;
   function draw(){
     var a=Math.min(1,p/.5), b=Math.max(0,(p-.45)/.55);
-    $('bxLid').style.transform='translateY('+(-a*40*K)+'px) scaleY('+(1-a*.85)+')'; $('bxLid').style.opacity=p<.5?1:0;
-    $('bxOpen').style.transform='scaleY('+b+')'; $('bxOpen').style.opacity=b>0?1:0;
+    var c=Math.min(1,p/.55);
+    $('bxLid').style.transform='translateY('+(-c*70*K)+'px) perspective(500px) rotateX('+(c*35)+'deg)'; $('bxLid').style.opacity=p<.45?1:0;
+    $('bxOpen').style.transform='translateY('+((1-b)*60*K)+'px) perspective(500px) rotateX('+((1-b)*-40)+'deg)'; $('bxOpen').style.opacity=b>0?1:0;
     $('bxGlow').style.opacity=Math.min(1,b*1.4); $('bxGlow').style.transform='scale('+(.5+b*.6)+')';
     pz.style.opacity=b>.3?Math.min(1,(b-.3)/.4):0; pz.style.transform='translate(-50%,'+(-b*120)+'%) scale('+(.6+b*.5)+')';
     $('bxHint').style.opacity=p>.05?0:1;
@@ -554,8 +582,8 @@ function showResult(r){
     $('stTitle').textContent='자물쇠가 안 열려요…';$('stSub').textContent='';
     html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝</div><p>퀴즈를 틀려서 상자가 잠겨 버렸어…</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물을 찾으러 가자!</p>';
   }else{
-    $('stTitle').textContent=r.task==='quiz'?'정답입니다!':'상자가 열렸는데…';$('stSub').textContent='';
-    html='<div class="res"><img src="assets/characters/surprised.png" alt=""><div class="big">'+(r.task==='quiz'?'정답입니다!':'꽝')+'</div><p style="font-size:19px;color:var(--ink)"><b>하지만 보물은 꽝입니다.</b></p><p>다른 보물에서 다시 도전해 보자!</p>';
+    $('stTitle').textContent='상자가 비어 있어요…';$('stSub').textContent='';
+    html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝입니다</div><p>다른 보물에서 다시 도전해 보자!</p>';
   }
   html+='<button class="btn p" id="btnNext" type="button">다음 보물 찾으러 가기</button></div>';
   sheet(html);
