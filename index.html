@@ -102,8 +102,9 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .chest.up{transform:translate(-50%,-78%) scale(1);opacity:1}
 .chest.shake{animation:cshake .5s ease-in-out infinite}
 @keyframes cshake{0%,100%{transform:translate(-50%,-78%) rotate(0)}25%{transform:translate(-50%,-78%) rotate(-5deg)}75%{transform:translate(-50%,-78%) rotate(5deg)}}
-.shovel{position:absolute;left:58%;top:2%;width:120px;transform-origin:20% 90%;transform:rotate(18deg);transition:transform .12s}
-.shovel.hit{transform:rotate(-22deg) translateY(30px)}
+/* 손잡이(위)를 축으로 돌려 날(아래)이 구멍에 꽂히게 */
+.shovel{position:absolute;left:calc(50% + 40px);top:calc(22% - 175px);width:120px;transform-origin:50% 2%;transform:translateY(-40px) rotate(-6deg);transition:transform .12s}
+.shovel.hit{transform:translateY(0) rotate(28deg)}
 .taps{position:absolute;left:0;right:0;bottom:calc(var(--safe-b) + 40px);text-align:center}
 .taps .bar{width:min(70vw,280px);height:14px;border-radius:7px;background:rgba(0,0,0,.35);margin:10px auto 0;overflow:hidden}
 .taps .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#F2D59B,#E8742A);transition:width .15s}
