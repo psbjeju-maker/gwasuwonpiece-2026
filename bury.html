@@ -100,9 +100,10 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
       <select id="bkCenter"><option value="store">박서방 노형점 (월랑로 59)</option><option value="me">지금 내 위치</option></select>
       <div class="row">
         <div><label for="bkN">개수</label><input id="bkN" type="number" value="50" min="1" max="100"></div>
-        <div><label for="bkStep">간격(m)</label><input id="bkStep" type="number" value="18" min="8" max="100"></div>
+        <div><label for="bkStep">간격(m)</label><input id="bkStep" type="number" value="10" min="5" max="100"></div>
       </div>
       <div class="row"><button class="btn btn--p btn--b" id="btnBulk">한꺼번에 깔기</button></div>
+      <div class="row"><button class="btn btn--b" id="btnRelay">테스트 보물 지우고 다시 깔기</button></div>
       <div class="row"><button class="btn btn--b" id="btnBulkDel">테스트 보물 전부 삭제</button></div>
       <div class="row"><button class="btn btn--b" id="btnFarDel">매장에서 1km 넘게 떨어진 보물 삭제</button></div>
       <p class="msg" id="bulkMsg"></p>
@@ -276,7 +277,7 @@ $('#btnReload').onclick=load;
 var STORE={lat:33.4902306,lng:126.4741710}, BULK_MEMO='매장 테스트(한꺼번에)', SPOTS=[];
 $('#btnBulk').onclick=function(){
   var c=$('#bkCenter').value==='me'?pos:STORE; if(!c){msg($('#bulkMsg'),'아직 내 위치를 못 받았어요.','bad');return}
-  var N=Math.max(1,Math.min(parseInt($('#bkN').value,10)||50,100)), step=Math.max(8,parseInt($('#bkStep').value,10)||18);
+  var N=Math.max(1,Math.min(parseInt($('#bkN').value,10)||50,100)), step=Math.max(5,parseInt($('#bkStep').value,10)||10);
   var mLat=1/111320, mLng=1/(111320*Math.cos(c.lat*Math.PI/180)), side=Math.ceil(Math.sqrt(N)), half=(side-1)/2, list=[];
   for(var r=0;r<side;r++)for(var k=0;k<side;k++){if(list.length>=N)break;
     var dy=(r-half)*step+(Math.random()-.5)*4, dx=(k-half)*step+(Math.random()-.5)*4, dist=Math.round(Math.hypot(dx,dy));
@@ -289,11 +290,20 @@ $('#btnBulk').onclick=function(){
     EV.staff('ownerDigBury',{eventId:EID,lat:x.lat,lng:x.lng,acc:0,name:x.name,hint:x.hint,task:'quiz',memo:BULK_MEMO}).then(next,function(){fail++;next()});
   })();
 };
+/* 이미 깐 테스트 보물을 지우고 지금 개수·간격으로 다시 깐다 */
+$('#btnRelay').onclick=function(){
+  var t=SPOTS.filter(function(x){return x.memo===BULK_MEMO});
+  if(!confirm('테스트 보물 '+t.length+'곳을 지우고 '+($('#bkN').value||50)+'곳을 '+($('#bkStep').value||10)+'m 간격으로 다시 깔까요?')) return;
+  var b=this,i=0; b.disabled=true;
+  (function next(){
+    if(i>=t.length){b.disabled=false;SPOTS=SPOTS.filter(function(x){return x.memo!==BULK_MEMO});$('#btnBulk').onclick.call($('#btnBulk'));return}
+    msg($('#bulkMsg'),'지우는 중… '+(i+1)+' / '+t.length);
+    EV.staff('ownerDigSpotStatus',{eventId:EID,id:t[i++].id,status:'delete'}).then(next,next);
+  })();
+};
 $('#btnFarDel').onclick=function(){
   var t=SPOTS.filter(function(x){return distM(STORE,x)>1000}); if(!t.length){msg($('#bulkMsg'),'1km 넘게 떨어진 보물이 없어요.');return}
-  if(!confirm('매장(월랑로 59)에서 1km 넘게 떨어진 보물 '+t.length+'곳을 삭제할까요?
-'+t.slice(0,8).map(function(x){return '· '+(x.name||x.id)+' ('+(distM(STORE,x)/1000).toFixed(1)+'km)'}).join('
-'))) return;
+  if(!confirm('매장(월랑로 59)에서 1km 넘게 떨어진 보물 '+t.length+'곳을 삭제할까요?\n'+t.slice(0,8).map(function(x){return '· '+(x.name||x.id)+' ('+(distM(STORE,x)/1000).toFixed(1)+'km)'}).join('\n'))) return;
   var b=this,i=0; b.disabled=true;
   (function next(){
     if(i>=t.length){b.disabled=false;msg($('#bulkMsg'),t.length+'곳 지웠어요.','ok');load();return}
