@@ -325,7 +325,7 @@ function renderHome(){
   var s=h.schedule||[],t=nowHM(),nx=c.kind==='wait'?null:s.filter(function(x){return x.from>t})[0];
   $('hNext').textContent=nx?'다음 '+nx.from+' · '+(nx.title||''):'';
   /* 현황판 */
-  $('bdPass').textContent=h.pass?'당일 패스 확인됨'+(h.bandNo?' · 손목띠 '+h.bandNo:''):(h.passRequired?'아직 패스가 없어요':'지금은 패스 없이 체험할 수 있어요');
+  $('bdPass').hidden=!h.passRequired; $('bdPass').textContent=h.pass?'당일 패스 확인됨'+(h.bandNo?' · 손목띠 '+h.bandNo:''):(h.passRequired?'아직 패스가 없어요':'지금은 패스 없이 체험할 수 있어요');
   $('bdTT').innerHTML=s.length?s.map(function(x){var cls=t>=x.from&&t<x.to?'on':t>=x.to?'past':'';
     return '<div class="'+cls+'"><span>'+x.from+' ~ '+x.to+'</span><b>'+esc(x.title||'')+'</b>'+(cls==='on'?'<span class="chip ok" style="width:auto">지금</span>':'')+'</div>'}).join(''):'<p class="muted">시간표는 곧 올라와요.</p>';
 }

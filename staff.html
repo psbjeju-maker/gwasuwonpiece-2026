@@ -68,6 +68,7 @@ td,th{padding:8px 4px;border-bottom:1px solid var(--line);text-align:left}
 #scanner p{position:absolute;top:calc(env(safe-area-inset-top,0px) + 20px);color:#fff;font-weight:700}
 #scanner button{position:absolute;bottom:calc(var(--safe-b) + 28px);min-height:52px;padding:0 28px;border-radius:99px;background:#fff;font-weight:700}
 #bandPrint{display:none}
+.bandonly,.btn.scan{display:none!important}
 @media print{
   body{background:#fff}header,main,#scanner{display:none!important}
   #bandPrint{display:grid!important;grid-template-columns:repeat(4,1fr);gap:4mm;padding:4mm}
@@ -121,7 +122,8 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function h(html){var d=document.createElement('div');d.innerHTML=html;return d}
 function rid(){return EV.newId()}
 var TIER={TOP:'상위 상품',A:'A상',B:'B상',C:'C상',D:'D상',FREE:'무료 뽑기권',X:'꽝'};
-var TASKS={entry:'입장',pass:'패스 판매',vote:'노래방 진행',votehelp:'현장 투표 지원',hq:'본부 미션 보상',draw:'뽑기',pickup:'상품 수령'};
+/* 2026-10-21: 당일은 손목띠 찬 사람 = 패스 산 사람(눈으로 확인). 손목띠 QR·패스 등록·입장 기록은 안 씀 → 화면에서 숨김(.bandonly) */
+var TASKS={vote:'노래방 진행',votehelp:'현장 투표 지원',hq:'본부 미션 보상',draw:'뽑기',pickup:'상품 수령'};
 function call(n,d){return EV.staff(n,Object.assign({eventId:EID},d||{}))}
 function errMsg(e){return (e&&(e.message||e.reason))||'처리하지 못했어요'}
 
@@ -129,10 +131,10 @@ function errMsg(e){return (e&&(e.message||e.reason))||'처리하지 못했어요
 function res(el,kind,big,sub){el.innerHTML='<div class="res '+kind+'"><div class="big">'+esc(big)+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'}
 function whoHtml(w){
   return '<div class="who"><b>'+esc(w.nickname||'(이름 없음)')+'</b> '+(w.code?'<span class="chip">참가번호 '+esc(w.code)+'</span>':'')+
-    (w.band?'<span class="chip">손목띠 '+w.band.no+'</span>':'')+'<span class="chip '+(w.pass?'ok':'no')+'">'+(w.pass?'당일 패스 있음':'패스 없음')+'</span>'+(w.offline?'<span class="chip">폰 없음</span>':'')+'</div>';
+    (w.offline?'<span class="chip">폰 없음</span>':'')+'</div>';
 }
 /* 번호 입력 + QR 스캔 한 줄 */
-function codeRow(id,ph){return '<div class="inrow"><input id="'+id+'" placeholder="'+(ph||'참가번호 또는 손목띠 번호')+'" autocomplete="off" autocapitalize="characters"><button class="btn scan" data-scan="'+id+'" type="button">QR 스캔</button></div>'}
+function codeRow(id,ph){return '<div class="inrow"><input id="'+id+'" placeholder="'+(ph||'참가번호 6자리')+'" autocomplete="off" autocapitalize="characters"><button class="btn scan" data-scan="'+id+'" type="button">QR 스캔</button></div>'}
 function busy(btn,p){btn.disabled=true;return p.then(function(r){btn.disabled=false;return r},function(e){btn.disabled=false;throw e})}
 
 /* ---------- QR 스캐너 ---------- */
@@ -241,17 +243,17 @@ SCREENS.npc=function(box){
     $('npcHead').innerHTML='<h2>'+esc(n.name||'NPC 미션')+'</h2>'+(n.place?'<p class="muted">장소: '+esc(n.place)+'</p>':'')+(n.line?'<div class="res info" style="text-align:left"><div class="sub" style="margin:0">'+esc(n.line)+'</div></div>':'')+
       (n.active===false?'<div class="res no"><div class="big">지금 자리 비움 상태</div><div class="sub">새 손님 배정이 멈춰 있어요</div></div>':'');
   },function(e){$('npcHead').innerHTML='<p class="muted">'+esc(errMsg(e))+'</p>'});
-  simple(box,{title:'미션 완료 확인',lead:'손님이 미션을 마치면 참가번호(또는 손목띠)를 확인하고 완료를 눌러요.',button:'미션 완료',
+  simple(box,{title:'미션 완료 확인',lead:'손님이 미션을 마치면 손님 폰에 보이는 참가번호를 넣고 완료를 눌러요.',button:'미션 완료',
     run:function(c){return call('npcComplete',{code:c})},
     done:function(r,el){res(el,r.already?'info':'ok',r.already?'이미 완료했습니다':'완료! 손님 앱에서 상자를 열 수 있어요',esc(r.nickname||''))}});
 };
 
 SCREENS.hq=function(box){
   box.appendChild(h('<div class="card"><h2>미션지 완료 → 보상</h2><p class="muted">폰 없는 손님도 같은 보물 상품판에서 보상을 받아요.</p>'+
-    '<label>참가번호 또는 손목띠</label>'+codeRow('hCode')+'<label>미션지 번호</label><input id="hSheet" placeholder="예) M012" autocomplete="off" style="text-transform:uppercase">'+
+    '<label>참가번호</label>'+codeRow('hCode')+'<label>미션지 번호</label><input id="hSheet" placeholder="예) M012" autocomplete="off" style="text-transform:uppercase">'+
     '<button class="btn p mt" id="hGo" type="button">완료 확인 및 보상</button><div id="hRes"></div></div>'+
     '<details class="card"><summary style="font-weight:700">NPC 자리 비움 — 미션 대신 완료</summary>'+codeRow('nCode')+'<button class="btn mt" id="nGo" type="button">미션 대신 완료</button><div id="nRes"></div></details>'+
-    '<details class="card"><summary style="font-weight:700">손목띠에 앱 연결 (복구)</summary><label>손목띠</label>'+codeRow('lBand','손목띠')+'<label>앱 참가번호</label>'+codeRow('lApp','앱 참가번호')+'<button class="btn mt" id="lGo" type="button">앱 연결</button><div id="lRes"></div></details>'));
+    '<details class="card bandonly"><summary style="font-weight:700">손목띠에 앱 연결 (복구)</summary><label>손목띠</label>'+codeRow('lBand','손목띠')+'<label>앱 참가번호</label>'+codeRow('lApp','앱 참가번호')+'<button class="btn mt" id="lGo" type="button">앱 연결</button><div id="lRes"></div></details>'));
   $('hGo').onclick=function(){
     busy(this,call('hqPaper',{code:$('hCode').value.trim(),sheetNo:$('hSheet').value.trim()})).then(function(r){
       var t=r.result||{}, win=t.tier&&t.tier!=='X';
@@ -292,7 +294,7 @@ SCREENS.draw=function(box){
 };
 
 SCREENS.pickup=function(box){
-  box.appendChild(h('<div class="card"><h2>상품 수령</h2><p class="muted">참가번호로 당첨 내역을 보고, 건넨 상품만 전달 완료를 눌러요.</p>'+codeRow('kCode')+
+  box.appendChild(h('<div class="card"><h2>상품 수령</h2><p class="muted">손목띠 찬 손님인지 눈으로 확인하고, 참가번호로 당첨 내역을 본 뒤 건넨 상품만 전달 완료를 눌러요.</p>'+codeRow('kCode')+
     '<button class="btn p mt" id="kLook" type="button">당첨 내역 조회</button><div id="kWho"></div><div class="list" id="kList"></div><div id="kRes"></div></div>'));
   var cur=null;
   function look(){
@@ -369,7 +371,7 @@ SCREENS.rec=function(box,task){
       var first=!item||item.id!==r.item.id; item=r.item;
       if(!admin){
         $('hTask').textContent=item.name;
-        $('rHead').innerHTML='<h2>'+esc(item.name)+'</h2><p class="muted">'+esc(item.help||('참가번호(또는 손목띠)를 확인하고 '+(item.kind==='join'?'참여를 저장해요.':REC_KIND[item.kind]+'를 넣어 저장해요.')))+'</p>'+
+        $('rHead').innerHTML='<h2>'+esc(item.name)+'</h2><p class="muted">'+esc(item.help||('참가번호를 확인하고 '+(item.kind==='join'?'참여를 저장해요.':REC_KIND[item.kind]+'를 넣어 저장해요.')))+'</p>'+
           (item.active===false?'<div class="res no"><div class="big">지금은 기록을 받지 않아요</div><div class="sub">총괄에게 문의해 주세요</div></div>':'');
       }
       if(first) form();
@@ -380,7 +382,7 @@ SCREENS.rec=function(box,task){
   function form(){
     $('rBody').innerHTML='';
     if(!admin){
-      $('rBody').appendChild(h('<div class="card"><label>참가번호 또는 손목띠</label>'+codeRow('rCode')+valInput('rVal')+'<button class="btn p mt" id="rGo" type="button">저장</button><div id="rRes"></div></div>'));
+      $('rBody').appendChild(h('<div class="card"><label>참가번호</label>'+codeRow('rCode')+valInput('rVal')+'<button class="btn p mt" id="rGo" type="button">저장</button><div id="rRes"></div></div>'));
       var save=function(){
         var c=$('rCode').value.trim(); if(!c){res($('rRes'),'no','번호를 입력하세요');return}
         var v=$('rVal')?$('rVal').value.trim():true;
@@ -395,7 +397,7 @@ SCREENS.rec=function(box,task){
       $('rCode').addEventListener('scanned',function(){if($('rVal'))$('rVal').focus();else save()});
       if($('rVal'))$('rVal').addEventListener('keydown',function(e){if(e.key==='Enter')save()});
     } else {
-      $('rBody').appendChild(h('<div class="card"><h2>기록 정정 (총괄만)</h2><label>참가번호 또는 손목띠</label>'+codeRow('fCode')+valInput('fVal')+'<input id="fWhy" class="mt" placeholder="사유 (꼭 적기)">'+
+      $('rBody').appendChild(h('<div class="card"><h2>기록 정정 (총괄만)</h2><label>참가번호</label>'+codeRow('fCode')+valInput('fVal')+'<input id="fWhy" class="mt" placeholder="사유 (꼭 적기)">'+
         '<div class="two mt">'+(item.kind==='join'?'<button class="btn p" id="fGo" type="button">참여로 기록</button>':'<button class="btn p" id="fGo" type="button">값 바꾸기</button>')+'<button class="btn d" id="fDel" type="button">기록 지우기</button></div><div id="fRes"></div></div>'));
       var fix=function(remove,btn){
         busy(btn,q('recFix',{code:$('fCode').value.trim(),value:$('fVal')?$('fVal').value.trim():true,remove:remove,reason:$('fWhy').value.trim()})).then(function(r){
@@ -422,9 +424,9 @@ SCREENS.admin=function(box){
     '<label>업무</label><select id="aTask"></select><input id="aNpc" placeholder="NPC 아이디 (예: n1)" class="mt" hidden><select id="aRec" class="mt" hidden></select><label>담당자 이름</label><input id="aLabel" placeholder="예) 민수">'+
     '<button class="btn p mt" id="aMake" type="button">PIN 만들기</button><div id="aPin"></div><div class="list mt" id="aPins"></div></div>'+
     '<div class="card"><h2>행사 기록 항목</h2><p class="muted">「행사 기록」 담당이 저장할 입력 1종을 정해요. 항목마다 담당 PIN을 따로 만들어요. 기록은 보상과 연결되지 않아요.</p><div id="recItems"></div><div class="two mt"><button class="btn" id="recAdd" type="button">항목 추가</button><button class="btn p" id="recSaveCfg" type="button">항목 저장</button></div><div id="recRes"></div></div>'+
-    '<div class="card"><h2>손목띠</h2><label>새로 만들 개수</label><input id="bCount" type="number" value="50" min="1" max="500"><div class="two mt"><button class="btn p" id="bMake" type="button">만들기</button><button class="btn" id="bPrint" type="button">전체 인쇄</button></div><div id="bRes"></div></div>'+
-    '<div class="card"><h2>정정 (총괄만)</h2><label>손목띠 재발급: 기존 → 새 손목띠</label>'+codeRow('rOld','기존 손목띠')+'<div class="mt"></div>'+codeRow('rNew','새 손목띠 QR')+'<input id="rWhy" class="mt" placeholder="사유 (예: 분실)"><button class="btn mt" id="rGo" type="button">재발급</button>'+
-    '<label>패스 취소 (결제 취소·잘못된 활성화)</label>'+codeRow('xCode')+'<input id="xWhy" class="mt" placeholder="사유"><button class="btn d mt" id="xGo" type="button">패스 취소</button>'+
+    '<div class="card bandonly"><h2>손목띠</h2><label>새로 만들 개수</label><input id="bCount" type="number" value="50" min="1" max="500"><div class="two mt"><button class="btn p" id="bMake" type="button">만들기</button><button class="btn" id="bPrint" type="button">전체 인쇄</button></div><div id="bRes"></div></div>'+
+    '<div class="card"><h2>정정 (총괄만)</h2><div class="bandonly"><label>손목띠 재발급: 기존 → 새 손목띠</label>'+codeRow('rOld','기존 손목띠')+'<div class="mt"></div>'+codeRow('rNew','새 손목띠 QR')+'<input id="rWhy" class="mt" placeholder="사유 (예: 분실)"><button class="btn mt" id="rGo" type="button">재발급</button>'+
+    '<label>패스 취소 (결제 취소·잘못된 활성화)</label>'+codeRow('xCode')+'<input id="xWhy" class="mt" placeholder="사유"><button class="btn d mt" id="xGo" type="button">패스 취소</button></div>'+
     '<button class="btn mt" id="vReset" type="button">투표 초기화(표 전부 삭제)</button><div id="rRes"></div></div>'+
     '<div class="card"><h2>보물 장소·상품판·NPC</h2><a class="btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="bury.html">보물 관리 화면 열기</a></div>'));
   $('aViews').innerHTML=Object.keys(TASKS).concat('rec').map(function(k){return '<button class="btn sm" data-view="'+k+'" type="button" style="width:100%">'+(TASKS[k]||'행사 기록')+'</button>'}).join('');
