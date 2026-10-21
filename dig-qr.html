@@ -17,6 +17,9 @@ html,body{margin:0;background:#fff;color:#111;font-family:-apple-system,"Malgun 
 .q small{display:block;color:#888;font-size:12px;word-break:break-all;margin-top:6px}
 .tag{display:inline-block;font-size:13px;font-weight:700;padding:3px 12px;border-radius:99px;background:#142439;color:#fff;margin-bottom:8px}
 .bury .tag{background:#B8530A}
+.q.test{border-color:#E8742A;border-style:dashed}
+.test .tag{background:#E8742A}
+h3.sec{grid-column:1/-1;margin:10px 0 -6px;font-size:18px;color:#E8742A}
 @media print{.wrap{padding:0}}
 </style>
 </head>
@@ -43,6 +46,28 @@ html,body{margin:0;background:#fff;color:#111;font-family:-apple-system,"Malgun 
     <img id="qBury" alt="보물 관리 QR">
     <small id="uBury"></small>
   </div>
+  <h3 class="sec">매장 테스트용 (본 행사와 기록 따로)</h3>
+  <div class="q test">
+    <span class="tag">손님 · 테스트</span>
+    <h2>황금 귤을 찾아라</h2>
+    <p>매장 근처 테스트 보물찾기<br>경품 적게 · 실제 행사와 따로</p>
+    <img id="qDigT" alt="테스트 손님 앱 QR">
+    <small id="uDigT"></small>
+  </div>
+  <div class="q test">
+    <span class="tag">스태프 · 테스트</span>
+    <h2>스태프</h2>
+    <p>NPC 완료 · 상품 수령<br>연습용</p>
+    <img id="qStaffT" alt="테스트 스태프 QR">
+    <small id="uStaffT"></small>
+  </div>
+  <div class="q test">
+    <span class="tag">총괄 · 테스트</span>
+    <h2>보물 관리</h2>
+    <p>테스트 보물 깔기·설정<br>「본 행사에 적용」</p>
+    <img id="qBuryT" alt="테스트 보물 관리 QR">
+    <small id="uBuryT"></small>
+  </div>
 </div>
 <script src="qr.js"></script>
 <script>
@@ -52,6 +77,9 @@ html,body{margin:0;background:#fff;color:#111;font-family:-apple-system,"Malgun 
   put('qDig','uDig',base);
   put('qStaff','uStaff',base+'staff.html');
   put('qBury','uBury',base+'bury.html');
+  put('qDigT','uDigT',base+'?ev=test');
+  put('qStaffT','uStaffT',base+'staff.html?ev=test');
+  put('qBuryT','uBuryT',base+'bury.html?ev=test');
 })();
 </script>
 </body>
