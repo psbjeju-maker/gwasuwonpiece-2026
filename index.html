@@ -138,21 +138,21 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 @keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
 .mycode{font-size:30px;font-weight:700;letter-spacing:.18em;text-align:center;background:var(--gold-soft);border-radius:14px;padding:10px;margin:10px 0}
 
-.bx{position:relative;height:250px;margin:6px auto 0;max-width:300px;touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab}
-.bx img.bx-body,.bx img.bx-lid{position:absolute;left:50%;top:0;width:250px;margin-left:-125px;pointer-events:none}
-.bx .bx-body{clip-path:inset(45.5% 0 0 0)}
-.bx .bx-lid{clip-path:inset(0 0 53.5% 0);transform-origin:50% 46%;will-change:transform;filter:brightness(1)}
-.bx-in{position:absolute;left:50%;top:37%;width:132px;height:34px;margin-left:-68px;border-radius:12px 12px 4px 4px;background:linear-gradient(#120a03,#3a2410);opacity:0;pointer-events:none}
-.bx-glow{position:absolute;left:50%;top:22%;width:220px;height:140px;border-radius:50%;background:radial-gradient(ellipse,rgba(255,226,140,.95),rgba(255,190,70,.45) 45%,transparent 70%);opacity:0;transform:translateX(-50%) scale(.6);pointer-events:none}
-.bx-prize{position:absolute;left:50%;top:30%;display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;z-index:1}
-.bx-prize img{width:84px;height:auto;filter:drop-shadow(0 4px 10px rgba(255,170,40,.7))}
-.bx-prize b{font-size:22px;color:#7A4A06;background:#FFE7A8;border-radius:99px;padding:2px 14px;margin-top:4px}
+.bx{position:relative;margin:4px auto 0;touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab;overflow:visible}
+.bx-l{position:absolute;pointer-events:none;height:auto;will-change:transform}
+#bxOpen{transform-origin:50% 80%}
+#bxLid{transform-origin:50% 100%;transition:opacity .08s}
+#bxGlow{transform-origin:50% 87%;mix-blend-mode:screen}
+#bxLock{transition:transform .5s cubic-bezier(.3,.6,.5,1),opacity .5s}
+#bxLock.off{transform:translate(30px,90px) rotate(38deg);opacity:0}
+.bx-prize{position:absolute;display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none}
+.bx-prize img{width:84px;height:auto;filter:drop-shadow(0 4px 10px rgba(255,170,40,.8))}
+.bx-prize b{font-size:22px;color:#7A4A06;background:#FFE7A8;border-radius:99px;padding:2px 14px;margin-top:4px;white-space:nowrap}
 .bx-prize b.x{font-size:30px;color:var(--muted);background:var(--surface-2)}
-.bx-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-weight:700;color:var(--teal);background:var(--teal-soft);border-radius:99px;padding:4px 14px;animation:bxh 1s ease-in-out infinite;transition:opacity .2s}
+.bx-hint{position:absolute;left:50%;bottom:0;transform:translateX(-50%);font-weight:700;color:var(--teal);background:var(--teal-soft);border-radius:99px;padding:4px 14px;animation:bxh 1s ease-in-out infinite;transition:opacity .2s;white-space:nowrap}
 @keyframes bxh{50%{transform:translate(-50%,-8px)}}
-.bx.win .bx-glow{animation:bxw .9s ease-out}
-@keyframes bxw{0%{filter:brightness(1)}40%{filter:brightness(1.8)}100%{filter:brightness(1)}}
-.bx .bx-prize{transition:none}
+.bx.win #bxGlow{animation:bxw 1.1s ease-out}
+@keyframes bxw{40%{filter:brightness(1.6)}}
 /* 내 보상 */
 .rw{display:flex;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
 .rw:first-child{border-top:0}
@@ -250,7 +250,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
   <div class="ss" id="stSub">화면을 계속 두드리면 삽질해요</div>
   <div class="ground" id="ground">
     <div class="hole" id="hole"></div>
-    <img class="chest" id="chest" src="assets/icons/treasure_chest.png" alt="보물상자">
+    <img class="chest" id="chest" src="assets/box/closed.webp" alt="보물상자">
     <svg class="shovel" id="shovel" viewBox="0 0 60 120" aria-hidden="true"><rect x="27" y="0" width="6" height="70" rx="3" fill="#9a6a3a"/><rect x="18" y="0" width="24" height="8" rx="4" fill="#6b4626"/><path d="M14 70h32v22c0 14-8 24-16 28-8-4-16-14-16-28z" fill="#c9ced6" stroke="#8b929c" stroke-width="2"/></svg>
   </div>
   <div class="taps" id="taps"><b>탭! 탭! 탭!</b><div class="bar"><i id="tapBar"></i></div></div>
@@ -493,37 +493,50 @@ function answer(i,b){
     function(e){answering=false;b.classList.remove('pick');b.disabled=false;$('qErr').textContent=e.message||'다시 눌러 주세요.'});
 }
 /* 정답(또는 NPC 완료) → "정답입니다!" → 상자 뚜껑을 손가락으로 위로 밀어 연다.
-   상자 그림 한 장을 뚜껑(위)·몸통(아래)으로 잘라 뚜껑만 경첩(띠 줄)을 축으로 젖힌다. 60% 넘게 밀면 나머지는 알아서 열림 */
-var BOX_HINGE=46; /* treasure_chest.png 에서 뚜껑과 몸통 경계(%) */
+   그림(assets/box): body 몸통 · lid 닫힌 뚜껑 · lid_open 열린 뚜껑(몸통 뒤) · lock 자물쇠 · glow 빛.
+   좌표는 몸통 폭 640 기준으로 잰 값(앞 테두리 y182, 뒤 테두리 y58). 60% 넘게 밀면 나머지는 알아서 열림 */
 function peel(r){
   var win=r.tier&&r.tier!=='X';
   $('chest').classList.remove('shake');
   $('stTitle').textContent=r.task==='quiz'?'정답입니다!':'미션 완료!';$('stSub').textContent='';
   sfx('pop');buzz([40,40,40]);
   sheet('<div class="res"><div class="big">'+(r.task==='quiz'?'정답입니다!':'미션 완료!')+'</div><p>상자 뚜껑을 손가락으로 <b>위로 밀어서</b> 열어 봐!</p></div>'+
-    '<div class="bx" id="bx"><div class="bx-in" id="bxIn"></div><div class="bx-glow" id="bxGlow"></div>'+
-    '<div class="bx-prize" id="bxPrize">'+(win?'<img src="assets/icons/golden_tangerine.png" alt=""><b>'+esc(TIER[r.tier])+'</b>':'<b class="x">꽝</b>')+'</div>'+
-    '<img class="bx-body" src="assets/icons/treasure_chest.png" alt="">'+
-    '<img class="bx-lid" id="bxLid" src="assets/icons/treasure_chest.png" alt="">'+
-    '<div class="bx-hint" id="bxHint">⇧ 위로 밀기</div></div>'+
-    '<button class="btn" id="bxSkip" type="button" style="margin-top:4px;background:none;min-height:40px;font-size:14px;color:var(--muted)">바로 열기</button>');
-  var bx=$('bx'),lid=$('bxLid'),glow=$('bxGlow'),prize=$('bxPrize'),p=0,y0=null,auto=false,done=false;
+    '<div class="bx" id="bx">'+
+      '<img class="bx-l" id="bxOpen" src="assets/box/lid_open.webp" alt="">'+
+      '<img class="bx-l" id="bxGlow" src="assets/box/glow.webp" alt="">'+
+      '<div class="bx-prize" id="bxPrize">'+(win?'<img src="assets/icons/golden_tangerine.png" alt=""><b>'+esc(TIER[r.tier])+'</b>':'<b class="x">꽝</b>')+'</div>'+
+      '<img class="bx-l" id="bxBody" src="assets/box/body.webp" alt="">'+
+      '<img class="bx-l" id="bxLid" src="assets/box/lid.webp" alt="">'+
+      '<img class="bx-l" id="bxLock" src="assets/box/lock.webp" alt="">'+
+      '<div class="bx-hint" id="bxHint">⇧ 위로 밀기</div>'+
+    '</div>'+
+    '<button class="btn" id="bxSkip" type="button" style="margin-top:2px;background:none;min-height:40px;font-size:14px;color:var(--muted)">바로 열기</button>');
+  var bx=$('bx'), BW=Math.min(250,bx.clientWidth*.78), K=BW/640, X0=(bx.clientWidth-BW)/2, T=300*K;
+  function put(id,l,t,w){var e=$(id);e.style.left=(X0+l*K)+'px';e.style.top=(t)+'px';e.style.width=(w*K)+'px'}
+  put('bxOpen',-27.5,T-300*K,678); put('bxBody',0,T,640); put('bxLid',-70,T+182*K-295*K,751);
+  put('bxLock',245,T+120*K,150); put('bxGlow',-150,T+150*K-326*K,940);
+  bx.style.height=(T+446*K+8)+'px';
+  var pz=$('bxPrize'); pz.style.left=(X0+BW/2)+'px'; pz.style.top=(T+40*K)+'px';
+  var p=0,y0=null,auto=false,done=false,lockOff=false;
   function draw(){
-    lid.style.transform='perspective(420px) translateY('+(-p*34)+'px) rotateX('+(p*62)+'deg)';
-    $('bxIn').style.opacity=Math.min(1,p*4); glow.style.opacity=Math.min(1,p*1.6); glow.style.transform='translateX(-50%) scale('+(.6+p*.7)+')';
-    prize.style.opacity=p>.35?Math.min(1,(p-.35)/.4):0; prize.style.transform='translate(-50%,'+(-p*58)+'%) scale('+(.6+p*.5)+')';
+    var a=Math.min(1,p/.5), b=Math.max(0,(p-.45)/.55);
+    $('bxLid').style.transform='translateY('+(-a*40*K)+'px) scaleY('+(1-a*.85)+')'; $('bxLid').style.opacity=p<.5?1:0;
+    $('bxOpen').style.transform='scaleY('+b+')'; $('bxOpen').style.opacity=b>0?1:0;
+    $('bxGlow').style.opacity=Math.min(1,b*1.4); $('bxGlow').style.transform='scale('+(.5+b*.6)+')';
+    pz.style.opacity=b>.3?Math.min(1,(b-.3)/.4):0; pz.style.transform='translate(-50%,'+(-b*120)+'%) scale('+(.6+b*.5)+')';
     $('bxHint').style.opacity=p>.05?0:1;
+    if(p>.06&&!lockOff){lockOff=true;$('bxLock').classList.add('off');sfx('pop');buzz(20)}
   }
   function open(){
     if(auto) return; auto=true; var from=p,t0=performance.now();
-    (function step(now){var k=Math.min(1,(now-t0)/260);p=from+(1-from)*(1-Math.pow(1-k,3));draw();if(k<1)requestAnimationFrame(step);else fin()})(t0);
+    (function step(now){var k=Math.min(1,(now-t0)/320);p=from+(1-from)*(1-Math.pow(1-k,3));draw();if(k<1)requestAnimationFrame(step);else fin()})(t0);
   }
   function fin(){
     if(done) return; done=true; sfx(win?'boom':'pop'); buzz(win?[60,40,120]:[30]);
-    bx.classList.add(win?'win':'lose'); setTimeout(function(){showResult(r)},win?1100:800);
+    bx.classList.add(win?'win':'lose'); setTimeout(function(){showResult(r)},win?1300:900);
   }
   bx.addEventListener('pointerdown',function(e){if(auto)return;y0=e.clientY;try{bx.setPointerCapture(e.pointerId)}catch(_){}});
-  bx.addEventListener('pointermove',function(e){if(y0==null||auto)return;p=Math.max(0,Math.min(1,(y0-e.clientY)/150));draw();if(p>=.6){y0=null;open()}});
+  bx.addEventListener('pointermove',function(e){if(y0==null||auto)return;p=Math.max(0,Math.min(1,(y0-e.clientY)/160));draw();if(p>=.6){y0=null;open()}});
   function up(){if(y0==null)return;y0=null;if(p>=.6)open();else{var from=p,t0=performance.now();(function back(now){var k=Math.min(1,(now-t0)/180);p=from*(1-k);draw();if(k<1&&!auto)requestAnimationFrame(back)})(t0)}}
   bx.addEventListener('pointerup',up);bx.addEventListener('pointercancel',up);
   $('bxSkip').onclick=open;
