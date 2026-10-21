@@ -66,6 +66,16 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .tt .on{background:var(--gold-soft)}
 .tt .on span{color:#7A5520}
 .tt .past{opacity:.45}
+.testtag{font-size:12.5px;font-weight:700;text-align:center;padding:4px 10px;border-radius:99px;background:var(--orange);color:#fff;margin:0 0 6px}
+.plays{text-align:center;font-weight:700;color:var(--navy);margin:12px 0 0;font-size:15px}
+.plays b{font-size:20px;color:var(--teal)}
+.bh{font-size:15px;margin:16px 0 4px}
+.pz{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.pz img,.pz i{width:48px;height:48px;border-radius:10px;object-fit:cover;background:var(--surface-2);flex:0 0 auto}
+.pz div{flex:1;min-width:0}
+.pz .n{font-weight:700;white-space:nowrap}
+.pz.out{opacity:.45}
+.info{background:var(--gold-soft);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px}
 
 /* 보물 탐색 */
 .hunt{background:var(--navy-deep);color:#F4EFE6;min-height:100vh}
@@ -169,6 +179,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 
 <!-- 홈 -->
 <section class="scr" id="scHome" hidden>
+  <div class="testtag" id="testTag" hidden>매장 테스트 중 · 실제 행사와 기록이 따로예요</div>
   <div class="top"><h1>황금 귤을 찾아라</h1><span class="pill">참가번호 <b id="hCode">-</b></span></div>
   <div class="card notice" id="hNotice" hidden><p style="margin:0;font-weight:700" id="hNoticeText"></p></div>
   <!-- 지금 시간대: 큰 버튼 하나만 -->
@@ -181,6 +192,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
   </div>
   <button class="btn big" id="btnMain" type="button" hidden>보물찾기 시작</button>
 
+  <p class="plays" id="hPlays"></p>
   <p class="next" id="hNext"></p>
   <button class="mini" id="btnBoard" type="button">현황판<span class="dot" id="hBadge" hidden></span></button>
 </section>
@@ -189,6 +201,9 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 <div id="board" hidden><div class="in">
   <h2 style="margin:0 0 2px">현황판</h2><p class="muted" id="bdPass"></p>
   <div class="tt" id="bdTT"></div>
+  <h3 class="bh">남은 경품</h3><div id="bdPrizes"></div>
+  <div id="bdGyul"></div>
+  <div id="bdExtra"></div>
   <button class="btn p" id="btnRewards" type="button" style="margin-top:14px">내 보상 <span id="hRwSub"></span></button>
   <a class="btn" href="guide.html" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit;margin-top:8px">이용 안내</a>
   <button class="btn" data-bclose type="button" style="margin-top:8px;background:none">닫기</button>
@@ -235,19 +250,21 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 <script>
 (function(){
 'use strict';
-var EID='gwasu', TAPS=8;
+/* ?ev=test → 매장 테스트(gwtest). 코드는 같고 데이터만 따로 */
+var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu', TAPS=8;
 var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 var SCR=['scBoot','scReg','scHome','scHunt','scRewards'];
 function show(id){SCR.forEach(function(s){$(s).hidden=s!==id});window.scrollTo(0,0);if(id!=='scHunt')stopGps()}
 var SFX={};function sfx(n){try{var a=SFX[n]||(SFX[n]=new Audio('sfx/'+n+'.mp3'));a.currentTime=0;a.play().catch(function(){})}catch(e){}}
 function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
-var TIER={TOP:'상위 상품',A:'A상',B:'B상',C:'C상',D:'D상',FREE:'무료 뽑기권',X:'꽝'};
+var TIER={TOP:'특상',A:'A상',B:'B상',C:'C상',D:'D상',E:'E상',FREE:'무료 뽑기권',X:'꽝'};
 function qr(img,text){try{var q=qrcode(0,'M');q.addData(text);q.make();img.src=q.createDataURL(5,2)}catch(e){}}
 function hm(ms){var d=new Date(ms);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
 
 var HOME=null;
 /* ---------- 시작 ---------- */
+if(TEST){document.getElementById('testTag').hidden=false;document.title='[테스트] '+document.title}
 function boot(){
   show('scBoot'); $('bootMsg').textContent='불러오는 중…'; $('btnRetry').hidden=true;
   return EV.call('myHome',{eventId:EID}).then(function(r){HOME=r;renderHome();route()},function(e){
@@ -325,7 +342,17 @@ function renderHome(){
   $('hLine').innerHTML=line; $('hNpc').src='assets/characters/'+img+'.png';
   var s=h.schedule||[],t=nowHM(),nx=c.kind==='wait'?null:s.filter(function(x){return x.from>t})[0];
   $('hNext').textContent=nx?'다음 '+nx.from+' · '+(nx.title||''):'';
+  var pl=h.plays||{};
+  $('hPlays').innerHTML=pl.left==null?'':(pl.left>0?'남은 도전 <b>'+pl.left+'</b>회'+(pl.extra?' (추가 '+pl.extra+'회 포함)':''):'오늘 도전 횟수를 다 썼어요');
+  $('hPlays').hidden=c.kind!=='hunt'||needPass;
   /* 현황판 */
+  var pz=h.prizes||{items:[]};
+  $('bdPrizes').innerHTML=(pz.topGone?'<p class="info">상위 상품(A·B·C)은 모두 주인을 찾았어요.</p>':'')+(pz.items.length?pz.items.map(function(x){
+    return '<div class="pz'+(x.left?'':' out')+'">'+(x.img?'<img src="'+esc(x.img)+'" alt="" loading="lazy">':'<i></i>')+'<div><b>'+esc(TIER[x.tier]||x.tier)+'</b> · '+esc(x.name)+'</div><span class="n">'+(x.left?'남은 '+x.left+'개':'모두 당첨')+'</span></div>'}).join(''):'<p class="muted">경품 안내는 곧 올라와요.</p>');
+  var g=h.gyul||{};
+  $('bdGyul').innerHTML=g.rule||g.stock!=null?'<h3 class="bh">감귤</h3><p class="muted" style="color:var(--ink)">'+esc(g.rule||'')+'</p>'+(g.stock!=null?'<p class="muted">남은 감귤 약 '+g.stock+'개'+(g.stock<=0?' · 오늘 준비한 감귤이 다 나갔어요':'')+'</p>':''):'';
+  var x=h.extra;
+  $('bdExtra').innerHTML=x?'<h3 class="bh">추가 도전</h3><p class="info">'+x.price.toLocaleString()+'원에 도전 '+x.plays+'회'+(x.gyul?' + 감귤 '+x.gyul+'개':'')+' · '+esc(x.place||'본부')+'에서 현장 결제'+(x.perPerson?'<br>한 사람당 '+x.perPerson+'번까지 (지금 '+x.mine+'번 삼)':'')+(pz.topGone?'<br><b>상위 상품은 이미 모두 당첨됐어요.</b>':'')+'</p>':'';
   $('bdPass').hidden=!h.passRequired; $('bdPass').textContent=h.pass?'당일 패스 확인됨'+(h.bandNo?' · 손목띠 '+h.bandNo:''):(h.passRequired?'아직 패스가 없어요':'지금은 패스 없이 체험할 수 있어요');
   $('bdTT').innerHTML=s.length?s.map(function(x){var cls=t>=x.from&&t<x.to?'on':t>=x.to?'past':'';
     return '<div class="'+cls+'"><span>'+x.from+' ~ '+x.to+'</span><b>'+esc(x.title||'')+'</b>'+(cls==='on'?'<span class="chip ok" style="width:auto">지금</span>':'')+'</div>'}).join(''):'<p class="muted">시간표는 곧 올라와요.</p>';
@@ -373,7 +400,8 @@ var DUG={X:'꽝',wrong:'퀴즈 실패',quiz:'퀴즈 중',npc:'NPC 미션 중',op
 function update(){
   if(!data) return;
   var R=data.pool.radiusM||5, live=data.spots.filter(function(s){return s.live&&!s.dug});
-  $('rotLine').textContent=data.nextAt?'보물 위치는 '+hm(data.nextAt)+'에 바뀌어요':'';
+  var pl=data.plays||{};
+  $('rotLine').textContent=(pl.left!=null?'남은 도전 '+pl.left+'회 · ':'')+(data.nextAt?'보물 위치는 '+hm(data.nextAt)+'에 바뀌어요':'');
   /* 목록: 열린 보물 + 진행 중/끝난 보물 */
   $('tlist').innerHTML=data.spots.map(function(s){
     var d=pos?Math.round(distM(pos,s)):null, st=s.dug?(TIER[s.dug]||DUG[s.dug]||'진행 중'):'';
@@ -446,9 +474,28 @@ function showTask(t){
 function sheet(html){var s=$('sheet');s.innerHTML=html;s.className='sheet on'}
 function answer(i,b){
   if(answering) return;answering=true;b.classList.add('pick');b.disabled=true;
-  EV.call('digAnswer',{eventId:EID,spotId:spot.id,choice:i}).then(function(r){answering=false;showResult(r.result)},
+  EV.call('digAnswer',{eventId:EID,spotId:spot.id,choice:i}).then(function(r){answering=false;r.result.correct&&!r.duplicate?peel(r.result):showResult(r.result)},
     function(e){answering=false;b.classList.remove('pick');b.disabled=false;$('qErr').textContent=e.message||'다시 눌러 주세요.'});
 }
+/* 정답(또는 NPC 완료) → "정답입니다!" → 이치방쿠지처럼 봉인지를 왼쪽에서 오른쪽으로 밀어 상자 열기 (seal.js 재사용) */
+var SEAL=null, POWER={TOP:'무지개',A:'무지개',B:'강',C:'강',D:'중',E:'약',FREE:'약',X:'약'};
+function peel(r){
+  var win=r.tier&&r.tier!=='X';
+  $('chest').classList.remove('shake');
+  $('stTitle').textContent=r.task==='quiz'?'정답입니다!':'미션 완료!';$('stSub').textContent='';
+  sfx('pop');buzz([40,40,40]);
+  sheet('<div class="res"><div class="big">'+(r.task==='quiz'?'정답입니다!':'미션 완료!')+'</div><p>상자 봉인지를 손가락으로 <b>왼쪽에서 오른쪽</b>으로 밀어서 떼 봐!</p></div>'+
+    '<div id="sealHost" style="position:relative;height:230px;margin:4px -8px 0"></div><button class="btn" id="sealSkip" type="button" style="margin-top:6px;background:none;min-height:40px;font-size:14px;color:var(--muted)">바로 열기</button>');
+  var done=false; function fin(){if(done)return;done=true;showResult(r)}
+  $('sealSkip').onclick=function(){if(SEAL)SEAL.skip();else fin()};
+  (SEAL_MOD||(SEAL_MOD=import('./seal.js').then(function(m){return m.KujiSeal}))).then(function(KS){
+    if(!$('sealHost')) return;
+    SEAL=KS.mount($('sealHost'));
+    SEAL.load({label:win?TIER[r.tier]:'꽝',name:win?r.prize:'하지만 보물은 꽝',img:win?'assets/icons/golden_tangerine.png':'',power:POWER[r.tier]||'약'});
+    SEAL.onDone=function(){var s=SEAL;SEAL=null;fin();try{s.destroy()}catch(e){}};
+  },fin);
+}
+var SEAL_MOD=null;
 function showResult(r){
   $('chest').classList.remove('shake');
   var win=r.tier&&r.tier!=='X',html;

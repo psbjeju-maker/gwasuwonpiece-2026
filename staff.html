@@ -116,14 +116,16 @@ td,th{padding:8px 4px;border-bottom:1px solid var(--line);text-align:left}
 <script>
 (function(){
 'use strict';
-var EID='gwasu';
+/* ?ev=test → 매장 테스트(gwtest). 코드는 같고 데이터만 따로 */
+var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu';
+if(TEST){document.title='[테스트] '+document.title;document.addEventListener('DOMContentLoaded',function(){var t=document.getElementById('hTask');if(t)t.insertAdjacentHTML('beforebegin','<span style="background:#E8742A;color:#fff;border-radius:99px;padding:1px 8px;font-size:12px;margin-right:6px">테스트</span>')})}
 var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function h(html){var d=document.createElement('div');d.innerHTML=html;return d}
 function rid(){return EV.newId()}
 var TIER={TOP:'상위 상품',A:'A상',B:'B상',C:'C상',D:'D상',FREE:'무료 뽑기권',X:'꽝'};
 /* 2026-10-21: 당일은 손목띠 찬 사람 = 패스 산 사람(눈으로 확인). 손목띠 QR·패스 등록·입장 기록은 안 씀 → 화면에서 숨김(.bandonly) */
-var TASKS={vote:'노래방 진행',votehelp:'현장 투표 지원',hq:'본부 미션 보상',draw:'뽑기',pickup:'상품 수령'};
+var TASKS={vote:'노래방 진행',votehelp:'현장 투표 지원',hq:'본부 미션 보상',draw:'뽑기',pickup:'상품 수령',extra:'추가 도전 판매'};
 function call(n,d){return EV.staff(n,Object.assign({eventId:EID},d||{}))}
 function errMsg(e){return (e&&(e.message||e.reason))||'처리하지 못했어요'}
 
@@ -264,6 +266,33 @@ SCREENS.hq=function(box){
   };
   $('nGo').onclick=function(){busy(this,call('npcComplete',{code:$('nCode').value.trim()})).then(function(r){res($('nRes'),r.already?'info':'ok',r.already?'이미 완료했습니다':'미션 완료 처리')},function(e){res($('nRes'),'no',errMsg(e))})};
   $('lGo').onclick=function(){busy(this,call('passLink',{band:$('lBand').value.trim(),appCode:$('lApp').value.trim()})).then(function(r){res($('lRes'),r.already?'info':'ok',r.already?'이미 연결돼 있어요':'앱 연결 완료')},function(e){res($('lRes'),'no',errMsg(e))})};
+};
+
+/* 추가 도전 판매: 조회 → 대상 확인 → 현장 결제 확인 → 지급(같은 요청 번호로 재시도해도 1번만) */
+SCREENS.extra=function(box){
+  box.appendChild(h('<div class="card"><h2>추가 도전 판매</h2><p class="muted">참가번호 조회 → 닉네임 확인 → 현장 결제 받고 지급. 감귤이 구성에 있으면 같이 건네요.</p>'+codeRow('eCode')+
+    '<button class="btn mt" id="eLook" type="button">조회</button><div id="eWho"></div>'+
+    '<div id="eAct" hidden><label class="check"><input type="checkbox" id="ePaid"> 현장 결제 받았어요</label><button class="btn p mt" id="eGo" type="button">지급</button></div><div id="eRes"></div></div>'));
+  var cur=null, reqId=null;
+  function look(){
+    var c=$('eCode').value.trim(); if(!c) return;
+    busy($('eLook'),call('extraInfo',{code:c})).then(function(r){
+      cur=c; reqId=null; var x=r.extra||{};
+      $('eWho').innerHTML='<div class="who"><b>'+esc(r.nickname||'(이름 없음)')+'</b> <span class="chip">참가번호 '+esc(r.code||'')+'</span></div>'+
+        '<p class="muted" style="margin-top:8px">남은 도전 <b style="font-size:20px;color:var(--ink)">'+(r.plays.left==null?'제한 없음':r.plays.left+'회')+'</b> · 이 손님 구매 '+r.buys+'번'+(x.perPerson?' / 한도 '+x.perPerson:'')+'</p>'+
+        '<div class="res '+(x.enabled?'info':'no')+'"><div class="big">'+(x.enabled?(x.price||0).toLocaleString()+'원 → 도전 '+x.plays+'회'+(x.gyul?' + 감귤 '+x.gyul+'개':''):'지금 판매 꺼짐')+'</div><div class="sub">오늘 판매 '+r.sold+'건'+(x.total?' / 한도 '+x.total:'')+' · 남은 경품 '+r.prizesLeft+'개</div></div>';
+      $('eAct').hidden=!x.enabled; $('ePaid').checked=false; $('eRes').innerHTML='';
+    },function(e){res($('eRes'),'no',errMsg(e))});
+  }
+  $('eLook').onclick=look; $('eCode').addEventListener('keydown',function(e){if(e.key==='Enter')look()});
+  $('eGo').onclick=function(){
+    if(!$('ePaid').checked){res($('eRes'),'no','결제 확인에 체크해 주세요');return}
+    reqId=reqId||rid();
+    busy(this,call('extraSell',{code:cur,paid:true,requestId:reqId})).then(function(r){
+      reqId=null; $('eAct').hidden=true;
+      res($('eRes'),'ok','도전 '+r.plays+'회 지급 완료',(r.gyul?'<b>감귤 '+r.gyul+'개를 건네 주세요</b><br>':'')+'남은 도전 '+(r.left==null?'-':r.left+'회')+(r.nickname?' · '+esc(r.nickname):'')+(r.duplicate?'<br>(이미 처리된 요청이에요)':''));
+    },function(e){if(!e.retryable)reqId=null;res($('eRes'),'no',errMsg(e))});
+  };
 };
 
 SCREENS.draw=function(box){
@@ -428,8 +457,14 @@ SCREENS.admin=function(box){
     '<div class="card"><h2>정정 (총괄만)</h2><div class="bandonly"><label>손목띠 재발급: 기존 → 새 손목띠</label>'+codeRow('rOld','기존 손목띠')+'<div class="mt"></div>'+codeRow('rNew','새 손목띠 QR')+'<input id="rWhy" class="mt" placeholder="사유 (예: 분실)"><button class="btn mt" id="rGo" type="button">재발급</button>'+
     '<label>패스 취소 (결제 취소·잘못된 활성화)</label>'+codeRow('xCode')+'<input id="xWhy" class="mt" placeholder="사유"><button class="btn d mt" id="xGo" type="button">패스 취소</button></div>'+
     '<button class="btn mt" id="vReset" type="button">투표 초기화(표 전부 삭제)</button><div id="rRes"></div></div>'+
-    '<div class="card"><h2>보물 장소·상품판·NPC</h2><a class="btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="bury.html">보물 관리 화면 열기</a></div>'));
+    '<div class="card"><h2>추가 도전 판매 기록</h2><p class="muted">실수로 지급한 건은 사유를 남기고 취소해요(이미 쓴 횟수는 못 되돌려요).</p><button class="btn mt" id="xLoad" type="button">기록 보기</button><div class="list mt" id="xList"></div><div id="xRes"></div></div>'+
+    '<div class="card"><h2>보물 장소·상품판·NPC</h2><a class="btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="bury.html'+(TEST?'?ev=test':'')+'">보물 관리 화면 열기</a></div>'));
   $('aViews').innerHTML=Object.keys(TASKS).concat('rec').map(function(k){return '<button class="btn sm" data-view="'+k+'" type="button" style="width:100%">'+(TASKS[k]||'행사 기록')+'</button>'}).join('');
+  $('xLoad').onclick=function(){busy(this,call('extraList')).then(function(r){
+    $('xList').innerHTML=r.items.length?r.items.map(function(x){return '<div class="row"><div><b>'+esc(x.nickname||'')+'</b> · '+(x.price||0).toLocaleString()+'원 · '+x.plays+'회'+(x.gyul?' · 감귤 '+x.gyul:'')+'<br><small>'+new Date(x.at).toTimeString().slice(0,5)+' · '+esc(x.by||'')+(x.status==='canceled'?' · 취소됨('+esc(x.cancelReason||'')+')':'')+'</small></div>'+(x.status==='ok'?'<button class="btn sm d" data-xc="'+esc(x.requestId)+'" type="button">취소</button>':'')+'</div>'}).join(''):'<p class="muted">판매 기록이 없어요.</p>';
+  },function(e){res($('xRes'),'no',errMsg(e))})};
+  $('xList').onclick=function(e){var b=e.target.closest('[data-xc]');if(!b)return;var why=prompt('취소 사유');if(!why)return;
+    busy(b,call('extraCancel',{requestId:b.dataset.xc,reason:why})).then(function(){$('xLoad').onclick.call($('xLoad'))},function(er){res($('xRes'),'no',errMsg(er))})};
   $('aViews').onclick=function(e){var b=e.target.closest('[data-view]');if(b){adminView=b.dataset.view;start()}};
   $('aTask').innerHTML=Object.keys(TASKS).map(function(k){return '<option value="'+k+'">'+TASKS[k]+'</option>'}).join('')+'<option value="npc">NPC 미션</option><option value="rec">행사 기록</option>';
   $('aTask').onchange=function(){$('aNpc').hidden=this.value!=='npc';$('aRec').hidden=this.value!=='rec'};

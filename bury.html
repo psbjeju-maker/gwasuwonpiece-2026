@@ -35,6 +35,12 @@ label{display:block;font-size:13px;color:var(--dim);margin:12px 0 4px;font-weigh
 .gps b{color:var(--tx);font-size:18px}
 .gps.ok{border-style:solid;border-color:rgba(95,209,138,.6)}
 .gps.warn{border-style:solid;border-color:rgba(255,180,58,.6)}
+.envtag{font-size:14px;padding:3px 10px;border-radius:99px;vertical-align:middle;background:#1E5AA8;color:#fff}
+.envtag.test{background:#E8742A}
+.envbar{font-size:14px;margin:6px 0 0;color:var(--dim)}
+.envbar a{font-weight:800}
+.grid4{display:grid;grid-template-columns:52px 1fr 70px;gap:6px;align-items:center}
+.grid4 .img{grid-column:2/4;min-height:40px;font-size:13px}
 .chip{display:inline-block;padding:2px 9px;border-radius:999px;background:var(--sf2);font-size:12px;font-weight:800;white-space:nowrap}
 .chip.active{background:rgba(95,209,138,.18);color:var(--ok)}
 .chip.off{background:rgba(240,96,90,.18);color:var(--bad)}
@@ -56,7 +62,8 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
 </head>
 <body>
 <div class="wrap">
-  <h1>보물 관리</h1>
+  <h1>보물 관리 <span class="envtag" id="envTag"></span></h1>
+  <div class="envbar" id="envBar"></div>
   <p class="sub">과수원피스 · 후보 장소에 서서 「여기 등록」을 누르면 그 GPS 위치가 보물 후보가 돼요. 시스템이 후보 중에서 무작위로 보물을 열어요.</p>
 
   <div class="card" id="loginBox">
@@ -108,18 +115,10 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     <div class="card">
       <h2>상품판 (전체 칸)</h2>
       <p class="sub" id="poolNow"></p>
-      <div class="grid" style="margin-top:12px">
-        <span>등급</span><span>상품 이름</span><span>개수</span>
-        <span>상위</span><input id="pnTOP"><input id="pcTOP" type="number" min="0">
-        <span>A</span><input id="pnA"><input id="pcA" type="number" min="0">
-        <span>B</span><input id="pnB"><input id="pcB" type="number" min="0">
-        <span>C</span><input id="pnC"><input id="pcC" type="number" min="0">
-        <span>D</span><input id="pnD"><input id="pcD" type="number" min="0">
-        <span>무료권</span><input id="pnFREE"><input id="pcFREE" type="number" min="0">
-      </div>
+      <p class="sub">본 행사 확정: A·B·C 합계 10개(각 수량은 정해지면 입력), D 20개, E 30개. 사진 주소를 넣으면 손님 현황판에 사진과 남은 수량이 보여요.</p>
+      <div class="grid4" id="poolGrid" style="margin-top:12px"></div>
       <div class="row">
-        <div><label for="total">전체 칸 (나머지는 꽝)</label><input id="total" type="number" min="1" value="50"></div>
-        <div><label>파기 가능 거리</label><input value="5m (고정)" disabled></div>
+        <div><label for="total">전체 칸 (나머지는 꽝, 최대 10000)</label><input id="total" type="number" min="1" max="10000" value="50"></div>
       </div>
       <div class="row"><button class="btn btn--b" id="btnPool">상품판 새로 깔기</button></div>
       <p class="sub" style="margin-top:6px">새로 깔면 남은 칸이 처음 개수로 돌아가요. 퀴즈를 맞힌 사람만 이 판에서 1칸을 뽑고, 틀리면 판을 안 쓰고 꽝이에요.</p>
@@ -132,6 +131,31 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
         <div><label for="maxActive">동시에 열 보물 수 (0 = 후보 전부)</label><input id="maxActive" type="number" min="0"></div>
         <div><label for="rotateMin">위치 바꾸는 간격(분)</label><input id="rotateMin" type="number" min="5"></div>
       </div>
+      <div class="row">
+        <div><label for="radiusM">파기 가능 거리(m) · 현장 GPS 오차 보고 조정</label><input id="radiusM" type="number" min="2" max="50"></div>
+        <div><label for="basePlays">1인 기본 도전 횟수 (0 = 제한 없음)</label><input id="basePlays" type="number" min="0" max="100"></div>
+      </div>
+      <p class="sub">도전 1회 = 보물 파기를 시작할 때 서버에서 한 번만 빠져요. 퀴즈를 틀려도 1회. 새로고침·통신 끊김으로는 더 안 빠져요.</p>
+      <h3 style="margin:16px 0 4px;font-size:15px">감귤</h3>
+      <label for="gyulRule">지급 기준 (손님 현황판에 보여요)</label><input id="gyulRule" maxlength="200" placeholder="예) 상자를 연 분께 선착순 1개씩">
+      <label for="gyulStock">남은 감귤 수 (비우면 안 보임)</label><input id="gyulStock" type="number" min="0">
+      <h3 style="margin:16px 0 4px;font-size:15px">추가 도전 판매 <span class="chip">검토안 · 기본 꺼짐</span></h3>
+      <p class="sub">법적 확인 전에는 켜지 마세요. 켜면 손님 현황판에 가격·횟수·구성·한도·구매 장소가 보이고, 「추가 도전 판매」 담당 화면에서 지급해요.</p>
+      <label style="display:flex;gap:10px;align-items:center;margin-top:10px"><input id="xOn" type="checkbox" style="width:24px;min-height:24px"> 추가 도전 판매 켜기</label>
+      <div class="row">
+        <div><label for="xPrice">가격(원)</label><input id="xPrice" type="number" min="0"></div>
+        <div><label for="xPlays">추가 횟수</label><input id="xPlays" type="number" min="1"></div>
+      </div>
+      <div class="row">
+        <div><label for="xGyul">구매 1건당 감귤</label><input id="xGyul" type="number" min="0"></div>
+        <div><label for="xGyulStock">구매용 감귤 따로 확보한 수</label><input id="xGyulStock" type="number" min="0"></div>
+      </div>
+      <div class="row">
+        <div><label for="xPer">1인 구매 한도 (0 = 없음)</label><input id="xPer" type="number" min="0"></div>
+        <div><label for="xTotal">전체 판매 한도 (0 = 없음)</label><input id="xTotal" type="number" min="0"></div>
+      </div>
+      <label for="xPlace">구매 장소</label><input id="xPlace" maxlength="40" placeholder="본부">
+      <h3 style="margin:16px 0 4px;font-size:15px">기타</h3>
       <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input id="freeOn" type="checkbox" style="width:24px;min-height:24px"> 무료 뽑기권 지급 켜기 (운영자 확정 후)</label>
       <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input id="paidOn" type="checkbox" style="width:24px;min-height:24px"> 유료 뽑기(현장 결제) 판매 켜기 — 당일 사용 안 함</label>
       <div><label for="freePer">1인 무료권 한도 (0 = 제한 없음)</label><input id="freePer" type="number" min="0"></div>
@@ -152,6 +176,14 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
       <p class="msg" id="schedMsg"></p>
     </div>
 
+    <div class="card" id="copyCard" hidden>
+      <h2>테스트 설정을 본 행사에 적용</h2>
+      <p class="sub">이 테스트에서 맞춘 운영 설정(파기 거리, 기본 횟수, 위치 바꾸는 간격, 동시 개수, NPC, 감귤 기준, 추가 판매 값)을 본 행사에 그대로 넣어요. 보물 장소·상품판은 옮기지 않고, 판매 켜짐은 본 행사 값을 유지해요.</p>
+      <label style="display:flex;gap:10px;align-items:center;margin-top:10px"><input id="cpHome" type="checkbox" style="width:24px;min-height:24px"> 손님 홈 시간표도 같이</label>
+      <div class="row"><button class="btn btn--p btn--b" id="btnCopy">본 행사에 적용</button></div>
+      <p class="msg" id="copyMsg"></p>
+    </div>
+
     <div class="card">
       <h2>당첨자</h2>
       <div id="winners"><p class="sub">-</p></div>
@@ -165,11 +197,17 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
 <script>
 (function(){
 'use strict';
-var EID='gwasu', TIERS=['TOP','A','B','C','D','FREE'];
-var TIER_TXT={TOP:'상위',A:'A',B:'B',C:'C',D:'D',FREE:'무료권',X:'꽝'};
+/* ?ev=test → 매장 테스트(gwtest). 코드는 같고 데이터만 따로 */
+var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu', TIERS=['A','B','C','D','E','FREE'];
+var TIER_TXT={TOP:'특상',A:'A',B:'B',C:'C',D:'D',E:'E',FREE:'무료권',X:'꽝'};
 var CFG=null;
 var $=function(s){return document.querySelector(s)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+document.getElementById('envTag').textContent=TEST?'매장 테스트':'본 행사';
+document.getElementById('envTag').className='envtag'+(TEST?' test':'');
+document.getElementById('envBar').innerHTML=TEST?'테스트 데이터예요. 본 행사 보물·상품판에는 영향 없어요. <a href="bury.html">본 행사 관리로 →</a>':'실제 행사 데이터예요. <a href="bury.html?ev=test">매장 테스트 관리로 →</a>';
+document.getElementById('copyCard').hidden=!TEST;
+document.getElementById('poolGrid').innerHTML='<span>등급</span><span>상품 이름</span><span>개수</span>'+TIERS.map(function(k){return '<span>'+TIER_TXT[k]+'</span><input id="pn'+k+'"><input id="pc'+k+'" type="number" min="0">'+(k==='FREE'?'':'<span></span><input class="img" id="pi'+k+'" placeholder="사진 주소 (https://…, 비워도 됨)">')}).join('');
 function msg(el,t,cls){el.textContent=t||'';el.className='msg'+(cls?' '+cls:'')}
 function dt(ms){return ms?new Date(ms+9*3600e3).toISOString().slice(5,16).replace('T',' '):'-'}
 var pos=null, watchId=null, poolFilled=false;
@@ -276,10 +314,10 @@ function render(r){
   if(!CFG){CFG=r.cfg;fillCfg()}
   $('#poolNow').textContent='지금 남은 칸 '+p.left+'/'+p.total+' · '+TIERS.concat('X').map(function(k){return TIER_TXT[k]+' '+s[k].left+'/'+s[k].count}).join(' · ')+' · 파기 거리 '+p.radiusM+'m';
   if(!poolFilled){
-    TIERS.forEach(function(k){$('#pn'+k).value=s[k].name||'';$('#pc'+k).value=s[k].count});
+    TIERS.forEach(function(k){$('#pn'+k).value=s[k].name||'';$('#pc'+k).value=s[k].count;if($('#pi'+k))$('#pi'+k).value=s[k].img||''});
     $('#total').value=p.total; poolFilled=true;
   }
-  $('#poolNow').textContent+=(r.nextAt?' · 다음 위치 변경 '+new Date(r.nextAt).toTimeString().slice(0,5):'')+(r.stats&&r.stats.freeIssued?' · 무료권 발급 '+r.stats.freeIssued+' / 사용 '+(r.stats.freeUsed||0):'');
+  $('#poolNow').textContent+=(r.nextAt?' · 다음 위치 변경 '+new Date(r.nextAt).toTimeString().slice(0,5):'')+(r.stats&&r.stats.freeIssued?' · 무료권 발급 '+r.stats.freeIssued+' / 사용 '+(r.stats.freeUsed||0):'')+(r.stats?' · 참가자 '+(r.stats.players||0)+'명 · 도전 '+(r.stats.tries||0)+'회'+(r.stats.extraSold?' · 추가 판매 '+r.stats.extraSold+'건':''):'');
   $('#winners').innerHTML=r.winners.length?'<table><tr><th>시각</th><th>닉네임</th><th>상품</th><th>코드</th><th></th></tr>'+
     r.winners.sort(function(a,b){return (b.at||0)-(a.at||0)}).map(function(w){return '<tr><td>'+dt(w.at).slice(6)+'</td><td>'+esc(w.nickname)+'</td><td>'+esc(TIER_TXT[w.tier])+' '+esc(w.prize)+'</td><td>'+esc(w.pickupCode)+'</td><td>'+(w.given?'지급':'')+'</td></tr>'}).join('')+'</table>':'<p class="sub">아직 없어요.</p>';
 }
@@ -292,17 +330,19 @@ $('#spots').addEventListener('click',function(e){
 
 $('#btnPool').onclick=function(){
   var prizes={}, sum=0;
-  TIERS.forEach(function(k){var n=parseInt($('#pc'+k).value,10)||0;prizes[k]={name:$('#pn'+k).value.trim(),count:n};sum+=n});
-  var total=parseInt($('#total').value,10)||50, radius=5;
+  TIERS.forEach(function(k){var n=parseInt($('#pc'+k).value,10)||0;prizes[k]={name:$('#pn'+k).value.trim(),count:n,img:$('#pi'+k)?$('#pi'+k).value.trim():''};sum+=n});
+  var total=parseInt($('#total').value,10)||50;
   if(sum>total){msg($('#poolMsg'),'상품 개수('+sum+')가 전체 칸('+total+')보다 많아요.','bad');return}
   if(!confirm('상품판을 새로 깔까요? 전체 '+total+'칸 = 상품 '+sum+' + 꽝 '+(total-sum)+'\n남은 칸이 처음으로 돌아가요.')) return;
   var b=this; b.disabled=true;
-  EV.staff('ownerDigPool',{eventId:EID,total:total,radiusM:radius,prizes:prizes}).then(function(){b.disabled=false;msg($('#poolMsg'),'새로 깔았어요.','ok');poolFilled=false;load()},
+  EV.staff('ownerDigPool',{eventId:EID,total:total,prizes:prizes}).then(function(){b.disabled=false;msg($('#poolMsg'),'새로 깔았어요.','ok');poolFilled=false;load()},
     function(e){b.disabled=false;msg($('#poolMsg'),e.message||'저장 못 했어요','bad')});
 };
 
 function fillCfg(){
   $('#maxActive').value=CFG.maxActive||0; $('#rotateMin').value=CFG.rotateMin||30; $('#freeOn').checked=!!CFG.freeEnabled; $('#paidOn').checked=!!CFG.paidDraw; $('#freePer').value=CFG.freePerPerson||0;
+  $('#radiusM').value=CFG.radiusM||5; $('#basePlays').value=CFG.basePlays==null?10:CFG.basePlays; $('#gyulRule').value=CFG.gyulRule||''; $('#gyulStock').value=CFG.gyulStock==null?'':CFG.gyulStock;
+  var x=CFG.extra||{}; $('#xOn').checked=!!x.enabled; $('#xPrice').value=x.price||0; $('#xPlays').value=x.plays||5; $('#xGyul').value=x.gyul||0; $('#xGyulStock').value=x.gyulStock||0; $('#xPer').value=x.perPerson||0; $('#xTotal').value=x.total||0; $('#xPlace').value=x.place||'';
   var n=CFG.npcs||{}; $('#npcs').value=Object.keys(n).map(function(k){var x=n[k];return [k,x.name,x.place,x.line,x.active===false?'X':'O'].join(' | ')}).join('\n');
   $('#npcId').innerHTML=Object.keys(n).map(function(k){return '<option value="'+esc(k)+'">'+esc(k+' · '+n[k].name)+'</option>'}).join('')||'<option value="">NPC 먼저 등록</option>';
 }
@@ -311,9 +351,17 @@ $('#btnCfg').onclick=function(){
   var npcs={};
   $('#npcs').value.split('\n').forEach(function(l){var c=l.split('|').map(function(x){return x.trim()});if(!c[0])return;npcs[c[0]]={name:c[1]||c[0],place:c[2]||'',line:c[3]||'',active:(c[4]||'O').toUpperCase()!=='X'}});
   var b=this; b.disabled=true;
-  EV.staff('ownerDigCfg',{eventId:EID,maxActive:parseInt($('#maxActive').value,10)||0,rotateMin:parseInt($('#rotateMin').value,10)||30,freeEnabled:$('#freeOn').checked,paidDraw:$('#paidOn').checked,freePerPerson:parseInt($('#freePer').value,10)||0,npcs:npcs}).then(function(c){
+  EV.staff('ownerDigCfg',{eventId:EID,maxActive:parseInt($('#maxActive').value,10)||0,rotateMin:parseInt($('#rotateMin').value,10)||30,freeEnabled:$('#freeOn').checked,paidDraw:$('#paidOn').checked,freePerPerson:parseInt($('#freePer').value,10)||0,npcs:npcs,
+    radiusM:parseInt($('#radiusM').value,10)||5,basePlays:parseInt($('#basePlays').value,10)||0,gyulRule:$('#gyulRule').value.trim(),gyulStock:$('#gyulStock').value===''?null:parseInt($('#gyulStock').value,10)||0,
+    extra:{enabled:$('#xOn').checked,price:+$('#xPrice').value||0,plays:+$('#xPlays').value||5,gyul:+$('#xGyul').value||0,gyulStock:+$('#xGyulStock').value||0,perPerson:+$('#xPer').value||0,total:+$('#xTotal').value||0,place:$('#xPlace').value.trim()}}).then(function(c){
     b.disabled=false; CFG=c; fillCfg(); msg($('#cfgMsg'),'저장했어요.','ok'); load();
   },function(e){b.disabled=false;msg($('#cfgMsg'),e.message||'저장 못 했어요','bad')});
+};
+
+$('#btnCopy').onclick=function(){
+  if(!confirm('테스트 운영 설정을 본 행사에 적용할까요?'+($('#cpHome').checked?'\n손님 홈 시간표도 바뀌어요.':''))) return;
+  var b=this;b.disabled=true;
+  EV.staff('ownerDigCopyCfg',{eventId:EID,home:$('#cpHome').checked}).then(function(){b.disabled=false;msg($('#copyMsg'),'본 행사에 적용했어요.','ok')},function(e){b.disabled=false;msg($('#copyMsg'),e.message||'적용 못 했어요','bad')});
 };
 
 function distM(a,b){var R=6371000,r=function(x){return x*Math.PI/180},dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng);
