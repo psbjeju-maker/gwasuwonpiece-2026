@@ -136,7 +136,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .tag{display:inline-block;background:var(--gold-soft);color:#7A5520;font-weight:700;font-size:13px;padding:4px 12px;border-radius:99px}
 .q{font-size:20px;font-weight:700;line-height:1.45;margin:12px 0 14px}
 .ch{display:block;width:100%;text-align:left;min-height:56px;border-radius:14px;border:2px solid var(--line);background:#fff;padding:12px 16px;font-size:17px;font-weight:700;margin-top:8px}
-.ch.pick{border-color:var(--teal)}
+.ch.pick{border-color:var(--teal);background:var(--teal-soft)}
 .res{text-align:center}
 .res .big{font-size:32px;font-weight:700;margin:6px 0}
 .res .prize{font-size:22px;font-weight:700;color:var(--orange)}
@@ -521,9 +521,14 @@ function showTask(t){
   $('stSub').textContent='자물쇠를 열려면 오타쿠 퀴즈를 맞혀야 해요';
   var q=t.quiz;
   sheet('<span class="tag">오타쿠 퀴즈 · 틀리면 꽝!</span><div class="q">'+esc(q.q)+'</div>'+q.choices.map(function(ch,i){return '<button class="ch" data-i="'+i+'" type="button">'+(i+1)+'. '+esc(ch)+'</button>'}).join('')+'<p class="err" id="qErr"></p>');
-  $('sheet').querySelectorAll('.ch').forEach(function(b){b.onclick=function(){answer(+b.dataset.i,b)}});
+  /* 연타가 퀴즈로 넘어오지 않게: 보기를 고른 뒤 「제출」을 따로 눌러야 채점 */
+  var pick=null,chs=$('sheet').querySelectorAll('.ch');
+  $('sheet').insertAdjacentHTML('beforeend','<button class="btn p" id="qGo" type="button" disabled style="margin-top:12px">보기를 골라 주세요</button>');
+  var qt=0;chs.forEach(function(b){b.onclick=function(){pick=+b.dataset.i;chs.forEach(function(x){x.classList.toggle('pick',x===b)});var g=$('qGo');g.disabled=true;g.textContent=(pick+1)+'번으로 정답 제출';clearTimeout(qt);qt=setTimeout(function(){g.disabled=false},500)}});
+  $('qGo').onclick=function(){if(pick!=null)answer(pick,this)};
 }
-function sheet(html){var s=$('sheet');s.innerHTML=html;s.className='sheet on'}
+/* 시트가 뜬 직후 0.7초는 터치를 안 받는다(삽 연타가 버튼으로 넘어가는 것 방지) */
+function sheet(html){var s=$('sheet');s.innerHTML=html;s.className='sheet on';s.style.pointerEvents='none';clearTimeout(s._lk);s._lk=setTimeout(function(){s.style.pointerEvents=''},700)}
 function answer(i,b){
   if(answering) return;answering=true;b.classList.add('pick');b.disabled=true;
   EV.call('digAnswer',{eventId:EID,spotId:spot.id,choice:i}).then(function(r){answering=false;r.result.correct&&!r.duplicate?peel(r.result):showResult(r.result)},
