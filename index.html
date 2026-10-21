@@ -427,6 +427,8 @@ function openHunt(){
   show('scHunt'); $('huntErr').textContent='';
   EV.call('digSpots',{eventId:EID}).then(function(r){data=r;startGps();update()},function(e){$('huntErr').textContent=e.message||'불러오지 못했어요.'});
 }
+/* 보물을 새로 깔거나 지웠을 때 옛 목록으로 파지 않게 30초마다 다시 받아 온다(파는 중에는 건드리지 않음) */
+setInterval(function(){if(!$('scHunt').hidden&&$('stage').hidden)EV.call('digSpots',{eventId:EID}).then(function(r){data=r;update()},function(){})},30000);
 function distM(a,b){var R=6371000,r=function(x){return x*Math.PI/180},dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng);
   var q=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return 2*R*Math.asin(Math.sqrt(q))}
 function startGps(){
@@ -473,7 +475,10 @@ $('btnDig').onclick=function(){
   $('chest').className='chest';$('hole').style.setProperty('--hw','40px');$('tapBar').style.width='0';
   $('taps').hidden=false;$('stTitle').textContent='땅을 파세요!';$('stSub').textContent='화면을 계속 두드리면 삽질해요';
   EV.call('digStart',{eventId:EID,spotId:spot.id,lat:pos.lat,lng:pos.lng,acc:pos.acc}).then(function(r){task=r;if(taps>=TAPS)afterDig()},
-    function(e){digging=false;closeStage();$('huntErr').textContent=e.message||'파지 못했어요.';if(e.reason==='spot-moved')openHunt()});
+    /* 실패하면 화면을 바로 닫지 말고 이유를 보여 준 뒤, 확인을 누르면 보물 목록을 새로 받아 온다 */
+    function(e){digging=false;$('taps').hidden=true;$('stTitle').textContent='이 보물은 지금 팔 수 없어요';$('stSub').textContent='';
+      sheet('<div class="res"><p style="font-size:18px;color:var(--ink)">'+esc(e.message||'파지 못했어요.')+'</p><button class="btn p" id="btnErrOk" type="button">확인</button></div>');
+      $('btnErrOk').onclick=function(){closeStage();openHunt()}});
 };
 $('stage').addEventListener('pointerdown',function(){
   if(!digging||taps>=TAPS) return;
