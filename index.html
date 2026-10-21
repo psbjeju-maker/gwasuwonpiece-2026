@@ -148,7 +148,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 <!-- 등록 / 이어하기 -->
 <section class="scr" id="scReg" hidden>
   <div class="top"><h1>황금 귤을 찾아라</h1></div>
-  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영한다멍!<br>닉네임과 번호로 시작하면 <b>참가번호</b>가 나와.</p></div>
+  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영해!<br>닉네임과 번호로 시작하면 <b>참가번호</b>가 나와.</p></div>
   <div class="card" id="regBox">
     <label for="inNick">닉네임</label><input id="inNick" maxlength="12" autocomplete="nickname">
     <label for="inPhone">휴대폰 번호</label><input id="inPhone" inputmode="numeric" maxlength="13" placeholder="010-0000-0000">
@@ -289,12 +289,12 @@ function curSlot(){
   return nx?{kind:'wait',title:t<s[0].from?'곧 시작해요':'잠깐 쉬는 시간',next:nx}:{kind:'end',title:'오늘 행사 끝'};
 }
 var LINE={
-  hunt:'보물 자리에 가까이 가면 땅을 팔 수 있다멍! 상자는 <b>오타쿠 퀴즈</b>나 <b>NPC 미션</b>을 통과해야 열려.',
-  vote:'노래방 무대에서 제일 멋졌던 팀을 골라 줘! 한 사람당 <b>한 표</b>다멍.',
-  info:'지금은 무대를 즐기는 시간이다멍. 앞쪽으로 와서 같이 봐!',
-  link:'지금 할 수 있는 미션이 열렸다멍! 아래 버튼을 눌러 봐.',
-  end:'오늘 같이 놀아 줘서 고맙다멍! 받을 상품이 있으면 잊지 말고 챙겨 가.',
-  nopass:'이건 <b>당일 패스</b>가 있어야 할 수 있다멍. 판매처에서 손목띠를 사고 아래 번호를 보여줘!'
+  hunt:'보물 자리에 가까이 가면 땅을 팔 수 있어! 상자는 <b>오타쿠 퀴즈</b>나 <b>NPC 미션</b>을 통과해야 열려.',
+  vote:'노래방 무대에서 제일 멋졌던 팀을 골라 줘! 한 사람당 <b>한 표</b>야~',
+  info:'지금은 무대를 즐기는 시간이야. 앞쪽으로 와서 같이 보자!',
+  link:'지금 할 수 있는 미션이 열렸어! 아래 버튼을 눌러 봐~',
+  end:'오늘 같이 놀아 줘서 고마워! 받을 상품이 있으면 잊지 말고 챙겨 가.',
+  nopass:'이건 <b>당일 패스</b>가 있어야 할 수 있어. 판매처에서 손목띠를 사고 아래 번호를 보여줘!'
 };
 function renderHome(){
   var h=HOME; if(h.serverTime) OFF=h.serverTime-Date.now();
@@ -309,11 +309,11 @@ function renderHome(){
   $('hNowTime').textContent=c.from?c.from+' ~ '+c.to+' · 지금':(c.kind==='wait'?'다음 '+c.next.from:c.live?'지금':'');
   $('hNowTitle').textContent=c.title||{hunt:'보물찾기',vote:'노래방 투표',info:'안내',link:'미션'}[c.kind]||'';
   btn.hidden=true; btn.dataset.k=c.kind; btn.dataset.url=c.url||'';
-  if(c.kind==='wait'){line='잠깐 기다려 줘! <b>'+c.next.from+'</b>에 「'+esc(c.next.title||'다음 순서')+'」 시작이다멍.';img='thinking'}
+  if(c.kind==='wait'){line='잠깐 기다려 줘! <b>'+c.next.from+'</b>에 「'+esc(c.next.title||'다음 순서')+'」 시작이야!';img='thinking'}
   else if(c.kind==='end'){line=LINE.end;img='success';if(h.rewards.length){btn.hidden=false;btn.textContent='내 보상 보기';btn.dataset.k='rewards'}}
   else{
     line=c.line?esc(c.line):LINE[c.kind]||'';
-    if(c.kind==='hunt'){btn.textContent='보물찾기 시작';if(h.dugCount&&!c.line){line='벌써 보물 <b>'+h.dugCount+'곳</b>을 팠다멍! 다음 보물도 찾아보자.';img='success'}}
+    if(c.kind==='hunt'){btn.textContent='보물찾기 시작';if(h.dugCount&&!c.line){line='벌써 보물 <b>'+h.dugCount+'곳</b>을 팠어! 다음 보물도 찾아보자~';img='success'}}
     if(c.kind==='vote'){btn.textContent=v.status==='published'?'결과 보기':'투표하기';img='greeting'}
     if(c.kind==='link'){btn.textContent=c.btn||'미션 하러 가기';img='greeting'}
     if(c.btn&&c.kind!=='link') btn.textContent=c.btn;
@@ -458,10 +458,10 @@ function showResult(r){
       (r.free?'<p>뽑기 부스에서 참가번호를 보여주면 1회 무료!</p>':'<div class="code">'+esc(r.pickupCode||'')+'</div><p>상품 수령처에서 참가번호를 보여주세요.</p>')+(r.given?'<p><b>이미 받은 상품이에요.</b></p>':'');
   }else if(!r.correct){
     $('stTitle').textContent='자물쇠가 안 열려요…';$('stSub').textContent='';
-    html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝</div><p>퀴즈를 틀려서 상자가 잠겨 버렸다멍…</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물을 찾으러 가자!</p>';
+    html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝</div><p>퀴즈를 틀려서 상자가 잠겨 버렸어…</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물을 찾으러 가자!</p>';
   }else{
     $('stTitle').textContent=r.task==='quiz'?'정답입니다!':'상자가 열렸는데…';$('stSub').textContent='';
-    html='<div class="res"><img src="assets/characters/surprised.png" alt=""><div class="big">'+(r.task==='quiz'?'정답입니다!':'꽝')+'</div><p style="font-size:19px;color:var(--ink)"><b>하지만 보물은 꽝입니다.</b></p><p>다른 보물에서 다시 도전해 보자멍!</p>';
+    html='<div class="res"><img src="assets/characters/surprised.png" alt=""><div class="big">'+(r.task==='quiz'?'정답입니다!':'꽝')+'</div><p style="font-size:19px;color:var(--ink)"><b>하지만 보물은 꽝입니다.</b></p><p>다른 보물에서 다시 도전해 보자!</p>';
   }
   html+='<button class="btn p" id="btnNext" type="button">다음 보물 찾으러 가기</button></div>';
   sheet(html);
