@@ -87,6 +87,20 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     </div>
 
     <div class="card">
+      <h2>테스트 보물 한꺼번에 깔기</h2>
+      <p class="sub">가운데를 기준으로 바둑판처럼 간격을 두고 보물(퀴즈)을 한 번에 등록해요. 건물 안이나 도로 위에 놓이는 자리도 있어요. 테스트가 끝나면 「테스트 보물 전부 삭제」로 지워요.</p>
+      <label for="bkCenter">가운데</label>
+      <select id="bkCenter"><option value="store">박서방 노형점 (월랑로 59)</option><option value="me">지금 내 위치</option></select>
+      <div class="row">
+        <div><label for="bkN">개수</label><input id="bkN" type="number" value="50" min="1" max="100"></div>
+        <div><label for="bkStep">간격(m)</label><input id="bkStep" type="number" value="18" min="8" max="100"></div>
+      </div>
+      <div class="row"><button class="btn btn--p btn--b" id="btnBulk">한꺼번에 깔기</button></div>
+      <div class="row"><button class="btn btn--b" id="btnBulkDel">테스트 보물 전부 삭제</button></div>
+      <p class="msg" id="bulkMsg"></p>
+    </div>
+
+    <div class="card">
       <div class="row" style="margin-top:0;align-items:center"><h2 style="margin:0">보물 후보</h2><button class="btn btn--sm" id="btnReload" style="flex:0 0 auto">새로고침</button></div>
       <div id="spots"><p class="sub">불러오는 중…</p></div>
     </div>
@@ -219,7 +233,35 @@ function load(){
 }
 $('#btnReload').onclick=load;
 
+/* 테스트 보물 한꺼번에 (2026-10-21 매장 테스트) */
+var STORE={lat:33.4902306,lng:126.4741710}, BULK_MEMO='매장 테스트(한꺼번에)', SPOTS=[];
+$('#btnBulk').onclick=function(){
+  var c=$('#bkCenter').value==='me'?pos:STORE; if(!c){msg($('#bulkMsg'),'아직 내 위치를 못 받았어요.','bad');return}
+  var N=Math.max(1,Math.min(parseInt($('#bkN').value,10)||50,100)), step=Math.max(8,parseInt($('#bkStep').value,10)||18);
+  var mLat=1/111320, mLng=1/(111320*Math.cos(c.lat*Math.PI/180)), side=Math.ceil(Math.sqrt(N)), half=(side-1)/2, list=[];
+  for(var r=0;r<side;r++)for(var k=0;k<side;k++){if(list.length>=N)break;
+    var dy=(r-half)*step+(Math.random()-.5)*4, dx=(k-half)*step+(Math.random()-.5)*4, dist=Math.round(Math.hypot(dx,dy));
+    var dir=(dy<-3?'북':dy>3?'남':'')+(dx<-3?'서':dx>3?'동':'');
+    list.push({lat:c.lat-dy*mLat,lng:c.lng+dx*mLng,name:'테스트 보물 '+(list.length+1),hint:dist<5?'가운데 바로 근처':(dir||'가운데')+'쪽 약 '+dist+'m'})}
+  var b=this,i=0,fail=0; b.disabled=true;
+  (function next(){
+    if(i>=list.length){b.disabled=false;msg($('#bulkMsg'),(list.length-fail)+'곳 깔았어요'+(fail?' (실패 '+fail+')':'')+'.',fail?'bad':'ok');load();return}
+    var x=list[i++]; msg($('#bulkMsg'),'까는 중… '+i+' / '+list.length);
+    EV.staff('ownerDigBury',{eventId:EID,lat:x.lat,lng:x.lng,acc:0,name:x.name,hint:x.hint,task:'quiz',memo:BULK_MEMO}).then(next,function(){fail++;next()});
+  })();
+};
+$('#btnBulkDel').onclick=function(){
+  var t=SPOTS.filter(function(x){return x.memo===BULK_MEMO}); if(!t.length){msg($('#bulkMsg'),'지울 테스트 보물이 없어요.');return}
+  var b=this,i=0; b.disabled=true;
+  (function next(){
+    if(i>=t.length){b.disabled=false;msg($('#bulkMsg'),t.length+'곳 지웠어요.','ok');load();return}
+    msg($('#bulkMsg'),'지우는 중… '+(i+1)+' / '+t.length);
+    EV.staff('ownerDigSpotStatus',{eventId:EID,id:t[i++].id,status:'delete'}).then(next,next);
+  })();
+};
+
 function render(r){
+  SPOTS=r.spots;
   var sp=r.spots.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
   $('#spots').innerHTML=sp.length?sp.map(function(x,i){
     var d=pos?Math.round(distM(pos,x)):null;
