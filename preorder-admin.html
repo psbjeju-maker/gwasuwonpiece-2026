@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>패스 사전 신청 관리</title>
+<style>
+:root{
+  --bg:#FBF7EE; --surface:#FFFFFF; --ink:#20281F; --ink-2:#4A5445; --muted:#6B6650; --line:#E4DCC4;
+  --accent:#D9641E; --accent-2:#B34D14; --accent-soft:#F7DFC4; --leaf:#2E6B4F; --leaf-soft:#DCEAE1;
+  --danger:#B3432F; --danger-soft:#F6DFD8; --on-accent:#FBF7EE;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#181B14; --surface:#20241B; --ink:#F3EFDF; --ink-2:#C7C4AE; --muted:#8E9280; --line:#33372A;
+    --accent:#E9843C; --accent-2:#F5A25D; --accent-soft:#3A2A18; --leaf:#7FBB98; --leaf-soft:#22301F;
+    --danger:#E8836C; --danger-soft:#3A211B; --on-accent:#181B14;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;padding:0 16px 60px}
+.wrap{max-width:560px;margin:0 auto;padding-top:calc(env(safe-area-inset-top,0px) + 18px)}
+h1{margin:0 0 4px;font-size:22px}
+.sub{margin:0 0 14px;color:var(--ink-2);font-size:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 8px;font-size:16px}
+label{display:block;margin:10px 0 4px;font-weight:700;font-size:14px}
+input[type=text],input[type=password],input[type=number]{width:100%;min-height:46px;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;font:inherit;background:var(--bg);color:var(--ink)}
+.btn{min-height:46px;padding:0 16px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-weight:700}
+.btn.p{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.sm{min-height:38px;padding:0 12px;font-size:14px}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.row>*{flex:1 1 auto}
+.msg{margin:8px 0 0;font-size:14px;min-height:1.2em;color:var(--danger)}
+.msg.ok{color:var(--leaf)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{flex:1;min-height:42px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:14px}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ord{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--surface)}
+.ord.pending{border-left:5px solid var(--accent)}
+.ord.approved{border-left:5px solid var(--leaf)}
+.ord.rejected{opacity:.65}
+.ord .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ord .name{font-weight:800;font-size:17px}
+.ord .amt{font-weight:800;color:var(--accent-2);white-space:nowrap}
+.ord .meta{font-size:14px;color:var(--ink-2);margin:4px 0}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--accent-2)}
+.pill.ok{background:var(--leaf-soft);color:var(--leaf)}
+.pill.no{background:var(--danger-soft);color:var(--danger)}
+a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:700}
+.toggle input{width:22px;height:22px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>패스 사전 신청 관리 <span id="envTag" class="pill" hidden>테스트</span></h1>
+  <p class="sub">입금 알림을 확인하고 승인 버튼을 누르면 손님 화면에 교환 QR이 떠요.</p>
+
+  <div class="card" id="loginBox">
+    <h2>관리자 로그인</h2>
+    <label for="pin">관리자 PIN</label>
+    <input id="pin" type="password" autocomplete="off">
+    <div class="row"><button class="btn p" id="btnLogin" type="button">로그인</button></div>
+    <p class="msg" id="loginMsg"></p>
+  </div>
+
+  <div id="main" hidden>
+    <div class="stats">
+      <div class="stat"><b id="sWait">0</b><span>입금 확인 대기</span></div>
+      <div class="stat"><b id="sOk">0</b><span>승인 (장수)</span></div>
+      <div class="stat"><b id="sAmt">0</b><span>승인 금액 (원)</span></div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button data-f="pending" class="on" type="button">대기</button>
+      <button data-f="approved" type="button">승인</button>
+      <button data-f="all" type="button">전체</button>
+    </div>
+    <input id="q" type="text" placeholder="이름·입금자명·전화번호로 찾기" style="margin-bottom:10px">
+    <div id="list"></div>
+    <p class="msg" id="listMsg"></p>
+
+    <details class="card" id="cfgCard">
+      <summary style="font-weight:800;cursor:pointer">신청 설정 (계좌·가격)</summary>
+      <label class="toggle" style="margin-top:12px"><input id="cOpen" type="checkbox"> 사전 신청 받기</label>
+      <label for="cPrice">패스 가격 (원)</label><input id="cPrice" type="number" min="0" inputmode="numeric">
+      <label for="cMax">1회 최대 수량</label><input id="cMax" type="number" min="1" max="20" inputmode="numeric">
+      <label for="cBank">은행</label><input id="cBank" type="text" maxlength="40">
+      <label for="cAcct">계좌번호</label><input id="cAcct" type="text" maxlength="40" inputmode="numeric">
+      <label for="cHolder">예금주</label><input id="cHolder" type="text" maxlength="40">
+      <div class="row"><button class="btn p" id="cSave" type="button">설정 저장</button></div>
+      <p class="msg" id="cMsg"></p>
+      <p class="sub" style="margin-top:10px">손님 신청 주소: <span id="custUrl" style="word-break:break-all"></span></p>
+    </details>
+
+    <div class="row" style="margin-top:16px"><button class="btn sm" id="btnLogout" type="button">로그아웃</button></div>
+  </div>
+</div>
+
+<script src="gw-server.js"></script>
+<script src="ev-client.js?v=7"></script>
+<script>
+(function(){
+var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu';
+var $=function(id){return document.getElementById(id)};
+var items=[], filter='pending', timer=null, cfgFilled=false;
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function msg(el,t,ok){el.textContent=t||'';el.className='msg'+(ok?' ok':'')}
+function won(n){return (n||0).toLocaleString('ko-KR')}
+function hm(ms){var d=new Date(ms+9*3600e3).toISOString();return d.slice(5,10).replace('-','/')+' '+d.slice(11,16)}
+function phoneFmt(p){return p.length===11?p.slice(0,3)+'-'+p.slice(3,7)+'-'+p.slice(7):p}
+function custUrl(tok){var base=location.href.split('?')[0].replace(/preorder-admin\.html$/,'preorder.html');return base+'?'+(TEST?'ev=test&':'')+'k='+tok}
+$('envTag').hidden=!TEST;
+$('custUrl').textContent=location.href.split('?')[0].replace(/preorder-admin\.html$/,'preorder.html')+(TEST?'?ev=test':'');
+
+function adm(name,d){return EV.staff(name,Object.assign({eventId:EID},d||{}))}
+function showMain(){
+  var i=EV.sessionInfo(), ok=!!i&&i.role==='admin';
+  if(i&&!ok) EV.logout();
+  $('loginBox').hidden=ok; $('main').hidden=!ok;
+  clearTimeout(timer); if(ok) load();
+}
+$('btnLogin').onclick=function(){
+  var b=this;b.disabled=true;msg($('loginMsg'),'확인 중…');
+  EV.pinLogin($('pin').value.trim(),'admin').then(function(){b.disabled=false;$('pin').value='';msg($('loginMsg'));showMain()},
+    function(e){b.disabled=false;msg($('loginMsg'),e.message||'로그인하지 못했어요')});
+};
+$('pin').addEventListener('keydown',function(e){if(e.key==='Enter')$('btnLogin').click()});
+$('btnLogout').onclick=function(){EV.logout();showMain()};
+
+function load(){
+  clearTimeout(timer);
+  adm('ownerPreorderList').then(function(r){
+    items=r.items; msg($('listMsg'));
+    if(!cfgFilled){var c=r.preorder||{};cfgFilled=true;$('cOpen').checked=!!c.open;$('cPrice').value=c.price||'';$('cMax').value=c.max||10;$('cBank').value=c.bank||'';$('cAcct').value=c.account||'';$('cHolder').value=c.holder||'';
+      if(!c.account||!c.price) $('cfgCard').open=true}
+    render(); timer=setTimeout(load,20000);
+  },function(e){
+    if(e.code==='permission-denied'){EV.logout();showMain();return}
+    msg($('listMsg'),e.message||'불러오지 못했어요'); timer=setTimeout(load,30000);
+  });
+}
+function render(){
+  var wait=items.filter(function(x){return x.status==='pending'}), ok=items.filter(function(x){return x.status==='approved'});
+  $('sWait').textContent=wait.length; $('sOk').textContent=ok.reduce(function(a,x){return a+x.qty},0); $('sAmt').textContent=won(ok.reduce(function(a,x){return a+x.amount},0));
+  document.title=(wait.length?'('+wait.length+') ':'')+'패스 사전 신청 관리';
+  var q=$('q').value.trim().replace(/\s/g,''), qd=q.replace(/\D/g,'');
+  var rows=items.filter(function(x){
+    if(filter!=='all'&&x.status!==filter) return false;
+    if(!q) return true;
+    return x.name.indexOf(q)>=0||x.depositor.indexOf(q)>=0||(qd.length>=3&&x.phone.indexOf(qd)>=0);
+  });
+  $('list').innerHTML=rows.length?rows.map(row).join(''):'<p class="sub" style="text-align:center;padding:18px 0">해당하는 신청이 없어요.</p>';
+}
+function row(x){
+  var pill=x.status==='pending'?'<span class="pill">대기</span>':x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>':'<span class="pill no">반려</span>';
+  var btns='';
+  if(x.status==='pending') btns='<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
+  else if(x.status==='approved'){
+    var body='[과수원피스] 항해 패스 입금 확인됐어! 행사 날 이 링크의 QR을 패스 판매 부스에서 보여줘: '+custUrl(x.token);
+    btns='<a class="btn p sm" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자로 링크 보내기</a>'+(x.used?'':'<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">승인 취소</button>');
+  }else if(!x.used) btns='<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">대기로 되돌리기</button>';
+  return '<div class="ord '+x.status+'"><div class="top"><span class="name">'+esc(x.name)+' <span style="font-weight:400;font-size:14px">× '+x.qty+'장</span></span><span class="amt">'+won(x.amount)+'원</span></div>'+
+    '<div class="meta">입금자명 <b>'+esc(x.depositor)+'</b> · '+esc(phoneFmt(x.phone))+' · '+hm(x.createdAt)+' '+pill+'</div>'+(btns?'<div class="row">'+btns+'</div>':'')+'</div>';
+}
+$('list').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-a]'); if(!b) return;
+  var a=b.dataset.a, x=items.filter(function(i){return i.token===b.dataset.t})[0];
+  if(a==='reject'&&!confirm(x.name+' 님 신청을 반려할까요?')) return;
+  if(a==='reopen'&&!confirm(x.name+' 님 신청을 대기 상태로 되돌릴까요? 손님 QR이 사라져요.')) return;
+  b.disabled=true;
+  adm('ownerPreorderSet',{token:b.dataset.t,action:a}).then(load,function(er){b.disabled=false;msg($('listMsg'),er.message||'처리하지 못했어요')});
+});
+$('tabs').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-f]'); if(!b) return;
+  filter=b.dataset.f; Array.prototype.forEach.call($('tabs').children,function(c){c.classList.toggle('on',c===b)}); render();
+});
+$('q').addEventListener('input',render);
+$('cSave').onclick=function(){
+  var b=this; b.disabled=true; msg($('cMsg'),'저장하는 중…',true);
+  adm('ownerPreorderCfg',{open:$('cOpen').checked,price:+$('cPrice').value,max:+$('cMax').value,bank:$('cBank').value,account:$('cAcct').value,holder:$('cHolder').value}).then(function(){
+    b.disabled=false; msg($('cMsg'),'저장했어요',true);
+  },function(e){b.disabled=false;msg($('cMsg'),e.message||'저장하지 못했어요')});
+};
+showMain();
+})();
+</script>
+</body>
+</html>

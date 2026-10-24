@@ -6,7 +6,7 @@
    - 관리자·스태프 PIN 은 이 파일에 없다. PIN 은 서버 비밀값이며, 로그인하면 12시간짜리 세션 토큰만 받는다. */
 (function () {
   'use strict';
-  var FB = {
+  var FB = window.EV_FB || {
     apiKey: 'AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts',
     authDomain: 'psbjeju-kuji.firebaseapp.com',
     projectId: 'psbjeju-kuji',
@@ -14,7 +14,7 @@
   };
   var REGION = 'asia-northeast3';
   var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
-  var SESSION_KEY = 'ev.staffSession';
+  var SESSION_KEY = window.EV_SESSION_KEY || 'ev.staffSession';
 
   function load(src) {
     return new Promise(function (ok, no) {
@@ -208,6 +208,8 @@
     /* 행사 공개 설정(evCfg) 읽기 — 누구나 읽을 수 있는 문서 */
     readCfg: async function (eventId) { var fb = await boot(); var d = await fb.firestore().doc('evCfg/' + eventId).get(); return d.exists ? effCfg(d.data()) : null; },
     hasSession: function () { return !!session(); },
+    /* 로그인 없이 부르는 공개 함수(사전 패스 신청 등) */
+    pub: function (name, data) { return raw(name, data, false); },
     staff: staff,
     newId: newId,
     norm: norm
