@@ -6,15 +6,25 @@
    - 관리자·스태프 PIN 은 이 파일에 없다. PIN 은 서버 비밀값이며, 로그인하면 12시간짜리 세션 토큰만 받는다. */
 (function () {
   'use strict';
-  var FB = window.EV_FB || {
+  /* 2026-10-24: 서버 분리 — 본 행사는 과수원피스 전용 서버(psb-gwasuwon), 매장 테스트(?ev=test)는 쿠지(가게) 서버(psbjeju-kuji).
+     쿠지 서버에는 본 행사 데이터를 올리지 않는다. 로그인 세션 키도 서버마다 따로 쓴다. */
+  var TEST = /[?&]ev=test\b/.test(location.search);
+  var FB_STORE = {
     apiKey: 'AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts',
     authDomain: 'psbjeju-kuji.firebaseapp.com',
     projectId: 'psbjeju-kuji',
     appId: '1:627012765686:web:41178983d00eb37fd029d7'
   };
+  var FB_EVENT = {
+    apiKey: 'AIzaSyBGt_Ue9DoI0DWDYwLtDlYdJTZrSer6aUM',
+    authDomain: 'psb-gwasuwon.firebaseapp.com',
+    projectId: 'psb-gwasuwon',
+    appId: '1:468654844058:web:b8cfd7919f5843455dd723'
+  };
+  var FB = window.EV_FB || (TEST ? FB_STORE : FB_EVENT);
   var REGION = 'asia-northeast3';
   var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
-  var SESSION_KEY = window.EV_SESSION_KEY || 'ev.staffSession';
+  var SESSION_KEY = window.EV_SESSION_KEY || (TEST ? 'ev.staffSession' : 'gw.staffSession');
 
   function load(src) {
     return new Promise(function (ok, no) {

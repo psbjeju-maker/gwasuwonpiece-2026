@@ -62,7 +62,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 <body>
 <div class="wrap">
   <h1>패스 사전 신청 관리 <span id="envTag" class="pill" hidden>테스트</span></h1>
-  <p class="sub">입금 알림을 확인하고 승인 버튼을 누르면 손님 화면에 교환 QR이 떠요.</p>
+  <p class="sub">입금 알림을 확인하고 승인 버튼을 누르면 손님 화면에 교환 QR이 떠요. <a href="staff.html">← 관리자 홈</a></p>
 
   <div class="card" id="loginBox">
     <h2>관리자 로그인</h2>
@@ -101,21 +101,12 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
       <p class="sub" style="margin-top:10px">손님 신청 주소: <span id="custUrl" style="word-break:break-all"></span></p>
     </details>
 
-    <details class="card">
-      <summary style="font-weight:800;cursor:pointer">현장 교환 담당 PIN 만들기</summary>
-      <p class="sub" style="margin-top:8px">현장에서 교환 QR을 확인하는 직원용이에요. 만들면 6자리 PIN이 한 번 나와요. 교환 화면 주소: <span id="vUrl" style="word-break:break-all"></span></p>
-      <label for="pLabel">이름표 <small style="font-weight:400">(예: 매표1)</small></label><input id="pLabel" type="text" maxlength="20" value="사전신청교환">
-      <div class="row"><button class="btn p" id="pMake" type="button">PIN 만들기</button></div>
-      <p class="msg" id="pMsg"></p>
-      <div id="pOut" style="font-size:28px;font-weight:800;letter-spacing:.2em;text-align:center;margin-top:6px"></div>
-    </details>
-
     <div class="row" style="margin-top:16px"><button class="btn sm" id="btnLogout" type="button">로그아웃</button></div>
   </div>
 </div>
 
 <script src="gw-server.js"></script>
-<script src="ev-client.js?v=7"></script>
+<script src="ev-client.js?v=8"></script>
 <script>
 (function(){
 var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu';
@@ -198,13 +189,6 @@ $('cSave').onclick=function(){
   adm('ownerPreorderCfg',{open:$('cOpen').checked,price:+$('cPrice').value,max:+$('cMax').value,bank:$('cBank').value,account:$('cAcct').value,holder:$('cHolder').value}).then(function(){
     b.disabled=false; msg($('cMsg'),'저장했어요',true);
   },function(e){b.disabled=false;msg($('cMsg'),e.message||'저장하지 못했어요')});
-};
-$('vUrl').textContent=location.href.split('?')[0].replace(/preorder-admin\.html$/,'voucher.html')+(TEST?'?ev=test':'');
-$('pMake').onclick=function(){
-  var b=this; b.disabled=true; msg($('pMsg'),'만드는 중…',true); $('pOut').textContent='';
-  adm('ownerTaskPins',{action:'create',task:'pass',label:$('pLabel').value.trim()||'사전신청교환'}).then(function(r){
-    b.disabled=false; msg($('pMsg'),'만들었어요. 이 PIN은 지금만 보여요.',true); $('pOut').textContent=r.pin;
-  },function(e){b.disabled=false;msg($('pMsg'),e.message||'만들지 못했어요')});
 };
 showMain();
 })();
