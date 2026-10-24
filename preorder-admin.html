@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>패스 사전 신청 관리</title>
+<title>패스 사전 구매 관리</title>
 <style>
 :root{
   --bg:#FBF7EE; --surface:#FFFFFF; --ink:#20281F; --ink-2:#4A5445; --muted:#6B6650; --line:#E4DCC4;
@@ -61,7 +61,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 </head>
 <body>
 <div class="wrap">
-  <h1>패스 사전 신청 관리 <span id="envTag" class="pill" hidden>테스트</span></h1>
+  <h1>패스 사전 구매 관리 <span id="envTag" class="pill" hidden>테스트</span></h1>
   <p class="sub">입금 알림을 확인하고 승인 버튼을 누르면 손님 화면에 교환 QR이 떠요. <a href="staff.html">← 관리자 홈</a></p>
 
   <div class="card" id="loginBox">
@@ -90,7 +90,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 
     <details class="card" id="cfgCard">
       <summary style="font-weight:800;cursor:pointer">신청 설정 (계좌·가격)</summary>
-      <label class="toggle" style="margin-top:12px"><input id="cOpen" type="checkbox"> 사전 신청 받기</label>
+      <label class="toggle" style="margin-top:12px"><input id="cOpen" type="checkbox"> 사전 구매 받기</label>
       <label for="cPrice">패스 가격 (원)</label><input id="cPrice" type="number" min="0" inputmode="numeric">
       <label for="cMax">1회 최대 수량</label><input id="cMax" type="number" min="1" max="20" inputmode="numeric">
       <label for="cBank">은행</label><input id="cBank" type="text" maxlength="40">
@@ -151,7 +151,7 @@ function load(){
 function render(){
   var wait=items.filter(function(x){return x.status==='pending'}), ok=items.filter(function(x){return x.status==='approved'});
   $('sWait').textContent=wait.length; $('sOk').textContent=ok.reduce(function(a,x){return a+x.qty},0); $('sAmt').textContent=won(ok.reduce(function(a,x){return a+x.amount},0));
-  document.title=(wait.length?'('+wait.length+') ':'')+'패스 사전 신청 관리';
+  document.title=(wait.length?'('+wait.length+') ':'')+'패스 사전 구매 관리';
   var q=$('q').value.trim().replace(/\s/g,''), qd=q.replace(/\D/g,'');
   var rows=items.filter(function(x){
     if(filter!=='all'&&x.status!==filter) return false;

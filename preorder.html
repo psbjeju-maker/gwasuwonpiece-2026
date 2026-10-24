@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>항해 패스 사전 신청 · 과수원피스</title>
+<title>항해 패스 사전 구매 · 과수원피스</title>
 <style>
 :root{
   --bg:#FBF7EE; --surface:#FFFFFF; --ink:#20281F; --ink-2:#4A5445; --muted:#6B6650; --line:#E4DCC4;
@@ -65,8 +65,8 @@ ul.tips li{margin:4px 0}
 <body>
 <div class="wrap">
   <p class="eyebrow">HALLOWEEN GWASUWON PIECE</p>
-  <h1>항해 패스 사전 신청</h1>
-  <p class="lede" id="lede">미리 신청하고 입금해 두면, 현장에서 줄 서지 않고 바로 손목띠를 받을 수 있어!</p>
+  <h1>항해 패스 사전 구매</h1>
+  <p class="lede" id="lede">미리 구매하고 입금해 두면, 현장에서 줄 서지 않고 바로 손목띠를 받을 수 있어!</p>
 
   <!-- 1) 신청서 -->
   <section id="formView" hidden>
@@ -81,7 +81,7 @@ ul.tips li{margin:4px 0}
       <p class="pnote">입장·마켓 구경·무대 관람은 패스 없이도 무료야.</p>
     </div>
     <div class="card">
-      <h2>신청 정보</h2>
+      <h2>구매 정보</h2>
       <label for="fName">이름</label>
       <input id="fName" type="text" autocomplete="name" maxlength="20" placeholder="받으러 올 분 이름">
       <label for="fPhone">휴대폰 번호</label>
@@ -92,13 +92,13 @@ ul.tips li{margin:4px 0}
       <label>패스 수량</label>
       <div class="stepper"><button id="qMinus" type="button" aria-label="하나 줄이기">−</button><b id="qVal">1</b><button id="qPlus" type="button" aria-label="하나 늘리기">+</button></div>
       <div class="sum"><span>입금할 금액</span><b id="sumAmt">-</b></div>
-      <button class="btn" id="btnSubmit" type="button">신청하고 입금 안내 받기</button>
+      <button class="btn" id="btnSubmit" type="button">구매 신청하고 입금 안내 받기</button>
       <p class="msg" id="formMsg" role="alert"></p>
     </div>
     <div class="card">
       <h2>이렇게 진행돼</h2>
       <ul class="tips">
-        <li>신청하면 입금 계좌와 금액이 나와.</li>
+        <li>구매 신청을 하면 입금 계좌와 금액이 나와.</li>
         <li>입금하면 사장님이 확인하고 승인해 줘.</li>
         <li>승인되면 이 페이지에 교환 QR이 떠. 문자로도 링크를 보내 줄게.</li>
         <li>행사 날 패스 판매 부스에서 QR을 보여주면 손목띠를 채워 줘.</li>
@@ -135,7 +135,7 @@ ul.tips li{margin:4px 0}
   </section>
 
   <section id="closedView" class="card" hidden>
-    <h2 id="closedTitle">지금은 사전 신청을 받지 않아</h2>
+    <h2 id="closedTitle">지금은 사전 구매을 받지 않아</h2>
     <p style="margin:0;color:var(--ink-2)" id="closedSub">현장에서 패스 판매 부스로 오면 바로 구매할 수 있어!</p>
   </section>
   <p class="msg" id="topMsg" role="alert"></p>
@@ -220,7 +220,7 @@ $('btnCopy').onclick=function(){
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,function(){});
   else { var i=document.createElement('input'); i.value=t; document.body.appendChild(i); i.select(); try{document.execCommand('copy');done()}catch(e){} i.remove() }
 };
-$('btnNew').onclick=function(){ save(''); token=null; clearTimeout(timer); history.replaceState(null,'',TEST?'?ev=test':location.pathname); $('lede').textContent='미리 신청하고 입금해 두면, 현장에서 줄 서지 않고 바로 손목띠를 받을 수 있어!'; show('formView') };
+$('btnNew').onclick=function(){ save(''); token=null; clearTimeout(timer); history.replaceState(null,'',TEST?'?ev=test':location.pathname); $('lede').textContent='미리 구매하고 입금해 두면, 현장에서 줄 서지 않고 바로 손목띠를 받을 수 있어!'; show('formView') };
 
 function start(){
   EV.pub('preorderInfo',{eventId:EID}).then(function(r){

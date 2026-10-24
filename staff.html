@@ -198,7 +198,7 @@ function start(){
   $('scLogin').hidden=!!i; $('hdr').hidden=!i; $('scTask').hidden=!i;
   if(!i) return;
   var task=i.role==='admin'?(adminView||'admin'):i.task;
-  $('hTask').textContent=i.role==='admin'?(adminView?'총괄 · '+(TASKS[adminView]||(adminView==='entry'?'행사 입장':adminView==='voucher'?'사전 신청 교환':adminView==='rec'?'행사 기록':adminView)):'총괄'):(i.taskName||TASKS[i.task]||i.task);
+  $('hTask').textContent=i.role==='admin'?(adminView?'총괄 · '+(TASKS[adminView]||(adminView==='entry'?'행사 입장':adminView==='voucher'?'사전 구매 교환':adminView==='rec'?'행사 기록':adminView)):'총괄'):(i.taskName||TASKS[i.task]||i.task);
   $('hLabel').textContent=(i.label?i.label+' · ':'')+new Date(i.exp).toTimeString().slice(0,5)+'까지 로그인';
   var box=$('scTask'); box.innerHTML='';
   if(i.role==='admin'&&adminView){var back=h('<button class="btn sm" type="button">← 총괄 화면</button>').firstChild;back.onclick=function(){adminView=null;start()};box.appendChild(back)}
@@ -516,9 +516,9 @@ SCREENS.adminFull=function(box){
   $('vReset').onclick=function(){if(!confirm('투표를 처음 상태로 돌리고 표를 전부 지울까요?'))return;busy(this,call('voteHost',{action:'ready'})).then(function(){res($('rRes'),'ok','투표 초기화 완료')},function(e){res($('rRes'),'no',errMsg(e))})};
 };
 
-/* 사전 신청 교환: 교환 QR → 손목띠 지급 처리 (패스 사전 신청, 2026-10-24) */
+/* 사전 구매 교환: 교환 QR → 손목띠 지급 처리 (패스 사전 구매, 2026-10-24) */
 SCREENS.voucher=function(box){
-  box.appendChild(h('<div class="card"><h2>사전 신청 교환</h2><p class="muted">손님 폰의 교환 QR을 찍으면 이름과 받을 개수가 떠요. 손목띠를 채워 준 뒤 「지급 완료」를 눌러요.</p>'+
+  box.appendChild(h('<div class="card"><h2>사전 구매 교환</h2><p class="muted">손님 폰의 교환 QR을 찍으면 이름과 받을 개수가 떠요. 손목띠를 채워 준 뒤 「지급 완료」를 눌러요.</p>'+
     '<div class="inrow"><input id="vIn" placeholder="교환 QR" autocomplete="off" autocapitalize="characters"><button class="btn scanon" data-scan="vIn" type="button">QR 스캔</button></div>'+
     '<div id="vRes"></div>'+
     '<details style="margin-top:10px"><summary style="font-weight:700">QR이 없을 때 이름·전화 뒷자리로 찾기</summary><input id="vQ" class="mt" placeholder="이름 또는 전화번호 뒷 4자리" autocomplete="off"><button class="btn mt" id="vFind" type="button">찾기</button><div id="vList"></div></details></div>'));
@@ -542,12 +542,12 @@ SCREENS.voucher=function(box){
   $('vList').addEventListener('click',function(e){var b=e.target.closest('[data-pick]');if(!b)return;$('vIn').value=b.dataset.pick;vLook()});
 };
 
-/* 본 행사 관리자 홈: 필요한 것만 (입장 · 투표 · 보물찾기 · 추가 도전 판매 · 패스 사전 신청) */
+/* 본 행사 관리자 홈: 필요한 것만 (입장 · 투표 · 보물찾기 · 추가 도전 판매 · 패스 사전 구매) */
 SCREENS.adminLite=function(box){
   box.appendChild(h('<div class="card"><h2>현장 운영</h2><div class="two menu" id="aMenu"></div></div>'+
     '<div class="card"><h2>보물찾기</h2><div class="two menu"><button class="btn" data-view="pickup" type="button">상품 수령</button><button class="btn" data-view="extra" type="button">추가 도전 판매</button></div>'+
     '<a class="btn mt" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="bury.html">보물 관리 (장소 · 퀴즈 · 상품판)</a></div>'+
-    '<div class="card"><h2>패스 사전 신청</h2><div class="two menu"><button class="btn" data-view="voucher" type="button">교환 (QR 확인)</button><a class="btn" href="preorder-admin.html">입금 확인 · 승인</a></div></div>'+
+    '<div class="card"><h2>패스 사전 구매</h2><div class="two menu"><button class="btn" data-view="voucher" type="button">교환 (QR 확인)</button><a class="btn" href="preorder-admin.html">입금 확인 · 승인</a></div></div>'+
     '<div class="card"><h2>추가 도전 판매 기록</h2><p class="muted">실수로 지급한 건은 사유를 남기고 취소해요(이미 쓴 횟수는 못 되돌려요).</p><button class="btn mt" id="xLoad" type="button">기록 보기</button><div class="list mt" id="xList"></div><div id="xRes"></div></div>'+
     '<div class="card"><h2>투표</h2><button class="btn mt" id="vReset" type="button">투표 초기화(표 전부 삭제)</button><div id="rRes"></div></div>'));
   $('aMenu').innerHTML='<button class="btn p" data-view="entry" type="button">행사 입장</button><button class="btn p" data-view="vote" type="button">무대 인기투표</button>';
