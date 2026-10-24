@@ -165,7 +165,7 @@ function row(x){
   var btns='';
   if(x.status==='pending') btns='<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
   else if(x.status==='approved'){
-    var body='[과수원피스] 항해 패스 입금 확인됐어! 행사 날 이 링크의 QR을 패스 판매 부스에서 보여줘: '+custUrl(x.token);
+    var body='[과수원피스] 귤선장이야! 항해 패스 입금 확인했어. 행사 날 패스 판매 부스에서 이 링크의 QR을 보여주면 손목띠를 채워 줄게. 기다릴게! '+custUrl(x.token);
     btns='<a class="btn p sm" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자로 링크 보내기</a>'+(x.used?'':'<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">승인 취소</button>');
   }else if(!x.used) btns='<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">대기로 되돌리기</button>';
   return '<div class="ord '+x.status+'"><div class="top"><span class="name">'+esc(x.name)+' <span style="font-weight:400;font-size:14px">× '+x.qty+'장</span></span><span class="amt">'+won(x.amount)+'원</span></div>'+
