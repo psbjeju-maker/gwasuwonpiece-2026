@@ -56,6 +56,8 @@ ul.tips li{margin:4px 0}
 .perks li:first-child{border-top:0}
 .perks b{display:block;font-size:16px}
 .perks span{display:block;font-size:14px;color:var(--ink-2)}
+.hint{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
+.hint b{color:var(--accent-2)}
 .pnote{margin:8px 0 0;font-size:13px;color:var(--muted)}
 [hidden]{display:none!important}
 </style>
@@ -84,6 +86,7 @@ ul.tips li{margin:4px 0}
       <input id="fName" type="text" autocomplete="name" maxlength="20" placeholder="받으러 올 분 이름">
       <label for="fPhone">휴대폰 번호</label>
       <input id="fPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="010-0000-0000">
+      <p class="hint">입금 확인 후 이 번호로 문자를 보내 줘. <b>번호가 틀리면 문자를 못 받으니 꼭 정확하게 적어 줘!</b></p>
       <label for="fDep">입금자명 <small>(이름과 다를 때만)</small></label>
       <input id="fDep" type="text" maxlength="20" placeholder="비우면 이름과 같아">
       <label>패스 수량</label>
@@ -163,6 +166,7 @@ $('btnSubmit').onclick=function(){
   var b=this, name=$('fName').value.trim(), phone=$('fPhone').value.replace(/\D/g,'');
   if(!name){msg($('formMsg'),'이름을 적어 줘.');return}
   if(!/^01\d{8,9}$/.test(phone)){msg($('formMsg'),'휴대폰 번호를 확인해 줘.');return}
+  if(!confirm('문자를 받을 번호가 맞아?\n\n'+fmtPhone(phone)+'\n\n틀리면 문자를 받을 수 없어요.')) return;
   b.disabled=true; msg($('formMsg'),'신청하는 중…');
   var rid=null; try{rid=sessionStorage.getItem('psb.po.rid')}catch(e){} if(!rid){rid=EV.newId(); try{sessionStorage.setItem('psb.po.rid',rid)}catch(e){}}
   EV.pub('preorderSubmit',{eventId:EID,requestId:rid,name:name,phone:phone,depositor:$('fDep').value.trim(),qty:qty}).then(function(r){
