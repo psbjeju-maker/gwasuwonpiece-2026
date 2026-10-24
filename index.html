@@ -602,7 +602,7 @@ function openBox(r){
 }
 var PZIMG={}, PZFIG=['luffy','zoro','naruto','sakura','frieren','megumi','bakugo'];
 /* 당첨 화면 상품 사진: 서버 상품판에 등록된 사진 → 없으면 등급별 기본 사진(C=피규어 중 랜덤, D=포토카드) */
-function prizePic(t){if(PZIMG[t])return PZIMG[t];if(t==='C')return 'assets/prizes/C/'+PZFIG[Math.floor(Math.random()*PZFIG.length)]+'.jpg';if(t==='A')return 'assets/prizes/A/keroro_chibi.jpg';if(t==='D')return 'assets/prizes/D_photocards.jpg';return ''}
+function prizePic(t){if(PZIMG[t])return PZIMG[t];if(t==='C')return 'assets/prizes/C/'+PZFIG[Math.floor(Math.random()*PZFIG.length)]+'.jpg';if(t==='B'){var bp=['pouch_miku','pouch_kanade','bag_sakura'];return 'assets/prizes/B/'+bp[Math.floor(Math.random()*bp.length)]+'.jpg'}if(t==='A')return 'assets/prizes/A/keroro_chibi.jpg';if(t==='D')return 'assets/prizes/D_photocards.jpg';return ''}
 function showResult(r){
   $('chest').classList.remove('shake');
   var win=r.tier&&r.tier!=='X',html;
