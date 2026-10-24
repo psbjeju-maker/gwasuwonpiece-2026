@@ -99,6 +99,8 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .tl b{display:block}
 .tl small{color:#AEB8C4}
 .tl .d{font-weight:700;color:var(--gold-on-navy);white-space:nowrap}
+.tl button.skip{background:transparent;color:#AEB8C4;border:1px solid rgba(255,255,255,.25);margin-left:6px}
+.tl button.skip.ask{background:#C0392B;color:#fff;border-color:#C0392B}
 .tl button{min-height:40px;padding:0 12px;border-radius:10px;background:var(--gold-on-navy);color:#2A1A04;font-weight:700;font-size:14px}
 .hunt .err{color:#FF9C8F}
 
@@ -143,6 +145,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .res .code{font-size:32px;letter-spacing:.2em;font-weight:700;background:var(--gold-soft);border-radius:14px;padding:12px;margin:12px 0 6px;color:#2A1A04}
 .res p{color:var(--muted);margin:6px 0}
 .res img{width:110px;height:auto}
+.res img.pzpic{width:min(70vw,300px);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.35);margin-bottom:10px}
 .res .btn{margin-top:12px}
 .burst{position:absolute;left:50%;top:30%;width:10px;height:10px;pointer-events:none}
 .burst i{position:absolute;width:10px;height:14px;border-radius:2px;animation:conf 1.4s ease-out forwards}
@@ -388,6 +391,7 @@ function renderHome(){
   $('hPlays').hidden=c.kind!=='hunt'||needPass;
   /* 현황판 */
   var pz=h.prizes||{items:[]};
+  (pz.items||[]).forEach(function(x){if(x.img)PZIMG[x.tier]=x.img});
   $('bdPrizes').innerHTML=(pz.topGone?'<p class="info">상위 상품(A·B·C)은 모두 주인을 찾았어요.</p>':'')+(pz.items.length?pz.items.map(function(x){
     return '<div class="pz'+(x.left?'':' out')+'">'+(x.img?'<img src="'+esc(x.img)+'" alt="" loading="lazy">':'<i></i>')+'<div><b>'+esc(TIER[x.tier]||x.tier)+'</b> · '+esc(x.name)+'</div><span class="n">'+(x.left?'남은 '+x.left+'개':'모두 당첨')+'</span></div>'}).join(''):'<p class="muted">경품 안내는 곧 올라와요.</p>');
   var g=h.gyul||{};
@@ -450,7 +454,7 @@ function update(){
     var d=pos?Math.round(distM(pos,s)):null, st=s.dug?(TIER[s.dug]||DUG[s.dug]||'진행 중'):'';
     var pending=s.dug==='npc'||s.dug==='open'||s.dug==='quiz';
     return '<div class="tl"><div><b>'+esc(s.name||'보물')+'</b><small>'+esc(s.hint||'힌트 없음')+'</small></div>'+
-      (pending?'<button data-cont="'+esc(s.id)+'" type="button">이어하기</button>':s.dug?'<span class="chip">'+esc(st)+'</span>':(d!=null?'<span class="d">'+(d>=1000?(d/1000).toFixed(1)+'km':d+'m')+'</span>':''))+'</div>';
+      (pending?'<button data-cont="'+esc(s.id)+'" type="button">이어하기</button>':s.dug?'<span class="chip">'+esc(st)+'</span>':(d!=null?'<span class="d">'+(d>=1000?(d/1000).toFixed(1)+'km':d+'m')+'</span>':'')+(s.live?'<button class="skip" data-skip="'+esc(s.id)+'" type="button">패스</button>':''))+'</div>';
   }).join('')||'<p class="gpsline">지금 열린 보물이 없어요. 잠시 후 다시 확인해 주세요.</p>';
   if(!live.length){setRadar('-','지금 찾을 보물이 없어요','',null);$('btnDig').hidden=true;return}
   if(!pos){setRadar('…','위치 확인 중','',null);return}
@@ -596,13 +600,17 @@ function openBox(r){
   $('bxSkip').onclick=open;
   draw();
 }
+var PZIMG={}, PZFIG=['luffy','zoro','naruto','sakura','frieren','megumi','bakugo'];
+/* 당첨 화면 상품 사진: 서버 상품판에 등록된 사진 → 없으면 등급별 기본 사진(C=피규어 중 랜덤, D=포토카드) */
+function prizePic(t){if(PZIMG[t])return PZIMG[t];if(t==='C')return 'assets/prizes/C/'+PZFIG[Math.floor(Math.random()*PZFIG.length)]+'.jpg';if(t==='D')return 'assets/prizes/D_photocards.jpg';return ''}
 function showResult(r){
   $('chest').classList.remove('shake');
   var win=r.tier&&r.tier!=='X',html;
   if(win){
     sfx('fanfare');buzz([80,60,80,60,200]);burst();
     $('stTitle').textContent=r.task==='quiz'?'정답입니다! 보물 당첨!':'보물 당첨!';$('stSub').textContent='';
-    html='<div class="res"><img src="assets/icons/golden_tangerine.png" alt=""><div class="big">'+esc(TIER[r.tier])+'</div><div class="prize">'+esc(r.prize)+'</div>'+
+    var pic=prizePic(r.tier);
+    html='<div class="res">'+(pic?'<img class="pzpic" src="'+esc(pic)+'" alt="">':'')+'<img src="assets/icons/golden_tangerine.png" alt=""><div class="big">'+esc(TIER[r.tier])+'</div><div class="prize">'+esc(r.prize)+'</div>'+
       (r.free?'<p>뽑기 부스에서 참가번호를 보여주면 1회 무료!</p>':'<div class="code">'+esc(r.pickupCode||'')+'</div><p>상품 수령처에서 참가번호를 보여주세요.</p>')+(r.given?'<p><b>이미 받은 상품이에요.</b></p>':'');
   }else if(!r.correct){
     $('stTitle').textContent='자물쇠가 안 열려요…';$('stSub').textContent='';
@@ -623,6 +631,13 @@ function burst(){
 function closeStage(){$('stage').hidden=true;$('sheet').className='sheet'}
 
 /* 진행 중인 NPC 보물은 목록에서 바로 이어서 */
+/* 보물이 이상한 곳에 있으면 패스: 두 번 눌러 확인 → 내 목록에서만 빠지고 다른 보물로 채워짐(도전 횟수 안 줄어듦) */
+$('tlist').addEventListener('click',function(e){
+  var k=e.target.closest('[data-skip]'); if(!k) return;
+  if(!k.classList.contains('ask')){k.classList.add('ask');k.textContent='정말 패스?';setTimeout(function(){if(k.isConnected){k.classList.remove('ask');k.textContent='패스'}},3000);return}
+  k.disabled=true;
+  EV.call('digSkip',{eventId:EID,spotId:k.dataset.skip}).then(function(){return EV.call('digSpots',{eventId:EID})}).then(function(r){data=r;update()},function(er){k.disabled=false;$('huntErr').textContent=er.message||'패스하지 못했어요.'});
+});
 $('tlist').addEventListener('click',function(e){
   var b=e.target.closest('[data-cont]'); if(!b) return;
   spot=data.spots.find(function(s){return s.id===b.dataset.cont}); if(!spot) return;
