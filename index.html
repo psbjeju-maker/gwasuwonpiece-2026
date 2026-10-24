@@ -145,7 +145,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .res .code{font-size:32px;letter-spacing:.2em;font-weight:700;background:var(--gold-soft);border-radius:14px;padding:12px;margin:12px 0 6px;color:#2A1A04}
 .res p{color:var(--muted);margin:6px 0}
 .res img{width:110px;height:auto}
-.res img.pzpic{width:min(70vw,300px);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.35);margin-bottom:10px}
+.res img.pzpic{width:min(70vw,300px);max-height:42vh;object-fit:contain;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.35);margin-bottom:10px}
 .res .btn{margin-top:12px}
 .burst{position:absolute;left:50%;top:30%;width:10px;height:10px;pointer-events:none}
 .burst i{position:absolute;width:10px;height:14px;border-radius:2px;animation:conf 1.4s ease-out forwards}
@@ -602,7 +602,7 @@ function openBox(r){
 }
 var PZIMG={}, PZFIG=['luffy','zoro','naruto','sakura','frieren','megumi','bakugo'];
 /* 당첨 화면 상품 사진: 서버 상품판에 등록된 사진 → 없으면 등급별 기본 사진(C=피규어 중 랜덤, D=포토카드) */
-function prizePic(t){if(PZIMG[t])return PZIMG[t];if(t==='C')return 'assets/prizes/C/'+PZFIG[Math.floor(Math.random()*PZFIG.length)]+'.jpg';if(t==='B'){var bp=['pouch_miku','pouch_kanade','keroro_hat'];return 'assets/prizes/B/'+bp[Math.floor(Math.random()*bp.length)]+'.jpg'}if(t==='A')return 'assets/prizes/A/'+(Math.random()<.5?'keroro_chibi':'bag_sakura')+'.jpg';if(t==='D')return 'assets/prizes/D_photocards.jpg';return ''}
+function prizePic(t){if(PZIMG[t])return PZIMG[t];if(t==='C')return 'assets/prizes/C/'+PZFIG[Math.floor(Math.random()*PZFIG.length)]+'.jpg';if(t==='B'){var bp=['pouch_miku','pouch_kanade','keroro_hat','keroro_chibi','bag_sakura'];var bn=bp[Math.floor(Math.random()*bp.length)];return 'assets/prizes/'+((bn==='keroro_chibi'||bn==='bag_sakura')?'A':'B')+'/'+bn+'.jpg'}if(t==='A')return 'assets/prizes/A/nendo_miku.jpg';if(t==='D')return 'assets/prizes/D_photocards.jpg';return ''}
 function showResult(r){
   $('chest').classList.remove('shake');
   var win=r.tier&&r.tier!=='X',html;
