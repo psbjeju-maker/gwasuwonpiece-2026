@@ -113,7 +113,8 @@ var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu';
 var $=function(id){return document.getElementById(id)};
 var SENT=(function(){try{return JSON.parse(localStorage.getItem('psb.po.sent')||'{}')}catch(e){return {}}})();
 var PRE={};
-function isSent(x){return !!(x.smsAt||SENT[x.token])}
+var SENT_CUT=1793008168000; /* 이 시각 전에 승인한 신청은 문자 완료로 본다(사장님 확인) */
+function isSent(x){return !!(x.smsAt||SENT[x.token]||(x.approvedAt&&x.approvedAt<SENT_CUT))}
 function markSent(t,on){if(on)SENT[t]=Date.now();else delete SENT[t];try{localStorage.setItem('psb.po.sent',JSON.stringify(SENT))}catch(e){}}
 var seen=null;
 function ding(){try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(c.destination);o.start();setTimeout(function(){o.frequency.value=1175},150);setTimeout(function(){o.stop();c.close()},350)}catch(e){}}
