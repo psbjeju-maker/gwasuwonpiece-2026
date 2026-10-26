@@ -35,7 +35,7 @@ input[type=text],input[type=password],input[type=number]{width:100%;min-height:4
 .row>*{flex:1 1 auto}
 .msg{margin:8px 0 0;font-size:14px;min-height:1.2em;color:var(--danger)}
 .msg.ok{color:var(--leaf)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
 .stat b{display:block;font-size:22px}
 .stat span{font-size:12px;color:var(--muted)}
@@ -62,7 +62,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 <body>
 <div class="wrap">
   <h1>패스 사전 구매 관리 <span id="envTag" class="pill" hidden>테스트</span></h1>
-  <p class="sub">입금 알림을 확인하고 승인 버튼을 누르면 손님 화면에 교환 QR이 떠요. <a href="staff.html">← 관리자 홈</a></p>
+  <p class="sub">돈이 들어온 걸 확인하고 승인 버튼을 누르면 손님 화면에 QR이 떠요. 그다음 「문자 보낼 차례」에서 한 명씩 문자를 보내요. <a href="staff.html">← 관리자 홈</a></p>
 
   <div class="card" id="loginBox">
     <h2>관리자 로그인</h2>
@@ -75,12 +75,14 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   <div id="main" hidden>
     <div class="stats">
       <div class="stat"><b id="sWait">0</b><span>입금 확인 대기</span></div>
+      <div class="stat"><b id="sSms">0</b><span>문자 보낼 차례</span></div>
       <div class="stat"><b id="sOk">0</b><span>승인 (장수)</span></div>
       <div class="stat"><b id="sAmt">0</b><span>승인 금액 (원)</span></div>
     </div>
 
     <div class="tabs" id="tabs">
       <button data-f="pending" class="on" type="button">대기</button>
+      <button data-f="sms" type="button">문자 보낼 차례</button>
       <button data-f="approved" type="button">승인</button>
       <button data-f="all" type="button">전체</button>
     </div>
@@ -111,6 +113,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 (function(){
 var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu';
 var $=function(id){return document.getElementById(id)};
+var SENT=(function(){try{return JSON.parse(localStorage.getItem('psb.po.sent')||'{}')}catch(e){return {}}})();
+function markSent(t,on){if(on)SENT[t]=Date.now();else delete SENT[t];try{localStorage.setItem('psb.po.sent',JSON.stringify(SENT))}catch(e){}}
 var items=[], filter='pending', timer=null, cfgFilled=false;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function msg(el,t,ok){el.textContent=t||'';el.className='msg'+(ok?' ok':'')}
@@ -150,29 +154,32 @@ function load(){
 }
 function render(){
   var wait=items.filter(function(x){return x.status==='pending'}), ok=items.filter(function(x){return x.status==='approved'});
-  $('sWait').textContent=wait.length; $('sOk').textContent=ok.reduce(function(a,x){return a+x.qty},0); $('sAmt').textContent=won(ok.reduce(function(a,x){return a+x.amount},0));
+  $('sWait').textContent=wait.length; $('sSms').textContent=ok.filter(function(x){return !SENT[x.token]}).length; $('sOk').textContent=ok.reduce(function(a,x){return a+x.qty},0); $('sAmt').textContent=won(ok.reduce(function(a,x){return a+x.amount},0));
   document.title=(wait.length?'('+wait.length+') ':'')+'패스 사전 구매 관리';
   var q=$('q').value.trim().replace(/\s/g,''), qd=q.replace(/\D/g,'');
   var rows=items.filter(function(x){
-    if(filter!=='all'&&x.status!==filter) return false;
+    if(filter==='sms'){if(x.status!=='approved'||SENT[x.token]) return false}
+    else if(filter!=='all'&&x.status!==filter) return false;
     if(!q) return true;
     return x.name.indexOf(q)>=0||x.depositor.indexOf(q)>=0||(qd.length>=3&&x.phone.indexOf(qd)>=0);
   });
   $('list').innerHTML=rows.length?rows.map(row).join(''):'<p class="sub" style="text-align:center;padding:18px 0">해당하는 신청이 없어요.</p>';
 }
 function row(x){
-  var pill=x.status==='pending'?'<span class="pill">대기</span>':x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>':'<span class="pill no">반려</span>';
+  var pill=x.status==='pending'?'<span class="pill">대기</span>':x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>'+(SENT[x.token]?'<span class="pill ok">문자 보냄 '+hm(SENT[x.token]-0)+'</span>':'<span class="pill">문자 전</span>'):'<span class="pill no">반려</span>';
   var btns='';
   if(x.status==='pending') btns='<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
   else if(x.status==='approved'){
-    var body='[과수원피스] 귤선장이야! 항해 패스 입금 확인했어. 행사 날 패스 판매 부스에서 이 링크의 QR을 보여주면 손목띠를 채워 줄게. 기다릴게! '+custUrl(x.token);
-    btns='<a class="btn p sm" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자로 링크 보내기</a>'+(x.used?'':'<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">승인 취소</button>');
+    var body='[과수원피스] 귤선장이야! 항해 패스 돈 확인했어. 행사 날 패스 부스에서 아래 링크의 QR을 보여주면 해적단 손목띠를 채워 줄게. 기다릴게! '+custUrl(x.token);
+    btns=(SENT[x.token]?'<a class="btn sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 다시 보내기</a><button class="btn sm" data-a="unsent" data-t="'+x.token+'" type="button">보냄 표시 지우기</button>':'<a class="btn p sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 보내기</a>')+(x.used?'':'<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">승인 취소</button>');
   }else if(!x.used) btns='<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">대기로 되돌리기</button>';
   return '<div class="ord '+x.status+'"><div class="top"><span class="name">'+esc(x.name)+' <span style="font-weight:400;font-size:14px">× '+x.qty+'장</span></span><span class="amt">'+won(x.amount)+'원</span></div>'+
     '<div class="meta">입금자명 <b>'+esc(x.depositor)+'</b> · '+esc(phoneFmt(x.phone))+' · '+hm(x.createdAt)+' '+pill+'</div>'+(btns?'<div class="row">'+btns+'</div>':'')+'</div>';
 }
 $('list').addEventListener('click',function(e){
+  var sa=e.target.closest('a[data-sent]'); if(sa){markSent(sa.dataset.sent,true); setTimeout(render,600); return}
   var b=e.target.closest('button[data-a]'); if(!b) return;
+  if(b.dataset.a==='unsent'){markSent(b.dataset.t,false); render(); return}
   var a=b.dataset.a, x=items.filter(function(i){return i.token===b.dataset.t})[0];
   if(a==='reject'&&!confirm(x.name+' 님 신청을 반려할까요?')) return;
   if(a==='reopen'&&!confirm(x.name+' 님 신청을 대기 상태로 되돌릴까요? 손님 QR이 사라져요.')) return;
