@@ -60,6 +60,9 @@ ul.tips li{margin:4px 0}
 .rk img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
 .hint{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
 .hint b{color:var(--accent-2)}
+.hintc{display:flex;align-items:center;gap:8px}
+.hintc img{width:52px;height:52px;flex:none;object-fit:contain}
+.hintc p{margin:0}
 .pnote{margin:8px 0 0;font-size:13px;color:var(--muted)}
 .cap{display:flex;align-items:center;gap:10px;margin:0 0 16px}
 .cap img{width:96px;height:96px;flex:none;object-fit:contain}
@@ -91,12 +94,11 @@ ul.tips li{margin:4px 0}
     </div>
     <div class="card">
       <h2>구매 정보</h2>
-      <div class="cap"><img src="assets/characters/thinking.png" alt=""><p>아래 칸만 채우면 끝이야! <b>휴대폰 번호</b>는 문자 받을 번호로 정확히 적어 줘.</p></div>
       <label for="fName">이름</label>
       <input id="fName" type="text" autocomplete="name" maxlength="20" placeholder="받으러 올 분 이름">
       <label for="fPhone">휴대폰 번호</label>
       <input id="fPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="010-0000-0000">
-      <p class="hint">입금 확인 후 이 번호로 문자를 보내 줘. <b>번호가 틀리면 문자를 못 받으니 꼭 정확하게 적어 줘!</b></p>
+      <div class="hint hintc"><img src="assets/characters/surprised.png" alt=""><p>입금 확인 후 이 번호로 문자를 보내 줘. <b>번호가 틀리면 문자를 못 받으니 꼭 정확하게 적어 줘!</b></p></div>
       <label for="fDep">입금자명 <small>(이름과 다를 때만)</small></label>
       <input id="fDep" type="text" maxlength="20" placeholder="비우면 이름과 같아">
       <label>패스 수량</label>
