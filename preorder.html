@@ -114,7 +114,7 @@ ul.tips li{margin:4px 0}
 <div class="wrap">
   <p class="eyebrow">HALLOWEEN GWASUWON PIECE</p>
   <h1>항해 패스 사전 구매</h1>
-  <p class="lede" id="lede">미리 구매하고 입금해 두면, 현장에서 줄 서지 않고 바로 손목띠를 받을 수 있어!</p>
+  <p class="lede" id="lede">미리 사 두고 돈을 보내 놓으면, 행사 날 줄 안 서고 바로 손목띠를 받을 수 있어!</p>
 
   <!-- 1) 신청서 -->
   <section id="formView" hidden>
@@ -134,25 +134,25 @@ ul.tips li{margin:4px 0}
     <div class="card">
       <h2>구매 정보</h2>
       <label for="fName">이름</label>
-      <input id="fName" type="text" autocomplete="name" maxlength="20" placeholder="받으러 올 분 이름">
+      <input id="fName" type="text" autocomplete="name" maxlength="20" placeholder="패스 받으러 올 사람 이름">
       <label for="fPhone">휴대폰 번호</label>
       <input id="fPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="010-0000-0000">
-      <div class="hint hintc"><img src="assets/characters/surprised.png" alt=""><p>입금 확인 후 이 번호로 문자를 보내 줘. <b>번호가 틀리면 문자를 못 받으니 꼭 정확하게 적어 줘!</b></p></div>
-      <label for="fDep">입금자명 <small>(이름과 다를 때만)</small></label>
-      <input id="fDep" type="text" maxlength="20" placeholder="비우면 이름과 같아">
+      <div class="hint hintc"><img src="assets/characters/surprised.png" alt=""><p>돈 보낸 게 확인되면 이 번호로 문자를 보내 줄게. <b>번호가 틀리면 문자를 못 받으니까 꼭 정확하게 적어 줘!</b></p></div>
+      <label for="fDep">돈 보내는 사람 이름 <small>(위 이름이랑 다를 때만)</small></label>
+      <input id="fDep" type="text" maxlength="20" placeholder="안 적으면 위 이름이랑 같아">
       <label>패스 수량</label>
       <div class="stepper"><button id="qMinus" type="button" aria-label="하나 줄이기">−</button><b id="qVal">1</b><button id="qPlus" type="button" aria-label="하나 늘리기">+</button></div>
-      <div class="sum"><span>입금할 금액</span><b id="sumAmt">-</b></div>
-      <button class="btn" id="btnSubmit" type="button">구매 신청하고 입금 안내 받기</button>
+      <div class="sum"><span>보낼 돈</span><b id="sumAmt">-</b></div>
+      <button class="btn" id="btnSubmit" type="button">구매하고 계좌 번호 받기</button>
       <p class="msg" id="formMsg" role="alert"></p>
     </div>
     <div class="card">
       <h2>이렇게 진행돼</h2>
       <ul class="tips">
-        <li>구매 신청을 하면 입금 계좌와 금액이 나와.</li>
-        <li>입금하면 사장님이 확인하고 승인해 줘.</li>
-        <li>승인되면 이 페이지에 교환 QR이 떠. 문자로도 링크를 보내 줄게.</li>
-        <li>행사 날 패스 판매 부스에서 QR을 보여주면 손목띠를 채워 줘.</li>
+        <li>위 칸을 적고 버튼을 누르면 돈 보낼 계좌 번호가 나와.</li>
+        <li>그 계좌로 돈을 보내면 사장님이 확인해 줘.</li>
+        <li>확인이 끝나면 이 페이지에 QR이 떠. 문자로도 링크를 보내 줄게.</li>
+        <li>행사 날 패스 부스에서 QR을 보여주면 손목띠를 채워 줘.</li>
       </ul>
     </div>
   </section>
@@ -161,35 +161,35 @@ ul.tips li{margin:4px 0}
   <section id="myView" hidden>
     <div class="cap"><img id="capImg" src="assets/characters/neutral.png" alt=""><p id="capLine"></p></div>
     <div class="card">
-      <span class="pill wait" id="stPill">입금 확인 중</span>
+      <span class="pill wait" id="stPill">돈 확인하는 중</span>
       <div class="big" id="stTitle"></div>
       <p id="stSub" style="margin:0;color:var(--ink-2)"></p>
     </div>
 
     <div class="card" id="payCard" hidden>
-      <h2>입금 안내</h2>
+      <h2>돈 보낼 곳</h2>
       <div class="acct"><div><div style="font-size:13px;color:var(--ink-2)" id="bankLine"></div><b id="acctNo"></b></div><button id="btnCopy" type="button">복사</button></div>
-      <div class="sum" style="margin-top:8px;border-top:0;padding-top:0"><span>입금할 금액</span><b id="payAmt"></b></div>
-      <p style="margin:10px 0 0;font-size:14px;color:var(--ink-2)">입금자명은 <b id="payDep"></b> (으)로 보내 줘. 다르면 확인이 늦어질 수 있어.</p>
+      <div class="sum" style="margin-top:8px;border-top:0;padding-top:0"><span>보낼 돈</span><b id="payAmt"></b></div>
+      <p style="margin:10px 0 0;font-size:14px;color:var(--ink-2)">돈 보낼 때 보내는 사람 이름을 <b id="payDep"></b>(으)로 해 줘. 다르면 확인이 늦어질 수 있어.</p>
     </div>
 
     <div class="card" id="qrCard" hidden>
-      <h2>교환 QR</h2>
-      <div class="qrbox"><img id="qrImg" alt="교환 QR"></div>
+      <h2>손목띠 받는 QR</h2>
+      <div class="qrbox"><img id="qrImg" alt="손목띠 받는 QR"></div>
       <p style="text-align:center;margin:8px 0 0" id="qrLeft"></p>
       <ul class="tips">
-        <li>행사 날 패스 판매 부스에서 이 화면을 보여줘.</li>
+        <li>행사 날 패스 부스에서 이 화면을 보여줘.</li>
         <li>여러 장이면 한 번에 같이 받아도, 나눠서 받아도 돼.</li>
-        <li>이 페이지 주소를 저장해 두면 언제든 다시 열 수 있어.</li>
+        <li>이 페이지 주소를 저장해 두면 언제든 다시 볼 수 있어.</li>
       </ul>
     </div>
-    <button class="btn ghost" id="btnNew" type="button">다른 신청 하나 더 하기</button>
+    <button class="btn ghost" id="btnNew" type="button">패스 더 사기</button>
   </section>
 
   <section id="closedView" class="card" hidden>
     <div class="cap" style="margin-bottom:10px"><img src="assets/characters/disappointed.png" alt=""></div>
-    <h2 id="closedTitle">지금은 사전 구매을 받지 않아</h2>
-    <p style="margin:0;color:var(--ink-2)" id="closedSub">현장에서 패스 판매 부스로 오면 바로 구매할 수 있어!</p>
+    <h2 id="closedTitle">지금은 미리 사는 걸 안 받아</h2>
+    <p style="margin:0;color:var(--ink-2)" id="closedSub">행사 날 패스 부스로 오면 바로 살 수 있어!</p>
   </section>
   <p class="msg" id="topMsg" role="alert"></p>
 </div>
@@ -219,8 +219,8 @@ $('btnSubmit').onclick=function(){
   var b=this, name=$('fName').value.trim(), phone=$('fPhone').value.replace(/\D/g,'');
   if(!name){msg($('formMsg'),'이름을 적어 줘.');return}
   if(!/^01\d{8,9}$/.test(phone)){msg($('formMsg'),'휴대폰 번호를 확인해 줘.');return}
-  if(!confirm('문자를 받을 번호가 맞아?\n\n'+fmtPhone(phone)+'\n\n틀리면 문자를 받을 수 없어요.')) return;
-  b.disabled=true; msg($('formMsg'),'신청하는 중…');
+  if(!confirm('문자 받을 번호가 맞아?\n\n'+fmtPhone(phone)+'\n\n틀리면 문자를 못 받아!')) return;
+  b.disabled=true; msg($('formMsg'),'보내는 중…');
   var rid=null; try{rid=sessionStorage.getItem('psb.po.rid')}catch(e){} if(!rid){rid=EV.newId(); try{sessionStorage.setItem('psb.po.rid',rid)}catch(e){}}
   EV.pub('preorderSubmit',{eventId:EID,requestId:rid,name:name,phone:phone,depositor:$('fDep').value.trim(),qty:qty}).then(function(r){
     try{sessionStorage.removeItem('psb.po.rid')}catch(e){}
@@ -234,29 +234,29 @@ function renderMine(s){
   var pill=$('stPill');
   $('payCard').hidden=true; $('qrCard').hidden=true;
   if(s.status==='pending'){
-    pill.className='pill wait'; pill.textContent='입금 확인 중';
+    pill.className='pill wait'; pill.textContent='돈 확인하는 중';
     $('stTitle').textContent=s.name+' · 패스 '+s.qty+'장';
-    $('stSub').textContent='아직 입금 확인 전이야. 아래 계좌로 보내 주면 사장님이 확인하고 승인해 줘.';
-    cap('thinking','신청 잘 받았어! 아래 계좌로 입금하면 내가 <b>사장님한테 전해서</b> 확인해 줄게.');
+    $('stSub').textContent='아직 돈이 확인 안 됐어. 아래 계좌로 보내 주면 사장님이 확인해 줘.';
+    cap('thinking','잘 받았어! 아래 계좌로 돈을 보내면 내가 <b>사장님한테 전해서</b> 확인해 줄게.');
     $('payCard').hidden=false;
-    $('bankLine').textContent=(s.bank||'')+(s.holder?' · 예금주 '+s.holder:'');
+    $('bankLine').textContent=(s.bank||'')+(s.holder?' · 받는 사람 '+s.holder:'');
     $('acctNo').textContent=s.account||''; $('payAmt').textContent=won(s.amount); $('payDep').textContent=s.depositor||s.name;
   }else if(s.status==='approved'){
     var left=s.qty-s.used;
-    pill.className='pill ok'; pill.textContent=left>0?'승인 완료':'수령 완료';
+    pill.className='pill ok'; pill.textContent=left>0?'확인 완료':'수령 완료';
     $('stTitle').textContent=s.name+' · 패스 '+s.qty+'장';
-    $('stSub').textContent=left>0?'입금 확인됐어! 행사 날 이 QR을 보여줘.':'손목띠를 모두 받았어. 즐거운 항해 되길!';
-    cap(left>0?'success':'greeting', left>0?'입금 확인 완료! 행사 날 이 <b>QR</b>을 보여주면 손목띠를 채워 줄게.':'손목띠 다 받았네. 같이 신나게 놀자!');
+    $('stSub').textContent=left>0?'돈 확인됐어! 행사 날 이 QR을 보여줘.':'손목띠를 모두 받았어. 즐거운 항해 되길!';
+    cap(left>0?'success':'greeting', left>0?'돈 확인 끝! 행사 날 이 <b>QR</b>을 보여주면 손목띠를 채워 줄게.':'손목띠 다 받았네. 같이 신나게 놀자!');
     if(left>0){
       var q=qrcode(0,'M'); q.addData('PSBV-'+s.token); q.make(); $('qrImg').src=q.createDataURL(8,2);
       $('qrLeft').innerHTML='받을 수 있는 손목띠 <b>'+left+'개</b>'+(s.used?' (이미 '+s.used+'개 받음)':'');
       $('qrCard').hidden=false;
     }
   }else{
-    cap('disappointed','이 신청은 취소됐어… 궁금한 건 박서방 제주지점에 물어봐 줘.');
+    cap('disappointed','이 주문은 취소됐어… 궁금한 건 박서방 제주지점에 물어봐 줘.');
     pill.className='pill no'; pill.textContent='취소됨';
     $('stTitle').textContent=s.name+' · 패스 '+s.qty+'장';
-    $('stSub').textContent='이 신청은 취소됐어. 궁금한 점은 박서방 제주지점으로 문의해 줘.';
+    $('stSub').textContent='이 주문은 취소됐어. 궁금한 건 박서방 제주지점에 물어봐 줘.';
   }
 }
 function poll(){
@@ -270,14 +270,14 @@ function poll(){
     msg($('topMsg'),errText(e)); timer=setTimeout(poll,30000);
   });
 }
-function showMine(){ show('myView'); $('lede').textContent='신청 내역이야. 이 페이지 주소를 저장해 두면 나중에 다시 볼 수 있어.'; poll() }
+function showMine(){ show('myView'); $('lede').textContent='내가 산 패스야. 이 페이지 주소를 저장해 두면 나중에 다시 볼 수 있어.'; poll() }
 $('btnCopy').onclick=function(){
   var t=$('acctNo').textContent, b=this;
   function done(){b.textContent='복사됨'; setTimeout(function(){b.textContent='복사'},1500)}
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,function(){});
   else { var i=document.createElement('input'); i.value=t; document.body.appendChild(i); i.select(); try{document.execCommand('copy');done()}catch(e){} i.remove() }
 };
-$('btnNew').onclick=function(){ save(''); token=null; clearTimeout(timer); history.replaceState(null,'',TEST?'?ev=test':location.pathname); $('lede').textContent='미리 구매하고 입금해 두면, 현장에서 줄 서지 않고 바로 손목띠를 받을 수 있어!'; show('formView') };
+$('btnNew').onclick=function(){ save(''); token=null; clearTimeout(timer); history.replaceState(null,'',TEST?'?ev=test':location.pathname); $('lede').textContent='미리 사 두고 돈을 보내 놓으면, 행사 날 줄 안 서고 바로 손목띠를 받을 수 있어!'; show('formView') };
 
 function start(){
   EV.pub('preorderInfo',{eventId:EID}).then(function(r){
@@ -286,7 +286,7 @@ function start(){
     if(token){ save(token); showMine(); return }
     if(!r.open||!r.price||!r.account){ show('closedView'); return }
     show('formView');
-  },function(e){ show('closedView'); $('closedTitle').textContent='불러오지 못했어'; $('closedSub').textContent=errText(e) });
+  },function(e){ show('closedView'); $('closedTitle').textContent='못 불러왔어'; $('closedSub').textContent=errText(e) });
 }
 start();
 })();
