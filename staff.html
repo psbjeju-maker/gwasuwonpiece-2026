@@ -264,6 +264,7 @@ SCREENS.hq=function(box){
   box.appendChild(h('<div class="card"><h2>미션지 완료 → 보상</h2><p class="muted">폰 없는 손님도 같은 보물 상품판에서 보상을 받아요.</p>'+
     '<label>참가번호</label>'+codeRow('hCode')+'<label>미션지 번호</label><input id="hSheet" placeholder="예) M012" autocomplete="off" style="text-transform:uppercase">'+
     '<button class="btn p mt" id="hGo" type="button">완료 확인 및 보상</button><div id="hRes"></div></div>'+
+    '<details class="card"><summary style="font-weight:700">SNS 인증 QR 보이기 (몬스터 전투)</summary><p class="muted" style="margin-top:8px">손님이 올린 SNS 게시물을 확인한 뒤, 이 QR을 손님이 찍게 해 주세요. 게시물을 못 본 손님에게는 보여 주지 마세요.</p><button class="btn mt" id="qGo" type="button">QR 보이기</button><div id="qBox" style="text-align:center;margin-top:12px"></div></details>'+
     '<details class="card"><summary style="font-weight:700">NPC 자리 비움 — 미션 대신 완료</summary>'+codeRow('nCode')+'<button class="btn mt" id="nGo" type="button">미션 대신 완료</button><div id="nRes"></div></details>'+
     '<details class="card bandonly"><summary style="font-weight:700">손목띠에 앱 연결 (복구)</summary><label>손목띠</label>'+codeRow('lBand','손목띠')+'<label>앱 참가번호</label>'+codeRow('lApp','앱 참가번호')+'<button class="btn mt" id="lGo" type="button">앱 연결</button><div id="lRes"></div></details>'));
   $('hGo').onclick=function(){
@@ -274,13 +275,19 @@ SCREENS.hq=function(box){
       $('hCode').value='';$('hSheet').value='';
     },function(e){res($('hRes'),'no',errMsg(e))});
   };
+  $('qGo').onclick=function(){
+    busy(this,call('digQrInfo',{})).then(function(r){
+      var url=location.origin+location.pathname.replace(/[^\/]*$/,'')+'?mq='+r.token, q=qrcode(0,'M');q.addData(url);q.make();
+      $('qBox').innerHTML='<img alt="SNS 인증 QR" style="width:min(70vw,300px);background:#fff;padding:10px;border-radius:12px;image-rendering:pixelated" src="'+q.createDataURL(8,2)+'"><p class="muted">손님이 앱의 「스태프 QR 찍기」로 찍어요</p>';
+    },function(e){$('qBox').innerHTML='<p class="muted">'+esc(errMsg(e))+'</p>'});
+  };
   $('nGo').onclick=function(){busy(this,call('npcComplete',{code:$('nCode').value.trim()})).then(function(r){res($('nRes'),r.already?'info':'ok',r.already?'이미 완료했습니다':'미션 완료 처리')},function(e){res($('nRes'),'no',errMsg(e))})};
   $('lGo').onclick=function(){busy(this,call('passLink',{band:$('lBand').value.trim(),appCode:$('lApp').value.trim()})).then(function(r){res($('lRes'),r.already?'info':'ok',r.already?'이미 연결돼 있어요':'앱 연결 완료')},function(e){res($('lRes'),'no',errMsg(e))})};
 };
 
-/* 추가 도전 판매: 조회 → 대상 확인 → 현장 결제 확인 → 지급(같은 요청 번호로 재시도해도 1번만) */
+/* 보물찾기 횟수 추가: 조회 → 대상 확인 → 현장 결제 확인 → 지급(같은 요청 번호로 재시도해도 1번만) */
 SCREENS.extra=function(box){
-  box.appendChild(h('<div class="card"><h2>추가 도전 판매</h2><p class="muted">참가번호 조회 → 닉네임 확인 → 현장 결제 받고 지급. 감귤이 구성에 있으면 같이 건네요.</p>'+codeRow('eCode')+
+  box.appendChild(h('<div class="card"><h2>보물찾기 횟수 추가</h2><p class="muted">참가번호 조회 → 닉네임 확인 → 현장 결제 받고 지급. 감귤이 구성에 있으면 같이 건네요.</p>'+codeRow('eCode')+
     '<button class="btn mt" id="eLook" type="button">조회</button><div id="eWho"></div>'+
     '<div id="eAct" hidden><label class="check"><input type="checkbox" id="ePaid"> 현장 결제 받았어요</label><button class="btn p mt" id="eGo" type="button">지급</button></div><div id="eRes"></div></div>'));
   var cur=null, reqId=null;

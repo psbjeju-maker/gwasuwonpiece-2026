@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0F1120">
+<title>포토카드 공방 — 할로윈 과수원피스</title>
+<link rel="stylesheet" href="app.css?v=1">
+<style>
+html,body{background:var(--color-bg,#0F1120)}
+#app{padding-top:8px}
+.screen{padding-bottom:calc(var(--space-8) + 90px)}
+#btnClose{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:50;min-height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--color-border-strong);background:rgba(15,17,32,.85);color:var(--color-text);font-weight:700;font-size:14px}
+#stkWrap{position:relative;width:min(78vw,320px);margin:var(--space-4) auto 0}
+#stkWrap .slots{margin-top:0}
+#stkWrap .slot{max-width:none}
+#stkLayer{position:absolute;inset:0;overflow:hidden;border-radius:12px;pointer-events:none}
+.stkItem{position:absolute;aspect-ratio:1;object-fit:contain;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.45))}
+.stkItem.sel{outline:2px dashed rgba(255,255,255,.9);outline-offset:-2px;border-radius:10px}
+.stkBar{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 6px;margin-top:6px;-webkit-overflow-scrolling:touch}
+.stkThumb{flex:0 0 auto;width:68px;text-align:center;color:var(--color-text);background:var(--color-surface);border:1px solid var(--color-border);border-radius:12px;padding:6px 4px 4px;font-size:11px;font-weight:700}
+.stkThumb img{display:block;width:52px;height:52px;object-fit:contain;margin:0 auto 2px}
+.stkTools{display:none;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:6px}
+.stkTools.on{display:flex}
+.stkTools button{min-height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--color-border-strong);background:var(--color-surface);color:var(--color-text);font-weight:700;font-size:14px}
+.stkTools .del{color:#ff8a8a}
+.stkHint{text-align:center;font-size:13px;color:var(--color-text-secondary);margin-top:6px}
+#doneBar{position:fixed;left:0;right:0;bottom:0;z-index:60;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(15,17,32,.96) 35%);transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.9,.3,1)}
+#doneBar.on{transform:none}
+/* 새 디자인(할로윈 스페셜·레전드) — 완성 카드 위에서 계속 흐르는 광택(저장 PNG에는 안 들어감) */
+.cardFx--holo{display:none;z-index:5;pointer-events:none;border-radius:var(--radius-lg);mix-blend-mode:screen;opacity:0;background-size:320% 100%}
+.flipCard.rarity-halloween .cardFx--holo{display:block;background-image:linear-gradient(115deg,transparent 34%,rgba(255,170,60,.34) 44%,rgba(190,110,255,.30) 52%,rgba(255,226,140,.34) 60%,transparent 70%)}
+.flipCard.rarity-legend .cardFx--holo{display:block;background-image:linear-gradient(115deg,transparent 26%,rgba(255,80,160,.30) 36%,rgba(255,230,80,.30) 44%,rgba(80,255,200,.30) 52%,rgba(90,150,255,.30) 60%,rgba(200,100,255,.28) 68%,transparent 76%)}
+.cardWrap.settle .cardFx--holo{opacity:1;animation:holoSweep 3.4s linear infinite}
+@keyframes holoSweep{from{background-position:120% 0}to{background-position:-120% 0}}
+@media (prefers-reduced-motion: reduce){.cardWrap.settle .cardFx--holo{animation:none;opacity:.5}}
+</style>
+</head>
+<body>
+<div id="app">
+  <button type="button" id="btnClose">닫기 ✕</button>
+  <section class="screen on" id="s-photo">
+    <div class="hero">
+      <h1 class="hero__title">오늘의 나를 카드로!</h1>
+      <p class="hero__sub">사진을 넣고 스티커로 꾸미면 나만의 랜덤 포토카드가 탄생해요. 카드가 완성되면 몬스터를 쓰러뜨릴 수 있어요!</p>
+    </div>
+    <div id="stkWrap"><div class="slots slots--one" id="slots"></div><div id="stkLayer"></div></div>
+    <div class="stkBar" id="stkBar"></div>
+    <div class="stkTools" id="stkTools"><button type="button" data-k="small">작게</button><button type="button" data-k="big">크게</button><button type="button" data-k="left">↺ 왼쪽</button><button type="button" data-k="right">↻ 오른쪽</button><button type="button" data-k="del" class="del">지우기</button></div>
+    <div class="slotAdj" id="slotAdj"><button type="button" data-dy="-0.15">▲ 사진 위로</button><button type="button" data-dy="0.15">▼ 사진 아래로</button></div>
+    <p class="caption" style="margin-top:8px">사진을 넣은 뒤 끌어서 위치를 맞추고, 아래 스티커를 눌러 붙여요. 스티커는 한 손가락으로 옮기고 두 손가락으로 크기·회전을 바꿔요.</p>
+
+    <div class="field" style="margin-top:16px">
+      <label for="inCardNick">닉네임 (선택, 최대 8자)</label>
+      <input id="inCardNick" placeholder="예) 감귤" maxlength="8">
+    </div>
+    <p class="caption">레어도와 능력치는 재미를 위한 랜덤 설정입니다.</p>
+    <p class="caption" id="cardPity" style="color:var(--color-accent-strong);font-weight:700"></p>
+
+    
+
+    
+    <button class="btn btn--primary btn--block" id="btnMake" style="margin-top:12px">카드 탄생시키기</button>
+    <div class="result" id="result">
+      <div class="revealStage" id="revealStage">
+        <img class="revealStage__layer revealStage__layer--ambient" src="assets/photo-card/birth-fx/stage_01_ambient.png" alt="">
+        <img class="revealStage__layer revealStage__layer--orbit" src="assets/photo-card/birth-fx/stage_02_orbit.png" alt="">
+        <img class="revealStage__layer revealStage__layer--rays" src="assets/photo-card/birth-fx/stage_03_reveal_rays.png" alt="">
+        <img class="revealStage__layer revealStage__layer--impact" src="assets/photo-card/birth-fx/stage_04_impact_ring.png" alt="">
+        <div class="flipCard" id="flipCard">
+          <div class="flipCard__inner" id="flipInner">
+            <div class="flipCard__face flipCard__face--back">
+              <img class="flipCard__sealed" src="assets/photo-card/birth-fx/card_00_sealed_back.png" alt="">
+              <div class="flipCard__candidate" id="flipCandidate"></div>
+              <div class="flipCard__label" id="flipLabel">당신의 카드가 만들어지고 있어요</div>
+            </div>
+            <div class="flipCard__face flipCard__face--front">
+              <div class="cardWrap" id="cardWrap">
+                <canvas id="cardCanvas" width="1500" height="2040"></canvas>
+                <img class="cardFx cardFx--rarity" id="fxRarity" src="" alt="">
+                <img class="cardFx cardFx--flare" src="assets/photo-card/birth-fx/card_04_corner_flare.png" alt="">
+                <img class="cardFx cardFx--sweep" src="assets/photo-card/birth-fx/card_01_light_sweep.png" alt="">
+                <img class="cardFx cardFx--prism" src="assets/photo-card/birth-fx/card_02_prism_edge.png" alt="">
+                <img class="cardFx cardFx--flecks" src="assets/photo-card/birth-fx/card_03_crystal_flecks.png" alt="">
+                <div class="cardFx cardFx--holo"></div>
+                <img class="cardFx cardFx--diasheen" src="assets/photo-card/rarity-fx/diamond/diamond_07_sheen_sweep.png" alt="">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn--tertiary revealStage__skip" id="btnRevealSkip" hidden>건너뛰기</button>
+      <div class="cardRevealTag" id="cardRevealTag"></div>
+      <div class="btnrow cardActions" id="cardActions1" style="margin-top:14px">
+        <button class="btn btn--secondary" id="btnSave">이미지 저장</button>
+        <button class="btn btn--secondary" id="btnShare">공유</button>
+      </div>
+      <div class="btnrow cardActions" id="cardActions2" style="margin-top:8px">
+        <button class="btn btn--secondary" id="btnReplay">탄생 연출 다시 보기</button>
+        <button class="btn btn--secondary" id="btnNewCard">새 카드 만들기</button>
+      </div>
+    </div>
+
+    
+  </section>
+</div>
+<div id="doneBar"><button class="btn btn--primary btn--block" id="btnDone">카드 완성! 몬스터에게 보여주기</button></div>
+<div id="modal" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var S=(function(){try{var v=JSON.parse(localStorage.getItem('gw.photocard'));if(v)return v}catch(e){}return {cardCount:0}})();
+function save(){try{localStorage.setItem('gw.photocard',JSON.stringify(S))}catch(e){}}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on')},2400)}
+function sheet(h){$('#sheet').innerHTML=h;$('#modal').classList.add('on')}
+var sfxPool={}, ambientEl=null, _actx=null;
+function sfx(name,vol){
+  try{
+    var a=new Audio('sfx/'+name+'.mp3');
+    a.volume=vol==null?0.75:vol;
+    a.play()['catch'](function(){});
+  }catch(e){}
+}
+function sfxAmbient(name,vol){
+  try{
+    sfxStopAmbient();
+    ambientEl=new Audio('sfx/'+name+'.mp3');
+    ambientEl.loop=true;ambientEl.volume=vol==null?0.35:vol;
+    ambientEl.play()['catch'](function(){});
+  }catch(e){}
+}
+function sfxStopAmbient(){ if(ambientEl){try{ambientEl.pause()}catch(e){} ambientEl=null} }
+function beep(freq,dur,type,vol){
+  try{
+    _actx=_actx||new (window.AudioContext||window.webkitAudioContext)();
+    var t0=_actx.currentTime, osc=_actx.createOscillator(), g=_actx.createGain();
+    osc.type=type||'square';
+    osc.frequency.setValueAtTime(freq,t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(60,freq*0.35),t0+dur);
+    g.gain.setValueAtTime(vol==null?0.16:vol,t0);
+    g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+    osc.connect(g);g.connect(_actx.destination);
+    osc.start(t0);osc.stop(t0+dur);
+  }catch(e){}
+}
+
+
+var slots=[null], slotPos=[{x:0.5,y:0.18}], currentCard=null;
+function roundRectPath(ctx2,px,py,pw,ph,r){
+  ctx2.beginPath();ctx2.moveTo(px+r,py);ctx2.arcTo(px+pw,py,px+pw,py+ph,r);
+  ctx2.arcTo(px+pw,py+ph,px,py+ph,r);ctx2.arcTo(px,py+ph,px,py,r);ctx2.arcTo(px,py,px+pw,py,r);ctx2.closePath();
+}
+/* 사진을 넣은 뒤 칸 안에서 원하는 방향으로 드래그하면 크롭 위치(slotPos[0]={x,y}, 각 0=왼쪽/맨위 1=오른쪽/맨아래)가
+   바뀐다. 미리보기 칸이 실제 카드 비율(750:1020)이라 여기서 맞춘 위치가 완성 카드에도 그대로 보인다. */
+(function buildSlot(){
+  var i=0, w=$('#slots');w.innerHTML='';
+  var el=document.createElement('label');el.className='slot';
+  el.innerHTML='<span>사진 선택<br>탭해서 선택</span>'+
+    '<input type="file" accept="image/*" style="display:none">';
+  var inp=el.querySelector('input');
+  var view=null, drag=null, moved=false;
+  function applyPos(){ if(view)view.style.objectPosition=(slotPos[i].x*100).toFixed(1)+'% '+(slotPos[i].y*100).toFixed(1)+'%'; }
+  inp.onchange=function(){
+    var f=inp.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){var img=new Image();img.onload=function(){slots[i]=img;slotPos[i]={x:0.5,y:0.18};
+      el.innerHTML='';view=document.createElement('img');view.src=img.src;view.draggable=false;
+      el.appendChild(view);el.appendChild(inp);applyPos();el.classList.add('slot--filled');$('#slotAdj').classList.add('on');};
+      img.src=r.result;};
+    r.readAsDataURL(f);
+  };
+  el.addEventListener('pointerdown',function(e){
+    if(!slots[i])return;
+    drag={x:e.clientX,y:e.clientY,pos:{x:slotPos[i].x,y:slotPos[i].y}};moved=false;el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    var img=slots[i], rect=el.getBoundingClientRect();
+    var sc=Math.max(rect.width/img.width,rect.height/img.height);
+    var overflowX=img.width*sc-rect.width, overflowY=img.height*sc-rect.height;
+    var dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+    if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
+    if(overflowX>0)slotPos[i].x=Math.max(0,Math.min(1,drag.pos.x-dx/overflowX));
+    if(overflowY>0)slotPos[i].y=Math.max(0,Math.min(1,drag.pos.y-dy/overflowY));
+    applyPos();
+  });
+  function endDrag(){drag=null}
+  el.addEventListener('pointerup',endDrag);el.addEventListener('pointercancel',endDrag);
+  el.addEventListener('click',function(e){ if(moved){e.preventDefault();moved=false} });
+  w.appendChild(el);
+  $('#slotAdj').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b||!slots[i])return;
+    slotPos[i].y=Math.max(0,Math.min(1,slotPos[i].y+parseFloat(b.dataset.dy)));applyPos();
+  });
+})();
+
+/* 레어도 · 속성 · 이름 · 효과 랜덤 테이블 (기획 문서 기준, 속성당 최소 2종으로 시작 —
+   추후 항목을 더 추가하면 반복 없이 자동으로 더 다양해진다) */
+var CARD_RARITY=[
+  {id:'bronze',label:'브론즈',en:'BRONZE',weight:45,lv:[1,30],val:[5,15]},
+  {id:'silver',label:'실버',en:'SILVER',weight:30,lv:[20,50],val:[10,25]},
+  {id:'gold',label:'골드',en:'GOLD',weight:17,lv:[40,75],val:[20,40]},
+  {id:'platinum',label:'플래티넘',en:'PLATINUM',weight:6,lv:[65,95],val:[35,60]},
+  {id:'diamond',label:'다이아',en:'DIAMOND',weight:2,lv:[85,100],val:[50,99]}
+];
+var CARD_ATTR=[ /* 속성은 아이콘·라벨만 쓴다(이름·능력 문구는 아래 풀에서 따로 뽑음) */
+  {id:'fire',label:'불'},{id:'water',label:'물'},{id:'wind',label:'바람'},
+  {id:'earth',label:'땅'},{id:'light',label:'빛'},{id:'shadow',label:'어둠'}
+];
+/* 이름·기술·설명·대사 풀 — 사장님 기획(인기 애니 키워드 + 다른 캐릭터명 크로스오버).
+   원작 고증보다 "웃긴 섞임"이 목표라 일부러 어긋난 조합도 그대로 둔다. 항목은 추가만 하면 된다. */
+var CARD_ROLES=['여행자','수호자','모험가','탐험가','기록자','방랑자','길잡이','이야기꾼','술사','검사','해적','닌자','마법사',
+  '초능력자','헌터','스트라이커','스파이커','영웅','병사','주인공','라이벌','천재','최애 수집가','포토존 사냥꾼','축제의 주인공',
+  '귤빛 여행자','탐라의 모험가'];
+var CARD_CHARS=['탄지로','네즈코','젠이츠','이노스케','렌고쿠','기유','고죠','유지','메구미','노바라','유타','스쿠나','루피','조로',
+  '상디','나미','우솝','쵸파','나루토','사스케','사쿠라','카카시','가아라','히나타','프리렌','페른','슈타르크','아우라','아냐',
+  '로이드','요르','덴지','파워','마키마','이사기','바치라','나기','린','히나타 쇼요','카게야마','켄마','보쿠토','미도리야',
+  '바쿠고','토도로키','에렌','리바이','미카사','곤','키르아','히소카','손오공','베지터','마오마오','오카룬','모모'];
+var CARD_KEYWORDS=['와쿠와쿠','전집중','고무고무','무량공처','흑섬','최강','영역전개','나선환','그림자','해적왕','주인공','에고이스트',
+  '인생샷','최애','반짝반짝','두근두근','폭주','각성','진심모드','레전드','돌격','질주','자유','모험','용기','우당탕','폭신폭신',
+  '반전매력','초집중','무적','텐션업','풀파워','운명','별빛','달빛','바람길','귤빛','탐라의','축제의','주술적','귀여운','천재',
+  '조용한','뜨거운','푸른','어둠의','빛의'];
+var CARD_SKILLS=['고무고무','전집중','물의 호흡','화염의 호흡','번개의 호흡','영역전개','무량공처','흑섬','나선환','천조','그림자술',
+  '기어 세컨드','기어 피프스','패왕색','견문색','무장색','마음 읽기','별밤 마법','졸트라크','인생샷 발생','최강 시선','돌진 모드',
+  '축제 감지','귤빛 각성','바람 추적','포토존 탐지','주인공 오라','몰입 모드','청량 버프','현무암 멘탈','에고 폭발','스파이크',
+  '그림자 잠입','폭주 기관차','덕력 개방','와쿠와쿠 버스트','고무고무 질주','전집중 포토','무량공처 시선집중','나선환 스텝',
+  '흑섬 텐션업','기어 파이브 모드','패왕색 포즈','마음읽기 탐지','졸트라크 인생샷','탐라 공명','축제 레이더','최애 감지','별빛 버프'];
+var CARD_DESCS=[ /* {v} 자리에 등급별 수치가 들어간다. 2줄 넘는 긴 문장은 넣지 말 것 */
+  '존재감이 {v} 상승한다.','축제 텐션이 {v} 오른다.','재미있는 장소를 발견할 확률이 {v}% 오른다.','인생샷 성공률이 {v}% 상승한다.',
+  '주변 시선을 강제로 끌어온다.','최애를 향한 추진력이 {v} 상승한다.','낯선 장소에서도 적응력이 {v} 좋아진다.','갑자기 주인공 같은 분위기가 생긴다.',
+  '찍을수록 레어도가 올라가는 느낌이 든다.','친구들과의 시너지가 {v} 올라간다.','조용하지만 강한 몰입 상태에 들어간다.',
+  '포토존 감지 능력이 {v} 상승한다.','운이 {v}% 좋아진 것 같은 기분이 든다.','축제 현장에서만 발동하는 버프다.','바람을 타듯 움직이게 된다.',
+  '특별한 하루를 만드는 능력이 깨어난다.','인생샷 감지력이 {v} 상승한다.','느긋하지만 강한 존재감이 발동한다.',
+  '포토존 발견 확률이 {v}% 오른다.','카메라 앞 시선 집중도가 {v} 오른다.','최애를 발견하면 이동속도가 {v}% 상승한다.',
+  '자유롭게 움직이며 축제 텐션을 끌어올린다.'];
+var CARD_LINES=['좋아, 해보자!','그 정도면 충분하지.','와쿠와쿠!','내가 제일 강하니까.','모험이다!','오늘 주인공은 나야.','한 장 더 찍자!',
+  '축제는 이제 시작이야.','귤 하나 먹고 갈까?','바람이 이쪽이래.','최애 발견!','텐션 올려!','포즈 준비 완료.','여기 포토존 맞지?',
+  '놓치지 않을 거야.','다 같이 가자!','지금이 제일 빛나.','제주 바람, 좋은데?','각성했다…!','레어 카드 확정!'];
+/* 풀아트 카드 레이아웃 — 750x1020 기준 픽셀 좌표(디자인팩 README 그대로). k=W/750로 스케일.
+   레어도 5종 모두 프레임 위치·두께가 같으므로(디자인팩 명시) 좌표는 공용이다. */
+/* 2026-09-28 사장님 피드백(타이포 기준표) 반영 — 750x1020 기준, 카드 자체 너비에 비례해서만 스케일된다(뷰포트 폭 아님).
+   기술명/설명/대사는 더 이상 개별 topY로 고정하지 않고 기술명 아래부터 gap을 두고 세로로 흘려 쌓는다(desc/quote에 topY 없음). */
+var CARD_LAYOUT={
+  base:750, radius:24,
+  /* 폰트는 프로젝트에 실제로 있는 파일만 쓴다(fonts/) — JejuGothic(400 1종, 제목·기술명용 개성 폰트),
+     SCDream(400/600/800 3종, 나머지 가독성 폰트). 가짜 굵기(없는 weight 강제 지정) 금지 —
+     JejuGothic은 항상 실제 400으로, weight 지정이 필요한 굵은 인상은 fillWeighted()의 미세 다중칠로만 보강한다. */
+  fontDisplay:'JejuGothic, sans-serif', fontBody:'SCDream, sans-serif',
+  title:{cx:375,topY:51,size:48,maxW:440,lineH:1.12,weight:'400'}, /* maxW를 넉넉히 줄여 우측 속성 배지(x=637~)와 항상 간격 확보 */
+  icon:{x:637,y:52,size:74},
+  meta:{cx:375,midY:737.5,size:30,maxW:640,lineH:1.15,weight:'600'}, /* 700 요청 → 실존 웨이트 중 가장 가까운 600.
+    midY=737.5는 meta_strip.png 바의 실측 세로 중심(픽셀 스캔 결과 y=713~762) — top 기준 눈대중 좌표 대신
+    바 중앙에 텍스트 실제 글리프 높이(actualBoundingBox)를 정확히 맞춰 위아래 여백을 동일하게 만든다 */
+  skill:{cx:375,topY:790,size:44,maxW:620,lineH:1.13,weight:'400'},
+  desc:{cx:375,size:30,maxW:620,lineH:1.28,weight:'600',gap:12},
+  quote:{cx:375,size:26,maxW:620,lineH:1.25,weight:'400',gap:12}, /* 500 요청 → 400 사용(더 가벼운 인상이 대사에 어울림) */
+  foot:{cx:375,topY:962,size:19,lineH:1.1,weight:'600'}
+};
+var CARD_ASSET_BASE='assets/photo-card/layers/', cardAssets=null;
+/* 등급별 "완성 카드 상시 이펙트" 스택 순서 — 통합디자인팩 README/지시서 그대로.
+   4등급 공통: 빛결→등급장식→재질테두리→상시입자. 다이아만 6장, 별도 순서(더 화려한 레이어가 아래) */
+var RARITY_FX_ORDER={
+  bronze:['sheen','decor','border','particles'],
+  silver:['sheen','decor','border','particles'],
+  gold:['sheen','decor','border','particles'],
+  platinum:['sheen','decor','border','particles'],
+  diamond:['prism','corner','shards','border','starlight','seal']
+};
+function loadCardAssets(cb){
+  if(cardAssets){cb(cardAssets);return}
+  var RFX='assets/photo-card/rarity-fx/', BADGE='assets/photo-card/badges/';
+  var files={
+    title_scrim:'title_scrim.png',meta_strip:'meta_strip.png',caption_fade:'caption_fade.png',
+    foil_bronze:'foil_bronze.png',foil_silver:'foil_silver.png',foil_gold:'foil_gold.png',
+    foil_platinum:'foil_platinum.png',foil_diamond:'foil_diamond.png',
+    frame_bronze:'frame_bronze.png',frame_silver:'frame_silver.png',frame_gold:'frame_gold.png',
+    frame_platinum:'frame_platinum.png',frame_diamond:'frame_diamond.png',
+    frame_halloween:'frame_halloween.png',foil_halloween:'foil_halloween.png',frame_legend:'frame_legend.png',foil_legend:'foil_legend.png',
+    attr_fire:BADGE+'badge_fire.png',attr_water:BADGE+'badge_water.png',attr_wind:BADGE+'badge_wind.png',
+    attr_earth:BADGE+'badge_earth.png',attr_light:BADGE+'badge_light.png',attr_shadow:BADGE+'badge_dark.png',
+    rfx_bronze_border:RFX+'bronze/bronze_01_border.png',rfx_bronze_sheen:RFX+'bronze/bronze_02_sheen.png',
+    rfx_bronze_decor:RFX+'bronze/bronze_03_decor.png',rfx_bronze_particles:RFX+'bronze/bronze_04_particles.png',
+    rfx_silver_border:RFX+'silver/silver_01_border.png',rfx_silver_sheen:RFX+'silver/silver_02_sheen.png',
+    rfx_silver_decor:RFX+'silver/silver_03_decor.png',rfx_silver_particles:RFX+'silver/silver_04_particles.png',
+    rfx_gold_border:RFX+'gold/gold_01_border.png',rfx_gold_sheen:RFX+'gold/gold_02_sheen.png',
+    rfx_gold_decor:RFX+'gold/gold_03_decor.png',rfx_gold_particles:RFX+'gold/gold_04_particles.png',
+    rfx_platinum_border:RFX+'platinum/platinum_01_border.png',rfx_platinum_sheen:RFX+'platinum/platinum_02_sheen.png',
+    rfx_platinum_decor:RFX+'platinum/platinum_03_decor.png',rfx_platinum_particles:RFX+'platinum/platinum_04_particles.png',
+    rfx_diamond_border:RFX+'diamond/diamond_01_gem_border.png',rfx_diamond_shards:RFX+'diamond/diamond_02_gem_shards.png',
+    rfx_diamond_prism:RFX+'diamond/diamond_03_prism.png',rfx_diamond_starlight:RFX+'diamond/diamond_04_starlight.png',
+    rfx_diamond_corner:RFX+'diamond/diamond_05_corner_refract.png',rfx_diamond_seal:RFX+'diamond/diamond_06_side_seal.png'
+  };
+  var keys=Object.keys(files), out={}, left=keys.length;
+  keys.forEach(function(k){
+    var im=new Image();
+    function done(){if(--left===0){cardAssets=out;cb(out)}}
+    im.onload=function(){out[k]=im;done()};
+    im.onerror=function(){out[k]=null;done()};
+    im.src=/^assets\//.test(files[k])?files[k]:CARD_ASSET_BASE+files[k];
+  });
+}
+/* 천장: 5장째마다 최고 등급(다이아) 확정. 누적 장수는 S.cardCount에 저장 */
+var CARD_PITY=5;
+function updateCardPity(){
+  var el=$('#cardPity');if(!el)return;
+  var left=CARD_PITY-((S.cardCount||0)%CARD_PITY);
+  el.textContent=left===1?'다음 카드는 최상위 등급 확정!':'최상위 등급 확정까지 '+left+'장 남았어요';
+}
+function rollCard(nickname,forceRarity){
+  var totalW=CARD_RARITY.reduce(function(s,r){return s+r.weight},0), roll=Math.random()*totalW, acc=0, rarity=CARD_RARITY[CARD_RARITY.length-1];
+  for(var i=0;i<CARD_RARITY.length;i++){acc+=CARD_RARITY[i].weight;if(roll<acc){rarity=CARD_RARITY[i];break}}
+  if(forceRarity)rarity=CARD_RARITY.filter(function(r){return r.id===forceRarity})[0]||rarity;
+  var level=rarity.lv[0]+Math.floor(Math.random()*(rarity.lv[1]-rarity.lv[0]+1));
+  var attr=CARD_ATTR[Math.floor(Math.random()*CARD_ATTR.length)];
+  var pick=function(arr){return arr[Math.floor(Math.random()*arr.length)]};
+  var role=pick(CARD_ROLES);
+  var val=rarity.val[0]+Math.floor(Math.random()*(rarity.val[1]-rarity.val[0]+1));
+  var nick=(nickname||'').trim().slice(0,8);
+  if(nick&&!/[가-힣a-zA-Z0-9]/.test(nick))nick=''; /* 자음/모음 낱자만 입력된 경우(예: 'ㅇ') 무시 */
+  /* 카드명 = [앞말] + [뒷말] 두 조각(등장 연출에서 따로 붙는다). 글자 수가 아니라 실제 렌더 폭으로 판정 —
+     카드명 최소 허용 크기(48px의 78%, "한 단계만 축소")로 쟀을 때도 안전영역(우측 속성 배지 앞)을 넘으면
+     다른 조합으로 다시 뽑는다(2줄로 접지 않는다, 계속 축소하지도 않는다). META BAR에는 캐릭터명만 따로. */
+  var parts, meta, tries=0, TL=CARD_LAYOUT.title;
+  do{
+    var r2=Math.random(), ch=pick(CARD_CHARS), k2=pick(CARD_KEYWORDS);
+    if(role.indexOf(k2)>=0)k2=pick(CARD_KEYWORDS); /* '탐라의 탐라의 모험가' 같은 겹침 방지 */
+    if(nick){parts=[k2,nick];meta=nick}
+    else if(r2<0.6){parts=[k2,ch];meta=ch}
+    else if(r2<0.82){parts=[pick(CARD_SKILLS),ch];meta=ch}
+    else{parts=[k2+' '+role,ch];meta=ch} /* [키워드]+[역할]만 있는 이름은 META와 겹쳐서 안 쓴다 */
+  }while(measureAt(parts.join(' '),TL.weight,TL.size*0.78,CARD_LAYOUT.fontDisplay)>TL.maxW&&++tries<30);
+  var skill; tries=0; do{skill=pick(CARD_SKILLS)}while(skill.replace(/\s/g,'').length>12&&++tries<30);
+  var quote; tries=0; do{quote=pick(CARD_LINES)}while(quote.length>18&&++tries<30);
+  return {
+    schemaVersion:1,cardId:'c'+Date.now()+Math.floor(Math.random()*1000),createdAt:new Date().toISOString(),
+    nickname:nick,rarity:rarity.id,rarityLabel:rarity.label,level:level,
+    rarityEn:rarity.en,attribute:attr.id,attributeLabel:attr.label,roleLabel:role,
+    titleParts:parts,displayName:parts.join(' '),metaName:meta,
+    abilityName:skill,abilityValue:val,abilityText:pick(CARD_DESCS).replace('{v}',val),quote:quote
+  };
+}
+function wrapText(ctx2,text,maxWidth){
+  var lines=[],cur='';
+  for(var i=0;i<text.length;i++){
+    var test=cur+text[i];
+    if(ctx2.measureText(test).width>maxWidth&&cur){lines.push(cur);cur=text[i]} else cur=test;
+  }
+  if(cur)lines.push(cur);
+  return lines;
+}
+/* 지정한 너비 안에 한 줄로 들어갈 때까지 폰트 크기를 줄인다 */
+function fitFont(ctx2,text,weight,family,maxSize,minSize,maxWidth){
+  var size=maxSize;
+  while(size>minSize){
+    ctx2.font=weight+' '+Math.round(size)+'px '+family;
+    if(ctx2.measureText(text).width<=maxWidth)break;
+    size-=1;
+  }
+  return size;
+}
+/* 텍스트를 살짝 두껍게 — JejuGothic이 실제로 가진 굵기는 400 하나뿐이라 CSS처럼 font-weight:800을
+   지정해 가짜 굵기를 만들지 않는다. 대신 같은(진짜) 글리프를 미세 오프셋으로 여러 번 칠해 무게감만 보강한다.
+   외곽선(다른 색 stroke)이 아니라 같은 색 다중 fill이라 스펙이 금지한 '외곽선'과는 다르다. */
+function fillWeighted(ctx2,text,x,y,off){
+  if(off){[[-off,0],[off,0],[0,0]].forEach(function(o){ctx2.fillText(text,x+o[0],y+o[1])})}
+  else ctx2.fillText(text,x,y);
+}
+/* 사진이 밝아도 읽히도록 아주 약한 그림자만(스펙: 외곽선 금지, 약한 그림자만 허용) */
+function setTextShadow(ctx2,k){ctx2.shadowColor='rgba(0,0,0,.4)';ctx2.shadowBlur=2.5*k;ctx2.shadowOffsetY=1*k}
+function clearTextShadow(ctx2){ctx2.shadowColor='transparent';ctx2.shadowBlur=0;ctx2.shadowOffsetY=0}
+function setLS(ctx2,px){try{ctx2.letterSpacing=px+'px'}catch(e){}}
+/* 카드명이 실제로 폭에 맞는지 텍스트 렌더링 없이 측정 — rollCard()가 카드명을 다시 뽑을지 판단하는 데 쓴다 */
+var _measureCtx=(function(){try{return document.createElement('canvas').getContext('2d')}catch(e){return null}})();
+function measureAt(text,weight,size,family){
+  if(!_measureCtx)return text.replace(/\s/g,'').length*size*0.6;
+  _measureCtx.font=weight+' '+Math.round(size)+'px '+family;
+  return _measureCtx.measureText(text).width;
+}
+function drawCard(ctx2,W,H,data,imgs,pos,t){
+  var assets=cardAssets, L=CARD_LAYOUT, k=W/L.base, FD=L.fontDisplay, FB=L.fontBody, INK='#F4F7F5';
+  ctx2.clearRect(0,0,W,H);
+  ctx2.fillStyle='#0b0f1a';ctx2.fillRect(0,0,W,H);
+  var T=(t==null)?Infinity:t;
+  function A(start,dur){var v=(T-start)/(dur||180);return v<=0?0:v>=1?1:1-Math.pow(1-v,3)}
+  var radius=L.radius*k;
+  /* 1) 사진 — 카드 전체를 object-fit:cover로 채운다(약 85%+가 그대로 사진).
+     "등장"은 카드 자체가 3D로 뒤집히는 연출(flipCard)이 담당하므로 사진/틀은 항상 바로 보인다 — 텍스트만 순차 등장 */
+  var aBase=1;
+  ctx2.save();roundRectPath(ctx2,0,0,W,H,radius);ctx2.clip();
+  ctx2.globalAlpha=aBase;
+  var img=imgs[0], p0=(pos&&pos[0])||{x:0.5,y:0.18};
+  if(img){var sc=Math.max(W/img.width,H/img.height), dw=img.width*sc, dh=img.height*sc;
+    ctx2.drawImage(img,-(dw-W)*(p0.x!=null?p0.x:0.5),-(dh-H)*(p0.y!=null?p0.y:0.18),dw,dh);}
+  ctx2.restore();
+  drawStickers(ctx2,W,H,data);
+  /* 2~6) 스크림·미터스트립·캡션 그라데이션·레어도 광택(foil)·얇은 테두리(frame) — 디자인팩이 정한 레이어 순서 그대로,
+     텍스트 뒤 대비판·구분선·레어도별 금속결/냉광/온광/홀로그램이 이미 이 PNG들에 들어 있어 별도로 그리지 않는다 */
+  ctx2.save();ctx2.globalAlpha=aBase;
+  ['title_scrim','meta_strip','caption_fade'].forEach(function(k2){if(assets[k2])ctx2.drawImage(assets[k2],0,0,W,H)});
+  var foil=assets['foil_'+data.rarity];if(foil)ctx2.drawImage(foil,0,0,W,H);
+  var frame=assets['frame_'+data.rarity];if(frame)ctx2.drawImage(frame,0,0,W,H);
+  ctx2.restore();
+  /* 7) 텍스트 · 속성 아이콘 — 디자인팩 좌표(750×1020 기준, 상단-y) 그대로 스케일.
+     제목·기술명은 개성 폰트(JejuGothic, 실제 400 하나뿐), 나머지는 가독성 폰트(SCDream, 실제 400/600/800).
+     굵기는 항상 각 폰트가 실제로 가진 값만 쓴다(L.*.weight가 이미 실존 웨이트로 맞춰져 있음). */
+  ctx2.textAlign='center';ctx2.textBaseline='top';ctx2.fillStyle=INK;
+  setTextShadow(ctx2,k);
+  /* 카드명: 앞말 먼저, 뒷말 0.15초 뒤 합류. rollCard()가 이미 폭을 재서 안전한 조합만 넘기므로
+     여기서는 "한 단계만 축소"(78%~100%) 범위 안에서만 fitFont가 움직인다 */
+  var tp=data.titleParts||[data.displayName,''], title=tp[1]?tp[0]+' '+tp[1]:tp[0];
+  var TL=L.title, tSize=fitFont(ctx2,title,TL.weight,FD,TL.size*k,TL.size*k*0.78,TL.maxW*k);
+  ctx2.font=TL.weight+' '+Math.round(tSize)+'px '+FD;setLS(ctx2,-0.02*tSize);
+  var fullW=ctx2.measureText(title).width, cxT=TL.cx*k, cyT=TL.topY*k;
+  var w0=ctx2.measureText(tp[0]+(tp[1]?' ':'')).width, txL=cxT-fullW/2;
+  ctx2.textAlign='left';
+  [[tp[0],txL,A(255,127)],[tp[1],txL+w0,A(382,127)]].forEach(function(q){
+    if(!q[0]||q[2]<=0)return;
+    ctx2.save();ctx2.globalAlpha=q[2];ctx2.translate(0,(1-q[2])*tSize*0.3);
+    fillWeighted(ctx2,q[0],q[1],cyT,tSize*0.012);ctx2.restore();
+  });
+  ctx2.textAlign='center';setLS(ctx2,0);
+  /* 속성 아이콘 */
+  var attrImg=assets['attr_'+data.attribute], aIcon=A(509,187);
+  if(attrImg&&aIcon>0){
+    ctx2.save();ctx2.globalAlpha=aIcon;
+    var isz=L.icon.size*k*(0.85+0.15*aIcon);
+    ctx2.drawImage(attrImg,L.icon.x*k+(L.icon.size*k-isz)/2,L.icon.y*k+(L.icon.size*k-isz)/2,isz,isz);
+    ctx2.restore();
+  }
+  /* 메타 라인: Lv · 캐릭터 · 속성 — 구분점 좌우 간격을 고정폭으로 고정해 항상 일정하게 보이게 한다 */
+  var ML=L.meta, aMeta=A(636,153);
+  if(aMeta>0){
+    var meta='Lv.'+data.level+'   ·   '+(data.metaName||data.roleLabel)+'   ·   '+data.attributeLabel+' 속성';
+    var msize=fitFont(ctx2,meta,ML.weight,FB,ML.size*k,ML.size*k*0.8,ML.maxW*k);
+    ctx2.save();ctx2.globalAlpha=aMeta;ctx2.font=ML.weight+' '+Math.round(msize)+'px '+FB;ctx2.textBaseline='alphabetic';
+    var mtm=ctx2.measureText(meta), mAsc=mtm.actualBoundingBoxAscent||msize*0.36, mDesc=mtm.actualBoundingBoxDescent||msize*0.06;
+    ctx2.fillText(meta,ML.cx*k,ML.midY*k+(mAsc-mDesc)/2);ctx2.restore();
+  }
+  /* 기술명 → 설명 → 대사: 개별 y좌표로 고정하지 않고, 기술명 아래부터 gap을 두고 세로로 흘려 쌓는다 */
+  var SK=L.skill, DE=L.desc, QT=L.quote, FO=L.foot;
+  var skillTop=SK.topY*k;
+  var ssize=fitFont(ctx2,data.abilityName,SK.weight,FD,SK.size*k,SK.size*k*0.78,SK.maxW*k);
+  var skillLineH=ssize*SK.lineH, aSkill=A(764,170);
+  if(aSkill>0){
+    var sk=1+0.04*(1-aSkill);
+    ctx2.save();ctx2.globalAlpha=aSkill;ctx2.font=SK.weight+' '+Math.round(ssize)+'px '+FD;setLS(ctx2,-0.02*ssize);
+    ctx2.translate(SK.cx*k,skillTop+skillLineH/2);ctx2.scale(sk,sk);
+    fillWeighted(ctx2,data.abilityName,0,-skillLineH*0.5,ssize*0.012);ctx2.restore();setLS(ctx2,0);
+  }
+  var y=skillTop+skillLineH+DE.gap*k;
+  /* 능력 설명 — 최대 2줄. 줄 수를 늘리려고 계속 축소하지 않는다(문구 풀 자체가 짧게 큐레이션돼 있음) */
+  ctx2.font=DE.weight+' '+Math.round(DE.size*k)+'px '+FB;
+  var words=data.abilityText.split(' '), cur='', lines=[];
+  words.forEach(function(w){var s2=cur?cur+' '+w:w;if(cur&&ctx2.measureText(s2).width>DE.maxW*k){lines.push(cur);cur=w}else cur=s2});
+  if(cur)lines.push(cur);lines=lines.slice(0,2);
+  var descLineH=DE.size*k*DE.lineH, aDesc=A(916,170);
+  if(aDesc>0){
+    ctx2.save();ctx2.globalAlpha=aDesc;
+    lines.forEach(function(line,i){ctx2.fillText(line,DE.cx*k,y+i*descLineH)});
+    ctx2.restore();
+  }
+  y+=lines.length*descLineH+QT.gap*k;
+  /* 대사 */
+  var aQuote=A(1061,170);
+  if(data.quote){
+    var qsize=fitFont(ctx2,'“'+data.quote+'”',QT.weight,FB,QT.size*k,QT.size*k*0.8,QT.maxW*k);
+    if(aQuote>0){
+      ctx2.save();ctx2.globalAlpha=aQuote*0.88;ctx2.font=QT.weight+' '+Math.round(qsize)+'px '+FB;
+      ctx2.fillText('“'+data.quote+'”',QT.cx*k,y);ctx2.restore();
+    }
+    y+=QT.size*k*QT.lineH;
+  }
+  /* 등급 · 행사명 — 기본은 962 고정, 위 내용이 길어져 침범할 때만 그만큼 밀리되 카드 바닥 밖으로는 안 나간다 */
+  var footTop=Math.max(FO.topY*k, y+10*k);
+  footTop=Math.min(footTop, H-FO.size*k*FO.lineH-14*k);
+  var aFoot=A(1188,187);
+  if(aFoot>0){
+    ctx2.save();ctx2.globalAlpha=aFoot*0.7;ctx2.font=FO.weight+' '+Math.round(FO.size*k)+'px '+FB;
+    ctx2.fillText((data.rarityEn||data.rarityLabel)+'  ·  할로윈 과수원피스 2026',FO.cx*k,footTop);
+    ctx2.restore();
+  }
+  clearTextShadow(ctx2);
+  /* 8) 등급별 "완성 카드 상시 이펙트"(통합디자인팩) — 텍스트 위 최상단, 저장 PNG에도 그대로 굽는다.
+     탄생 연출용 rarity_*_reveal/card_02·03(카드 앞 FX)과 달리 사라지지 않는다 */
+  drawRarityFX(ctx2,W,H,data);
+}
+/* 다이아 shards·플래티넘 particles는 "측면과 하단에 고정"이라 설명 문구가 길면 끝 글자와 겹친다(실측 확인됨) —
+   지시서대로 폰트는 그대로 두고 이 두 레이어만 투명도를 살짝 낮춰 글자를 가리지 않게 한다 */
+var RARITY_FX_ALPHA={diamond_shards:0.72,platinum_particles:0.72};
+function drawRarityFX(ctx2,W,H,data){
+  var order=RARITY_FX_ORDER[data.rarity];if(!order)return;
+  order.forEach(function(part){
+    var img=cardAssets&&cardAssets['rfx_'+data.rarity+'_'+part];
+    if(!img)return;
+    var a=RARITY_FX_ALPHA[data.rarity+'_'+part];
+    if(a!=null){ctx2.save();ctx2.globalAlpha=a;ctx2.drawImage(img,0,0,W,H);ctx2.restore();return}
+    ctx2.drawImage(img,0,0,W,H);
+  });
+}
+/* 등장 연출: 사진/텍스트 순서로 그리는 drawCard(t) 자체는 "④ 카드 완성" 구간(약 1.4초) 안에서만 돈다.
+   rAF가 멈추는 환경(백그라운드 탭 등)에서도 마지막엔 반드시 완성본을 그린다. */
+var cardAnimToken=0, currentCardImgs=null;
+function animateCard(canvas,data,imgs,pos){
+  var token=++cardAnimToken, ctx2=canvas.getContext('2d'), t0=performance.now(), END=1400;
+  function step(now){
+    if(token!==cardAnimToken)return;
+    var t=now-t0;
+    if(t>=END){drawCard(ctx2,canvas.width,canvas.height,data,imgs,pos);return}
+    drawCard(ctx2,canvas.width,canvas.height,data,imgs,pos,t);requestAnimationFrame(step);
+  }
+  drawCard(ctx2,canvas.width,canvas.height,data,imgs,pos,0);requestAnimationFrame(step);
+  setTimeout(function(){if(token===cardAnimToken){cardAnimToken++;drawCard(ctx2,canvas.width,canvas.height,data,imgs,pos)}},END+300);
+}
+/* 배경음을 뚝 끊지 않고 짧게 페이드아웃 */
+function fadeStopAmbient(ms){
+  if(!ambientEl){return}
+  var el=ambientEl, startVol=el.volume||0.35, steps=6, stepMs=Math.max(30,ms/steps), i=0;
+  var iv=setInterval(function(){
+    i++;
+    if(!el){clearInterval(iv);return}
+    el.volume=Math.max(0,startVol*(1-i/steps));
+    if(i>=steps){clearInterval(iv);sfxStopAmbient()}
+  },stepMs);
+}
+/* 볼륨을 순간적으로 뚝 바꾸지 않고 목표값까지 부드럽게 램프 — "정적" 구간에서 음악이 갑자기
+   끊기는 느낌(특히 다이아 배경음처럼 곡 느낌이 강한 트랙)을 없애기 위해 사용 */
+function fadeAmbientTo(targetVol,ms){
+  if(!ambientEl){return}
+  var el=ambientEl, startVol=el.volume, steps=6, stepMs=Math.max(20,ms/steps), i=0;
+  var iv=setInterval(function(){
+    i++;
+    if(!el){clearInterval(iv);return}
+    el.volume=Math.max(0,startVol+(targetVol-startVol)*(i/steps));
+    if(i>=steps)clearInterval(iv);
+  },stepMs);
+}
+/* 카드 탄생 연출 — idle→gathering→combining→suspense→reveal→settle→result 상태로 진행.
+   결과는 사용자가 저장/다시뽑기/새카드/건너뛰기 중 하나를 누를 때까지 자동으로 닫지 않는다.
+   audio.onended/animationend/setTimeout(음악 길이) 무엇도 결과를 닫거나 카드 DOM을 지우지 않는다 —
+   여기서 만드는 타이머들은 오직 "다음 단계로 넘어가기"만 하고, 마지막 단계(result) 이후로는 아무 것도 스스로 실행되지 않는다.
+   무대(stage_01~04)·카드 뒷면(card_00_sealed_back)·카드 앞면 FX(card_01~04, rarity_*_reveal)는
+   탐라문화제_포토카드_탄생이펙트팩의 클로드_구현지시.md 시간표(0~4.35초 조합, 4.35초 공개, ~6.8초 정착)를 따른다. */
+var revealToken=0, currentReveal=null;
+var onCardSettled=null;
+function playCardReveal(data,photos,pos){
+  var token=++revealToken;
+  var reduced=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var flip=$('#flipCard'), cand=$('#flipCandidate'), label=$('#flipLabel');
+  var canvas=$('#cardCanvas'), ctx2=canvas.getContext('2d');
+  var wrap=$('#cardWrap'), stage=$('#revealStage'), fxRarity=$('#fxRarity');
+  var result=$('#result'), skipBtn=$('#btnRevealSkip'), tag=$('#cardRevealTag');
+  var timers=[], settled=false;
+  function live(){return token===revealToken}
+  function at(ms,fn){timers.push(setTimeout(function(){if(live())fn()},reduced?Math.round(ms*0.45):ms))}
+  function clearAll(){timers.forEach(clearTimeout);timers=[]}
+
+  /* 초기화 — 무대·카드 FX 클래스를 전부 걷어내고 봉인된 뒷면부터 다시 시작 */
+  flip.className='flipCard rarity-'+data.rarity;
+  wrap.className='cardWrap';
+  stage.className='revealStage';
+  fxRarity.src='assets/photo-card/birth-fx/rarity_'+data.rarity+'_reveal.png';
+  result.classList.remove('settled');
+  tag.textContent='';
+  cand.textContent='';label.textContent='';
+  skipBtn.hidden=true;
+  drawCard(ctx2,canvas.width,canvas.height,data,photos,pos,0);
+
+  /* 0~0.7초 — 무대 암전, 앰비언트(stage_01) 서서히 켜짐 */
+  sfx('pop',0.4);
+  stage.classList.add('stage--ambient');
+  at(2000,function(){skipBtn.hidden=false});
+
+  /* 0.7~2.4초 — 궤도(stage_02) 회전 시작, 안내문구, 배경음악 도입.
+     노래 4곡을 매번 겹쳐 틀면 시끄럽다는 피드백 반영 — 등급 하나당 곡 하나만 재생(레이어링 X):
+     브론즈·실버=wind-whoosh(절제된 바람), 골드=magic-spell(기운이 모이는 신비감),
+     플래티넘=dark-hit-logo(묵직한 드라마), 다이아=epic-cinematic-logo-reveal(가장 화려함,
+     길이 7.8초가 공개 시퀀스 전체 길이와 거의 일치) */
+  at(700,function(){
+    label.textContent='당신의 카드가 만들어지고 있어요';
+    var track=(data.rarity==='diamond'||data.rarity==='halloween'||data.rarity==='legend')?['reveal_bgm',0.45]
+      :data.rarity==='platinum'?['reveal_hit',0.4]
+      :data.rarity==='gold'?['reveal_spell',0.42]
+      :['reveal_whoosh',0.22];
+    sfxAmbient(track[0],track[1]);
+    stage.classList.add('stage--orbit');
+  });
+
+  /* 2.4~3.8초 — 후보 이름이 빠르게 스쳐가다 실제 카드명에 고정, 이어서 레벨→속성 순서로 공개 */
+  var flickerPool=CARD_CHARS.concat(CARD_KEYWORDS);
+  var flickerIv=null;
+  at(2400,function(){
+    var n=0;
+    flickerIv=setInterval(function(){
+      if(!live()){clearInterval(flickerIv);return}
+      cand.textContent=flickerPool[Math.floor(Math.random()*flickerPool.length)];
+      if(++n>=6)clearInterval(flickerIv);
+    },130);
+  });
+  at(3180,function(){cand.textContent=data.displayName});
+  at(3180,function(){beep(880,0.08,'sine',0.18)});
+  at(3400,function(){label.textContent='Lv.'+data.level});
+  at(3400,function(){beep(1046,0.09,'sine',0.2)});
+  at(3600,function(){label.textContent=data.attributeLabel+' 속성'});
+
+  /* 3.8~4.35초 — 정적. 화면을 살짝 눌러주고, 소리도 뚝 끊기지 않게 부드럽게 절반으로 낮춘다(레어도는 아직 숨김) */
+  at(3800,function(){
+    flip.classList.add('flipCard--dim');
+    if(ambientEl)fadeAmbientTo((ambientEl.volume||0.32)*0.5,400);
+  });
+
+  /* 4.35초 — 공개: 카드 반전(sealed_back 사라짐) + rays/impact_ring/corner_flare/rarity 동시 시작.
+     배경음은 이미 등급별로 다르게 깔려 있으니 여기선 등급별 짧은 클라이맥스 효과음 하나만 겹친다(믹싱 정리) */
+  at(4350,function(){
+    clearInterval(flickerIv);
+    flip.classList.remove('flipCard--dim');
+    flip.classList.add('flipCard--flipped','flipCard--reveal');
+    wrap.className='cardWrap reveal reveal--'+data.rarity+' fx-reveal';
+    stage.classList.remove('stage--ambient','stage--orbit');
+    stage.classList.add('stage--rays','stage--impact');
+    sfx(data.rarity==='platinum'||data.rarity==='diamond'||data.rarity==='halloween'||data.rarity==='legend'?'fanfare':data.rarity==='gold'?'bonus':'pop',0.65);
+  });
+
+  /* 5.25~6.8초 — light_sweep 지나간 뒤 prism_edge·crystal_flecks만 은은히 남기고,
+     제목→아이콘→기술명→설명·대사가 drawCard(t)의 자체 타임라인(약 1.4초)으로 등장 */
+  at(5250,function(){
+    wrap.classList.remove('fx-reveal');
+    wrap.classList.add('fx-settle');
+    currentCardImgs=[photos,pos];
+    animateCard(canvas,data,photos,pos);
+  });
+
+  /* 6.8초 이후 — 카드 고정, 음악 자연스럽게 잦아들고, 저장/다시뽑기 버튼 등장.
+     페이드를 900ms→1800ms로 늘림 — 다이아 배경음(epic-cinematic-logo-reveal, 7.8초)이 900ms짜리
+     빠른 페이드에 여운(꼬리음)까지 잘려서 "노래가 갑자기 끝나는 느낌"이 난다는 피드백 반영.
+     등급 체감은 이제 drawCard()가 캔버스에 굽는 rfx_* 레이어가 전담(통합 디자인팩) */
+  at(6800,function(){
+    wrap.classList.add('settle');
+    fadeStopAmbient(1800);
+  });
+  at(7300,function(){enterResult()});
+
+  function enterResult(){
+    if(settled)return;
+    settled=true;
+    skipBtn.hidden=true;
+    tag.textContent=(data.rarity==='diamond'||data.rarity==='platinum'||data.rarity==='halloween'||data.rarity==='legend')?data.rarityLabel+' 카드 탄생!':data.rarityLabel+' 카드가 탄생했어요!';
+    result.classList.add('settled');
+    var btn=$('#btnMake');if(btn)btn.disabled=false;
+    if(onCardSettled){var f=onCardSettled;onCardSettled=null;f()}
+  }
+  /* 건너뛰기 — 2초 뒤부터 노출, 눌리면 진행 중인 모든 타이머를 취소하고 곧장 완성본으로 이동,
+     결과는 똑같이 유지된다(자동 종료 아님) */
+  function finishNow(){
+    if(!live()||settled)return;
+    clearAll();clearInterval(flickerIv);sfxStopAmbient();
+    flip.classList.add('flipCard--instant'); /* 건너뛰기는 뒤집기 연출 없이 즉시 완성본으로 */
+    flip.classList.remove('flipCard--dim');
+    flip.classList.add('flipCard--flipped');
+    flip.classList.remove('flipCard--reveal');
+    stage.className='revealStage'; /* 건너뛰기는 정적인 결과로 즉시 — 숨쉬는 배경 오라도 애니메이션이라 생략 */
+    wrap.className='cardWrap reveal reveal--'+data.rarity+' fx-settle fx-noanim settle';
+    currentCardImgs=[photos,pos];
+    drawCard(ctx2,canvas.width,canvas.height,data,photos,pos); /* t 없이 = 완성본 즉시 */
+    enterResult();
+  }
+  currentReveal={finishNow:finishNow,token:token};
+  return currentReveal;
+}
+$('#btnRevealSkip').onclick=function(){if(currentReveal)currentReveal.finishNow()};
+/* 카드가 쓰는 실제 웨이트만 미리 로드 — JejuGothic 400, SCDream 400/600/800.
+   document.fonts.check()로 실제 로딩 여부까지 확인해서, 로딩 전에 캔버스를 그려 기본 폰트로
+   저장되는 사고(미리보기와 저장 PNG의 폰트가 달라지는 문제)를 막는다. */
+function ensureCardFonts(){
+  var specs=['400 100px JejuGothic','400 100px SCDream','600 100px SCDream','800 100px SCDream'];
+  if(!(document.fonts&&document.fonts.load))return Promise.resolve();
+  return Promise.all(specs.map(function(s){return document.fonts.load(s).catch(function(){})}))
+    .then(function(){return document.fonts.ready.catch(function(){})})
+    .then(function(){
+      var missing=specs.filter(function(s){try{return !document.fonts.check(s)}catch(e){return false}});
+      if(missing.length)console.warn('[card] 폰트 로딩 확인 실패(기본 폰트로 대체될 수 있음):',missing);
+    });
+}
+$('#btnMake').onclick=function(){
+  var have=slots.filter(Boolean).length;
+  if(have<1){toast('사진을 넣어 주세요');return}
+  var btn=$('#btnMake');if(btn.disabled)return;
+  btn.disabled=true;$('#result').classList.remove('on');
+  S.cardCount=(S.cardCount||0)+1;save();
+  var data=rollCard($('#inCardNick').value, S.cardCount%CARD_PITY===0?['diamond','halloween','legend'][Math.floor(Math.random()*3)]:null);
+  data.stickers=getStickers();
+  updateCardPity();
+  loadCardAssets(function(assets){
+    var need2=['frame_'+data.rarity,'foil_'+data.rarity,'attr_'+data.attribute,'title_scrim','meta_strip','caption_fade']
+      .concat((RARITY_FX_ORDER[data.rarity]||[]).map(function(p){return 'rfx_'+data.rarity+'_'+p}));
+    if(need2.some(function(k){return !assets[k]})){
+      btn.disabled=false;toast('카드 에셋을 불러오지 못했어요. 다시 시도해 주세요.');return;
+    }
+    var photosSnapshot=slots.slice(), posSnapshot=slotPos.map(function(p){return p&&{x:p.x,y:p.y}});
+    ensureCardFonts().then(function(){
+      currentCard=data;
+      $('#result').classList.add('on');
+      $('#result').scrollIntoView({behavior:'smooth',block:'start'});
+      onCardSettled=function(){showDone()};
+      playCardReveal(data,photosSnapshot,posSnapshot);
+    });
+  });
+};
+updateCardPity();
+$('#btnReplay').onclick=function(){
+  if(!currentCard||!currentCardImgs)return;
+  var btn=$('#btnMake');if(btn)btn.disabled=true;
+  playCardReveal(currentCard,currentCardImgs[0],currentCardImgs[1]);
+};
+$('#btnNewCard').onclick=function(){
+  $('#result').classList.remove('on');
+  $('#btnMake').scrollIntoView({behavior:'smooth',block:'center'});
+};
+function cardFileName(){
+  var d8=new Date(), ymd=d8.getFullYear()+String(d8.getMonth()+1).padStart(2,'0')+String(d8.getDate()).padStart(2,'0');
+  return '과수원피스_포토카드_'+currentCard.rarityLabel+'_'+ymd+'.png';
+}
+function cardBlob(cb){
+  var canvas=$('#cardCanvas');
+  try{
+    canvas.toBlob(function(blob){
+      if(blob)return cb(blob);
+      try{var u=canvas.toDataURL('image/png'),p=u.split(','),bin=atob(p[1]),arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);cb(new Blob([arr],{type:'image/png'}))}catch(e){cb(null)}
+    },'image/png');
+  }catch(e){cb(null)}
+}
+/* 길게 눌러 저장하는 이미지 화면: 인앱브라우저(카톡·인스타 등)·iOS처럼 다운로드/공유가 막힌 곳의 확실한 폴백 */
+function showCardImage(blob){
+  var url=$('#cardCanvas').toDataURL('image/png');
+  sheet('<h3>사진을 길게 눌러 저장하세요</h3><p>아래 사진을 손가락으로 꾹 누르면 "이미지 저장" 메뉴가 나와요.</p>'+
+    '<img src="'+url+'" alt="포토카드" style="width:100%;border-radius:12px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto">'+
+    '<button class="btn btn--tertiary btn--block" onclick="document.getElementById(\'modal\').classList.remove(\'on\')">닫기</button>');
+}
+$('#btnSave').onclick=function(){
+  if(!currentCard)return;
+  var ua=navigator.userAgent||'', inApp=/KAKAOTALK|Instagram|FBAN|FBAV|Line\/|NAVER|DaumApps|; wv\)|Whale.*Mobile/i.test(ua);
+  var ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  cardBlob(function(blob){
+    if(!blob){toast('저장 이미지를 만들지 못했어요. 다시 시도해 주세요');return}
+    if(inApp){showCardImage(blob);return}
+    if(ios){
+      var file=new File([blob],cardFileName(),{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({files:[file]}).catch(function(e){if(e&&e.name!=='AbortError')showCardImage(blob)});
+        return;
+      }
+      showCardImage(blob);return;
+    }
+    var url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url;a.download=cardFileName();a.style.display='none';document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url)},3000);
+  });
+};
+$('#btnShare').onclick=function(){
+  if(!currentCard)return;
+  cardBlob(function(blob){
+    if(!blob)return;
+    var file=new File([blob],'과수원피스_포토카드.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'할로윈 과수원피스 포토카드'}).catch(function(e){if(e&&e.name!=='AbortError')showCardImage(blob)});
+    } else showCardImage(blob);
+  });
+};
+
+
+
+/* ====== 과수원피스 추가분 ====== */
+/* 새 디자인 2종(할로윈 스페셜·레전드) — 기존 5등급 확률은 줄지 않게 나머지에서 조금씩 덜어 왔다 */
+CARD_RARITY.forEach(function(r){ if(r.id==='bronze')r.weight=40; if(r.id==='silver')r.weight=27; if(r.id==='gold')r.weight=15; if(r.id==='platinum')r.weight=7; if(r.id==='diamond')r.weight=4; });
+CARD_RARITY.push({id:'halloween',label:'할로윈 스페셜',en:'HALLOWEEN',weight:5,lv:[88,100],val:[60,99]});
+CARD_RARITY.push({id:'legend',label:'레전드',en:'LEGEND',weight:2,lv:[95,100],val:[80,99]});
+CARD_ROLES.push('귤선장의 선원','한밤의 모험가','호박등 수호자','할로윈의 주인공');
+CARD_KEYWORDS.push('할로윈','호박등','귤빛 해적','해적왕의','한밤의','도채비의','유령같은','마녀의','박쥐날개','사탕폭탄','으스스','달콤한','과수원의','귤선장의','트릭오어트릿');
+CARD_SKILLS.push('트릭 오어 트릿','호박등 점등','사탕 폭격','유령 통과','박쥐 소환','마녀의 빗자루','귤 대포','해적왕의 포효','한밤의 귤 수확','도깨비 방망이');
+CARD_CHARS.push('귤선장','도채비','리타');
+CARD_LINES.push('트릭 오어 트릿!','사탕 안 주면 장난칠 거야!','오늘 밤은 내가 주인공!','귤 해적단 출항!','호박등이 길을 밝혀 줘.');
+CARD_DESCS.push('사탕이 눈앞에 나타날 확률이 {v}% 오른다.','할로윈 텐션이 {v} 상승한다.','한밤의 으스스한 분위기에서 존재감이 {v} 오른다.');
+
+/* ---- 스티커(우리 일러스트) — 사진 위에 올리고 한 손가락 이동 · 두 손가락 크기/회전 ---- */
+var STK=[{"f": "o_rita_full.webp", "n": "리타 해적"}, {"f": "o_rita_pirate.webp", "n": "리타 활짝"}, {"f": "o_rita_hi.webp", "n": "리타 인사"}, {"f": "o_rita_basic.webp", "n": "리타 기본"}, {"f": "o_logo_char.webp", "n": "메이커앤하비"}, {"f": "o_logo_text.webp", "n": "로고 글자"}, {"f": "s_pumpkin.webp", "n": "잭오랜턴"}, {"f": "s_bat.webp", "n": "박쥐"}, {"f": "s_ghost.webp", "n": "유령"}, {"f": "s_candy.webp", "n": "사탕"}, {"f": "s_moon.webp", "n": "달"}, {"f": "s_sparkle.webp", "n": "별빛"}, {"f": "s_witchhat.webp", "n": "마녀 모자"}, {"f": "s_tangerine.webp", "n": "귤"}, {"f": "s_bubble.webp", "n": "말풍선"}, {"f": "s_web.webp", "n": "거미줄"}];
+var stickerImgs={}, stickersReady=null, stk=[], stkSel=null;
+function loadStickers(){
+  if(stickersReady)return stickersReady;
+  stickersReady=Promise.all(STK.map(function(s){return new Promise(function(ok){
+    var im=new Image();im.onload=function(){stickerImgs[s.f]=im;ok()};im.onerror=function(){ok()};im.src='stickers/'+s.f})}));
+  return stickersReady;
+}
+function drawStickers(ctx2,W,H,data){
+  (data.stickers||[]).forEach(function(st){
+    var im=stickerImgs[st.f];if(!im)return;
+    var sz=st.s*W;ctx2.save();ctx2.translate(st.x*W,st.y*H);ctx2.rotate(st.r*Math.PI/180);
+    ctx2.drawImage(im,-sz/2,-sz/2,sz,sz);ctx2.restore();
+  });
+}
+function getStickers(){return stk.map(function(o){return {f:o.f,x:o.x,y:o.y,s:o.s,r:o.r}})}
+(function buildStickerUI(){
+  var layer=$('#stkLayer'), bar=$('#stkBar'), tools=$('#stkTools');
+  bar.innerHTML=STK.map(function(s){return '<button type="button" class="stkThumb" data-f="'+s.f+'" aria-label="'+s.n+'"><img src="stickers/'+s.f+'" alt=""><span>'+s.n+'</span></button>'}).join('');
+  function place(o){
+    o.el.style.left=(o.x*100)+'%';o.el.style.top=(o.y*100)+'%';o.el.style.width=(o.s*100)+'%';
+    o.el.style.transform='translate(-50%,-50%) rotate('+o.r+'deg)';
+  }
+  function select(o){
+    stkSel=o;stk.forEach(function(q){q.el.classList.toggle('sel',q===o)});
+    if(o){stk.splice(stk.indexOf(o),1);stk.push(o);layer.appendChild(o.el)}
+    tools.classList.toggle('on',!!o);
+  }
+  function add(f){
+    if(stk.length>=12){toast('스티커는 12개까지 붙일 수 있어요');return}
+    var el=document.createElement('img');el.className='stkItem';el.src='stickers/'+f;el.draggable=false;
+    var o={f:f,x:0.5,y:0.45,s:0.34,r:0,el:el};stk.push(o);layer.appendChild(el);place(o);select(o);
+    var ptrs={}, start=null;
+    function snap(){var ids=Object.keys(ptrs);
+      if(ids.length>=2){var a=ptrs[ids[0]],b=ptrs[ids[1]];start={n:2,d:Math.hypot(a.x-b.x,a.y-b.y)||1,ang:Math.atan2(b.y-a.y,b.x-a.x),s:o.s,r:o.r}}
+      else if(ids.length===1){start={n:1,px:ptrs[ids[0]].x,py:ptrs[ids[0]].y,x:o.x,y:o.y}}else start=null}
+    el.addEventListener('pointerdown',function(e){e.preventDefault();el.setPointerCapture(e.pointerId);ptrs[e.pointerId]={x:e.clientX,y:e.clientY};select(o);snap()});
+    el.addEventListener('pointermove',function(e){
+      if(!ptrs[e.pointerId])return;ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+      var rect=layer.getBoundingClientRect(),ids=Object.keys(ptrs);if(!start)return;
+      if(ids.length>=2&&start.n===2){var a=ptrs[ids[0]],b=ptrs[ids[1]];
+        o.s=Math.max(0.1,Math.min(1.1,start.s*Math.hypot(a.x-b.x,a.y-b.y)/start.d));
+        o.r=start.r+(Math.atan2(b.y-a.y,b.x-a.x)-start.ang)*180/Math.PI}
+      else if(ids.length===1&&start.n===1){
+        o.x=Math.max(0,Math.min(1,start.x+(e.clientX-start.px)/rect.width));o.y=Math.max(0,Math.min(1,start.y+(e.clientY-start.py)/rect.height))}
+      place(o);
+    });
+    function up(e){delete ptrs[e.pointerId];snap()}
+    el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  }
+  bar.addEventListener('click',function(e){var b=e.target.closest('.stkThumb');if(b)add(b.dataset.f)});
+  tools.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b||!stkSel)return;var o=stkSel,k=b.dataset.k;
+    if(k==='big')o.s=Math.min(1.1,o.s*1.12);if(k==='small')o.s=Math.max(0.1,o.s/1.12);
+    if(k==='left')o.r-=12;if(k==='right')o.r+=12;
+    if(k==='del'){o.el.remove();stk.splice(stk.indexOf(o),1);select(null);return}
+    place(o);
+  });
+  $('#stkLayer').addEventListener('pointerdown',function(e){if(e.target===layer)select(null)});
+  loadStickers();
+})();
+
+/* ---- 완성 → 부모(전투 화면)에게 알림. 저장·공유는 먼저 해도 되고, 이 버튼을 눌러야 몬스터가 쓰러진다 ---- */
+function showDone(){
+  var bar=$('#doneBar');if(bar)bar.classList.add('on');
+}
+$('#btnDone').onclick=function(){
+  if(window.parent&&window.parent!==window){try{window.parent.postMessage({type:'photocard-done'},'*')}catch(e){}}
+  else toast('미리보기입니다 — 전투 화면에서는 몬스터가 쓰러져요');
+};
+$('#btnClose').onclick=function(){
+  if(window.parent&&window.parent!==window){try{window.parent.postMessage({type:'photocard-close'},'*')}catch(e){}}
+};
+
+})();
+</script>
+</body>
+</html>

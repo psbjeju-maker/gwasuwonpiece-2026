@@ -310,6 +310,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 
 <script src="qr.js"></script>
 <script src="ev-client.js?v=8"></script>
+<script src="mqscan.js?v=2"></script>
 <script>
 (function(){
 'use strict';
@@ -575,6 +576,16 @@ function renderBattle(b){
   $('stSub').textContent='앞을 막은 몬스터: '+m.name;
   $('chest').classList.toggle('sm',b.type==='dialect');
   var tag='<span class="tag">'+esc(m.battleName)+' · 이기면 상자 열기, 지면 꽝!</span>';
+  if(b.type==='photocard'||b.type==='sns'){
+    $('chest').classList.add('sm');
+    var t2='<span class="tag">'+esc(m.battleName)+' · 완료하면 상자 열기!</span>';
+    if(b.type==='photocard') sheet(t2+'<div class="q">포토카드를 만들면 몬스터가 쓰러져요!</div><p class="muted" style="margin:0 0 12px">사진을 찍고 스티커로 꾸미면 나만의 랜덤 카드가 탄생해요. 카드가 완성되면 「몬스터에게 보여주기」를 눌러요.</p><button class="btn p" id="btnPc" type="button">포토카드 만들러 가기</button><button class="btn" id="btnLater2" type="button" style="margin-top:8px">나중에 하기</button><p class="err" id="qErr"></p>');
+    else sheet(t2+'<div class="q">SNS에 올리면 몬스터가 쓰러져요!</div><p class="muted" style="margin:0 0 12px">행사 사진이나 포토카드를 SNS에 올리고, 스태프에게 게시물을 보여 주세요. 스태프가 보여 주는 QR을 찍으면 끝!</p><button class="btn p" id="btnSns" type="button">스태프 QR 찍기</button><button class="btn" id="btnLater2" type="button" style="margin-top:8px">나중에 하기</button><p class="err" id="qErr"></p>');
+    if($('btnPc')) $('btnPc').onclick=openPhotocard;
+    if($('btnSns')) $('btnSns').onclick=scanSns;
+    $('btnLater2').onclick=function(){closeStage();openHunt()};
+    return;
+  }
   if(b.type==='rps'){
     sheet(tag+'<div class="q">먼저 2번 이기면 승리! (비기면 다시)</div><div class="score"><span>나 <b>'+b.w+'</b></span><span>'+esc(m.name)+' <b>'+b.l+'</b></span></div>'+
       '<div class="bmsg" id="bMsg">'+esc(battleLast(b))+'</div><div class="rps">'+RPSN.map(function(n,i){return '<button class="rb" data-i="'+i+'" type="button">'+RPSG[i]+'<small>'+n+'</small></button>'}).join('')+'</div><p class="err" id="qErr"></p>');
@@ -589,23 +600,43 @@ function renderBattle(b){
   var qt=0;chs.forEach(function(bt){bt.onclick=function(){pick=+bt.dataset.i;chs.forEach(function(x){x.classList.toggle('pick',x===bt)});var g=$('qGo');g.disabled=true;g.textContent=(pick+1)+'번으로 정답 제출';clearTimeout(qt);qt=setTimeout(function(){g.disabled=false},500)}});
   $('qGo').onclick=function(){if(pick!=null)battleMove(pick,this)};
 }
-function battleMove(i,b){
-  if(answering) return;answering=true;b.classList.add('pick');b.disabled=true;
-  EV.call('digBattle',{eventId:EID,spotId:spot.id,choice:i}).then(function(r){
+function battleMove(i,b,extra){
+  if(answering) return;answering=true;if(b){b.classList.add('pick');b.disabled=true}
+  var pl={eventId:EID,spotId:spot.id,choice:i};if(extra)for(var k in extra)pl[k]=extra[k];
+  EV.call('digBattle',pl).then(function(r){
     answering=false;sfx('pop');buzz(30);
     var cm=$('chest');cm.classList.remove('shake');cm.classList.add('hit');setTimeout(function(){cm.classList.remove('hit')},400);
     if(r.final||r.duplicate){
       /* 마지막 수의 결과를 잠깐 보여 준 뒤 결과 화면 */
       var L=r.last;
       var rpsEnd=L&&L.r!==undefined;
-      var msg=L?(rpsEnd?'나는 '+RPSN[L.mine]+', 상대는 '+RPSN[L.theirs]+' → '+(L.r==='win'?'이겼다!':'졌다…'):(L.ok?'정답!':'오답… 정답은 「'+L.answer+'」')):'';
+      var msg=L&&(L.done||L.qr)?(L.done?'카드 완성! 몬스터가 쓰러진다…':'QR 확인 완료! 몬스터가 쓰러진다…'):L?(rpsEnd?'나는 '+RPSN[L.mine]+', 상대는 '+RPSN[L.theirs]+' → '+(L.r==='win'?'이겼다!':'졌다…'):(L.ok?'정답!':'오답… 정답은 「'+L.answer+'」')):'';
       if($('bMsg'))$('bMsg').textContent=msg;
       $('sheet').querySelectorAll('button').forEach(function(x){x.disabled=true});
       setTimeout(function(){r.result.correct&&!r.duplicate?peel(r.result):showResult(r.result)},L?1500:0);
       return;
     }
     task=r;renderBattle(r.battle);
-  },function(e){answering=false;b.classList.remove('pick');b.disabled=false;$('qErr').textContent=e.message||'다시 눌러 주세요.'});
+  },function(e){answering=false;if(b){b.classList.remove('pick');b.disabled=false}if($('qErr'))$('qErr').textContent=e.message||'다시 눌러 주세요.'});
+}
+/* 포토카드 공방(탐라문화제 카드 공방과 같은 방식) — 전체 화면으로 열고, 카드를 완성하면 알려 준다 */
+function openPhotocard(){
+  if($('pcOverlay')) return;
+  var ov=document.createElement('div');ov.id='pcOverlay';ov.style.cssText='position:fixed;inset:0;z-index:300;background:#0F1120';
+  ov.innerHTML='<iframe src="assets/photocard/index.html" style="width:100%;height:100%;border:0" title="포토카드 공방"></iframe>';
+  document.body.appendChild(ov);
+  function onMsg(e){
+    var d=e.data;if(!d||(d.type!=='photocard-done'&&d.type!=='photocard-close'))return;
+    window.removeEventListener('message',onMsg);ov.remove();
+    if(d.type==='photocard-done') battleMove(0,null,{done:true});
+  }
+  window.addEventListener('message',onMsg);
+}
+/* SNS 인증(탐라문화제 방식) — 스태프가 게시물을 보고 보여 주는 미션 QR(?mq=토큰)을 찍는다 */
+function scanSns(){
+  if(PV){battleMove(0,null,{qr:'PREVIEW'});return}
+  if(!window.MQScan){if($('qErr'))$('qErr').textContent='잠시 후 다시 눌러 주세요';return}
+  MQScan.open({hint:'스태프가 보여 주는 미션 QR을 네모 안에 맞춰 주세요',onToken:function(tok){battleMove(0,null,{qr:tok})}});
 }
 /* 시트가 뜬 직후 0.7초는 터치를 안 받는다(삽 연타가 버튼으로 넘어가는 것 방지) */
 function sheet(html){var s=$('sheet');s.innerHTML=html;s.className='sheet on';s.style.pointerEvents='none';clearTimeout(s._lk);s._lk=setTimeout(function(){s.style.pointerEvents=''},700)}
@@ -772,13 +803,15 @@ if(PV){(function(){
   }
   function view(){
     if(cur.battle==='rps')return {battle:{type:'rps',monster:cur,w:st.w,l:st.l,need:2,last:st.last}};
+    if(cur.battle==='photocard'||cur.battle==='sns')return {battle:{type:cur.battle,monster:cur}};
     if(cur.battle==='dialect'){var q=QS[Math.min(st.qi,2)];return {battle:{type:'dialect',monster:cur,qi:st.qi,total:3,right:st.right,wrong:st.wrong,need:2,q:{id:'pv',q:q.q,choices:q.c},last:st.last}}}
     if(st.done)return {open:true,monster:cur};
     return {npc:{id:'mon_'+cur.battle,name:cur.battleName,place:'',line:LINES[cur.battle]},monster:cur};
   }
   function fin(win){return {correct:win,task:'monster',monster:cur,tier:win?'A':'X',prize:win?'A상(미리보기)':'꽝',pickupCode:win?'PREVIEW':null}}
-  function move(c){
+  function move(c,a){
     var verdict=null,last;
+    if(a&&(a.done||a.qr))return {final:true,last:a.done?{done:true}:{qr:true},result:fin(true)};
     if(cur.battle==='rps'){
       var th=mode==='win'?(c+2)%3:mode==='lose'?(c+1)%3:Math.floor(Math.random()*3),d=(c-th+3)%3,r=d===1?'win':d===2?'lose':'tie';
       if(r==='win')st.w++;if(r==='lose')st.l++;last={mine:c,theirs:th,r:r};st.last=last;
@@ -793,7 +826,7 @@ if(PV){(function(){
   }
   EV.call=function(name,a){
     return new Promise(function(res){setTimeout(function(){
-      if(name==='digBattle')return res(move(a.choice));
+      if(name==='digBattle')return res(move(a.choice,a));
       if(name==='digStart')return res(view());
       if(name==='digAnswer')return res({result:fin(true)});
       res({});
