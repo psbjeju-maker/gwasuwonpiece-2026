@@ -171,7 +171,7 @@ function render(){
     if(!q) return true;
     return x.name.indexOf(q)>=0||x.depositor.indexOf(q)>=0||(qd.length>=3&&x.phone.indexOf(qd)>=0);
   });
-  var rk={pending:0,approved:1};rows=rows.map(function(x,i){return [x,i]}).sort(function(a,b){return (rk[a[0].status]||0)-(rk[b[0].status]||0)||a[1]-b[1]}).map(function(p){return p[0]});
+  function rk(x){return x.status==='pending'?0:x.status==='approved'?(SENT[x.token]?3:1):2}rows=rows.map(function(x,i){return [x,i]}).sort(function(a,b){return rk(a[0])-rk(b[0])||a[1]-b[1]}).map(function(p){return p[0]});
   $('list').innerHTML=rows.length?rows.map(row).join(''):'<p class="sub" style="text-align:center;padding:18px 0">해당하는 신청이 없어요.</p>';
 }
 function row(x){
