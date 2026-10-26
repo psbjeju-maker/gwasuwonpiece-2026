@@ -11,7 +11,16 @@ html,body{background:var(--color-bg,#0F1120)}
 #app{padding-top:8px}
 .screen{padding-bottom:calc(var(--space-8) + 90px)}
 #btnClose{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:50;min-height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--color-border-strong);background:rgba(15,17,32,.85);color:var(--color-text);font-weight:700;font-size:14px}
-#stkWrap{position:relative;width:min(78vw,320px);margin:var(--space-4) auto 0}
+#stkWrap{position:relative;width:min(86vw,360px);margin:var(--space-4) auto 0}
+#stkWrap .slot{position:relative;overflow:hidden}
+.stkBox{position:absolute;display:none;border:2px solid #fff;border-radius:4px;box-shadow:0 0 0 1px rgba(0,0,0,.4);pointer-events:none;z-index:20}
+.stkBox.on{display:block}
+.stkBox .hd{position:absolute;width:20px;height:20px;background:#fff;border:3px solid #7B4DFF;border-radius:50%;pointer-events:auto;touch-action:none;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.stkBox .hd::after,.stkBox .rot::after,.stkBox .xdel::after{content:'';position:absolute;inset:-12px}
+.stkBox .tl{left:-12px;top:-12px}.stkBox .tr{right:-12px;top:-12px}.stkBox .bl{left:-12px;bottom:-12px}.stkBox .br{right:-12px;bottom:-12px}
+.stkBox .rotStem{position:absolute;left:50%;top:-24px;width:2px;height:24px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+.stkBox .rot{position:absolute;left:50%;top:-52px;width:30px;height:30px;margin-left:-15px;border-radius:50%;background:#7B4DFF;color:#fff;font-style:normal;font-weight:900;font-size:18px;line-height:30px;text-align:center;pointer-events:auto;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.stkBox .xdel{position:absolute;left:50%;bottom:-48px;width:30px;height:30px;margin-left:-15px;border-radius:50%;background:#E5484D;color:#fff;font-weight:900;font-size:15px;line-height:30px;text-align:center;pointer-events:auto;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.45)}
 #stkWrap .slots{margin-top:0}
 #stkWrap .slot{max-width:none}
 #stkLayer{position:absolute;inset:0;overflow:hidden;border-radius:12px;pointer-events:none}
@@ -47,7 +56,7 @@ html,body{background:var(--color-bg,#0F1120)}
     <div id="stkWrap"><div class="slots slots--one" id="slots"></div><div id="stkLayer"></div></div>
     <div class="stkBar" id="stkBar"></div>
     <div class="stkTools" id="stkTools"><button type="button" data-k="small">작게</button><button type="button" data-k="big">크게</button><button type="button" data-k="left">↺ 왼쪽</button><button type="button" data-k="right">↻ 오른쪽</button><button type="button" data-k="del" class="del">지우기</button></div>
-    <div class="slotAdj" id="slotAdj"><button type="button" data-dy="-0.15">▲ 사진 위로</button><button type="button" data-dy="0.15">▼ 사진 아래로</button></div>
+    <div class="slotAdj" id="slotAdj"><button type="button" data-dz="0.85">－ 사진 축소</button><button type="button" data-dz="1.18">＋ 사진 확대</button><button type="button" data-dy="-0.15">▲ 사진 위로</button><button type="button" data-dy="0.15">▼ 사진 아래로</button></div>
     <p class="caption" style="margin-top:8px">사진을 넣은 뒤 끌어서 위치를 맞추고, 아래 스티커를 눌러 붙여요. 스티커는 한 손가락으로 옮기고 두 손가락으로 크기·회전을 바꿔요.</p>
 
     <div class="field" style="margin-top:16px">
@@ -160,7 +169,7 @@ function roundRectPath(ctx2,px,py,pw,ph,r){
     '<input type="file" accept="image/*" style="display:none">';
   var inp=el.querySelector('input');
   var view=null, drag=null, moved=false;
-  function applyPos(){ if(view)view.style.objectPosition=(slotPos[i].x*100).toFixed(1)+'% '+(slotPos[i].y*100).toFixed(1)+'%'; }
+  function applyPos(){ if(!view||!slots[i])return; var r=el.getBoundingClientRect(),img=slots[i],z=slotPos[i].z||1,sc=Math.max(r.width/img.width,r.height/img.height)*z,dw=img.width*sc,dh=img.height*sc; view.style.cssText='position:absolute;max-width:none;object-fit:fill;width:'+dw+'px;height:'+dh+'px;left:'+(-(dw-r.width)*slotPos[i].x)+'px;top:'+(-(dh-r.height)*slotPos[i].y)+'px'; }
   inp.onchange=function(){
     var f=inp.files[0];if(!f)return;
     var r=new FileReader();
@@ -175,9 +184,9 @@ function roundRectPath(ctx2,px,py,pw,ph,r){
     drag={x:e.clientX,y:e.clientY,pos:{x:slotPos[i].x,y:slotPos[i].y}};moved=false;el.setPointerCapture(e.pointerId);
   });
   el.addEventListener('pointermove',function(e){
-    if(!drag)return;
+    if(!drag||window._pinch)return;
     var img=slots[i], rect=el.getBoundingClientRect();
-    var sc=Math.max(rect.width/img.width,rect.height/img.height);
+    var sc=Math.max(rect.width/img.width,rect.height/img.height)*(slotPos[i].z||1);
     var overflowX=img.width*sc-rect.width, overflowY=img.height*sc-rect.height;
     var dx=e.clientX-drag.x, dy=e.clientY-drag.y;
     if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
@@ -188,10 +197,21 @@ function roundRectPath(ctx2,px,py,pw,ph,r){
   function endDrag(){drag=null}
   el.addEventListener('pointerup',endDrag);el.addEventListener('pointercancel',endDrag);
   el.addEventListener('click',function(e){ if(moved){e.preventDefault();moved=false} });
+  /* 두 손가락으로 사진 확대·축소 / 마우스 휠 */
+  var pp={}, pz=null;
+  el.addEventListener('pointerdown',function(e){pp[e.pointerId]={x:e.clientX,y:e.clientY};var ids=Object.keys(pp);if(ids.length===2&&slots[i]){var a=pp[ids[0]],b=pp[ids[1]];pz={d:Math.hypot(a.x-b.x,a.y-b.y)||1,z:slotPos[i].z||1};window._pinch=true}});
+  el.addEventListener('pointermove',function(e){
+    if(!pp[e.pointerId])return;pp[e.pointerId]={x:e.clientX,y:e.clientY};var ids=Object.keys(pp);
+    if(ids.length>=2&&pz&&slots[i]){var a=pp[ids[0]],b=pp[ids[1]];slotPos[i].z=Math.max(1,Math.min(4,pz.z*Math.hypot(a.x-b.x,a.y-b.y)/pz.d));applyPos()}
+  });
+  function pend(e){delete pp[e.pointerId];if(Object.keys(pp).length<2){pz=null;setTimeout(function(){window._pinch=false},80)}}
+  el.addEventListener('pointerup',pend);el.addEventListener('pointercancel',pend);
+  el.addEventListener('wheel',function(e){if(!slots[i])return;e.preventDefault();slotPos[i].z=Math.max(1,Math.min(4,(slotPos[i].z||1)*(e.deltaY<0?1.1:0.9)));applyPos()},{passive:false});
+  window.addEventListener('resize',function(){applyPos()});
   w.appendChild(el);
   $('#slotAdj').addEventListener('click',function(e){
     var b=e.target.closest('button');if(!b||!slots[i])return;
-    slotPos[i].y=Math.max(0,Math.min(1,slotPos[i].y+parseFloat(b.dataset.dy)));applyPos();
+    if(b.dataset.dz){slotPos[i].z=Math.max(1,Math.min(4,(slotPos[i].z||1)*parseFloat(b.dataset.dz)))}else{slotPos[i].y=Math.max(0,Math.min(1,slotPos[i].y+parseFloat(b.dataset.dy)))}applyPos();
   });
 })();
 
@@ -390,7 +410,7 @@ function drawCard(ctx2,W,H,data,imgs,pos,t){
   ctx2.save();roundRectPath(ctx2,0,0,W,H,radius);ctx2.clip();
   ctx2.globalAlpha=aBase;
   var img=imgs[0], p0=(pos&&pos[0])||{x:0.5,y:0.18};
-  if(img){var sc=Math.max(W/img.width,H/img.height), dw=img.width*sc, dh=img.height*sc;
+  if(img){var sc=Math.max(W/img.width,H/img.height)*((p0&&p0.z)||1), dw=img.width*sc, dh=img.height*sc;
     ctx2.drawImage(img,-(dw-W)*(p0.x!=null?p0.x:0.5),-(dh-H)*(p0.y!=null?p0.y:0.18),dw,dh);}
   ctx2.restore();
   drawStickers(ctx2,W,H,data);
@@ -696,7 +716,7 @@ $('#btnMake').onclick=function(){
     if(need2.some(function(k){return !assets[k]})){
       btn.disabled=false;toast('카드 에셋을 불러오지 못했어요. 다시 시도해 주세요.');return;
     }
-    var photosSnapshot=slots.slice(), posSnapshot=slotPos.map(function(p){return p&&{x:p.x,y:p.y}});
+    var photosSnapshot=slots.slice(), posSnapshot=slotPos.map(function(p){return p&&{x:p.x,y:p.y,z:p.z||1}});
     ensureCardFonts().then(function(){
       currentCard=data;
       $('#result').classList.add('on');
@@ -799,31 +819,43 @@ function drawStickers(ctx2,W,H,data){
 }
 function getStickers(){return stk.map(function(o){return {f:o.f,x:o.x,y:o.y,s:o.s,r:o.r}})}
 (function buildStickerUI(){
-  var layer=$('#stkLayer'), bar=$('#stkBar'), tools=$('#stkTools');
+  var layer=$('#stkLayer'), wrap=$('#stkWrap'), bar=$('#stkBar'), tools=$('#stkTools');
   bar.innerHTML=STK.map(function(s){return '<button type="button" class="stkThumb" data-f="'+s.f+'" aria-label="'+s.n+'"><img src="stickers/'+s.f+'" alt=""><span>'+s.n+'</span></button>'}).join('');
+  /* 캔바처럼: 고른 스티커 둘레에 박스 — 모서리를 끌면 크기, 위 동그라미를 끌면 회전, ✕ 로 삭제 */
+  var box=document.createElement('div');box.className='stkBox';
+  box.innerHTML='<i class="hd tl" data-h="s"></i><i class="hd tr" data-h="s"></i><i class="hd bl" data-h="s"></i><i class="hd br" data-h="s"></i><i class="rotStem"></i><i class="rot" data-h="r">↻</i><b class="xdel" data-h="d">✕</b>';
+  wrap.appendChild(box);
+  function updateBox(){
+    if(!stkSel){box.classList.remove('on');return}
+    var w=layer.offsetWidth,o=stkSel,sz=Math.max(34,o.s*w);
+    box.style.left=(o.x*100)+'%';box.style.top=(o.y*100)+'%';box.style.width=sz+'px';box.style.height=sz+'px';
+    box.style.transform='translate(-50%,-50%) rotate('+o.r+'deg)';box.classList.add('on');
+  }
   function place(o){
     o.el.style.left=(o.x*100)+'%';o.el.style.top=(o.y*100)+'%';o.el.style.width=(o.s*100)+'%';
     o.el.style.transform='translate(-50%,-50%) rotate('+o.r+'deg)';
+    if(o===stkSel)updateBox();
   }
   function select(o){
     stkSel=o;stk.forEach(function(q){q.el.classList.toggle('sel',q===o)});
     if(o){stk.splice(stk.indexOf(o),1);stk.push(o);layer.appendChild(o.el)}
-    tools.classList.toggle('on',!!o);
+    tools.classList.toggle('on',!!o);updateBox();
   }
+  function remove(o){o.el.remove();stk.splice(stk.indexOf(o),1);if(stkSel===o)select(null)}
   function add(f){
     if(stk.length>=12){toast('스티커는 12개까지 붙일 수 있어요');return}
     var el=document.createElement('img');el.className='stkItem';el.src='stickers/'+f;el.draggable=false;
-    var o={f:f,x:0.5,y:0.45,s:0.34,r:0,el:el};stk.push(o);layer.appendChild(el);place(o);select(o);
+    var o={f:f,x:0.5,y:0.45,s:0.36,r:0,el:el};stk.push(o);layer.appendChild(el);place(o);select(o);
     var ptrs={}, start=null;
     function snap(){var ids=Object.keys(ptrs);
       if(ids.length>=2){var a=ptrs[ids[0]],b=ptrs[ids[1]];start={n:2,d:Math.hypot(a.x-b.x,a.y-b.y)||1,ang:Math.atan2(b.y-a.y,b.x-a.x),s:o.s,r:o.r}}
       else if(ids.length===1){start={n:1,px:ptrs[ids[0]].x,py:ptrs[ids[0]].y,x:o.x,y:o.y}}else start=null}
-    el.addEventListener('pointerdown',function(e){e.preventDefault();el.setPointerCapture(e.pointerId);ptrs[e.pointerId]={x:e.clientX,y:e.clientY};select(o);snap()});
+    el.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();el.setPointerCapture(e.pointerId);ptrs[e.pointerId]={x:e.clientX,y:e.clientY};if(stkSel!==o)select(o);snap()});
     el.addEventListener('pointermove',function(e){
       if(!ptrs[e.pointerId])return;ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
       var rect=layer.getBoundingClientRect(),ids=Object.keys(ptrs);if(!start)return;
       if(ids.length>=2&&start.n===2){var a=ptrs[ids[0]],b=ptrs[ids[1]];
-        o.s=Math.max(0.1,Math.min(1.1,start.s*Math.hypot(a.x-b.x,a.y-b.y)/start.d));
+        o.s=Math.max(0.1,Math.min(1.3,start.s*Math.hypot(a.x-b.x,a.y-b.y)/start.d));
         o.r=start.r+(Math.atan2(b.y-a.y,b.x-a.x)-start.ang)*180/Math.PI}
       else if(ids.length===1&&start.n===1){
         o.x=Math.max(0,Math.min(1,start.x+(e.clientX-start.px)/rect.width));o.y=Math.max(0,Math.min(1,start.y+(e.clientY-start.py)/rect.height))}
@@ -832,15 +864,34 @@ function getStickers(){return stk.map(function(o){return {f:o.f,x:o.x,y:o.y,s:o.
     function up(e){delete ptrs[e.pointerId];snap()}
     el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
   }
+  /* 박스 핸들 드래그 */
+  var drag=null;
+  box.addEventListener('pointerdown',function(e){
+    var h=e.target.closest('[data-h]');if(!h||!stkSel)return;e.preventDefault();e.stopPropagation();
+    var k=h.dataset.h;if(k==='d'){remove(stkSel);return}
+    h.setPointerCapture(e.pointerId);
+    var rect=layer.getBoundingClientRect(),cx=rect.left+stkSel.x*rect.width,cy=rect.top+stkSel.y*rect.height;
+    drag={k:k,o:stkSel,cx:cx,cy:cy,d0:Math.hypot(e.clientX-cx,e.clientY-cy)||1,s0:stkSel.s,a0:Math.atan2(e.clientY-cy,e.clientX-cx),r0:stkSel.r};
+  });
+  box.addEventListener('pointermove',function(e){
+    if(!drag)return;var o=drag.o;
+    if(drag.k==='s')o.s=Math.max(0.1,Math.min(1.3,drag.s0*Math.hypot(e.clientX-drag.cx,e.clientY-drag.cy)/drag.d0));
+    else o.r=drag.r0+(Math.atan2(e.clientY-drag.cy,e.clientX-drag.cx)-drag.a0)*180/Math.PI;
+    place(o);
+  });
+  function endDrag(){drag=null}
+  box.addEventListener('pointerup',endDrag);box.addEventListener('pointercancel',endDrag);
   bar.addEventListener('click',function(e){var b=e.target.closest('.stkThumb');if(b)add(b.dataset.f)});
   tools.addEventListener('click',function(e){
     var b=e.target.closest('button');if(!b||!stkSel)return;var o=stkSel,k=b.dataset.k;
-    if(k==='big')o.s=Math.min(1.1,o.s*1.12);if(k==='small')o.s=Math.max(0.1,o.s/1.12);
+    if(k==='big')o.s=Math.min(1.3,o.s*1.12);if(k==='small')o.s=Math.max(0.1,o.s/1.12);
     if(k==='left')o.r-=12;if(k==='right')o.r+=12;
-    if(k==='del'){o.el.remove();stk.splice(stk.indexOf(o),1);select(null);return}
+    if(k==='del'){remove(o);return}
     place(o);
   });
-  $('#stkLayer').addEventListener('pointerdown',function(e){if(e.target===layer)select(null)});
+  /* 빈 곳(사진)을 누르면 선택 해제 */
+  $('#slots').addEventListener('pointerdown',function(){if(stkSel)select(null)});
+  window.addEventListener('resize',updateBox);
   loadStickers();
 })();
 

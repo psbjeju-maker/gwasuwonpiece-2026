@@ -158,6 +158,54 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .res img{width:110px;height:auto}
 .res img.pzpic{width:min(70vw,300px);max-height:42vh;object-fit:contain;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.35);margin-bottom:10px}
 .res .btn{margin-top:12px}
+
+/* 가위바위보 결투 */
+.duelTop{display:flex;align-items:center;gap:6px;margin:8px 0 4px}
+.duelSide{flex:1;text-align:center;font-size:15px;font-weight:700}
+.duelSide b{display:block;margin-bottom:0}
+.vs{font-size:24px;font-weight:900;font-style:italic;color:var(--orange);text-shadow:0 2px 0 #fff}
+.hpbar{display:inline-flex;gap:3px}
+.hp::before{content:'♥';font-size:26px;line-height:1;color:#E5484D;display:block;transition:color .3s}
+.hp.off::before{color:#c9c9d3}
+.hp.lost{animation:hpLost .6s ease-out}
+@keyframes hpLost{0%{transform:scale(1)}30%{transform:scale(1.7) rotate(-14deg)}100%{transform:scale(1)}}
+.arena{position:relative;height:158px;border-radius:20px;overflow:hidden;margin:6px 0;display:flex;align-items:center;justify-content:space-around;
+  background:radial-gradient(ellipse at 50% 120%,#5a3a1e,#2b1d0f 70%);box-shadow:inset 0 0 0 2px rgba(226,196,137,.35)}
+.arena::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(100deg,transparent 0 22px,rgba(255,255,255,.04) 22px 24px)}
+.hand{position:relative;z-index:2;font-size:80px;line-height:1;filter:drop-shadow(0 6px 4px rgba(0,0,0,.5));transition:transform .3s,opacity .3s,filter .3s}
+.hand.theirs{transform:scaleX(-1)}
+.hand.fist.mine{animation:fistM .34s ease-in-out infinite}
+.hand.fist.theirs{animation:fistT .34s ease-in-out infinite}
+@keyframes fistM{0%,100%{transform:translateY(8px) rotate(-6deg)}50%{transform:translateY(-30px) rotate(10deg)}}
+@keyframes fistT{0%,100%{transform:scaleX(-1) translateY(8px) rotate(-6deg)}50%{transform:scaleX(-1) translateY(-30px) rotate(10deg)}}
+.hand.pop.mine{animation:popM .42s cubic-bezier(.2,1.8,.4,1)}
+.hand.pop.theirs{animation:popT .42s cubic-bezier(.2,1.8,.4,1)}
+@keyframes popM{0%{transform:scale(.3)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
+@keyframes popT{0%{transform:scaleX(-1) scale(.3)}60%{transform:scaleX(-1) scale(1.35)}100%{transform:scaleX(-1) scale(1)}}
+.hand.win.mine{transform:translateX(18px) scale(1.18)}
+.hand.win.theirs{transform:scaleX(-1) translateX(18px) scale(1.18)}
+.hand.lose.mine{opacity:.4;filter:grayscale(1);transform:translateX(-26px) rotate(-24deg) scale(.85)}
+.hand.lose.theirs{opacity:.4;filter:grayscale(1);transform:scaleX(-1) translateX(-26px) rotate(-24deg) scale(.85)}
+.clash{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;pointer-events:none;opacity:0;z-index:3;
+  border:5px solid #ffd45e;background:radial-gradient(circle,#fff,rgba(255,236,160,.7) 60%,transparent 70%)}
+.clash.boom{animation:shock .6s ease-out}
+.clash.slash{animation:shock .6s ease-out;border-color:#ff6b6b}
+@keyframes shock{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(9)}}
+.spark{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4px;border-radius:2px;pointer-events:none;z-index:4;animation:sparkFly .7s ease-out forwards}
+@keyframes sparkFly{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+.dmg{position:absolute;top:34%;z-index:5;font-size:34px;font-weight:900;color:#ff4d4d;text-shadow:0 2px 0 #fff,0 0 8px #fff;animation:dmgUp .95s ease-out forwards;pointer-events:none}
+@keyframes dmgUp{0%{transform:translateY(10px) scale(.5);opacity:0}25%{transform:translateY(-6px) scale(1.3);opacity:1}100%{transform:translateY(-52px) scale(1);opacity:0}}
+.callout{position:absolute;left:0;right:0;top:50%;z-index:5;text-align:center;font-size:46px;font-weight:900;color:#fff;text-shadow:0 3px 0 #E8742A,0 0 14px rgba(0,0,0,.6);transform:translateY(-50%);pointer-events:none}
+.callout.in{animation:callIn .34s ease-out}
+@keyframes callIn{0%{transform:translateY(-50%) scale(2.2);opacity:0}100%{transform:translateY(-50%) scale(1);opacity:1}}
+.arena.flashR::after,.arena.flashY::after{content:'';position:absolute;inset:0;z-index:6;pointer-events:none;animation:flash .45s ease-out forwards}
+.arena.flashR::after{background:rgba(255,70,70,.55)}
+.arena.flashY::after{background:rgba(255,236,160,.6)}
+@keyframes flash{to{opacity:0}}
+.sheet.shk{animation:sheetShk .4s}
+@keyframes sheetShk{0%,100%{transform:none}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.chest.mon.ko{animation:koFall 1.1s ease-in forwards}
+@keyframes koFall{0%{transform:translate(-50%,-78%);opacity:1}25%{transform:translate(-50%,-78%) rotate(-14deg) scale(1.12)}100%{transform:translate(-50%,-26%) rotate(80deg) scale(.35);opacity:0}}
 .score{display:flex;justify-content:center;gap:18px;font-size:19px;font-weight:700;margin:2px 0 8px}
 .score b{color:var(--orange)}
 .bmsg{min-height:24px;margin:2px 0 6px;font-weight:700;text-align:center;color:var(--ink)}
@@ -574,7 +622,7 @@ function renderBattle(b){
   var m=b.monster;
   $('chest').classList.add('shake');
   $('stSub').textContent='앞을 막은 몬스터: '+m.name;
-  $('chest').classList.toggle('sm',b.type==='dialect');
+  $('chest').classList.toggle('sm',b.type==='dialect'||b.type==='rps');
   var tag='<span class="tag">'+esc(m.battleName)+' · 이기면 상자 열기, 지면 꽝!</span>';
   if(b.type==='photocard'||b.type==='sns'){
     $('chest').classList.add('sm');
@@ -586,12 +634,7 @@ function renderBattle(b){
     $('btnLater2').onclick=function(){closeStage();openHunt()};
     return;
   }
-  if(b.type==='rps'){
-    sheet(tag+'<div class="q">먼저 2번 이기면 승리! (비기면 다시)</div><div class="score"><span>나 <b>'+b.w+'</b></span><span>'+esc(m.name)+' <b>'+b.l+'</b></span></div>'+
-      '<div class="bmsg" id="bMsg">'+esc(battleLast(b))+'</div><div class="rps">'+RPSN.map(function(n,i){return '<button class="rb" data-i="'+i+'" type="button">'+RPSG[i]+'<small>'+n+'</small></button>'}).join('')+'</div><p class="err" id="qErr"></p>');
-    $('sheet').querySelectorAll('.rb').forEach(function(bt){bt.onclick=function(){battleMove(+bt.dataset.i,bt)}});
-    return;
-  }
+  if(b.type==='rps'){renderRps(b,m,tag);return}
   var q=b.q;
   sheet(tag+'<div class="score"><span>문제 '+(b.qi+1)+'/'+b.total+'</span><span>맞힘 <b>'+b.right+'</b>/2</span></div><div class="bmsg" id="bMsg">'+esc(battleLast(b))+'</div>'+
     '<div class="q" style="margin:4px 0 6px;font-size:18px">'+esc(q.q)+'</div>'+q.choices.map(function(ch,i){return '<button class="ch" style="min-height:46px;padding:8px 14px;margin-top:6px;font-size:16px" data-i="'+i+'" type="button">'+(i+1)+'. '+esc(ch)+'</button>'}).join('')+'<p class="err" id="qErr"></p>');
@@ -637,6 +680,84 @@ function scanSns(){
   if(PV){battleMove(0,null,{qr:'PREVIEW'});return}
   if(!window.MQScan){if($('qErr'))$('qErr').textContent='잠시 후 다시 눌러 주세요';return}
   MQScan.open({hint:'스태프가 보여 주는 미션 QR을 네모 안에 맞춰 주세요',onToken:function(tok){battleMove(0,null,{qr:tok})}});
+}
+
+/* ---------- 가위바위보 결투 ---------- */
+function hearts(n,max){var h='';for(var i=0;i<max;i++)h+='<i class="hp'+(i<n?'':' off')+'"></i>';return '<span class="hpbar">'+h+'</span>'}
+function renderRps(b,m,tag){
+  $('chest').classList.remove('ko');
+  sheet(tag+'<div class="duelTop"><div class="duelSide"><b>나</b><span id="hpMe">'+hearts(2-b.l,2)+'</span></div><div class="vs">VS</div><div class="duelSide"><b>'+esc(m.name)+'</b><span id="hpMon">'+hearts(2-b.w,2)+'</span></div></div>'+
+    '<div class="arena" id="arena"><div class="hand mine" id="hMine">✊</div><div class="hand theirs" id="hTheirs">✊</div><div class="clash" id="clash"></div></div>'+
+    '<div class="bmsg" id="bMsg">'+esc(b.last?battleLast(b):'가위바위보 중 하나를 골라! 하트 2개를 먼저 깎으면 승리')+'</div>'+
+    '<div class="rps">'+RPSN.map(function(n,i){return '<button class="rb" data-i="'+i+'" type="button">'+RPSG[i]+'<small>'+n+'</small></button>'}).join('')+'</div><p class="err" id="qErr"></p>');
+  $('sheet').querySelectorAll('.rb').forEach(function(bt){bt.onclick=function(){rpsPlay(+bt.dataset.i)}});
+}
+function arenaCall(txt){
+  var a=$('arena');if(!a)return;var old=a.querySelector('.callout');if(old)old.remove();
+  var c=document.createElement('div');c.className='callout in';c.textContent=txt;a.appendChild(c);
+}
+function sparks(a,colors,n){
+  for(var i=0;i<n;i++){var e=document.createElement('i');e.className='spark';e.style.background=colors[i%colors.length];
+    var ang=Math.random()*Math.PI*2,d=50+Math.random()*80;e.style.setProperty('--x',Math.cos(ang)*d+'px');e.style.setProperty('--y',Math.sin(ang)*d+'px');e.style.setProperty('--r',(Math.random()*540)+'deg');
+    a.appendChild(e);(function(x){setTimeout(function(){x.remove()},800)})(e)}
+}
+function floatDmg(a,side,txt){
+  var e=document.createElement('div');e.className='dmg';e.textContent=txt;e.style[side==='mon'?'right':'left']='22%';a.appendChild(e);setTimeout(function(){e.remove()},1000);
+}
+function rpsPlay(i){
+  if(answering) return;answering=true;
+  var btns=$('sheet').querySelectorAll('.rb');btns.forEach(function(x){x.disabled=true});btns[i].classList.add('pick');
+  var hm=$('hMine'),ht=$('hTheirs'),arena=$('arena'),msg=$('bMsg');
+  hm.textContent='✊';ht.textContent='✊';hm.className='hand mine fist';ht.className='hand theirs fist';msg.textContent='';
+  var words=['가위','바위','보!'],k=0;
+  function beat(){arenaCall(words[k]);sfx('pop');buzz(20);k++;if(k<3)tm=setTimeout(beat,380)}
+  var tm=setTimeout(beat,60);
+  var call=EV.call('digBattle',{eventId:EID,spotId:spot.id,choice:i});
+  var wait=new Promise(function(ok){setTimeout(ok,1350)});
+  Promise.all([call,wait]).then(function(arr){reveal(arr[0],i)},function(e){
+    clearTimeout(tm);answering=false;hm.className='hand mine';ht.className='hand theirs';var c=arena.querySelector('.callout');if(c)c.remove();
+    btns.forEach(function(x){x.disabled=false;x.classList.remove('pick')});if($('qErr'))$('qErr').textContent=e.message||'다시 눌러 주세요.';
+  });
+}
+function reveal(r,mine){
+  var L=r.last||(r.battle&&r.battle.last)||{mine:mine,theirs:mine,r:'tie'};
+  var hm=$('hMine'),ht=$('hTheirs'),arena=$('arena'),clash=$('clash'),msg=$('bMsg'),cm=$('chest');
+  var cl=arena.querySelector('.callout');if(cl)cl.remove();
+  hm.textContent=RPSG[L.mine];ht.textContent=RPSG[L.theirs];hm.className='hand mine pop';ht.className='hand theirs pop';
+  setTimeout(function(){
+    clash.className='clash '+(L.r==='lose'?'slash':'boom');void clash.offsetWidth;clash.className='clash '+(L.r==='lose'?'slash':'boom');
+    if(L.r==='win'){
+      hm.className='hand mine win';ht.className='hand theirs lose';sfx('boom');buzz([40,30,80]);
+      arena.classList.add('flashY');sparks(arena,['#ffd45e','#fff','#ff9a3c'],22);floatDmg(arena,'mon','−1');
+      cm.classList.remove('hit');void cm.offsetWidth;cm.classList.add('hit');setTimeout(function(){cm.classList.remove('hit')},400);
+      msg.textContent='이겼다! 몬스터에게 1 데미지!';
+      var hs=$('hpMon').querySelectorAll('.hp:not(.off)');if(hs.length){hs[hs.length-1].classList.add('off','lost')}
+    }else if(L.r==='lose'){
+      hm.className='hand mine lose';ht.className='hand theirs win';sfx('boom');buzz([120]);
+      arena.classList.add('flashR');sparks(arena,['#ff6b6b','#fff','#8a1c1c'],18);floatDmg(arena,'me','−1');
+      $('sheet').classList.remove('shk');void $('sheet').offsetWidth;$('sheet').classList.add('shk');
+      msg.textContent='졌다… 1 데미지를 입었다!';
+      var hs2=$('hpMe').querySelectorAll('.hp:not(.off)');if(hs2.length){hs2[hs2.length-1].classList.add('off','lost')}
+    }else{
+      sfx('pop');sparks(arena,['#fff','#cfd8e3'],10);msg.textContent='비겼다! 다시 한 번!';
+    }
+  },380);
+  /* 다음 판 · 결판 */
+  setTimeout(function(){
+    if(r.final||r.duplicate){
+      if(r.result&&r.result.correct&&!r.duplicate){
+        cm.classList.remove('shake');cm.classList.add('ko');sfx('fanfare');buzz([60,40,60,40,200]);
+        arena.querySelectorAll('.spark').forEach(function(x){x.remove()});sparks(arena,['#ffd45e','#fff','#7FD1B9','#ff9a3c'],30);
+        msg.textContent='몬스터를 쓰러뜨렸다!';
+        setTimeout(function(){answering=false;peel(r.result)},1500);
+      }else{
+        msg.textContent=r.result&&r.result.correct?'':'하트가 다 깎였다…';
+        setTimeout(function(){answering=false;showResult(r.result)},1300);
+      }
+      return;
+    }
+    answering=false;task=r;renderBattle(r.battle);
+  },1700);
 }
 /* 시트가 뜬 직후 0.7초는 터치를 안 받는다(삽 연타가 버튼으로 넘어가는 것 방지) */
 function sheet(html){var s=$('sheet');s.innerHTML=html;s.className='sheet on';s.style.pointerEvents='none';clearTimeout(s._lk);s._lk=setTimeout(function(){s.style.pointerEvents=''},700)}
@@ -775,9 +896,9 @@ boot();
 if(PV){(function(){
   var LIST=[['slime','슬라임','rps','가위바위보 대결'],['frog','개구리','rps','가위바위보 대결'],['bat','박쥐','dialect','제주 사투리 퀴즈 대결'],['snake','뱀','dialect','제주 사투리 퀴즈 대결'],['goblin','고블린','photocard','포토카드 만들기 미션'],['orc','오크','photocard','포토카드 만들기 미션'],['skeleton','스켈레톤','sns','SNS 올리기 미션'],['troll','트롤','sns','SNS 올리기 미션'],['vampire','뱀파이어','candy','트릭 오어 트릿 미션'],['knight','돌하르방 기사','candy','트릭 오어 트릿 미션']];
   var LINES={photocard:'포토카드를 만들어서 스태프에게 보여 주면 몬스터가 쓰러져요!',sns:'행사 사진을 SNS에 올리고 게시물을 스태프에게 보여 주면 몬스터가 쓰러져요!',candy:'스태프에게 「사탕을 주지 않으면 장난을 치겠다!」 외치고 사탕을 받아 오면 몬스터가 쓰러져요!'};
-  var QS=[{q:'길드 접수원이 「혼저 옵서예」라고 맞아 준다. 무슨 뜻일까?',c:['조심하세요','어서 오세요','잘 가세요','일어나세요'],a:1},
-          {q:'주인공이 "도대체 왜!"라고 외칠 때, 제주 사투리로 「왜」는?',c:['게난','하영','무사','호꼼'],a:2},
-          {q:'용사 파티가 「몬딱」 모였다. 몇 명이 모인 걸까?',c:['한 명','모두','절반','아무도'],a:1}];
+  var QS=[{q:"대문 대신 걸치는 나무 「정낭」 3개가 전부 걸쳐 있다. 집주인은 지금?",c:["집에서 낮잠 중이다", "멀리 가서 한참 안 돌아온다", "잠깐 마실 나갔다", "손님을 기다리는 중이다"],a:1},
+          {q:"제주어 「요망지다」는 칭찬일까 욕일까?",c:["욕 — 요사스럽다", "칭찬 — 야무지고 똘똘하다", "칭찬 — 키가 크다", "욕 — 게으르다"],a:1},
+          {q:"해녀가 물 위로 올라와 「휘이~」 하고 내쉬는 숨소리의 이름은?",c:["허벅소리", "숨비소리", "테왁소리", "물질소리"],a:1}];
   var mode='win',cur=null,st=null;
   HOME=HOME||{code:'123456'};
   var css=document.createElement('style');
