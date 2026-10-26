@@ -114,6 +114,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu';
 var $=function(id){return document.getElementById(id)};
 var SENT=(function(){try{return JSON.parse(localStorage.getItem('psb.po.sent')||'{}')}catch(e){return {}}})();
+var PRE={};
 function markSent(t,on){if(on)SENT[t]=Date.now();else delete SENT[t];try{localStorage.setItem('psb.po.sent',JSON.stringify(SENT))}catch(e){}}
 var seen=null;
 function ding(){try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(c.destination);o.start();setTimeout(function(){o.frequency.value=1175},150);setTimeout(function(){o.stop();c.close()},350)}catch(e){}}
@@ -147,7 +148,7 @@ $('btnLogout').onclick=function(){EV.logout();showMain()};
 function load(){
   clearTimeout(timer);
   adm('ownerPreorderList').then(function(r){
-    items=r.items; msg($('listMsg'));
+    items=r.items; PRE=r.preorder||PRE; msg($('listMsg'));
     var pend=items.filter(function(x){return x.status==='pending'}).map(function(x){return x.token});
     if(seen){var fresh=pend.filter(function(t){return seen.indexOf(t)<0});if(fresh.length)notifyNew(fresh.length)}
     seen=pend;
@@ -173,9 +174,13 @@ function render(){
   $('list').innerHTML=rows.length?rows.map(row).join(''):'<p class="sub" style="text-align:center;padding:18px 0">해당하는 신청이 없어요.</p>';
 }
 function row(x){
-  var pill=x.status==='pending'?'<span class="pill">대기</span>':x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>'+(SENT[x.token]?'<span class="pill ok">문자 보냄 '+hm(SENT[x.token]-0)+'</span>':'<span class="pill">문자 전</span>'):'<span class="pill no">반려</span>';
+  var pill=x.status==='pending'?'<span class="pill">대기</span>'+(SENT['a'+x.token]?'<span class="pill ok">계좌 문자 보냄 '+hm(SENT['a'+x.token]-0)+'</span>':'<span class="pill no">계좌 문자 전</span>'):x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>'+(SENT[x.token]?'<span class="pill ok">문자 보냄 '+hm(SENT[x.token]-0)+'</span>':'<span class="pill">문자 전</span>'):'<span class="pill no">반려</span>';
   var btns='';
-  if(x.status==='pending') btns='<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
+  if(x.status==='pending'){
+    var ab='[과수원피스] 귤선장이야! 항해 패스 '+x.qty+'장 신청 고마워. 아래 계좌로 '+won(x.amount)+'원을 보내 줘. 보낸 사람 이름은 '+x.name+' 으로 해 줘!\n'+(PRE.bank||'')+' '+(PRE.account||'')+' (받는 사람 '+(PRE.holder||'')+')\n돈이 확인되면 손목띠 받는 QR을 문자로 보내 줄게. '+custUrl(x.token);
+    var ak='a'+x.token;
+    btns=(PRE.account?'<a class="btn '+(SENT[ak]?'':'p ')+'sm" data-sent="'+ak+'" href="sms:'+x.phone+'?body='+encodeURIComponent(ab)+'">'+(SENT[ak]?'계좌 문자 다시 보내기':'계좌 문자 보내기')+'</a>':'')+'<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
+  }
   else if(x.status==='approved'){
     var body='[과수원피스] 귤선장이야! 항해 패스 돈 확인했어. 행사 날 패스 부스에서 아래 링크의 QR을 보여주면 해적단 손목띠를 채워 줄게. 기다릴게! '+custUrl(x.token);
     btns=(SENT[x.token]?'<a class="btn sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 다시 보내기</a><button class="btn sm" data-a="unsent" data-t="'+x.token+'" type="button">보냄 표시 지우기</button>':'<a class="btn p sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 보내기</a>')+(x.used?'':'<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">승인 취소</button>');
