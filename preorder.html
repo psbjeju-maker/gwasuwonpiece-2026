@@ -51,13 +51,22 @@ input:focus{outline:3px solid var(--accent-soft);border-color:var(--accent)}
 .big{font-size:22px;font-weight:800;margin:6px 0}
 ul.tips{margin:8px 0 0;padding-left:20px;color:var(--ink-2);font-size:15px}
 ul.tips li{margin:4px 0}
-.perks ul{list-style:none;margin:6px 0 0;padding:0}
-.perks li{padding:10px 0;border-top:1px dashed var(--line)}
-.perks li:first-child{border-top:0}
-.perks b{display:block;font-size:16px}
-.perks span{display:block;font-size:14px;color:var(--ink-2)}
-.rk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.rk img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+.pass{position:relative;overflow:hidden;border-radius:20px;padding:20px 18px 18px;margin-bottom:14px;color:#FFF8EC;background:linear-gradient(135deg,#0d2547 0%,#1E5AA8 60%,#2E6B4F 130%);box-shadow:0 8px 22px rgba(13,37,71,.28)}
+.pass::before,.pass::after{content:"";position:absolute;top:50%;width:22px;height:22px;margin-top:-11px;border-radius:50%;background:var(--bg)}
+.pass::before{left:-11px}.pass::after{right:-11px}
+.pass .tag{display:inline-block;padding:3px 12px;border-radius:99px;background:#F5C451;color:#3b2a00;font-size:12px;font-weight:800;letter-spacing:.06em}
+.pass h2{margin:8px 0 4px;font-size:24px;line-height:1.3;color:#fff}
+.pass p{margin:0;font-size:14px;color:#DCE8F6;word-break:keep-all}
+.pass .free{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.35);font-size:13px;color:#BFD2EA}
+.perk{display:flex;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.perk .no{flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-weight:800;display:grid;place-items:center;font-size:16px}
+.perk b{display:block;font-size:17px;line-height:1.35}
+.perk span{display:block;margin-top:4px;font-size:14px;color:var(--ink-2);word-break:keep-all}
+.perk .body{min-width:0;flex:1}
+.rk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.rk img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:2px solid #F5C451;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+.rk img:nth-child(n+4){grid-column:span 1}
+.rkt{margin-top:12px;font-size:13px;font-weight:800;color:var(--accent-2)}
 .hint{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
 .hint b{color:var(--accent-2)}
 .hintc{display:flex;align-items:center;gap:8px}
@@ -81,17 +90,18 @@ ul.tips li{margin:4px 0}
   <!-- 1) 신청서 -->
   <section id="formView" hidden>
     <div class="cap"><img src="assets/characters/greeting.png" alt=""><p>어서 와! 패스를 미리 사 두면 <b>행사 날 줄 안 서고</b> 바로 손목띠를 받을 수 있어.</p></div>
-    <div class="card perks">
-      <h2>항해 패스 하나로 이만큼 놀 수 있어</h2>
-      <ul>
-        <li><b>경품 걸린 귤밭 보물찾기</b><span>귤밭 곳곳에 숨은 보물을 찾아서 폰으로 도전하면 경품이 걸려 있어. 넨도로이드·피규어·굿즈·포토카드·귤까지! 기본 10번 도전할 수 있고, 큰 경품은 수량이 한정이라 먼저 뽑으면 내 거야.</span></li>
-        <li><b>랭킹전 도전, 1위는 상품!</b><span>귤 자르기, 화살 양궁 같은 종목 전부에 도전해서 점수를 겨뤄. 종목마다 1위에게 상품이 있어. 걸려 있는 상품은 이거야!</span>
-          <div class="rk"><img src="assets/rank/r1.jpg" alt="주술회전 피규어"><img src="assets/rank/r2.jpg" alt="프리렌 피규어"><img src="assets/rank/r3.jpg" alt="블루 아카이브 피규어"><img src="assets/rank/r4.jpg" alt="하츠네 미쿠 피규어"><img src="assets/rank/r5.jpg" alt="주술회전 피규어"></div></li>
-        <li><b>무대 인기투표</b><span>노래방·댄스·경연대회·랜덤 플레이 댄스 무대를 보다가 마음에 드는 팀에 한 표. 랜덤 플레이 댄스는 할로윈 노래가 나오면 추고 싶은 사람이 나가서 같이 추는 거야.</span></li>
-        <li><b>코스프레 의상 대여 + 탈의실 무료</b><span>의상을 빌려 입고 탈의실도 무료로 쓸 수 있어. 1인 1회.</span></li>
-      </ul>
-      <p class="pnote">입장·마켓 구경·무대 관람은 패스 없이도 무료야.</p>
+    <div class="pass">
+      <span class="tag">HALLOWEEN VOYAGE PASS</span>
+      <h2>항해 패스 한 장이면<br>하루가 전부 게임이 돼</h2>
+      <p>보물 찾고, 겨루고, 응원하고, 변신까지. 손목띠 하나로 전부 즐기는 행사 날 필수템!</p>
+      <p class="free">입장·마켓 구경·무대 관람은 패스 없이도 무료야.</p>
     </div>
+    <div class="perk"><div class="no">1</div><div class="body"><b>경품 걸린 귤밭 보물찾기</b><span>귤밭 곳곳에 숨은 보물을 찾아 폰으로 도전하면 경품이 걸려 있어. 넨도로이드·피규어·굿즈·포토카드·귤까지! 기본 10번 도전하고, 큰 경품은 수량이 한정이라 먼저 뽑으면 내 거야.</span></div></div>
+    <div class="perk"><div class="no">2</div><div class="body"><b>랭킹전 도전, 1위는 상품!</b><span>귤 자르기, 화살 양궁 같은 종목 전부에 도전해서 점수를 겨뤄. 종목마다 1위에게 상품이 있어.</span>
+      <div class="rkt">1위가 가져가는 상품</div>
+      <div class="rk"><img src="assets/rank/r1.jpg" alt="주술회전 피규어"><img src="assets/rank/r2.jpg" alt="프리렌 피규어"><img src="assets/rank/r3.jpg" alt="블루 아카이브 피규어"><img src="assets/rank/r4.jpg" alt="하츠네 미쿠 피규어"><img src="assets/rank/r5.jpg" alt="주술회전 피규어"></div></div></div>
+    <div class="perk"><div class="no">3</div><div class="body"><b>무대 인기투표</b><span>노래방·댄스·경연대회·랜덤 플레이 댄스 무대를 보다가 마음에 드는 팀에 한 표. 랜덤 플레이 댄스는 할로윈 노래가 나오면 추고 싶은 사람이 나가서 같이 추는 거야.</span></div></div>
+    <div class="perk"><div class="no">4</div><div class="body"><b>코스프레 의상 대여 + 탈의실 무료</b><span>의상을 빌려 입고 탈의실도 무료로 쓸 수 있어. 1인 1회.</span></div></div>
     <div class="card">
       <h2>구매 정보</h2>
       <label for="fName">이름</label>
