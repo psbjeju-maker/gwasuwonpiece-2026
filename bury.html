@@ -85,8 +85,9 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
       <label for="hint">힌트 (손님에게 보여요)</label>
       <input id="hint" placeholder="예) 빨간 우체통 근처" maxlength="120">
       <label for="task">상자 과제</label>
-      <select id="task"><option value="quiz">오타쿠 퀴즈</option><option value="npc">NPC 미션</option></select>
+      <select id="task"><option value="quiz">오타쿠 퀴즈</option><option value="npc">NPC 미션</option><option value="monster">몬스터 전투</option></select>
       <select id="npcId" style="margin-top:8px" hidden></select>
+      <select id="monster" style="margin-top:8px" hidden></select>
       <label for="memo">위치 메모 (관리자만 봐요)</label>
       <textarea id="memo" placeholder="예) 3번째 귤나무 왼쪽 돌 밑"></textarea>
       <div class="row"><button class="btn btn--p btn--b" id="btnBury" disabled>여기 등록</button></div>
@@ -142,9 +143,9 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
       <h3 style="margin:16px 0 4px;font-size:15px">감귤</h3>
       <label for="gyulRule">지급 기준 (손님 현황판에 보여요)</label><input id="gyulRule" maxlength="200" placeholder="예) 상자를 연 분께 선착순 1개씩">
       <label for="gyulStock">남은 감귤 수 (비우면 안 보임)</label><input id="gyulStock" type="number" min="0">
-      <h3 style="margin:16px 0 4px;font-size:15px">추가 도전 판매 <span class="chip">검토안 · 기본 꺼짐</span></h3>
-      <p class="sub">법적 확인 전에는 켜지 마세요. 켜면 손님 현황판에 가격·횟수·구성·한도·구매 장소가 보이고, 「추가 도전 판매」 담당 화면에서 지급해요.</p>
-      <label style="display:flex;gap:10px;align-items:center;margin-top:10px"><input id="xOn" type="checkbox" style="width:24px;min-height:24px"> 추가 도전 판매 켜기</label>
+      <h3 style="margin:16px 0 4px;font-size:15px">보물찾기 횟수 추가 <span class="chip">검토안 · 기본 꺼짐</span></h3>
+      <p class="sub">법적 확인 전에는 켜지 마세요. 켜면 손님 현황판에 가격·횟수·구성·한도·구매 장소가 보이고, 「보물찾기 횟수 추가」 담당 화면에서 지급해요.</p>
+      <label style="display:flex;gap:10px;align-items:center;margin-top:10px"><input id="xOn" type="checkbox" style="width:24px;min-height:24px"> 보물찾기 횟수 추가 켜기</label>
       <div class="row">
         <div><label for="xPrice">가격(원)</label><input id="xPrice" type="number" min="0"></div>
         <div><label for="xPlays">추가 횟수</label><input id="xPlays" type="number" min="1"></div>
@@ -247,7 +248,7 @@ function startGps(){
 $('#btnBury').onclick=function(){
   if(!pos) return;
   var b=this; b.disabled=true; msg($('#buryMsg'),'묻는 중…');
-  EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat,lng:pos.lng,acc:pos.acc,name:$('#name').value.trim(),hint:$('#hint').value.trim(),task:$('#task').value,npcId:$('#npcId').value,memo:$('#memo').value.trim()}).then(function(r){
+  EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat,lng:pos.lng,acc:pos.acc,name:$('#name').value.trim(),hint:$('#hint').value.trim(),task:$('#task').value,npcId:$('#npcId').value,monster:$('#monster').value,memo:$('#memo').value.trim()}).then(function(r){
     b.disabled=false; msg($('#buryMsg'),'묻었어요! ('+(r.name||r.id)+' · 오차 ±'+r.acc+'m)','ok');
     $('#name').value=''; $('#hint').value=''; $('#memo').value=''; load();
   },function(e){b.disabled=false;msg($('#buryMsg'),e.message||'묻지 못했어요','bad')});
@@ -324,12 +325,22 @@ $('#btnBulkDel').onclick=function(){
   })();
 };
 
+/* 몬스터 10종과 전투(서버 handlers.js MONSTERS 와 같아야 함). 전투 5종 × 2곳 */
+var MONS={slime:['슬라임','rps'],frog:['개구리','rps'],bat:['박쥐','dialect'],snake:['뱀','dialect'],goblin:['고블린','photocard'],orc:['오크','photocard'],skeleton:['스켈레톤','sns'],troll:['트롤','sns'],vampire:['뱀파이어','candy'],knight:['돌하르방 기사','candy']};
+var BATS={rps:'가위바위보',dialect:'사투리 퀴즈',photocard:'포토카드 만들기',sns:'SNS 올리기',candy:'사탕 받아오기'};
+function monSummary(list){
+  var mon=list.filter(function(x){return x.task==='monster'&&x.status==='active'});
+  if(!mon.length) return '';
+  var cnt={};Object.keys(BATS).forEach(function(k){cnt[k]=0});
+  mon.forEach(function(x){var m=MONS[x.monster];if(m)cnt[m[1]]++});
+  return '<div class="note" style="margin-bottom:8px">몬스터 자리 '+mon.length+'/10 · '+Object.keys(BATS).map(function(k){return BATS[k]+' '+cnt[k]+'/2'}).join(' · ')+'</div>';
+}
 function render(r){
   SPOTS=r.spots;
   var sp=r.spots.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
-  $('#spots').innerHTML=sp.length?sp.map(function(x,i){
+  $('#spots').innerHTML=sp.length?monSummary(sp)+sp.map(function(x,i){
     var d=pos?Math.round(distM(pos,x)):null;
-    return '<div class="item"><div class="top"><b>'+(i+1)+'. '+esc(x.name||('자리 '+x.id))+'</b><span class="chip '+x.status+'">'+(x.status!=='active'?'후보 제외':x.live?'지금 열림':'대기')+'</span><span class="chip">'+(x.task==='npc'?'NPC '+esc(x.npcId):'퀴즈')+'</span>'+
+    return '<div class="item"><div class="top"><b>'+(i+1)+'. '+esc(x.name||('자리 '+x.id))+'</b><span class="chip '+x.status+'">'+(x.status!=='active'?'후보 제외':x.live?'지금 열림':'대기')+'</span><span class="chip">'+(x.task==='npc'?'NPC '+esc(x.npcId):x.task==='monster'?'몬스터 '+esc((MONS[x.monster]||[x.monster])[0])+' · '+esc(BATS[(MONS[x.monster]||[])[1]]||''):'퀴즈')+'</span>'+
       '<button class="btn btn--sm" data-st="'+(x.status==='active'?'off':'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'빼기':'넣기')+'</button>'+
       '<button class="btn btn--sm" data-st="delete" data-id="'+esc(x.id)+'">삭제</button></div>'+
       '<div class="note">'+(x.hint?'힌트: '+esc(x.hint)+' · ':'')+(x.memo?esc(x.memo)+' · ':'')+'판 사람 '+x.digs+' · 당첨 '+x.wins+(d!=null?' · 지금 여기서 '+d+'m':'')+
@@ -372,7 +383,8 @@ function fillCfg(){
   var n=CFG.npcs||{}; $('#npcs').value=Object.keys(n).map(function(k){var x=n[k];return [k,x.name,x.place,x.line,x.active===false?'X':'O'].join(' | ')}).join('\n');
   $('#npcId').innerHTML=Object.keys(n).map(function(k){return '<option value="'+esc(k)+'">'+esc(k+' · '+n[k].name)+'</option>'}).join('')||'<option value="">NPC 먼저 등록</option>';
 }
-$('#task').onchange=function(){$('#npcId').hidden=this.value!=='npc'};
+$('#task').onchange=function(){$('#npcId').hidden=this.value!=='npc';$('#monster').hidden=this.value!=='monster'};
+$('#monster').innerHTML=Object.keys(MONS).map(function(k){return '<option value="'+k+'">'+MONS[k][0]+' · '+BATS[MONS[k][1]]+'</option>'}).join('');
 $('#btnCfg').onclick=function(){
   var npcs={};
   $('#npcs').value.split('\n').forEach(function(l){var c=l.split('|').map(function(x){return x.trim()});if(!c[0])return;npcs[c[0]]={name:c[1]||c[0],place:c[2]||'',line:c[3]||'',active:(c[4]||'O').toUpperCase()!=='X'}});

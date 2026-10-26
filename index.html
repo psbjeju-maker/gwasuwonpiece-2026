@@ -103,6 +103,13 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .tl button.skip.ask{background:#C0392B;color:#fff;border-color:#C0392B}
 .tl button{min-height:40px;padding:0 12px;border-radius:10px;background:var(--gold-on-navy);color:#2A1A04;font-weight:700;font-size:14px}
 .hunt .err{color:#FF9C8F}
+/* 탐색 도구 일러스트(assets/hunt) */
+.btn.big[data-k=hunt]{display:flex;align-items:center;justify-content:center;gap:12px}
+.btn.big[data-k=hunt]::before{content:"";width:34px;height:60px;flex:0 0 auto;background:url(assets/hunt/magnifier.png) center/contain no-repeat;transform:rotate(-14deg)}
+.hmap{display:block;width:min(86%,380px);height:auto;margin:14px auto 0;filter:drop-shadow(0 6px 10px rgba(20,36,57,.22))}
+.radar .rcompass{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;opacity:.2;animation:rspin 40s linear infinite;pointer-events:none}
+@keyframes rspin{to{transform:rotate(360deg)}}
+.tl .tpin{width:30px;height:36px;object-fit:contain;flex:0 0 auto}
 
 /* 파기 무대 */
 #stage{position:fixed;inset:0;z-index:20;background:linear-gradient(#1b2d44 0 38%,#5a3a1e 38%,#3e2712);overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
@@ -112,6 +119,10 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .hole{position:absolute;left:50%;top:22%;width:var(--hw,40px);height:calc(var(--hw,40px) * .42);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(ellipse at 50% 35%,#120a03,#2a1808 70%);box-shadow:inset 0 6px 14px rgba(0,0,0,.7);transition:width .25s,height .25s}
 .chest{position:absolute;left:50%;top:22%;width:150px;transform:translate(-50%,10%) scale(.3);opacity:0;transition:transform .7s cubic-bezier(.2,1.6,.4,1),opacity .3s}
 .chest.up{transform:translate(-50%,-78%) scale(1);opacity:1}
+.chest.mon{width:172px;filter:drop-shadow(0 10px 10px rgba(0,0,0,.45))}
+.chest.mon.sm{width:118px;top:-12%}
+.chest.mon.hit{animation:mhit .35s ease-in-out}
+@keyframes mhit{0%,100%{transform:translate(-50%,-78%)}30%{transform:translate(-50%,-78%) translateX(-14px) rotate(-6deg)}70%{transform:translate(-50%,-78%) translateX(14px) rotate(6deg)}}
 .chest.shake{animation:cshake .5s ease-in-out infinite}
 @keyframes cshake{0%,100%{transform:translate(-50%,-78%) rotate(0)}25%{transform:translate(-50%,-78%) rotate(-5deg)}75%{transform:translate(-50%,-78%) rotate(5deg)}}
 /* 손잡이(위)를 축으로 돌려 날(아래)이 구멍에 꽂히게 */
@@ -147,6 +158,13 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .res img{width:110px;height:auto}
 .res img.pzpic{width:min(70vw,300px);max-height:42vh;object-fit:contain;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.35);margin-bottom:10px}
 .res .btn{margin-top:12px}
+.score{display:flex;justify-content:center;gap:18px;font-size:19px;font-weight:700;margin:2px 0 8px}
+.score b{color:var(--orange)}
+.bmsg{min-height:24px;margin:2px 0 6px;font-weight:700;text-align:center;color:var(--ink)}
+.rps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.rb{min-height:96px;border-radius:18px;border:2px solid var(--line);background:#fff;font-size:42px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.rb small{font-size:15px;font-weight:700;color:var(--ink)}
+.rb:active{border-color:var(--teal);background:var(--teal-soft)}
 .burst{position:absolute;left:50%;top:30%;width:10px;height:10px;pointer-events:none}
 .burst i{position:absolute;width:10px;height:14px;border-radius:2px;animation:conf 1.4s ease-out forwards}
 @keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
@@ -219,6 +237,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
     <div class="card passno"><p class="muted" style="text-align:center">패스 판매처에 보여주세요</p><div class="code" id="npCode">-</div><img id="npQr" alt="참가번호 QR"></div>
     <button class="btn" id="btnRecheck" type="button" style="margin-top:12px">패스 받았어요 (새로고침)</button>
   </div>
+  <img class="hmap" id="hMap" src="assets/hunt/map.webp" alt="" hidden>
   <button class="btn big" id="btnMain" type="button" hidden>보물찾기 시작</button>
 
   <p class="plays" id="hPlays"></p>
@@ -241,7 +260,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 <!-- 보물 탐색 -->
 <div class="hunt" id="scHunt" hidden><section class="scr">
   <div class="top"><button class="back" id="huntBack" type="button">← 홈</button><h1>보물 탐색</h1></div>
-  <div class="radar"><div class="mid"><div class="dist" id="dist">…</div><div class="unit" id="unit">위치 확인 중</div></div></div>
+  <div class="radar"><img class="rcompass" src="assets/hunt/compass.png" alt=""><div class="mid"><div class="dist" id="dist">…</div><div class="unit" id="unit">위치 확인 중</div></div></div>
   <p class="heat" id="heat"></p>
   <p class="gpsline" id="gpsline"></p>
   <button class="btn big" id="btnDig" type="button" hidden>보물 파기!</button>
@@ -370,7 +389,7 @@ function renderHome(){
   var c=curSlot(), needPass=(c.kind==='hunt'||c.kind==='vote')&&!canHunt(), v=h.vote||{}, btn=$('btnMain'), img='neutral', line;
   $('hNowTime').textContent=c.from?c.from+' ~ '+c.to+' · 지금':(c.kind==='wait'?'다음 '+c.next.from:c.live?'지금':'');
   $('hNowTitle').textContent=c.title||{hunt:'보물찾기',vote:'노래방 투표',info:'안내',link:'미션'}[c.kind]||'';
-  btn.hidden=true; btn.dataset.k=c.kind; btn.dataset.url=c.url||'';
+  btn.hidden=true; $('hMap').hidden=c.kind!=='hunt'; btn.dataset.k=c.kind; btn.dataset.url=c.url||'';
   if(c.kind==='wait'){line='잠깐 기다려 줘! <b>'+c.next.from+'</b>에 「'+esc(c.next.title||'다음 순서')+'」 시작이야!';img='thinking'}
   else if(c.kind==='end'){line=LINE.end;img='success';if(h.rewards.length){btn.hidden=false;btn.textContent='내 보상 보기';btn.dataset.k='rewards'}}
   else{
@@ -443,7 +462,7 @@ function startGps(){
 }
 function stopGps(){if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null}}
 function setRadar(n,u,w,c){$('dist').textContent=n;$('unit').textContent=u;$('heat').textContent=w;document.documentElement.style.setProperty('--heat',c||'rgba(226,196,137,.5)')}
-var DUG={X:'꽝',wrong:'퀴즈 실패',quiz:'퀴즈 중',npc:'NPC 미션 중',open:'상자 열기 전'};
+var DUG={X:'꽝',wrong:'퀴즈 실패',quiz:'퀴즈 중',npc:'NPC 미션 중',open:'상자 열기 전',battle:'전투 중'};
 function update(){
   if(!data) return;
   var R=data.pool.radiusM||5, live=data.spots.filter(function(s){return s.live&&!s.dug});
@@ -452,8 +471,8 @@ function update(){
   /* 목록: 열린 보물 + 진행 중/끝난 보물 */
   $('tlist').innerHTML=data.spots.map(function(s){
     var d=pos?Math.round(distM(pos,s)):null, st=s.dug?(TIER[s.dug]||DUG[s.dug]||'진행 중'):'';
-    var pending=s.dug==='npc'||s.dug==='open'||s.dug==='quiz';
-    return '<div class="tl"><div><b>'+esc(s.name||'보물')+'</b><small>'+esc(s.hint||'힌트 없음')+'</small></div>'+
+    var pending=s.dug==='npc'||s.dug==='open'||s.dug==='quiz'||s.dug==='battle';
+    return '<div class="tl"><img class="tpin" src="assets/hunt/pin.png" alt=""><div><b>'+esc(s.name||'보물')+'</b><small>'+esc(s.hint||'힌트 없음')+'</small></div>'+
       (pending?'<button data-cont="'+esc(s.id)+'" type="button">이어하기</button>':s.dug?'<span class="chip">'+esc(st)+'</span>':(d!=null?'<span class="d">'+(d>=1000?(d/1000).toFixed(1)+'km':d+'m')+'</span>':'')+(s.live?'<button class="skip" data-skip="'+esc(s.id)+'" type="button">패스</button>':''))+'</div>';
   }).join('')||'<p class="gpsline">지금 열린 보물이 없어요. 잠시 후 다시 확인해 주세요.</p>';
   if(!live.length){setRadar('-','지금 찾을 보물이 없어요','',null);$('btnDig').hidden=true;return}
@@ -476,7 +495,7 @@ $('btnDig').onclick=function(){
   if(!near||!pos) return;
   spot=near;taps=0;task=null;digging=true;digQ=0;digRun=false;
   $('stage').hidden=false;$('sheet').className='sheet';$('sheet').innerHTML='';
-  $('chest').className='chest';$('hole').style.setProperty('--hw','40px');$('tapBar').style.width='0';
+  $('chest').src='assets/box/closed.webp';$('chest').className='chest';$('hole').style.setProperty('--hw','40px');$('tapBar').style.width='0';
   $('taps').hidden=false;$('stTitle').textContent='땅을 파세요!';$('stSub').textContent='화면을 계속 두드리면 삽질해요';
   EV.call('digStart',{eventId:EID,spotId:spot.id,lat:pos.lat,lng:pos.lng,acc:pos.acc}).then(function(r){task=r;if(taps>=TAPS)afterDig()},
     /* 실패하면 화면을 바로 닫지 말고 이유를 보여 준 뒤, 확인을 누르면 보물 목록을 새로 받아 온다 */
@@ -509,19 +528,25 @@ function dirt(){
     d.animate([{transform:'translate(0,0)'},{transform:'translate('+dx*.6+'px,'+dy+'px)',offset:.45},{transform:'translate('+dx+'px,'+(dy+220)+'px)',opacity:0}],{duration:700+Math.random()*300,easing:'ease-out'}).onfinish=(function(n){return function(){n.remove()}})(d)}
 }
 function afterDig(){
-  digging=false;var c=$('chest');c.classList.add('up');sfx('boom');buzz([40,60,40]);
-  $('stTitle').textContent='보물상자 발견!';
+  digging=false;var c=$('chest');var mon=monOf(task);if(mon)setMon(mon);c.classList.add('up');sfx('boom');buzz([40,60,40]);
+  $('stTitle').textContent=mon?'몬스터가 나타났다!':'보물상자 발견!';
   setTimeout(function(){showTask(task)},900);
 }
+/* 몬스터 보물: 상자 자리에 몬스터 그림 */
+function monOf(t){return t&&((t.battle&&t.battle.monster)||t.monster||(t.result&&t.result.monster))||null}
+function setMon(m){var c=$('chest');c.src=m.img;c.classList.add('mon')}
+var RPSG=['✌️','✊','🖐️'],RPSN=['가위','바위','보'];
 function showTask(t){
-  var c=$('chest');
+  var c=$('chest'),mon=monOf(t);
+  if(mon){setMon(mon);if(mon&&$('stTitle').textContent==='보물상자')$('stTitle').textContent='몬스터가 나타났다!'}
   if(t.done){showResult(t.result);return}
-  if(t.open){$('stSub').textContent='미션 완료! 상자를 열 수 있어요';sheet('<span class="tag">NPC 미션 완료</span><div class="q">상자를 열어 볼까요?</div><button class="btn p" id="btnOpen" type="button">상자 열기</button><p class="err" id="qErr"></p>');$('btnOpen').onclick=function(){answer(null,this)};return}
+  if(t.battle){renderBattle(t.battle);return}
+  if(t.open){$('stSub').textContent=mon?'몬스터를 쓰러뜨렸어요! 상자를 열 수 있어요':'미션 완료! 상자를 열 수 있어요';sheet('<span class="tag">NPC 미션 완료</span><div class="q">상자를 열어 볼까요?</div><button class="btn p" id="btnOpen" type="button">상자 열기</button><p class="err" id="qErr"></p>');$('btnOpen').onclick=function(){answer(null,this)};return}
   c.classList.add('shake');
   if(t.npc){
-    $('stSub').textContent='자물쇠를 열려면 NPC 미션을 해야 해요';
-    sheet('<span class="tag">NPC 미션</span><div class="q">'+esc(t.npc.name)+(t.npc.place?'<br><span style="font-size:15px;color:var(--muted)">'+esc(t.npc.place)+'</span>':'')+'</div>'+
-      (t.npc.line?'<p style="margin:0 0 8px">'+esc(t.npc.line)+'</p>':'')+'<p class="muted">미션을 마치면 NPC에게 이 번호를 보여주세요</p><div class="mycode">'+esc(HOME.code)+'</div>'+
+    $('stSub').textContent=mon?'앞을 막은 몬스터: '+mon.name:'자물쇠를 열려면 NPC 미션을 해야 해요';if(mon)c.classList.add('sm');
+    sheet('<span class="tag">'+(mon?'몬스터 전투 · '+esc(mon.battleName):'NPC 미션')+'</span><div class="q">'+esc(t.npc.name)+(t.npc.place?'<br><span style="font-size:15px;color:var(--muted)">'+esc(t.npc.place)+'</span>':'')+'</div>'+
+      (t.npc.line?'<p style="margin:0 0 8px">'+esc(t.npc.line)+'</p>':'')+'<p class="muted">미션을 마치면 '+(mon?'스태프':'NPC')+'에게 이 번호를 보여주세요</p><div class="mycode">'+esc(HOME.code)+'</div>'+
       '<button class="btn p" id="btnNpcChk" type="button">미션 완료했어요 (확인)</button><button class="btn" id="btnLater" type="button" style="margin-top:8px">나중에 하기</button><p class="err" id="qErr"></p>');
     $('btnNpcChk').onclick=function(){var b=this;b.disabled=true;EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0}).then(function(r){b.disabled=false;if(r.open||r.done){task=r;showTask(r)}else $('qErr').textContent='아직 완료 처리가 안 됐어요. NPC에게 번호를 보여주세요.'},function(e){b.disabled=false;$('qErr').textContent=e.message||''})};
     $('btnLater').onclick=function(){closeStage();openHunt()};
@@ -536,6 +561,50 @@ function showTask(t){
   var qt=0;chs.forEach(function(b){b.onclick=function(){pick=+b.dataset.i;chs.forEach(function(x){x.classList.toggle('pick',x===b)});var g=$('qGo');g.disabled=true;g.textContent=(pick+1)+'번으로 정답 제출';clearTimeout(qt);qt=setTimeout(function(){g.disabled=false},500)}});
   $('qGo').onclick=function(){if(pick!=null)answer(pick,this)};
 }
+/* ---------- 몬스터 전투: 가위바위보 · 사투리 퀴즈 (판정은 서버) ---------- */
+function battleLast(b){
+  var l=b.last;if(!l)return '';
+  if(b.type==='rps')return '나는 '+RPSN[l.mine]+', 상대는 '+RPSN[l.theirs]+' → '+(l.r==='win'?'이겼다!':l.r==='lose'?'졌다…':'비겼다, 다시!');
+  return l.ok?'정답!':'오답… 정답은 「'+l.answer+'」';
+}
+function renderBattle(b){
+  var m=b.monster;
+  $('chest').classList.add('shake');
+  $('stSub').textContent='앞을 막은 몬스터: '+m.name;
+  $('chest').classList.toggle('sm',b.type==='dialect');
+  var tag='<span class="tag">'+esc(m.battleName)+' · 이기면 상자 열기, 지면 꽝!</span>';
+  if(b.type==='rps'){
+    sheet(tag+'<div class="q">먼저 2번 이기면 승리! (비기면 다시)</div><div class="score"><span>나 <b>'+b.w+'</b></span><span>'+esc(m.name)+' <b>'+b.l+'</b></span></div>'+
+      '<div class="bmsg" id="bMsg">'+esc(battleLast(b))+'</div><div class="rps">'+RPSN.map(function(n,i){return '<button class="rb" data-i="'+i+'" type="button">'+RPSG[i]+'<small>'+n+'</small></button>'}).join('')+'</div><p class="err" id="qErr"></p>');
+    $('sheet').querySelectorAll('.rb').forEach(function(bt){bt.onclick=function(){battleMove(+bt.dataset.i,bt)}});
+    return;
+  }
+  var q=b.q;
+  sheet(tag+'<div class="score"><span>문제 '+(b.qi+1)+'/'+b.total+'</span><span>맞힘 <b>'+b.right+'</b>/2</span></div><div class="bmsg" id="bMsg">'+esc(battleLast(b))+'</div>'+
+    '<div class="q" style="margin:4px 0 6px;font-size:18px">'+esc(q.q)+'</div>'+q.choices.map(function(ch,i){return '<button class="ch" style="min-height:46px;padding:8px 14px;margin-top:6px;font-size:16px" data-i="'+i+'" type="button">'+(i+1)+'. '+esc(ch)+'</button>'}).join('')+'<p class="err" id="qErr"></p>');
+  var pick=null,chs=$('sheet').querySelectorAll('.ch');
+  $('sheet').insertAdjacentHTML('beforeend','<button class="btn p" id="qGo" type="button" disabled style="margin-top:10px;min-height:48px">보기를 골라 주세요</button>');
+  var qt=0;chs.forEach(function(bt){bt.onclick=function(){pick=+bt.dataset.i;chs.forEach(function(x){x.classList.toggle('pick',x===bt)});var g=$('qGo');g.disabled=true;g.textContent=(pick+1)+'번으로 정답 제출';clearTimeout(qt);qt=setTimeout(function(){g.disabled=false},500)}});
+  $('qGo').onclick=function(){if(pick!=null)battleMove(pick,this)};
+}
+function battleMove(i,b){
+  if(answering) return;answering=true;b.classList.add('pick');b.disabled=true;
+  EV.call('digBattle',{eventId:EID,spotId:spot.id,choice:i}).then(function(r){
+    answering=false;sfx('pop');buzz(30);
+    var cm=$('chest');cm.classList.remove('shake');cm.classList.add('hit');setTimeout(function(){cm.classList.remove('hit')},400);
+    if(r.final||r.duplicate){
+      /* 마지막 수의 결과를 잠깐 보여 준 뒤 결과 화면 */
+      var L=r.last;
+      var rpsEnd=L&&L.r!==undefined;
+      var msg=L?(rpsEnd?'나는 '+RPSN[L.mine]+', 상대는 '+RPSN[L.theirs]+' → '+(L.r==='win'?'이겼다!':'졌다…'):(L.ok?'정답!':'오답… 정답은 「'+L.answer+'」')):'';
+      if($('bMsg'))$('bMsg').textContent=msg;
+      $('sheet').querySelectorAll('button').forEach(function(x){x.disabled=true});
+      setTimeout(function(){r.result.correct&&!r.duplicate?peel(r.result):showResult(r.result)},L?1500:0);
+      return;
+    }
+    task=r;renderBattle(r.battle);
+  },function(e){answering=false;b.classList.remove('pick');b.disabled=false;$('qErr').textContent=e.message||'다시 눌러 주세요.'});
+}
 /* 시트가 뜬 직후 0.7초는 터치를 안 받는다(삽 연타가 버튼으로 넘어가는 것 방지) */
 function sheet(html){var s=$('sheet');s.innerHTML=html;s.className='sheet on';s.style.pointerEvents='none';clearTimeout(s._lk);s._lk=setTimeout(function(){s.style.pointerEvents=''},700)}
 function answer(i,b){
@@ -548,7 +617,8 @@ function answer(i,b){
    좌표는 몸통 폭 640 기준으로 잰 값(앞 테두리 y182, 뒤 테두리 y58). 60% 넘게 밀면 나머지는 알아서 열림 */
 function peel(r){
   $('chest').classList.remove('shake');
-  var ok=r.task==='quiz'?'정답입니다!':'미션 완료!';
+  var ok=r.task==='quiz'?'정답입니다!':r.task==='monster'||r.monster?'몬스터를 쓰러뜨렸다!':'미션 완료!';
+  if(r.monster)$('chest').classList.remove('up');
   $('stTitle').textContent=ok;$('stSub').textContent='';
   sfx('pop');buzz([40,40,40]);
   sheet('<div class="res"><img src="assets/characters/success.png" alt=""><div class="big">'+ok+'</div><p style="font-size:18px;color:var(--ink)">이제 상자를 열어 볼까요?</p><button class="btn p" id="btnBox" type="button">상자 열어 보기</button></div>');
@@ -605,16 +675,17 @@ var PZIMG={}, PZFIG=['luffy','zoro','naruto','sakura','frieren','megumi','bakugo
 function prizePic(t){if(PZIMG[t])return PZIMG[t];if(t==='C')return 'assets/prizes/C/'+PZFIG[Math.floor(Math.random()*PZFIG.length)]+'.jpg';if(t==='B'){var bp=['pouch_miku','pouch_kanade','keroro_hat','keroro_chibi','bag_sakura'];var bn=bp[Math.floor(Math.random()*bp.length)];return 'assets/prizes/'+((bn==='keroro_chibi'||bn==='bag_sakura')?'A':'B')+'/'+bn+'.jpg'}if(t==='A')return 'assets/prizes/A/nendo_miku.jpg';if(t==='D')return 'assets/prizes/D_photocards.jpg';return ''}
 function showResult(r){
   $('chest').classList.remove('shake');
+  if(r.monster)setMon(r.monster);
   var win=r.tier&&r.tier!=='X',html;
   if(win){
     sfx('fanfare');buzz([80,60,80,60,200]);burst();
-    $('stTitle').textContent=r.task==='quiz'?'정답입니다! 보물 당첨!':'보물 당첨!';$('stSub').textContent='';
+    $('stTitle').textContent=r.task==='quiz'?'정답입니다! 보물 당첨!':r.monster?'몬스터 격파! 보물 당첨!':'보물 당첨!';$('stSub').textContent='';
     var pic=prizePic(r.tier);
     html='<div class="res">'+(pic?'<img class="pzpic" src="'+esc(pic)+'" alt="">':'')+'<img src="assets/icons/golden_tangerine.png" alt=""><div class="big">'+esc(TIER[r.tier])+'</div><div class="prize">'+esc(r.prize)+'</div>'+
       (r.free?'<p>뽑기 부스에서 참가번호를 보여주면 1회 무료!</p>':'<div class="code">'+esc(r.pickupCode||'')+'</div><p>상품 수령처에서 참가번호를 보여주세요.</p>')+(r.given?'<p><b>이미 받은 상품이에요.</b></p>':'');
   }else if(!r.correct){
-    $('stTitle').textContent='자물쇠가 안 열려요…';$('stSub').textContent='';
-    html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝</div><p>퀴즈를 틀려서 상자가 잠겨 버렸어…</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물을 찾으러 가자!</p>';
+    $('stTitle').textContent=r.monster?'몬스터에게 졌어요…':'자물쇠가 안 열려요…';$('stSub').textContent='';
+    html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝</div><p>'+(r.monster?'전투에서 져서 상자를 놓쳤어…':'퀴즈를 틀려서 상자가 잠겨 버렸어…')+'</p>'+(r.answer?'<p>정답은 <b>'+esc(r.answer)+'</b></p>':'')+'<p>다른 보물을 찾으러 가자!</p>';
   }else{
     $('stTitle').textContent='상자가 비어 있어요…';$('stSub').textContent='';
     html='<div class="res"><img src="assets/characters/disappointed.png" alt=""><div class="big">꽝입니다</div><p>다른 보물에서 다시 도전해 보자!</p>';
@@ -642,7 +713,7 @@ $('tlist').addEventListener('click',function(e){
   var b=e.target.closest('[data-cont]'); if(!b) return;
   spot=data.spots.find(function(s){return s.id===b.dataset.cont}); if(!spot) return;
   digging=false; $('stage').hidden=false; $('taps').hidden=true; $('sheet').className='sheet'; $('hole').style.setProperty('--hw','216px');
-  $('chest').className='chest up'; $('stTitle').textContent='보물상자'; $('stSub').textContent='';
+  $('chest').src='assets/box/closed.webp'; $('chest').className='chest up'; $('stTitle').textContent='보물상자'; $('stSub').textContent='';
   EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0}).then(function(r){task=r;showTask(r)},function(er){closeStage();$('huntErr').textContent=er.message||''});
 });
 
