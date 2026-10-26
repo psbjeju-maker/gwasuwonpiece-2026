@@ -75,14 +75,12 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   <div id="main" hidden>
     <div class="stats">
       <div class="stat"><b id="sWait">0</b><span>입금 확인 대기</span></div>
-      <div class="stat"><b id="sSms">0</b><span>문자 보낼 차례</span></div>
       <div class="stat"><b id="sOk">0</b><span>승인 (장수)</span></div>
       <div class="stat"><b id="sAmt">0</b><span>승인 금액 (원)</span></div>
     </div>
 
     <div class="tabs" id="tabs">
       <button data-f="pending" class="on" type="button">대기</button>
-      <button data-f="sms" type="button">문자 보낼 차례</button>
       <button data-f="approved" type="button">승인</button>
       <button data-f="all" type="button">전체</button>
     </div>
@@ -154,7 +152,7 @@ function load(){
     seen=pend;
     if(!cfgFilled){var c=r.preorder||{};cfgFilled=true;$('cOpen').checked=!!c.open;$('cPrice').value=c.price||'';$('cMax').value=c.max||10;$('cBank').value=c.bank||'';$('cAcct').value=c.account||'';$('cHolder').value=c.holder||'';
       if(!c.account||!c.price) $('cfgCard').open=true}
-    if(!picked){picked=true;var np=pend.length,ns=items.filter(function(x){return x.status==='approved'&&!SENT[x.token]}).length,f=np?'pending':ns?'sms':'all';
+    if(!picked){picked=true;var np=pend.length,ns=items.filter(function(x){return x.status==='approved'&&!SENT[x.token]}).length,f=np?'pending':'all';
       if(f!==filter){filter=f;Array.prototype.forEach.call($('tabs').children,function(c){c.classList.toggle('on',c.dataset.f===f)})}}
     render(); timer=setTimeout(load,20000);
   },function(e){
@@ -164,7 +162,7 @@ function load(){
 }
 function render(){
   var wait=items.filter(function(x){return x.status==='pending'}), ok=items.filter(function(x){return x.status==='approved'});
-  $('sWait').textContent=wait.length; $('sSms').textContent=ok.filter(function(x){return !SENT[x.token]}).length; $('sOk').textContent=ok.reduce(function(a,x){return a+x.qty},0); $('sAmt').textContent=won(ok.reduce(function(a,x){return a+x.amount},0));
+  $('sWait').textContent=wait.length; $('sOk').textContent=ok.reduce(function(a,x){return a+x.qty},0); $('sAmt').textContent=won(ok.reduce(function(a,x){return a+x.amount},0));
   document.title=(wait.length?'('+wait.length+') ':'')+'패스 사전 구매 관리';
   var q=$('q').value.trim().replace(/\s/g,''), qd=q.replace(/\D/g,'');
   var rows=items.filter(function(x){
@@ -173,20 +171,20 @@ function render(){
     if(!q) return true;
     return x.name.indexOf(q)>=0||x.depositor.indexOf(q)>=0||(qd.length>=3&&x.phone.indexOf(qd)>=0);
   });
-  function rk(x){return x.status==='pending'?0:x.status==='approved'?(SENT[x.token]?3:1):2}rows=rows.map(function(x,i){return [x,i]}).sort(function(a,b){return rk(a[0])-rk(b[0])||a[1]-b[1]}).map(function(p){return p[0]});
+  function rk(x){return x.status==='pending'?0:x.status==='approved'?1:2}rows=rows.map(function(x,i){return [x,i]}).sort(function(a,b){return rk(a[0])-rk(b[0])||a[1]-b[1]}).map(function(p){return p[0]});
   $('list').innerHTML=rows.length?rows.map(row).join(''):'<p class="sub" style="text-align:center;padding:18px 0">해당하는 신청이 없어요.</p>';
 }
 function row(x){
-  var pill=x.status==='pending'?'<span class="pill">대기</span>'+(SENT['a'+x.token]?'<span class="pill ok">계좌 문자 보냄 '+hm(SENT['a'+x.token]-0)+'</span>':'<span class="pill no">계좌 문자 전</span>'):x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>'+(SENT[x.token]?'<span class="pill ok">문자 보냄 '+hm(SENT[x.token]-0)+'</span>':'<span class="pill">문자 전</span>'):'<span class="pill no">반려</span>';
+  var pill=x.status==='pending'?'<span class="pill">대기</span>':x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>':'<span class="pill no">반려</span>';
   var btns='';
   if(x.status==='pending'){
     var ab='[과수원피스] 귤선장이야! 항해 패스 '+x.qty+'장 신청 고마워. 아래 메이커앤하비 계좌로 '+won(x.amount)+'원 입금해 줘!\n'+(PRE.bank||'')+' '+(PRE.account||'')+' (예금주 '+(PRE.holder||'메이커앤하비')+')\n보내는 사람 이름은 '+x.name+' 으로 해 줘. 돈이 확인되면 손목띠 받는 QR을 문자로 보내 줄게. '+custUrl(x.token);
     var ak='a'+x.token;
-    btns=(PRE.account?'<a class="btn '+(SENT[ak]?'':'p ')+'sm" data-sent="'+ak+'" href="sms:'+x.phone+'?body='+encodeURIComponent(ab)+'">'+(SENT[ak]?'계좌 문자 다시 보내기':'계좌 문자 보내기')+'</a>':'')+'<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
+    btns=(PRE.account?'<a class="btn sm" href="sms:'+x.phone+'?body='+encodeURIComponent(ab)+'">계좌 문자 보내기</a>':'')+'<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
   }
   else if(x.status==='approved'){
     var body='[과수원피스] 귤선장이야! 항해 패스 돈 확인했어. 행사 날 패스 부스에서 아래 링크의 QR을 보여주면 해적단 손목띠를 채워 줄게. 기다릴게! '+custUrl(x.token);
-    btns=(SENT[x.token]?'<a class="btn sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 다시 보내기</a><button class="btn sm" data-a="unsent" data-t="'+x.token+'" type="button">보냄 표시 지우기</button>':'<a class="btn p sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 보내기</a><button class="btn sm" data-a="sent" data-t="'+x.token+'" type="button">이미 보냄</button>')+(x.used?'':'<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">승인 취소</button>');
+    btns='<a class="btn p sm" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 보내기</a>';
   }else if(!x.used) btns='<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">대기로 되돌리기</button>';
   return '<div class="ord '+x.status+'"><div class="top"><span class="name">'+esc(x.name)+' <span style="font-weight:400;font-size:14px">× '+x.qty+'장</span></span><span class="amt">'+won(x.amount)+'원</span></div>'+
     '<div class="meta">입금자명 <b>'+esc(x.depositor)+'</b> · '+esc(phoneFmt(x.phone))+' · '+hm(x.createdAt)+' '+pill+'</div>'+(btns?'<div class="row">'+btns+'</div>':'')+'</div>';
