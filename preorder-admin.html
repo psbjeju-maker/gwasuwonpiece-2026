@@ -178,9 +178,7 @@ function row(x){
   var pill=x.status==='pending'?'<span class="pill">대기</span>':x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>':'<span class="pill no">반려</span>';
   var btns='';
   if(x.status==='pending'){
-    var ab='[과수원피스] 귤선장이야! 항해 패스 '+x.qty+'장 신청 고마워. 아래 메이커앤하비 계좌로 '+won(x.amount)+'원 입금해 줘!\n'+(PRE.bank||'')+' '+(PRE.account||'')+' (예금주 '+(PRE.holder||'메이커앤하비')+')\n보내는 사람 이름은 '+x.name+' 으로 해 줘. 돈이 확인되면 손목띠 받는 QR을 문자로 보내 줄게. '+custUrl(x.token);
-    var ak='a'+x.token;
-    btns=(PRE.account?'<a class="btn sm" href="sms:'+x.phone+'?body='+encodeURIComponent(ab)+'">계좌 문자 보내기</a>':'')+'<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
+    btns='<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
   }
   else if(x.status==='approved'){
     var body='[과수원피스] 귤선장이야! 항해 패스 돈 확인했어. 행사 날 패스 부스에서 아래 링크의 QR을 보여주면 해적단 손목띠를 채워 줄게. 기다릴게! '+custUrl(x.token);
