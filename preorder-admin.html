@@ -40,7 +40,7 @@ input[type=text],input[type=password],input[type=number]{width:100%;min-height:4
 .stat b{display:block;font-size:22px}
 .stat span{font-size:12px;color:var(--muted)}
 .tabs{display:flex;gap:6px;margin-bottom:10px}
-.tabs button{flex:1;min-height:42px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:14px}
+.tabs button{flex:1;min-width:0;padding:0 4px;white-space:nowrap;min-height:42px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:14px}
 .tabs button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .ord{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--surface)}
 .ord.pending{border-left:5px solid var(--accent)}
@@ -119,7 +119,7 @@ function markSent(t,on){if(on)SENT[t]=Date.now();else delete SENT[t];try{localSt
 var seen=null;
 function ding(){try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(c.destination);o.start();setTimeout(function(){o.frequency.value=1175},150);setTimeout(function(){o.stop();c.close()},350)}catch(e){}}
 function notifyNew(n){ding();try{if(window.Notification&&Notification.permission==='granted')new Notification('새 패스 구매 '+n+'건',{body:'입금 확인 대기가 늘었어요'})}catch(e){}}
-var items=[], filter='pending', timer=null, cfgFilled=false;
+var items=[], filter='pending', timer=null, cfgFilled=false, picked=false;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function msg(el,t,ok){el.textContent=t||'';el.className='msg'+(ok?' ok':'')}
 function won(n){return (n||0).toLocaleString('ko-KR')}
@@ -154,6 +154,8 @@ function load(){
     seen=pend;
     if(!cfgFilled){var c=r.preorder||{};cfgFilled=true;$('cOpen').checked=!!c.open;$('cPrice').value=c.price||'';$('cMax').value=c.max||10;$('cBank').value=c.bank||'';$('cAcct').value=c.account||'';$('cHolder').value=c.holder||'';
       if(!c.account||!c.price) $('cfgCard').open=true}
+    if(!picked){picked=true;var np=pend.length,ns=items.filter(function(x){return x.status==='approved'&&!SENT[x.token]}).length,f=np?'pending':ns?'sms':'all';
+      if(f!==filter){filter=f;Array.prototype.forEach.call($('tabs').children,function(c){c.classList.toggle('on',c.dataset.f===f)})}}
     render(); timer=setTimeout(load,20000);
   },function(e){
     if(e.code==='permission-denied'){EV.logout();showMain();return}
