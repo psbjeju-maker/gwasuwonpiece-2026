@@ -70,6 +70,23 @@ ul.tips li{margin:4px 0}
 .rk.two{grid-template-columns:repeat(2,1fr)}
 .rk.one{grid-template-columns:1fr;max-width:200px}
 .warn{margin-top:8px!important;padding:8px 10px;border-radius:10px;background:var(--accent-soft);color:var(--accent-2)!important;font-weight:700}
+.voy{border:2px solid var(--accent);background:linear-gradient(180deg,var(--accent-soft),var(--surface) 65%)}
+.voy h2{font-size:19px;color:var(--accent-2)}
+.flow{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:0}
+.flow li{position:relative;display:grid;grid-template-columns:44px 1fr;column-gap:12px;padding:8px 0 14px}
+.flow li:last-child{padding-bottom:2px}
+.flow li::before{content:"";position:absolute;left:21px;top:46px;bottom:-2px;width:3px;background:repeating-linear-gradient(var(--accent) 0 5px,transparent 5px 9px)}
+.flow li:last-child::before{display:none}
+.flow i{grid-row:span 2;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-style:normal;font-weight:900;font-size:22px;display:grid;place-items:center;box-shadow:0 3px 8px rgba(217,100,30,.4)}
+.flow b{font-size:18px;line-height:1.3;align-self:end}
+.flow span{font-size:14px;color:var(--ink-2)}
+.flow.mini li:not(.on):not(.done) i{background:var(--line);color:var(--muted);box-shadow:none}
+.flow.mini li:not(.on):not(.done) b{color:var(--muted)}
+.flow.mini li.done i{background:var(--leaf)}
+.flow.mini li.on i{animation:pulse 1.6s ease-in-out infinite}
+.flow.mini li.on b::after{content:" ← 지금 여기!";color:var(--accent-2);font-size:14px}
+@keyframes pulse{50%{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){.flow.mini li.on i{animation:none}}
 .tier{margin-top:16px;padding:12px;border-radius:16px;background:var(--bg);border:1.5px solid var(--line)}
 .th{display:flex;align-items:center;gap:12px}
 .tb{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:32px;line-height:1;color:#fff;text-shadow:0 2px 3px rgba(0,0,0,.35)}
@@ -132,6 +149,7 @@ ul.tips li{margin:4px 0}
       <div class="rk"><img src="assets/rank/r1.jpg" alt="주술회전 피규어"><img src="assets/rank/r2.jpg" alt="프리렌 피규어"><img src="assets/rank/r3.jpg" alt="블루 아카이브 피규어"><img src="assets/rank/r4.jpg" alt="하츠네 미쿠 피규어"><img src="assets/rank/r5.jpg" alt="주술회전 피규어"></div></div></div>
     <div class="perk"><div class="no">3</div><div class="body"><b>무대 인기투표, 내 선원에게 한 표</b><span>노래방·댄스·경연대회·랜덤 플레이 댄스 무대를 보다가 마음에 드는 팀에 투표해. 랜덤 플레이 댄스는 할로윈 노래가 나오면 추고 싶은 사람이 나가서 같이 추는 거야.</span></div></div>
     <div class="perk"><div class="no">4</div><div class="body"><b>해적 변신! 의상 빌리기 + 탈의실 공짜</b><span>의상을 빌려 입고 탈의실도 공짜로 쓸 수 있어. 한 사람 한 번만!</span></div></div>
+    <div class="card voy"><h2>출항 준비는 4단계!</h2><ol class="flow "><li data-s="1"><i>1</i><b>패스 사기</b><span>이름·번호를 적고 버튼 누르기</span></li><li data-s="2"><i>2</i><b>돈 보내기</b><span>나온 계좌로 돈 보내기</span></li><li data-s="3"><i>3</i><b>QR 받기</b><span>사장님이 확인하면 QR이 떠</span></li><li data-s="4"><i>4</i><b>손목띠 받기</b><span>행사 날 부스에서 QR 보여주기</span></li></ol></div>
     <div class="card">
       <h2>구매 정보</h2>
       <label for="fName">이름</label>
@@ -145,20 +163,12 @@ ul.tips li{margin:4px 0}
       <button class="btn" id="btnSubmit" type="button">패스 사고 계좌 번호 받기</button>
       <p class="msg" id="formMsg" role="alert"></p>
     </div>
-    <div class="card">
-      <h2>출항 준비는 이렇게!</h2>
-      <ul class="tips">
-        <li>위 칸을 적고 버튼을 누르면 돈 보낼 계좌 번호가 나와.</li>
-        <li>그 계좌로 돈을 보내면 사장님이 확인해 줘.</li>
-        <li>확인이 끝나면 이 페이지에 QR이 떠. 문자로도 링크를 보내 줄게.</li>
-        <li>행사 날 패스 부스에서 QR을 보여주면 해적단 손목띠를 채워 줘. 이제 출항이야!</li>
-      </ul>
-    </div>
-  </section>
+</section>
 
   <!-- 2) 내 신청 -->
   <section id="myView" hidden>
     <div class="cap"><img id="capImg" src="assets/characters/neutral.png" alt=""><p id="capLine"></p></div>
+    <div class="card voy" id="myFlow"><h2>지금 여기!</h2><ol class="flow mini"><li data-s="1"><i>1</i><b>패스 사기</b><span>이름·번호를 적고 버튼 누르기</span></li><li data-s="2"><i>2</i><b>돈 보내기</b><span>나온 계좌로 돈 보내기</span></li><li data-s="3"><i>3</i><b>QR 받기</b><span>사장님이 확인하면 QR이 떠</span></li><li data-s="4"><i>4</i><b>손목띠 받기</b><span>행사 날 부스에서 QR 보여주기</span></li></ol></div>
     <div class="card">
       <span class="pill wait" id="stPill">돈 확인하는 중</span>
       <div class="big" id="stTitle"></div>
@@ -229,6 +239,7 @@ $('btnSubmit').onclick=function(){
 };
 
 function cap(img,line){$('capImg').src='assets/characters/'+img+'.png'; $('capLine').innerHTML=line}
+function flowAt(n){var l=document.querySelectorAll('#myFlow li');for(var i=0;i<l.length;i++){var k=i+1;l[i].className=k<n?'done':k===n?'on':''}}
 function renderMine(s){
   var pill=$('stPill');
   $('payCard').hidden=true; $('qrCard').hidden=true;
@@ -237,19 +248,19 @@ function renderMine(s){
     $('stTitle').textContent=s.name+' · 패스 '+s.qty+'장';
     $('stSub').textContent='아직 돈이 확인 안 됐어. 아래 계좌로 보내 주면 사장님이 확인해 줘.';
     cap('thinking','좋아, 새 선원! 아래 계좌로 돈을 보내면 내가 <b>사장님한테 전해서</b> 확인해 줄게.');
-    $('payCard').hidden=false;
+    $('payCard').hidden=false; flowAt(2);
     $('bankLine').textContent=(s.bank||'')+(s.holder?' · 받는 사람 '+s.holder:'');
     $('acctNo').textContent=s.account||''; $('payAmt').textContent=won(s.amount); $('payDep').textContent=s.depositor||s.name;
   }else if(s.status==='approved'){
     var left=s.qty-s.used;
     pill.className='pill ok'; pill.textContent=left>0?'확인 완료':'수령 완료';
     $('stTitle').textContent=s.name+' · 패스 '+s.qty+'장';
-    $('stSub').textContent=left>0?'돈 확인됐어! 행사 날 이 QR을 보여줘.':'손목띠를 모두 받았어. 즐거운 항해 되길!';
+    flowAt(left>0?3:4); $('stSub').textContent=left>0?'돈 확인됐어! 행사 날 이 QR을 보여줘.':'손목띠를 모두 받았어. 즐거운 항해 되길!';
     cap(left>0?'success':'greeting', left>0?'돈 확인 끝! 출항하는 날 이 <b>QR</b>을 보여주면 손목띠를 채워 줄게.':'손목띠 다 받았네. 이제 어엿한 해적단이야, 같이 신나게 놀자!');
     if(left>0){
       var q=qrcode(0,'M'); q.addData('PSBV-'+s.token); q.make(); $('qrImg').src=q.createDataURL(8,2);
       $('qrLeft').innerHTML='받을 수 있는 손목띠 <b>'+left+'개</b>'+(s.used?' (이미 '+s.used+'개 받음)':'');
-      $('qrCard').hidden=false;
+      $('qrCard').hidden=false; flowAt(3);
     }
   }else{
     cap('disappointed','이 주문은 취소됐어… 궁금한 건 박서방 제주지점에 물어봐 줘.');
