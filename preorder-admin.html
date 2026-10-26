@@ -115,6 +115,9 @@ var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu';
 var $=function(id){return document.getElementById(id)};
 var SENT=(function(){try{return JSON.parse(localStorage.getItem('psb.po.sent')||'{}')}catch(e){return {}}})();
 function markSent(t,on){if(on)SENT[t]=Date.now();else delete SENT[t];try{localStorage.setItem('psb.po.sent',JSON.stringify(SENT))}catch(e){}}
+var seen=null;
+function ding(){try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(c.destination);o.start();setTimeout(function(){o.frequency.value=1175},150);setTimeout(function(){o.stop();c.close()},350)}catch(e){}}
+function notifyNew(n){ding();try{if(window.Notification&&Notification.permission==='granted')new Notification('새 패스 구매 '+n+'건',{body:'입금 확인 대기가 늘었어요'})}catch(e){}}
 var items=[], filter='pending', timer=null, cfgFilled=false;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function msg(el,t,ok){el.textContent=t||'';el.className='msg'+(ok?' ok':'')}
@@ -126,6 +129,7 @@ $('envTag').hidden=!TEST;
 $('custUrl').textContent=location.href.split('?')[0].replace(/preorder-admin\.html$/,'preorder.html')+(TEST?'?ev=test':'');
 
 function adm(name,d){return EV.staff(name,Object.assign({eventId:EID},d||{}))}
+try{if(window.Notification&&Notification.permission==='default')document.addEventListener('click',function f(){Notification.requestPermission();document.removeEventListener('click',f)})}catch(e){}
 function showMain(){
   var i=EV.sessionInfo(), ok=!!i&&i.role==='admin';
   if(i&&!ok) EV.logout();
@@ -144,6 +148,9 @@ function load(){
   clearTimeout(timer);
   adm('ownerPreorderList').then(function(r){
     items=r.items; msg($('listMsg'));
+    var pend=items.filter(function(x){return x.status==='pending'}).map(function(x){return x.token});
+    if(seen){var fresh=pend.filter(function(t){return seen.indexOf(t)<0});if(fresh.length)notifyNew(fresh.length)}
+    seen=pend;
     if(!cfgFilled){var c=r.preorder||{};cfgFilled=true;$('cOpen').checked=!!c.open;$('cPrice').value=c.price||'';$('cMax').value=c.max||10;$('cBank').value=c.bank||'';$('cAcct').value=c.account||'';$('cHolder').value=c.holder||'';
       if(!c.account||!c.price) $('cfgCard').open=true}
     render(); timer=setTimeout(load,20000);
