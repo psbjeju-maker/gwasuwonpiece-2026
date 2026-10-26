@@ -133,6 +133,7 @@ function adm(name,d){return EV.staff(name,Object.assign({eventId:EID},d||{}))}
 try{if(window.Notification&&Notification.permission==='default')document.addEventListener('click',function f(){Notification.requestPermission();document.removeEventListener('click',f)})}catch(e){}
 /* 이 기기에서 한 번 로그인하면 PIN을 기억해 다음부터 자동 로그인(로그아웃을 누르면 지움) */
 var autoTried=false;
+(function(){var m=/[#&]pin=(\d{4,8})/.exec(location.hash);if(m){try{localStorage.setItem('psb.po.pin',m[1])}catch(e){}history.replaceState(null,'',location.pathname+location.search)}})();
 function savedPin(){try{return localStorage.getItem('psb.po.pin')||''}catch(e){return ''}}
 function showMain(){
   var i=EV.sessionInfo(), ok=!!i&&i.role==='admin';
