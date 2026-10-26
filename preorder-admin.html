@@ -131,19 +131,23 @@ $('custUrl').textContent=location.href.split('?')[0].replace(/preorder-admin\.ht
 
 function adm(name,d){return EV.staff(name,Object.assign({eventId:EID},d||{}))}
 try{if(window.Notification&&Notification.permission==='default')document.addEventListener('click',function f(){Notification.requestPermission();document.removeEventListener('click',f)})}catch(e){}
+/* 이 기기에서 한 번 로그인하면 PIN을 기억해 다음부터 자동 로그인(로그아웃을 누르면 지움) */
+var autoTried=false;
+function savedPin(){try{return localStorage.getItem('psb.po.pin')||''}catch(e){return ''}}
 function showMain(){
   var i=EV.sessionInfo(), ok=!!i&&i.role==='admin';
   if(i&&!ok) EV.logout();
+  if(!ok&&!autoTried&&savedPin()){autoTried=true;EV.pinLogin(savedPin(),'admin').then(showMain,function(){try{localStorage.removeItem('psb.po.pin')}catch(e){}showMain()});return}
   $('loginBox').hidden=ok; $('main').hidden=!ok;
   clearTimeout(timer); if(ok) load();
 }
 $('btnLogin').onclick=function(){
   var b=this;b.disabled=true;msg($('loginMsg'),'확인 중…');
-  EV.pinLogin($('pin').value.trim(),'admin').then(function(){b.disabled=false;$('pin').value='';msg($('loginMsg'));showMain()},
+  var pn=$('pin').value.trim();EV.pinLogin(pn,'admin').then(function(){try{localStorage.setItem('psb.po.pin',pn)}catch(e){}b.disabled=false;$('pin').value='';msg($('loginMsg'));showMain()},
     function(e){b.disabled=false;msg($('loginMsg'),e.message||'로그인하지 못했어요')});
 };
 $('pin').addEventListener('keydown',function(e){if(e.key==='Enter')$('btnLogin').click()});
-$('btnLogout').onclick=function(){EV.logout();showMain()};
+$('btnLogout').onclick=function(){try{localStorage.removeItem('psb.po.pin')}catch(e){}EV.logout();showMain()};
 
 function load(){
   clearTimeout(timer);
@@ -158,7 +162,7 @@ function load(){
       if(f!==filter){filter=f;Array.prototype.forEach.call($('tabs').children,function(c){c.classList.toggle('on',c.dataset.f===f)})}}
     render(); timer=setTimeout(load,20000);
   },function(e){
-    if(e.code==='permission-denied'){EV.logout();showMain();return}
+    if(e.code==='permission-denied'){EV.logout();autoTried=false;showMain();return}
     msg($('listMsg'),e.message||'불러오지 못했어요'); timer=setTimeout(load,30000);
   });
 }
