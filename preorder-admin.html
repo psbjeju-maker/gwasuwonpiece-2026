@@ -177,7 +177,7 @@ function row(x){
   var pill=x.status==='pending'?'<span class="pill">대기</span>'+(SENT['a'+x.token]?'<span class="pill ok">계좌 문자 보냄 '+hm(SENT['a'+x.token]-0)+'</span>':'<span class="pill no">계좌 문자 전</span>'):x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>'+(SENT[x.token]?'<span class="pill ok">문자 보냄 '+hm(SENT[x.token]-0)+'</span>':'<span class="pill">문자 전</span>'):'<span class="pill no">반려</span>';
   var btns='';
   if(x.status==='pending'){
-    var ab='[과수원피스] 귤선장이야! 항해 패스 '+x.qty+'장 신청 고마워. 아래 계좌로 '+won(x.amount)+'원을 보내 줘. 보낸 사람 이름은 '+x.name+' 으로 해 줘!\n'+(PRE.bank||'')+' '+(PRE.account||'')+' (받는 사람 '+(PRE.holder||'')+')\n돈이 확인되면 손목띠 받는 QR을 문자로 보내 줄게. '+custUrl(x.token);
+    var ab='[과수원피스] 귤선장이야! 항해 패스 '+x.qty+'장 신청 고마워. 아래 메이커앤하비 계좌로 '+won(x.amount)+'원 입금해 줘!\n'+(PRE.bank||'')+' '+(PRE.account||'')+' (예금주 '+(PRE.holder||'메이커앤하비')+')\n보내는 사람 이름은 '+x.name+' 으로 해 줘. 돈이 확인되면 손목띠 받는 QR을 문자로 보내 줄게. '+custUrl(x.token);
     var ak='a'+x.token;
     btns=(PRE.account?'<a class="btn '+(SENT[ak]?'':'p ')+'sm" data-sent="'+ak+'" href="sms:'+x.phone+'?body='+encodeURIComponent(ab)+'">'+(SENT[ak]?'계좌 문자 다시 보내기':'계좌 문자 보내기')+'</a>':'')+'<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
   }
