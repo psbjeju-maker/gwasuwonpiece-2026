@@ -326,6 +326,7 @@ function qr(img,text){try{var q=qrcode(0,'M');q.addData(text);q.make();img.src=q
 function hm(ms){var d=new Date(ms);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
 
 var HOME=null;
+var PV=/[?&]monsterpreview=1/.test(location.search);
 /* ---------- 시작 ---------- */
 if(TEST){document.getElementById('testTag').hidden=false;document.title='[테스트] '+document.title}
 function boot(){
@@ -431,7 +432,7 @@ $('btnBoard').onclick=function(){$('board').hidden=false};
 $('board').addEventListener('click',function(e){if(e.target.id==='board'||e.target.closest('[data-bclose]'))$('board').hidden=true});
 $('btnRewards').onclick=function(){$('board').hidden=true;go('#rewards')};
 $('huntBack').onclick=$('rwBack').onclick=function(){location.hash='';refreshHome()};
-function refreshHome(){EV.call('myHome',{eventId:EID}).then(function(r){HOME=r;renderHome();if(!$('scRewards').hidden)renderRewards()},function(){})}
+function refreshHome(){if(PV) return;EV.call('myHome',{eventId:EID}).then(function(r){HOME=r;renderHome();if(!$('scRewards').hidden)renderRewards()},function(){})}
 setInterval(function(){if(!$('scHome').hidden)refreshHome()},30000);
 
 /* ---------- 내 보상 ---------- */
@@ -447,6 +448,7 @@ function renderRewards(){
 /* ---------- 보물 탐색 ---------- */
 var data=null,pos=null,near=null,watchId=null;
 function openHunt(){
+  if(PV) return;
   show('scHunt'); $('huntErr').textContent='';
   EV.call('digSpots',{eventId:EID}).then(function(r){data=r;startGps();update()},function(e){$('huntErr').textContent=e.message||'불러오지 못했어요.'});
 }
@@ -541,14 +543,14 @@ function showTask(t){
   if(mon){setMon(mon);if(mon&&$('stTitle').textContent==='보물상자')$('stTitle').textContent='몬스터가 나타났다!'}
   if(t.done){showResult(t.result);return}
   if(t.battle){renderBattle(t.battle);return}
-  if(t.open){$('stSub').textContent=mon?'몬스터를 쓰러뜨렸어요! 상자를 열 수 있어요':'미션 완료! 상자를 열 수 있어요';sheet('<span class="tag">NPC 미션 완료</span><div class="q">상자를 열어 볼까요?</div><button class="btn p" id="btnOpen" type="button">상자 열기</button><p class="err" id="qErr"></p>');$('btnOpen').onclick=function(){answer(null,this)};return}
+  if(t.open){$('stSub').textContent=mon?'몬스터를 쓰러뜨렸어요! 상자를 열 수 있어요':'미션 완료! 상자를 열 수 있어요';sheet('<span class="tag">'+(mon?'몬스터 격파':'NPC 미션 완료')+'</span><div class="q">상자를 열어 볼까요?</div><button class="btn p" id="btnOpen" type="button">상자 열기</button><p class="err" id="qErr"></p>');$('btnOpen').onclick=function(){answer(null,this)};return}
   c.classList.add('shake');
   if(t.npc){
     $('stSub').textContent=mon?'앞을 막은 몬스터: '+mon.name:'자물쇠를 열려면 NPC 미션을 해야 해요';if(mon)c.classList.add('sm');
     sheet('<span class="tag">'+(mon?'몬스터 전투 · '+esc(mon.battleName):'NPC 미션')+'</span><div class="q">'+esc(t.npc.name)+(t.npc.place?'<br><span style="font-size:15px;color:var(--muted)">'+esc(t.npc.place)+'</span>':'')+'</div>'+
       (t.npc.line?'<p style="margin:0 0 8px">'+esc(t.npc.line)+'</p>':'')+'<p class="muted">미션을 마치면 '+(mon?'스태프':'NPC')+'에게 이 번호를 보여주세요</p><div class="mycode">'+esc(HOME.code)+'</div>'+
       '<button class="btn p" id="btnNpcChk" type="button">미션 완료했어요 (확인)</button><button class="btn" id="btnLater" type="button" style="margin-top:8px">나중에 하기</button><p class="err" id="qErr"></p>');
-    $('btnNpcChk').onclick=function(){var b=this;b.disabled=true;EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0}).then(function(r){b.disabled=false;if(r.open||r.done){task=r;showTask(r)}else $('qErr').textContent='아직 완료 처리가 안 됐어요. NPC에게 번호를 보여주세요.'},function(e){b.disabled=false;$('qErr').textContent=e.message||''})};
+    $('btnNpcChk').onclick=function(){var b=this;b.disabled=true;EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0}).then(function(r){b.disabled=false;if(r.open||r.done){task=r;showTask(r)}else $('qErr').textContent='아직 완료 처리가 안 됐어요. '+(mon?'스태프':'NPC')+'에게 번호를 보여주세요.'},function(e){b.disabled=false;$('qErr').textContent=e.message||''})};
     $('btnLater').onclick=function(){closeStage();openHunt()};
     return;
   }
@@ -737,6 +739,67 @@ function renderVote(v){
 $('voteSheet').addEventListener('click',function(e){if(e.target.id==='voteSheet'||e.target.closest('[data-vclose]'))$('voteSheet').hidden=true});
 
 boot();
+
+/* ---------- 몬스터 전투 미리보기 (?monsterpreview=1): 서버·GPS 없이 화면과 흐름만 눌러 본다 ---------- */
+if(PV){(function(){
+  var LIST=[['slime','슬라임','rps','가위바위보 대결'],['frog','개구리','rps','가위바위보 대결'],['bat','박쥐','dialect','제주 사투리 퀴즈 대결'],['snake','뱀','dialect','제주 사투리 퀴즈 대결'],['goblin','고블린','photocard','포토카드 만들기 미션'],['orc','오크','photocard','포토카드 만들기 미션'],['skeleton','스켈레톤','sns','SNS 올리기 미션'],['troll','트롤','sns','SNS 올리기 미션'],['vampire','뱀파이어','candy','트릭 오어 트릿 미션'],['knight','돌하르방 기사','candy','트릭 오어 트릿 미션']];
+  var LINES={photocard:'포토카드를 만들어서 스태프에게 보여 주면 몬스터가 쓰러져요!',sns:'행사 사진을 SNS에 올리고 게시물을 스태프에게 보여 주면 몬스터가 쓰러져요!',candy:'스태프에게 「사탕을 주지 않으면 장난을 치겠다!」 외치고 사탕을 받아 오면 몬스터가 쓰러져요!'};
+  var QS=[{q:'길드 접수원이 「혼저 옵서예」라고 맞아 준다. 무슨 뜻일까?',c:['조심하세요','어서 오세요','잘 가세요','일어나세요'],a:1},
+          {q:'주인공이 "도대체 왜!"라고 외칠 때, 제주 사투리로 「왜」는?',c:['게난','하영','무사','호꼼'],a:2},
+          {q:'용사 파티가 「몬딱」 모였다. 몇 명이 모인 걸까?',c:['한 명','모두','절반','아무도'],a:1}];
+  var mode='win',cur=null,st=null;
+  HOME=HOME||{code:'123456'};
+  var css=document.createElement('style');
+  css.textContent='#pvBar{position:fixed;top:0;left:0;right:0;z-index:99;font:600 13px/1.3 system-ui,sans-serif}#pvBar>button.t{display:block;margin:6px 0 0 6px;padding:7px 16px;border-radius:99px;background:#1B2D44;color:#F2D59B;border:1px solid #F2D59B;font-size:13px;opacity:.92}#pvBar .pn{display:none;margin:6px;padding:10px;border-radius:14px;background:rgba(20,28,40,.96);color:#fff}#pvBar.on .pn{display:block}#pvBar .g{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}#pvBar .g button{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:#fff;color:#1B2D44;text-align:left;font-size:12px}#pvBar .g img{width:38px;height:38px;object-fit:contain}#pvBar .m button{padding:6px 10px;border-radius:8px;background:#F2D59B;color:#2A1A04;font-size:12px;margin-right:6px}';
+  document.head.appendChild(css);
+  var bar=document.createElement('div');bar.id='pvBar';
+  bar.innerHTML='<button class="t" type="button" id="pvT">미리보기 ▼</button><div class="pn"><div class="m"><button type="button" id="pvMode"></button><button type="button" id="pvStaff">스태프 완료 처리 흉내</button></div><div class="g" id="pvG"></div></div>';
+  document.body.appendChild(bar);
+  function modeTxt(){$('pvMode').textContent='결과: '+(mode==='win'?'이기는 경우':mode==='lose'?'지는 경우':'랜덤')}
+  modeTxt();
+  $('pvG').innerHTML=LIST.map(function(m,i){return '<button type="button" data-i="'+i+'"><img src="assets/monsters/'+m[0]+'.webp" alt=""><span><b>'+m[1]+'</b><br>'+m[3].replace(' 대결','').replace(' 미션','')+'</span></button>'}).join('');
+  $('pvT').onclick=function(){bar.classList.toggle('on')};
+  $('pvMode').onclick=function(){mode=mode==='win'?'lose':mode==='lose'?'rand':'win';modeTxt()};
+  $('pvStaff').onclick=function(){if(st)st.done=true;bar.classList.remove('on')};
+  $('pvG').onclick=function(e){var b=e.target.closest('button');if(b){begin(+b.dataset.i);bar.classList.remove('on')}};
+  function begin(i){
+    var m=LIST[i];cur={id:m[0],name:m[1],battle:m[2],battleName:m[3],img:'assets/monsters/'+m[0]+'.webp'};
+    st={w:0,l:0,qi:0,right:0,wrong:0,last:null,done:false};
+    spot={id:'pv'};digging=false;answering=false;
+    $('stage').hidden=false;$('taps').hidden=true;$('sheet').className='sheet';$('hole').style.setProperty('--hw','216px');
+    var c=$('chest');c.src='assets/box/closed.webp';c.className='chest up';$('stTitle').textContent='몬스터가 나타났다!';$('stSub').textContent='';
+    task=view();showTask(task);
+  }
+  function view(){
+    if(cur.battle==='rps')return {battle:{type:'rps',monster:cur,w:st.w,l:st.l,need:2,last:st.last}};
+    if(cur.battle==='dialect'){var q=QS[Math.min(st.qi,2)];return {battle:{type:'dialect',monster:cur,qi:st.qi,total:3,right:st.right,wrong:st.wrong,need:2,q:{id:'pv',q:q.q,choices:q.c},last:st.last}}}
+    if(st.done)return {open:true,monster:cur};
+    return {npc:{id:'mon_'+cur.battle,name:cur.battleName,place:'',line:LINES[cur.battle]},monster:cur};
+  }
+  function fin(win){return {correct:win,task:'monster',monster:cur,tier:win?'A':'X',prize:win?'A상(미리보기)':'꽝',pickupCode:win?'PREVIEW':null}}
+  function move(c){
+    var verdict=null,last;
+    if(cur.battle==='rps'){
+      var th=mode==='win'?(c+2)%3:mode==='lose'?(c+1)%3:Math.floor(Math.random()*3),d=(c-th+3)%3,r=d===1?'win':d===2?'lose':'tie';
+      if(r==='win')st.w++;if(r==='lose')st.l++;last={mine:c,theirs:th,r:r};st.last=last;
+      if(st.w>=2)verdict='win';else if(st.l>=2)verdict='lose';
+    }else{
+      var q=QS[Math.min(st.qi,2)],ok=mode==='win'?true:mode==='lose'?false:c===q.a;
+      if(ok)st.right++;else st.wrong++;last={ok:ok,answer:q.c[q.a],mine:q.c[c]};st.last=last;st.qi++;
+      if(st.right>=2)verdict='win';else if(st.wrong>=2)verdict='lose';
+    }
+    if(verdict)return {final:true,last:last,result:fin(verdict==='win')};
+    var v=view();v.continued=true;return v;
+  }
+  EV.call=function(name,a){
+    return new Promise(function(res){setTimeout(function(){
+      if(name==='digBattle')return res(move(a.choice));
+      if(name==='digStart')return res(view());
+      if(name==='digAnswer')return res({result:fin(true)});
+      res({});
+    },250)});
+  };
+})()}
 })();
 </script>
 </body>
