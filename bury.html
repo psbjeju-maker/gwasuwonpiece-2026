@@ -92,6 +92,7 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
       <textarea id="memo" placeholder="예) 3번째 귤나무 왼쪽 돌 밑"></textarea>
       <div class="row"><button class="btn btn--p btn--b" id="btnBury" disabled>여기 등록</button></div>
       <p class="msg" id="buryMsg"></p>
+      <div id="monAll" hidden style="margin-top:10px"><button class="btn btn--b" id="btnMonAll" type="button" disabled>테스트용: 몬스터 10종 한 번에 등록 (내 위치)</button><p class="note">매장 테스트에서만 보여요. 지금 서 있는 곳 둘레에 10마리가 모두 생겨서, 한 자리에서 전투 5종을 다 해 볼 수 있어요.</p></div>
     </div>
 
     <div class="card">
@@ -240,11 +241,23 @@ function startGps(){
     pos={lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),acc:Math.round(p.coords.accuracy)};
     box.className='gps '+(pos.acc<=15?'ok':'warn');
     box.innerHTML='<b>'+pos.lat+', '+pos.lng+'</b><br>오차 약 ±'+pos.acc+'m'+(pos.acc>15?' — 잠깐 기다리면 더 정확해져요':' — 좋아요');
-    $('#btnBury').disabled=false;
+    $('#btnBury').disabled=false;$('#btnMonAll').disabled=false;
   },function(e){box.className='gps';box.textContent='위치를 못 받았어요: '+(e.message||e.code)+' — 브라우저 위치 권한을 허용해 주세요.'},
   {enableHighAccuracy:true,maximumAge:0,timeout:20000});
 }
 
+$('#monAll').hidden=!TEST;
+$('#btnMonAll').onclick=function(){
+  if(!pos) return;
+  var b=this, keys=Object.keys(MONS), n=0, fail=0; b.disabled=true;
+  (function next(){
+    if(n>=keys.length){b.disabled=false;msg($('#buryMsg'),'몬스터 '+(keys.length-fail)+'마리 등록'+(fail?' (실패 '+fail+')':'')+'! 아래 목록과 손님 화면에서 확인해요','ok');load();return}
+    var k=keys[n], m=MONS[k]; n++;
+    msg($('#buryMsg'),'등록 중… '+n+'/'+keys.length);
+    /* 서로 0.4m씩만 떨어뜨려 모두 같은 반경 안에 들게 한다 */
+    EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat+n*0.0000036,lng:pos.lng,acc:pos.acc,name:'[테스트] '+m[0],hint:BATS[m[1]],task:'monster',monster:k,memo:'몬스터 일괄 등록(테스트)'}).then(next,function(){fail++;next()});
+  })();
+};
 $('#btnBury').onclick=function(){
   if(!pos) return;
   var b=this; b.disabled=true; msg($('#buryMsg'),'묻는 중…');
