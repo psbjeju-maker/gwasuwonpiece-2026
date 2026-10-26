@@ -233,11 +233,16 @@ $('btnSubmit').onclick=function(){
   var rid=null; try{rid=sessionStorage.getItem('psb.po.rid')}catch(e){} if(!rid){rid=EV.newId(); try{sessionStorage.setItem('psb.po.rid',rid)}catch(e){}}
   EV.pub('preorderSubmit',{eventId:EID,requestId:rid,name:name,phone:phone,depositor:'',qty:qty}).then(function(r){
     try{sessionStorage.removeItem('psb.po.rid')}catch(e){}
-    save(r.token); token=r.token; history.replaceState(null,'','?'+(TEST?'ev=test&':'')+'k='+r.token);
+    save(r.token); token=r.token; kakaoPing(name,phone,qty); history.replaceState(null,'','?'+(TEST?'ev=test&':'')+'k='+r.token);
     b.disabled=false; msg($('formMsg'),''); showMine();
   },function(e){b.disabled=false; msg($('formMsg'),errText(e)); if(e.code&&e.code!=='unavailable'&&e.code!=='internal'){try{sessionStorage.removeItem('psb.po.rid')}catch(x){}}});
 };
 
+var KAKAO_HOOK='https://script.google.com/macros/s/AKfycbyU9PKs_J3ObrkRQ2AQr3jGLONxq6T_VIB0LnIkSBNAC42dRcyPIk2EjXmRUIJG5qyWoA/exec';
+function kakaoPing(name,phone,qty){
+  if(TEST) return;
+  try{fetch(KAKAO_HOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({type:'pass',name:name,phone:fmtPhone(phone),qty:qty,teamName:'패스 사전 구매 '+qty+'장'})}).catch(function(){})}catch(e){}
+}
 function cap(img,line){$('capImg').src='assets/characters/'+img+'.png'; $('capLine').innerHTML=line}
 function flowAt(n){var l=document.querySelectorAll('#myFlow li');for(var i=0;i<l.length;i++){var k=i+1;l[i].className=k<n?'done':k===n?'on':''}}
 function renderMine(s){
