@@ -138,8 +138,6 @@ ul.tips li{margin:4px 0}
       <label for="fPhone">휴대폰 번호</label>
       <input id="fPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="010-0000-0000">
       <div class="hint hintc"><img src="assets/characters/surprised.png" alt=""><p>돈 보낸 게 확인되면 이 번호로 문자를 보내 줄게. <b>번호가 틀리면 문자를 못 받으니까 꼭 정확하게 적어 줘!</b></p></div>
-      <label for="fDep">돈 보내는 사람 이름 <small>(위 이름이랑 다를 때만)</small></label>
-      <input id="fDep" type="text" maxlength="20" placeholder="안 적으면 위 이름이랑 같아">
       <label>패스 수량</label>
       <div class="stepper"><button id="qMinus" type="button" aria-label="하나 줄이기">−</button><b id="qVal">1</b><button id="qPlus" type="button" aria-label="하나 늘리기">+</button></div>
       <div class="sum"><span>보낼 돈</span><b id="sumAmt">-</b></div>
@@ -222,7 +220,7 @@ $('btnSubmit').onclick=function(){
   if(!confirm('문자 받을 번호가 맞아?\n\n'+fmtPhone(phone)+'\n\n틀리면 문자를 못 받아!')) return;
   b.disabled=true; msg($('formMsg'),'보내는 중…');
   var rid=null; try{rid=sessionStorage.getItem('psb.po.rid')}catch(e){} if(!rid){rid=EV.newId(); try{sessionStorage.setItem('psb.po.rid',rid)}catch(e){}}
-  EV.pub('preorderSubmit',{eventId:EID,requestId:rid,name:name,phone:phone,depositor:$('fDep').value.trim(),qty:qty}).then(function(r){
+  EV.pub('preorderSubmit',{eventId:EID,requestId:rid,name:name,phone:phone,depositor:'',qty:qty}).then(function(r){
     try{sessionStorage.removeItem('psb.po.rid')}catch(e){}
     save(r.token); token=r.token; history.replaceState(null,'','?'+(TEST?'ev=test&':'')+'k='+r.token);
     b.disabled=false; msg($('formMsg'),''); showMine();
