@@ -69,6 +69,26 @@ ul.tips li{margin:4px 0}
 .rk.two{grid-template-columns:repeat(2,1fr)}
 .rk.one{grid-template-columns:1fr;max-width:200px}
 .warn{margin-top:8px!important;padding:8px 10px;border-radius:10px;background:var(--accent-soft);color:var(--accent-2)!important;font-weight:700}
+.tier{margin-top:16px;padding:12px;border-radius:16px;background:var(--bg);border:1.5px solid var(--line)}
+.th{display:flex;align-items:center;gap:12px}
+.tb{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:32px;line-height:1;color:#fff;text-shadow:0 2px 3px rgba(0,0,0,.35)}
+.tn{display:block;font-size:20px;font-weight:900;line-height:1.2}
+.ts{display:block;font-style:normal;font-size:13px;color:var(--ink-2);margin-top:2px;word-break:keep-all}
+.tier .rk{margin-top:10px}
+.tier .rk img{border:1px solid var(--line);box-shadow:none}
+.ta{border:2px solid #F5C451;background:linear-gradient(180deg,#FFF6D8,var(--bg) 70%)}
+.ta .tb{background:linear-gradient(135deg,#F5C451,#D9881E);position:relative;overflow:hidden;box-shadow:0 0 0 3px rgba(245,196,81,.35),0 4px 12px rgba(217,136,30,.5)}
+.ta .tb::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-20deg);animation:shine 2.6s ease-in-out infinite}
+@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+.ta .tn{font-size:24px;color:#9A5A00}
+.ta .rk img{border:2px solid #F5C451}
+.tb-b,.tb .x{}
+.tbk .tb{background:linear-gradient(135deg,#9FB4C8,#5F7A94)}
+.tc .tb{background:linear-gradient(135deg,#7FBB98,#2E6B4F)}
+.td .tb{background:linear-gradient(135deg,#E9A3B8,#C2557A)}
+.te .tb{background:linear-gradient(135deg,#F7B267,#D9641E)}
+.rk.c4{grid-template-columns:repeat(4,1fr);gap:6px}
+@media (prefers-reduced-motion:reduce){.ta .tb::after{animation:none}}
 .rkt{margin-top:12px;font-size:13px;font-weight:800;color:var(--accent-2)}
 .hint{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
 .hint b{color:var(--accent-2)}
@@ -99,7 +119,7 @@ ul.tips li{margin:4px 0}
       <p>보물 찾고, 겨루고, 응원하고, 변신까지. 손목띠 하나로 전부 즐기는 행사 날 필수템!</p>
       <p class="free">입장·마켓 구경·무대 관람은 패스 없이도 무료야.</p>
     </div>
-    <div class="perk"><div class="no">1</div><div class="body"><b>경품 걸린 귤밭 보물찾기</b><span>귤밭 곳곳에 숨은 보물을 찾아 폰으로 도전하면 경품이 걸려 있어. 넨도로이드·인형·가방·굿즈·피규어·포토카드·귤까지! 기본 10번 도전하고, 큰 경품은 수량이 한정이라 먼저 뽑으면 내 거야.</span><span class="warn">아래 상품 중에서 도전할 때마다 <b>하나씩 랜덤으로</b> 나와. 전부 받는 건 아니야!</span><div class="rkt">A상 · 넨도로이드 미쿠, 사쿠라 미쿠 가방, 케로로 인형 풀세트</div><div class="rk"><img src="assets/prizes/A/nendo_miku.jpg" alt="넨도로이드 미쿠"><img src="assets/prizes/A/bag_sakura.jpg" alt="사쿠라 미쿠 가방"><img src="assets/prizes/A/keroro_chibi.jpg" alt="케로로 인형 풀세트"></div><div class="rkt">B상 · 후와쁘띠, 케로로 굿즈</div><div class="rk"><img src="assets/prizes/B/pouch_miku.jpg" alt=""><img src="assets/prizes/B/pouch_kanade.jpg" alt=""><img src="assets/prizes/B/keroro_hat.jpg" alt=""></div><div class="rkt">피규어 · 프리렌, 사쿠라, 나루토, 바쿠고, 메구미, 조로, 루피</div><div class="rk "><img src="assets/prizes/C/frieren.jpg" alt=""><img src="assets/prizes/C/sakura.jpg" alt=""><img src="assets/prizes/C/naruto.jpg" alt=""><img src="assets/prizes/C/bakugo.jpg" alt=""><img src="assets/prizes/C/megumi.jpg" alt=""><img src="assets/prizes/C/zoro.jpg" alt=""><img src="assets/prizes/C/luffy.jpg" alt=""></div><div class="rkt">명조 포토카드</div><div class="rk one"><img src="assets/prizes/D_photocards.jpg" alt=""></div><span style="margin-top:10px">그리고 달콤한 제주 귤도 있어!</span></div></div>
+    <div class="perk"><div class="no">1</div><div class="body"><b>경품 걸린 귤밭 보물찾기</b><span>귤밭 곳곳에 숨은 보물을 찾아 폰으로 도전하면 경품이 걸려 있어. 넨도로이드·인형·가방·굿즈·피규어·포토카드·귤까지! 기본 10번 도전하고, 큰 경품은 수량이 한정이라 먼저 뽑으면 내 거야.</span><span class="warn">아래 상품 중에서 도전할 때마다 <b>하나씩 랜덤으로</b> 나와. 전부 받는 건 아니야!</span><div class="tier ta"><div class="th"><i class="tb">A</i><div><b class="tn">A상</b><em class="ts">넨도로이드 · 가방 · 인형 풀세트</em></div></div><div class="rk "><img src="assets/prizes/A/nendo_miku.jpg" alt=""><img src="assets/prizes/A/bag_sakura.jpg" alt=""><img src="assets/prizes/A/keroro_chibi.jpg" alt=""></div></div><div class="tier tbk"><div class="th"><i class="tb">B</i><div><b class="tn">B상</b><em class="ts">후와쁘띠 · 케로로 굿즈</em></div></div><div class="rk "><img src="assets/prizes/B/pouch_miku.jpg" alt=""><img src="assets/prizes/B/pouch_kanade.jpg" alt=""><img src="assets/prizes/B/keroro_hat.jpg" alt=""></div></div><div class="tier tc"><div class="th"><i class="tb">C</i><div><b class="tn">C상</b><em class="ts">인기 애니 피규어 7종</em></div></div><div class="rk c4"><img src="assets/prizes/C/frieren.jpg" alt=""><img src="assets/prizes/C/sakura.jpg" alt=""><img src="assets/prizes/C/naruto.jpg" alt=""><img src="assets/prizes/C/bakugo.jpg" alt=""><img src="assets/prizes/C/megumi.jpg" alt=""><img src="assets/prizes/C/zoro.jpg" alt=""><img src="assets/prizes/C/luffy.jpg" alt=""></div></div><div class="tier td"><div class="th"><i class="tb">D</i><div><b class="tn">D상</b><em class="ts">명조 포토카드</em></div></div><div class="rk one"><img src="assets/prizes/D_photocards.jpg" alt=""></div></div><div class="tier te"><div class="th"><i class="tb">E</i><div><b class="tn">E상</b><em class="ts">달콤한 제주 귤</em></div></div></div></div></div>
     <div class="perk"><div class="no">2</div><div class="body"><b>랭킹전 도전, 1위는 상품!</b><span>귤 자르기, 화살 양궁 같은 종목 전부에 도전해서 점수를 겨뤄. 종목마다 1위에게 상품이 있어.</span>
       <div class="rkt">1위가 가져가는 상품</div>
       <div class="rk"><img src="assets/rank/r1.jpg" alt="주술회전 피규어"><img src="assets/rank/r2.jpg" alt="프리렌 피규어"><img src="assets/rank/r3.jpg" alt="블루 아카이브 피규어"><img src="assets/rank/r4.jpg" alt="하츠네 미쿠 피규어"><img src="assets/rank/r5.jpg" alt="주술회전 피규어"></div></div></div>
