@@ -113,6 +113,7 @@ var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu';
 var $=function(id){return document.getElementById(id)};
 var SENT=(function(){try{return JSON.parse(localStorage.getItem('psb.po.sent')||'{}')}catch(e){return {}}})();
 var PRE={};
+function isSent(x){return !!(x.smsAt||SENT[x.token])}
 function markSent(t,on){if(on)SENT[t]=Date.now();else delete SENT[t];try{localStorage.setItem('psb.po.sent',JSON.stringify(SENT))}catch(e){}}
 var seen=null;
 function ding(){try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(c.destination);o.start();setTimeout(function(){o.frequency.value=1175},150);setTimeout(function(){o.stop();c.close()},350)}catch(e){}}
@@ -171,24 +172,24 @@ function render(){
     if(!q) return true;
     return x.name.indexOf(q)>=0||x.depositor.indexOf(q)>=0||(qd.length>=3&&x.phone.indexOf(qd)>=0);
   });
-  function rk(x){return x.status==='pending'?0:x.status==='approved'?1:2}rows=rows.map(function(x,i){return [x,i]}).sort(function(a,b){return rk(a[0])-rk(b[0])||a[1]-b[1]}).map(function(p){return p[0]});
+  function rk(x){return x.status==='pending'?0:x.status==='approved'?(isSent(x)?3:1):2}rows=rows.map(function(x,i){return [x,i]}).sort(function(a,b){return rk(a[0])-rk(b[0])||a[1]-b[1]}).map(function(p){return p[0]});
   $('list').innerHTML=rows.length?rows.map(row).join(''):'<p class="sub" style="text-align:center;padding:18px 0">해당하는 신청이 없어요.</p>';
 }
 function row(x){
-  var pill=x.status==='pending'?'<span class="pill">대기</span>':x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>':'<span class="pill no">반려</span>';
+  var pill=x.status==='pending'?'<span class="pill">대기</span>':x.status==='approved'?'<span class="pill ok">승인 '+(x.used?'· 수령 '+x.used+'/'+x.qty:'')+'</span>'+(isSent(x)?'<span class="pill ok">문자 완료</span>':'<span class="pill">문자 전</span>'):'<span class="pill no">반려</span>';
   var btns='';
   if(x.status==='pending'){
     btns='<button class="btn p sm" data-a="approve" data-t="'+x.token+'" type="button">입금 확인 · 승인</button><button class="btn sm" data-a="reject" data-t="'+x.token+'" type="button">반려</button>';
   }
   else if(x.status==='approved'){
     var body='[과수원피스] 귤선장이야! 항해 패스 돈 확인했어. 행사 날 패스 부스에서 아래 링크의 QR을 보여주면 해적단 손목띠를 채워 줄게. 기다릴게! '+custUrl(x.token);
-    btns='<a class="btn p sm" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 보내기</a>';
+    btns='<a class="btn'+(isSent(x)?'':' p')+' sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">'+(isSent(x)?'문자 다시 보내기':'문자 보내기')+'</a>';
   }else if(!x.used) btns='<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">대기로 되돌리기</button>';
   return '<div class="ord '+x.status+'"><div class="top"><span class="name">'+esc(x.name)+' <span style="font-weight:400;font-size:14px">× '+x.qty+'장</span></span><span class="amt">'+won(x.amount)+'원</span></div>'+
     '<div class="meta">입금자명 <b>'+esc(x.depositor)+'</b> · '+esc(phoneFmt(x.phone))+' · '+hm(x.createdAt)+' '+pill+'</div>'+(btns?'<div class="row">'+btns+'</div>':'')+'</div>';
 }
 $('list').addEventListener('click',function(e){
-  var sa=e.target.closest('a[data-sent]'); if(sa){markSent(sa.dataset.sent,true); setTimeout(render,600); return}
+  var sa=e.target.closest('a[data-sent]'); if(sa){var tk=sa.dataset.sent; markSent(tk,true); adm('ownerPreorderSet',{token:tk,action:'sent'}).then(load,function(){}); setTimeout(render,600); return}
   var b=e.target.closest('button[data-a]'); if(!b) return;
   if(b.dataset.a==='sent'){markSent(b.dataset.t,true); render(); return}
   if(b.dataset.a==='unsent'){markSent(b.dataset.t,false); render(); return}
