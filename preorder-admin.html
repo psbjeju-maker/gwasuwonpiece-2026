@@ -186,7 +186,7 @@ function row(x){
   }
   else if(x.status==='approved'){
     var body='[과수원피스] 귤선장이야! 항해 패스 돈 확인했어. 행사 날 패스 부스에서 아래 링크의 QR을 보여주면 해적단 손목띠를 채워 줄게. 기다릴게! '+custUrl(x.token);
-    btns=(SENT[x.token]?'<a class="btn sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 다시 보내기</a><button class="btn sm" data-a="unsent" data-t="'+x.token+'" type="button">보냄 표시 지우기</button>':'<a class="btn p sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 보내기</a>')+(x.used?'':'<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">승인 취소</button>');
+    btns=(SENT[x.token]?'<a class="btn sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 다시 보내기</a><button class="btn sm" data-a="unsent" data-t="'+x.token+'" type="button">보냄 표시 지우기</button>':'<a class="btn p sm" data-sent="'+x.token+'" href="sms:'+x.phone+'?body='+encodeURIComponent(body)+'">문자 보내기</a><button class="btn sm" data-a="sent" data-t="'+x.token+'" type="button">이미 보냄</button>')+(x.used?'':'<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">승인 취소</button>');
   }else if(!x.used) btns='<button class="btn sm" data-a="reopen" data-t="'+x.token+'" type="button">대기로 되돌리기</button>';
   return '<div class="ord '+x.status+'"><div class="top"><span class="name">'+esc(x.name)+' <span style="font-weight:400;font-size:14px">× '+x.qty+'장</span></span><span class="amt">'+won(x.amount)+'원</span></div>'+
     '<div class="meta">입금자명 <b>'+esc(x.depositor)+'</b> · '+esc(phoneFmt(x.phone))+' · '+hm(x.createdAt)+' '+pill+'</div>'+(btns?'<div class="row">'+btns+'</div>':'')+'</div>';
@@ -194,6 +194,7 @@ function row(x){
 $('list').addEventListener('click',function(e){
   var sa=e.target.closest('a[data-sent]'); if(sa){markSent(sa.dataset.sent,true); setTimeout(render,600); return}
   var b=e.target.closest('button[data-a]'); if(!b) return;
+  if(b.dataset.a==='sent'){markSent(b.dataset.t,true); render(); return}
   if(b.dataset.a==='unsent'){markSent(b.dataset.t,false); render(); return}
   var a=b.dataset.a, x=items.filter(function(i){return i.token===b.dataset.t})[0];
   if(a==='reject'&&!confirm(x.name+' 님 신청을 반려할까요?')) return;
