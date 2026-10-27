@@ -127,3 +127,20 @@ td.l,th.l{text-align:left}
 .ok{color:var(--ok)}
 .hide{display:none !important}
 .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;word-break:break-all}
+
+/* ── 셀러 쿠지 전용: 박서방 쿠지(코발트·다크)와 구분되는 연한 귤색 라이트 테마 ── */
+:root{
+  --brand:#F0822D; --brand-lo:#F79A52; --brand-deep:#D96A18;
+  --bg:#FFE6D2; --panel:#FFF6EE; --panel-2:#FFFFFF; --line:#F0C9A8;
+  --txt:#4A2C16; --dim:#8F6A4E; --dim-2:#B08B70;
+  --ok:#2E9E5B; --bad:#D6453D; --warn:#C77A0A;
+}
+body{background:radial-gradient(120% 60% at 50% 0%, #FFD3AE 0%, var(--bg) 60%);background-attachment:fixed}
+.card{box-shadow:0 4px 16px rgba(217,106,24,.15)}
+input,select,textarea,.btn{border-color:#EBC3A0}
+.btn:hover{background:#FFEBDA;border-color:#E3A877}
+.btn.danger{background:rgba(214,69,61,.1);border-color:rgba(214,69,61,.4);color:#B8342D}
+th,td{border-bottom-color:#F0D5BE}
+th{color:var(--brand-deep)}
+#toast{background:rgba(74,44,22,.95);color:#fff}
+.editbox input,.fxpick{background:#fff!important;border-color:#EBC3A0!important}
