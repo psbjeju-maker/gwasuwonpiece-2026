@@ -128,7 +128,7 @@ function h(html){var d=document.createElement('div');d.innerHTML=html;return d}
 function rid(){return EV.newId()}
 var TIER={TOP:'상위 상품',A:'A상',B:'B상',C:'C상',D:'D상',FREE:'무료 뽑기권',X:'꽝'};
 /* 2026-10-21: 당일은 손목띠 찬 사람 = 패스 산 사람(눈으로 확인). 손목띠 QR·패스 등록·입장 기록은 안 씀 → 화면에서 숨김(.bandonly) */
-var TASKS={vote:'무대 인기투표 진행',votehelp:'현장 투표 지원',hq:'본부 미션 보상',draw:'뽑기',pickup:'상품 수령',extra:'추가 도전 판매'};
+var TASKS={vote:'무대 인기투표 진행',votehelp:'현장 투표 지원',hq:'본부 미션 보상',draw:'뽑기',pickup:'상품 수령',extra:'보물찾기 횟수 추가'};
 function call(n,d){return EV.staff(n,Object.assign({eventId:EID},d||{}))}
 function errMsg(e){return (e&&(e.message||e.reason))||'처리하지 못했어요'}
 
@@ -360,19 +360,21 @@ SCREENS.pickup=function(box){
 
 SCREENS.vote=function(box){
   box.appendChild(h('<div class="card"><h2>노래방 인기투표</h2><div id="vNow" class="who">불러오는 중…</div>'+
-    '<div class="two mt"><button class="btn p" data-v="open" type="button">투표 시작</button><button class="btn d" data-v="closed" type="button">투표 마감</button></div>'+
-    '<button class="btn g mt" data-v="published" type="button">결과 공개</button><div id="vCounts"></div><div id="vRes"></div></div>'+
+    '<div class="two mt"><button class="btn p" data-v="open" type="button">투표 열기(순위 숨김)</button><button class="btn d" data-v="closed" type="button">투표 마감</button></div>'+
+    '<div class="two mt"><button class="btn" data-v="live" type="button">투표 시작 선언 + 순위 공개</button><button class="btn" data-v="hidelive" type="button">순위 숨기기</button></div>'+
+    '<button class="btn g mt" data-v="published" type="button">최종 결과 공개</button><div id="vCounts"></div><div id="vRes"></div></div>'+
     '<details class="card"><summary style="font-weight:700">참가팀 등록 (한 줄에 한 팀)</summary><label>투표 제목</label><input id="vTitle"><label>참가팀</label><textarea id="vTeams" placeholder="1팀 이름&#10;2팀 이름"></textarea><button class="btn mt" id="vSave" type="button">참가팀 저장</button></details>'));
   var ST={ready:'시작 전',open:'투표 중',closed:'마감(공개 전)',published:'결과 공개됨'};
   function show(v){
-    $('vNow').innerHTML='<b>'+esc(ST[v.status]||v.status)+'</b> · 참여 '+v.total+'명 · 팀 '+(v.teams||[]).length+'개';
+    $('vNow').innerHTML='<b>'+esc(ST[v.status]||v.status)+'</b>'+(v.status==='open'?' · 손님 화면 순위 <b>'+(v.live?'공개 중':'숨김')+'</b>':'')+' · 참여 '+v.total+'명 · 팀 '+(v.teams||[]).length+'개';
     $('vTitle').value=v.title||''; if(document.activeElement!==$('vTeams')) $('vTeams').value=(v.teams||[]).map(function(t){return t.name}).join('\n');
     $('vCounts').innerHTML=v.counts?'<table class="mt">'+(v.teams||[]).map(function(t){return '<tr><td>'+t.no+'. '+esc(t.name)+'</td><td style="text-align:right"><b>'+(v.counts[t.no]||0)+'</b>표</td></tr>'}).join('')+'</table>':'';
   }
   function load(d){return call('voteHost',d||{}).then(show,function(e){res($('vRes'),'no',errMsg(e))})}
   box.addEventListener('click',function(e){var b=e.target.closest('[data-v]');if(!b)return;var a=b.dataset.v;
     if(a==='closed'&&!confirm('투표를 마감할까요? 마감 후에는 아무도 바꿀 수 없어요.'))return;
-    if(a==='published'&&!confirm('결과를 손님 화면에 공개할까요?'))return;
+    if(a==='published'&&!confirm('최종 결과를 손님 화면에 공개할까요?'))return;
+    if(a==='live'&&!confirm('지금부터 손님 화면에 실시간 1~3위를 보여줄까요? (「투표 시작!」 연출이 뜹니다)'))return;
     $('vRes').innerHTML='';busy(b,load({action:a}))});
   $('vSave').onclick=function(){busy(this,load({action:'teams',title:$('vTitle').value.trim(),teams:$('vTeams').value.split('\n').map(function(s){return {name:s.trim()}}).filter(function(t){return t.name})}))};
   load(); setInterval(function(){if(!$('scTask').hidden)load()},10000);
@@ -474,7 +476,7 @@ SCREENS.adminFull=function(box){
     '<div class="card"><h2>정정 (총괄만)</h2><div class="bandonly"><label>손목띠 재발급: 기존 → 새 손목띠</label>'+codeRow('rOld','기존 손목띠')+'<div class="mt"></div>'+codeRow('rNew','새 손목띠 QR')+'<input id="rWhy" class="mt" placeholder="사유 (예: 분실)"><button class="btn mt" id="rGo" type="button">재발급</button>'+
     '<label>패스 취소 (결제 취소·잘못된 활성화)</label>'+codeRow('xCode')+'<input id="xWhy" class="mt" placeholder="사유"><button class="btn d mt" id="xGo" type="button">패스 취소</button></div>'+
     '<button class="btn mt" id="vReset" type="button">투표 초기화(표 전부 삭제)</button><div id="rRes"></div></div>'+
-    '<div class="card"><h2>추가 도전 판매 기록</h2><p class="muted">실수로 지급한 건은 사유를 남기고 취소해요(이미 쓴 횟수는 못 되돌려요).</p><button class="btn mt" id="xLoad" type="button">기록 보기</button><div class="list mt" id="xList"></div><div id="xRes"></div></div>'+
+    '<div class="card"><h2>보물찾기 횟수 추가 기록</h2><p class="muted">실수로 지급한 건은 사유를 남기고 취소해요(이미 쓴 횟수는 못 되돌려요).</p><button class="btn mt" id="xLoad" type="button">기록 보기</button><div class="list mt" id="xList"></div><div id="xRes"></div></div>'+
     '<div class="card"><h2>보물 장소·상품판·NPC</h2><a class="btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="bury.html'+(TEST?'?ev=test':'')+'">보물 관리 화면 열기</a></div>'));
   $('aViews').innerHTML=Object.keys(TASKS).concat('rec').map(function(k){return '<button class="btn sm" data-view="'+k+'" type="button" style="width:100%">'+(TASKS[k]||'행사 기록')+'</button>'}).join('');
   $('xLoad').onclick=function(){busy(this,call('extraList')).then(function(r){
@@ -549,13 +551,13 @@ SCREENS.voucher=function(box){
   $('vList').addEventListener('click',function(e){var b=e.target.closest('[data-pick]');if(!b)return;$('vIn').value=b.dataset.pick;vLook()});
 };
 
-/* 본 행사 관리자 홈: 필요한 것만 (입장 · 투표 · 보물찾기 · 추가 도전 판매 · 패스 사전 구매) */
+/* 본 행사 관리자 홈: 필요한 것만 (입장 · 투표 · 보물찾기 · 보물찾기 횟수 추가 · 패스 사전 구매) */
 SCREENS.adminLite=function(box){
   box.appendChild(h('<div class="card"><h2>현장 운영</h2><div class="two menu" id="aMenu"></div></div>'+
-    '<div class="card"><h2>보물찾기</h2><div class="two menu"><button class="btn" data-view="pickup" type="button">상품 수령</button><button class="btn" data-view="extra" type="button">추가 도전 판매</button></div>'+
+    '<div class="card"><h2>보물찾기</h2><div class="two menu"><button class="btn" data-view="pickup" type="button">상품 수령</button><button class="btn" data-view="extra" type="button">보물찾기 횟수 추가</button></div>'+
     '<a class="btn mt" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="bury.html">보물 관리 (장소 · 퀴즈 · 상품판)</a></div>'+
     '<div class="card"><h2>패스 사전 구매</h2><div class="two menu"><button class="btn" data-view="voucher" type="button">교환 (QR 확인)</button><a class="btn" href="preorder-admin.html">입금 확인 · 승인</a></div></div>'+
-    '<div class="card"><h2>추가 도전 판매 기록</h2><p class="muted">실수로 지급한 건은 사유를 남기고 취소해요(이미 쓴 횟수는 못 되돌려요).</p><button class="btn mt" id="xLoad" type="button">기록 보기</button><div class="list mt" id="xList"></div><div id="xRes"></div></div>'+
+    '<div class="card"><h2>보물찾기 횟수 추가 기록</h2><p class="muted">실수로 지급한 건은 사유를 남기고 취소해요(이미 쓴 횟수는 못 되돌려요).</p><button class="btn mt" id="xLoad" type="button">기록 보기</button><div class="list mt" id="xList"></div><div id="xRes"></div></div>'+
     '<div class="card"><h2>투표</h2><button class="btn mt" id="vReset" type="button">투표 초기화(표 전부 삭제)</button><div id="rRes"></div></div>'));
   $('aMenu').innerHTML='<button class="btn p" data-view="entry" type="button">행사 입장</button><button class="btn p" data-view="vote" type="button">무대 인기투표</button>';
   box.onclick=function(e){var b=e.target.closest('[data-view]');if(b){adminView=b.dataset.view;start()}};

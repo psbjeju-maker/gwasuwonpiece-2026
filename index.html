@@ -239,12 +239,51 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .rw div{flex:1;min-width:0}
 .rw .c{font-weight:700;letter-spacing:.12em;font-size:18px}
 
-/* 투표 시트 */
-#voteSheet{position:fixed;inset:0;z-index:30;background:rgba(14,25,41,.55);display:flex;align-items:flex-end}
-#voteSheet .in{background:var(--surface);width:100%;max-width:520px;margin:0 auto;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + var(--safe-b));max-height:85vh;overflow:auto}
-.team{display:block;width:100%;min-height:62px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:19px;font-weight:700;text-align:left;padding:0 16px;margin-top:8px}
-.team.on{border-color:var(--teal);background:var(--teal-soft)}
-.team .n{float:right;color:var(--teal)}
+/* 투표 — 전체 화면 (2026-10-27 새 디자인) */
+#voteSheet{position:fixed;inset:0;z-index:30;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:#FFF6E6 url(assets/vote/background.webp) center top/100% auto repeat-y}
+#voteSheet .in{position:relative;max-width:480px;margin:0 auto;padding:6px 18px calc(150px + var(--safe-b))}
+.vclose{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:3;width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(20,36,57,.2);font-size:20px;font-weight:700;color:#1E5AA8}
+.vbanner{position:relative;margin:2px -6px 0;aspect-ratio:3/1;background:url(assets/vote/title_banner.webp) center/100% 100% no-repeat}
+.vbanner b{position:absolute;left:17%;right:17%;top:30%;height:34%;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-size:20px;line-height:1.15;letter-spacing:.02em;text-shadow:0 2px 0 rgba(10,40,100,.45)}
+.vmsg{margin:2px auto 12px;text-align:center;word-break:keep-all;font-size:14px;line-height:1.5;color:#5A4630;font-weight:700}
+.vmsg span{display:inline-block;padding:6px 14px;border-radius:99px;background:rgba(255,255,255,.85);box-shadow:0 1px 4px rgba(90,70,48,.12)}
+.vpod{position:relative;container-type:inline-size;margin:0 -4px 14px;aspect-ratio:3/2;animation:vpodIn .7s cubic-bezier(.2,1.2,.3,1) both}
+.vpod img{display:block;width:100%;height:100%}
+.vpod .pn{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#17283A;font-weight:700;line-height:1.2;word-break:keep-all;overflow-wrap:anywhere;padding:0 2px}
+.vpod .pn small{font-size:10px;line-height:1.1;color:#1E5AA8;margin-top:3px}
+.vpod .pn.e{color:#9AA5B5;font-weight:400}
+.vpod .p1{left:38.5%;width:23%;top:39%;height:31%}
+.vpod .p2{left:9%;width:20%;top:50%;height:22%}
+.vpod .p3{left:70%;width:19%;top:59%;height:16%}
+@keyframes vpodIn{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+.vt{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:76px;margin-top:12px;padding:8px 16px;text-align:left;border:20px solid transparent;border-image:url(assets/vote/card_default.webp) 150 fill/20px stretch;border-radius:22px;isolation:isolate;transition:transform .15s}
+.vt::before{content:'';position:absolute;inset:-14px;z-index:-1;border-radius:16px;background:var(--bgc,#fff)}
+.vt:active{transform:scale(.985)}
+.vt .no{flex:none;width:34px;height:34px;border-radius:50%;background:var(--tc);color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.18)}
+.vt .nm{flex:1;min-width:0;font-size:17px;font-weight:700;line-height:1.3;color:#17283A;word-break:keep-all}
+.vt .mk{flex:none;font-size:13px;font-weight:700;color:#1E5AA8}
+.vt .ct{flex:none;font-size:15px;font-weight:700;color:#1E5AA8}
+.vt.sel::before{inset:-24px;border-radius:18px}
+.vt.sel{border-image-source:url(assets/vote/card_selected.webp);border-image-slice:190 fill;border-image-width:34px;border-width:34px;margin-left:-8px;margin-right:-8px;width:calc(100% + 16px)}
+.vt.mine .mk{display:inline-flex;align-items:center;gap:4px;background:#1E5AA8;color:#fff;padding:3px 10px;border-radius:99px}
+.vt.off{border-image-source:url(assets/vote/card_disabled.webp);opacity:.6}
+.vbar{position:fixed;left:0;right:0;bottom:0;z-index:2;padding:26px 18px calc(14px + var(--safe-b));text-align:center;background:linear-gradient(to top,#FFF6E6 62%,rgba(255,246,230,0))}
+.vbtn{display:block;width:min(300px,78%);height:auto;aspect-ratio:700/280;margin:0 auto;font-size:21px;font-weight:700;color:#fff;text-shadow:0 2px 0 rgba(150,60,0,.4);background:url(assets/vote/button_vote.webp) center/100% 100% no-repeat;transition:transform .12s}
+.vbtn:active{transform:scale(.96)}
+.vbtn.cancel{background-image:url(assets/vote/button_cancel.webp);color:#1E5AA8;text-shadow:none}
+.vbtn:disabled{filter:grayscale(.85);opacity:.5}
+.vlink{margin-top:2px;padding:8px 14px;font-size:14px;font-weight:700;color:#1E5AA8;text-decoration:underline}
+.verr{margin:6px 0 0;min-height:18px;font-size:13px;color:#B23A30;font-weight:700}
+.vstart{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(14,25,41,.45);animation:vsIn .35s both}
+.vstart .bn{position:relative;width:min(92vw,440px);aspect-ratio:800/316;background:url(assets/vote/start_banner.webp) center/100% 100% no-repeat;animation:vsPop .6s cubic-bezier(.2,1.5,.4,1) both}
+.vstart .bn b{position:absolute;left:19%;right:19%;top:30%;height:36%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:27px;text-shadow:0 2px 0 rgba(150,60,0,.5)}
+.vstart .cf{position:absolute;inset:0;background:url(assets/vote/confetti.webp) center/min(100vw,520px) no-repeat;animation:vsFall 2.6s ease-out both}
+.vstart .sp{position:absolute;width:56px;height:56px;background:url(assets/vote/sparkle.webp) center/contain no-repeat;animation:vsTw 1.2s ease-in-out infinite}
+@keyframes vsIn{from{opacity:0}to{opacity:1}}
+@keyframes vsPop{from{opacity:0;transform:scale(.4) rotate(-6deg)}to{opacity:1;transform:none}}
+@keyframes vsFall{from{opacity:0;transform:translateY(-60px)}25%{opacity:1}to{opacity:1;transform:translateY(0)}}
+@keyframes vsTw{0%,100%{transform:scale(.3) rotate(0);opacity:0}50%{transform:scale(1) rotate(30deg);opacity:1}}
+@media (prefers-reduced-motion:reduce){.vpod,.vstart,.vstart .bn,.vstart .cf,.vstart .sp{animation:none}}
 </style>
 </head>
 <body>
@@ -354,7 +393,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 </div>
 
 <!-- 투표 -->
-<div id="voteSheet" hidden><div class="in" id="voteIn"></div></div>
+<div id="voteSheet" hidden><button class="vclose" data-vclose type="button" aria-label="닫기">✕</button><div class="in" id="voteIn"></div></div>
 
 <script src="qr.js"></script>
 <script src="ev-client.js?v=8"></script>
@@ -874,26 +913,78 @@ $('tlist').addEventListener('click',function(e){
   EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0}).then(function(r){task=r;showTask(r)},function(er){closeStage();$('huntErr').textContent=er.message||''});
 });
 
-/* ---------- 투표 ---------- */
+/* ---------- 투표 ----------
+   노래 중: 투표는 되지만 순위는 안 보임(차분한 화면). 진행자가 「순위 공개」를 켜면 상단에 실시간 1~3위.
+   한 팀에게만 투표, 취소·변경은 마감 전까지. 5초마다 서버에 물어본다. */
+var VCOL=['#F28C28','#EC6A9C','#2FA89B','#7E57C2','#3D8BE0','#8DBB3F','#E9A800','#E5534B','#1FA6C0','#A944B8','#8D6E63','#6B8299'];
+var VS={v:null,sel:null,timer:0,live:null,busy:false,err:''};
+function vcall(n,d){return (window.VPREVIEW?VPREVIEW.call(n,d):EV.call(n,d))}
 function openVote(){
-  $('voteSheet').hidden=false;$('voteIn').innerHTML='<p class="muted">불러오는 중…</p>';
-  EV.call('voteGet',{eventId:EID}).then(renderVote,function(e){$('voteIn').innerHTML='<p class="err">'+esc(e.message||'')+'</p><button class="btn" data-vclose type="button">닫기</button>'});
-};
-function renderVote(v){
-  var pub=v.status==='published',pick=v.myTeam;
-  $('voteIn').innerHTML='<h2 style="margin:0 0 4px">'+esc(v.title)+'</h2><p class="muted">'+(pub?'투표 결과':v.status==='open'?'한 팀만 고를 수 있어요. 마감 전까지 바꿀 수 있어요.':'지금은 투표 시간이 아니에요.')+'</p>'+
-    v.teams.map(function(t){return '<button class="team'+(t.no===pick?' on':'')+'" data-team="'+t.no+'" type="button"'+(v.status!=='open'?' disabled':'')+'>'+t.no+'. '+esc(t.name)+(pub?'<span class="n">'+((v.counts||{})[t.no]||0)+'표</span>':'')+'</button>'}).join('')+
-    (v.status==='open'?'<button class="btn p" id="vCast" type="button" style="margin-top:14px"'+(pick?'':' disabled')+'>투표하기</button>':'')+
-    '<p class="err" id="vErr"></p><button class="btn" data-vclose type="button" style="margin-top:8px">닫기</button>';
-  var sel=pick;
-  $('voteIn').querySelectorAll('[data-team]').forEach(function(b){b.onclick=function(){$('voteIn').querySelectorAll('[data-team]').forEach(function(x){x.classList.remove('on')});b.classList.add('on');sel=+b.dataset.team;$('vCast').disabled=false}});
-  if($('vCast'))$('vCast').onclick=function(){var b=this;b.disabled=true;EV.call('voteCast',{eventId:EID,team:sel}).then(function(r){
-    $('voteIn').innerHTML='<div class="res"><img src="assets/characters/success.png" alt=""><div class="big" style="font-size:24px">'+esc(r.name)+'에 투표했습니다</div><p>마감 전까지 다시 바꿀 수 있어요.</p><button class="btn" data-vclose type="button">닫기</button></div>';
-  },function(e){b.disabled=false;$('vErr').textContent=e.message||''})};
+  $('voteSheet').hidden=false;VS.sel=null;VS.live=null;VS.err='';VS.v=null;
+  $('voteIn').innerHTML='<div class="vbanner"><b>투표</b></div><p class="vmsg"><span>불러오는 중…</span></p>';
+  vload();clearInterval(VS.timer);VS.timer=setInterval(function(){if(!document.hidden&&!VS.busy)vload()},5000);
 }
-$('voteSheet').addEventListener('click',function(e){if(e.target.id==='voteSheet'||e.target.closest('[data-vclose]'))$('voteSheet').hidden=true});
+function closeVote(){$('voteSheet').hidden=true;clearInterval(VS.timer);var st=$('vStart');if(st)st.remove()}
+function vload(){
+  return vcall('voteGet',{eventId:EID}).then(function(v){
+    var wasLive=VS.live;VS.live=!!v.live;VS.v=v;
+    if(wasLive===false&&v.live&&v.status==='open'){$('voteSheet').scrollTop=0;vStartBanner()}
+    vrender();
+  },function(e){if(!VS.v)$('voteIn').innerHTML='<div class="vbanner"><b>투표</b></div><p class="vmsg"><span>'+esc(e.message||'불러오지 못했어요')+'</span></p>'});
+}
+function vTop(v){
+  if(v.status==='published'&&v.counts)return v.teams.map(function(t){return {no:t.no,name:t.name,count:v.counts[t.no]||0}}).filter(function(t){return t.count>0}).sort(function(a,b){return b.count-a.count||a.no-b.no}).slice(0,3);
+  return v.top||null;
+}
+function vrender(){
+  var v=VS.v;if(!v)return;
+  var open=v.status==='open',pick=v.myTeam,sel=VS.sel,top=vTop(v),pub=v.status==='published';
+  var msg=pub?'최종 결과예요':v.status==='closed'?'투표가 마감됐어요 · 결과를 기다려 주세요':open?(v.live?'실시간 순위 · 마감 전까지 바꿀 수 있어요':'응원하는 팀에 한 표! 마감 전까지 바꿀 수 있어요'):'곧 투표가 시작돼요';
+  var h='<div class="vbanner"><b>'+esc(v.title||'인기투표')+'</b></div><p class="vmsg"><span>'+esc(msg)+'</span></p>';
+  if(top){
+    var PW=Math.min(480,$('voteSheet').clientWidth)-28,BOX=[[.23,.31,17],[.20,.22,14],[.19,.16,13]];
+    var fit=function(n,b){var w=PW*b[0]-6,h=PW*2/3*b[1]-14;for(var f=b[2];f>7.5;f-=.5){var ln=Math.ceil(n.length/Math.max(1,Math.floor(w/(f*1.05))));if(ln*f*1.25<=h)return f}return 7.5};
+    var pn=function(i,c){var t=top[i];if(!t)return '<div class="pn e '+c+'">—</div>';var fs=fit(t.name,BOX[i]);return '<div class="pn '+c+'" style="font-size:'+fs.toFixed(1)+'px">'+esc(t.name)+'<small>'+t.count+'표</small></div>'};
+    h+='<div class="vpod"><img src="assets/vote/podium.webp" alt="">'+pn(0,'p1')+pn(1,'p2')+pn(2,'p3')+'</div>';
+  }
+  h+=v.teams.map(function(t){
+    var c=VCOL[(t.no-1)%VCOL.length],mine=t.no===pick,on=sel===t.no||(sel==null&&mine);
+    return '<button class="vt'+(on?' sel':'')+(mine?' mine':'')+(!open&&!pub&&v.status!=='closed'?' off':'')+'" data-team="'+t.no+'" type="button" style="--tc:'+c+';--bgc:'+c+'22"'+(open?'':' disabled')+'>'+
+      '<span class="no">'+t.no+'</span><span class="nm">'+esc(t.name)+'</span>'+
+      (mine?'<span class="mk">✓ 내 투표</span>':pub&&v.counts?'<span class="ct">'+(v.counts[t.no]||0)+'표</span>':'')+'</button>';
+  }).join('');
+  var bar='';
+  if(open){
+    if(pick&&(sel==null||sel===pick))bar='<button class="vbtn cancel" id="vCancel" type="button">투표 취소</button>';
+    else if(pick)bar='<button class="vbtn" id="vCast" type="button">이 팀으로 바꾸기</button><button class="vlink" id="vCancel" type="button">투표 취소</button>';
+    else bar='<button class="vbtn" id="vCast" type="button"'+(sel?'':' disabled')+'>'+(sel?'투표하기':'팀을 골라 주세요')+'</button>';
+    bar='<div class="vbar">'+bar+'<p class="verr" id="vErr">'+esc(VS.err)+'</p></div>';
+  }
+  var sc=$('voteSheet').scrollTop;
+  $('voteIn').innerHTML=h+bar;
+  $('voteSheet').scrollTop=sc;
+}
+function vAct(name,data){
+  VS.busy=true;VS.err='';
+  return vcall(name,data).then(function(){VS.sel=null;return vload()},function(e){
+    VS.err=e.reason==='pass-required'?'패스가 있어야 투표할 수 있어요':e.reason==='vote-closed'?'지금은 투표 시간이 아니에요':(e.message||'잠시 후 다시 해주세요');vrender();
+  }).then(function(){VS.busy=false});
+}
+function vStartBanner(){
+  var d=document.createElement('div');d.className='vstart';d.id='vStart';
+  d.innerHTML='<div class="cf"></div><div class="sp" style="left:10%;top:28%"></div><div class="sp" style="right:12%;top:24%;animation-delay:.3s"></div><div class="sp" style="left:22%;bottom:26%;animation-delay:.6s"></div><div class="sp" style="right:20%;bottom:30%;animation-delay:.9s"></div><div class="bn"><b>투표 시작!</b></div>';
+  document.body.appendChild(d);
+  var rm=function(){if(d.isConnected)d.remove()};d.onclick=rm;setTimeout(rm,2800);
+}
+$('voteSheet').addEventListener('click',function(e){
+  if(e.target.closest('[data-vclose]')){closeVote();return}
+  var t=e.target.closest('[data-team]');
+  if(t&&!t.disabled){VS.sel=+t.dataset.team;VS.err='';vrender();return}
+  if(e.target.closest('#vCast')&&VS.sel&&!VS.busy){vAct('voteCast',{eventId:EID,team:VS.sel});return}
+  if(e.target.closest('#vCancel')&&!VS.busy){vAct('voteCancel',{eventId:EID});return}
+});
 
-boot();
+if(/[?&]votepreview=1/.test(location.search)){var vp=document.createElement('script');vp.src='vote-preview.js';vp.onload=openVote;document.body.appendChild(vp)}else boot();
 
 /* ---------- 몬스터 전투 미리보기 (?monsterpreview=1): 서버·GPS 없이 화면과 흐름만 눌러 본다 ---------- */
 if(PV){(function(){
