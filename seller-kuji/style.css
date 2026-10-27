@@ -132,8 +132,8 @@ td.l,th.l{text-align:left}
 :root{
   --brand:#F0822D; --brand-lo:#F79A52; --brand-deep:#D96A18;
   --bg:#FFF3E8; --panel:#FFFAF5; --panel-2:#FFFFFF; --line:#F5DBC4;
-  --txt:#4A2C16; --dim:#8F6A4E; --dim-2:#B08B70;
-  --ok:#2E9E5B; --bad:#D6453D; --warn:#C77A0A;
+  --txt:#2B1608; --dim:#5E3E26; --dim-2:#7A5638;
+  --ok:#1F7A45; --bad:#B8302A; --warn:#9A5A00;
 }
 body{background:radial-gradient(120% 60% at 50% 0%, #FFE6D0 0%, var(--bg) 60%);background-attachment:fixed}
 .card{box-shadow:0 4px 16px rgba(217,106,24,.15)}
@@ -144,3 +144,6 @@ th,td{border-bottom-color:#F0D5BE}
 th{color:var(--brand-deep)}
 #toast{background:rgba(74,44,22,.95);color:#fff}
 .editbox input,.fxpick{background:#fff!important;border-color:#EBC3A0!important}
+#toast.ok{color:#fff}
+#toast.bad{color:#fff}
+th{color:#8A4408}
