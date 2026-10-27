@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>쿠지 관리 · 셀러 쿠지</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .set{border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px;
+       background:var(--panel)}
+  .set.done{opacity:.72}
+  .set .h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .set .t{font-size:15.5px;font-weight:800;line-height:1.35}
+  .set .meta{font-size:12px;color:var(--dim);margin-top:3px}
+  .tag{font-size:11px;padding:3px 9px;border-radius:8px;white-space:nowrap;flex:none}
+  .tag.live{background:rgba(74,222,128,.14);color:#86efac}
+  .tag.done{background:#252c3a;color:var(--dim)}
+  .bar{height:7px;border-radius:4px;background:#1b2231;overflow:hidden;margin:11px 0 4px}
+  .bar i{display:block;height:100%;background:var(--brand);border-radius:4px}
+  .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+  .fold{margin-top:12px;padding-top:12px;border-top:1px solid #1e2532}
+  .th{width:34px;height:34px;border-radius:7px;object-fit:cover;background:#0b0f18;
+      vertical-align:middle;border:1px solid var(--line)}
+  /* 등급별 사진 올리기/바꾸기 — 썸네일을 누르면 파일 고르기가 뜬다.
+     사진이 아예 없는 칸(빈 회색 네모)도 여기로 채울 수 있다. */
+  .thwrap{position:relative;display:inline-block;vertical-align:middle;cursor:pointer}
+  .thwrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:34px;height:34px}
+  .thwrap .cam{position:absolute;right:-3px;bottom:-3px;width:14px;height:14px;border-radius:50%;
+              background:var(--brand);color:#fff;font-size:9px;display:flex;align-items:center;
+              justify-content:center;pointer-events:none;box-shadow:0 0 0 2px var(--panel)}
+  /* 등급 사진이 "N개 중 택1"로 여러 장이면 대표(첫 장)만 여기 보여주고 장수를 배지로 알린다.
+     장 단위로 빼거나 순서를 바꾸는 건 make.html(새로 만들 때)에서 하고, 여기서는 빠르게
+     한 장 더 추가하는 용도로만 쓴다. */
+  .thwrap .cnt{position:absolute;left:-3px;top:-3px;min-width:13px;height:13px;padding:0 2px;
+              border-radius:7px;background:#e05263;color:#fff;font-size:8.5px;font-weight:800;
+              display:flex;align-items:center;justify-content:center;pointer-events:none;
+              box-shadow:0 0 0 2px var(--panel)}
+  /* 등급 이름 고치기 — 만들 때 잘못 입력했을 때 쓴다(예: 상품 이름 칸에 등급 글자를 같이 쳐서 중복됨) */
+  .editbox{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;align-items:center}
+  .editbox input{background:#0d111a;border:1px solid #333c4e;border-radius:7px;color:var(--txt);
+                 padding:5px 7px;font-size:12px}
+  /* 등급별 뽑기 연출 강도 — 가장 귀한 상품 한둘만 무지개로 (2026-08-14) */
+  .fxpick{background:#0d111a;border:1px solid #333c4e;border-radius:7px;color:var(--dim);
+          font-size:10.5px;padding:2px 5px;margin-left:6px;vertical-align:middle}
+  .nm{display:inline-block;max-width:calc(100% - 44px);overflow:hidden;text-overflow:ellipsis;
+      white-space:nowrap;vertical-align:middle;margin-left:7px}
+  .star{color:var(--brand-lo)}
+  .kv{display:grid;grid-template-columns:1fr auto;gap:5px 14px;font-size:13.5px}
+  .kv .k{color:var(--dim)}
+  .kv .tot{font-weight:800;padding-top:7px;border-top:1px solid #1e2532}
+  .price{display:flex;gap:7px;align-items:center;margin-top:9px}
+  .price input{width:120px}
+  @media (max-width:430px){ .col-ch{display:none} }
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="wrap login hide">
+  <div class="card">
+    <h1>쿠지 관리</h1>
+    <p>사장님 전용입니다.</p>
+    <input id="email" type="email" style="display:none" autocomplete="username" placeholder="이메일" class="mb">
+    <input id="pw" type="password" autocomplete="current-password" placeholder="입장 번호" inputmode="numeric" class="mb">
+    <button id="loginBtn" class="btn main wide big">들어가기</button>
+  </div>
+</div>
+
+<div id="main" class="wrap hide">
+  <div class="top">
+    <div>
+      <h1>쿠지 관리</h1>
+      <div class="sub" id="who"></div>
+    </div>
+    <nav>
+      <a href="make.html">+ 새 쿠지</a>
+      <a href="draw.html">뽑기 화면</a>
+      <button id="logoutBtn">나가기</button>
+    </nav>
+  </div>
+
+  <div id="list"><p class="dim small">불러오는 중…</p></div>
+</div>
+
+<script type="module">
+import { db, auth, signIn, logout, watchAuth, ROLE, ROLE_NAME, SHOP_ID, COL,
+         collection, doc, getDoc, getDocs, addDoc, updateDoc, setDoc, query, where, onSnapshot,
+         serverTimestamp, toast, esc, won, loadPhotos, savePhotos, shrinkPhoto,
+         sealHash, makeSalt, shuffle, leftOf, LOGIN_HINT,
+         readAudioFile, loadBgm, saveBgm, removeBgm } from './app.js';
+
+const $ = id => document.getElementById(id);
+let me = null, unsub = null;
+const photoCache = {};   // 세트마다 한 번만 읽는다. 목록이 다시 그려질 때마다 읽으면 낭비다
+
+/* ─────────────── 로그인 ─────────────── */
+$('email').value = LOGIN_HINT;
+$('loginBtn').onclick = doLogin;
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+$('logoutBtn').onclick = () => logout();
+function doLogin() {
+  signIn($('email').value, $('pw').value)
+    .catch(e => toast(e.code === 'auth/invalid-credential'
+      ? '번호가 틀렸습니다' : (e.code || e.message), false));
+}
+
+watchAuth(({ user, role, shop }) => {
+  const on = !!user && role === ROLE.owner;
+  $('loginBox').classList.toggle('hide', on);
+  $('main').classList.toggle('hide', !on);
+  if (user && role !== ROLE.owner) toast('사장님 계정으로 로그인해 주세요', false);
+  if (!on) { if (unsub) { unsub(); unsub = null; } return; }
+  me = { user, role, shop };
+  $('who').textContent = `${shop.name} · ${ROLE_NAME[role]}`;
+  watchSets();
+});
+
+/* ─────────────── 목록 ─────────────── */
+function watchSets() {
+  if (unsub) unsub();
+  unsub = onSnapshot(
+    query(collection(db, COL.sets), where('shopId', '==', SHOP_ID)),
+    async snap => {
+      // 최신순 정렬은 화면에서 한다 (where + orderBy 를 같이 쓰면 색인을 따로 만들어야 한다)
+      const docs = snap.docs.filter(d => !d.data().deleted)
+        .sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
+      if (!docs.length) {
+        $('list').innerHTML = `<div class="card"><p class="dim small" style="margin:0">
+          아직 만든 쿠지가 없습니다. 위 <b>+ 새 쿠지</b>를 눌러 만들어 보세요.</p></div>`;
+        return;
+      }
+      await Promise.all(docs.map(async d => {
+        if (!photoCache[d.id]) photoCache[d.id] = await loadPhotos(d.id);
+      }));
+      $('list').innerHTML = '';
+      docs.forEach(d => $('list').appendChild(card(d.id, d.data())));
+    },
+    err => {
+      $('list').innerHTML = `<div class="card"><p class="bad small" style="margin:0">
+        목록을 못 불러왔습니다: ${esc(err.code || err.message)}</p></div>`;
+    });
+}
+
+function card(id, s) {
+  const left = leftOf(s), sold = s.soldCount || 0;
+  const done = s.status === '마감';
+  const by = s.soldByTier || {};
+  const ph = photoCache[id] || {};
+  const el = document.createElement('div');
+  el.className = 'set' + (done ? ' done' : '');
+
+  const rows = (s.tiers || []).map(t => {
+    const rest = t.qty - (by[t.key] || 0);
+    const imgs = ph[t.key] || [];
+    return `<tr${rest <= 0 ? ' style="opacity:.45"' : ''} data-tierrow="${esc(t.key)}">
+      <td class="l">
+        <label class="thwrap" title="${imgs.length > 1 ? '사진 추가하기(택1 상품)' : '사진 올리기/바꾸기'}">
+          ${imgs[0] ? `<img class="th" src="${imgs[0]}">` : '<span class="th" style="display:inline-block"></span>'}
+          ${imgs.length > 1 ? `<span class="cnt">${imgs.length}</span>` : ''}
+          <span class="cam">📷</span>
+          <input type="file" accept="image/*" data-photo="${esc(t.key)}">
+        </label>
+        <span class="nm" data-nm="${esc(t.key)}">${t.top ? '<span class="star">⭐</span> ' : ''}${esc(t.label)} · ${esc(t.name)}</span>
+        <button class="btn sm" data-editname="${esc(t.key)}" style="padding:1px 6px;font-size:10px">✏️</button>
+        <select class="fxpick" data-fx="${esc(t.key)}" title="뽑을 때 연출 강도">
+          <option value=""${!(s.fx&&s.fx.byTier&&s.fx.byTier[t.key])?' selected':''}>연출: 자동${t.top?'(강)':'(약)'}</option>
+          <option value="약"${(s.fx&&s.fx.byTier&&s.fx.byTier[t.key])==='약'?' selected':''}>연출: 약</option>
+          <option value="중"${(s.fx&&s.fx.byTier&&s.fx.byTier[t.key])==='중'?' selected':''}>연출: 중</option>
+          <option value="강"${(s.fx&&s.fx.byTier&&s.fx.byTier[t.key])==='강'?' selected':''}>연출: 강</option>
+          <option value="무지개"${(s.fx&&s.fx.byTier&&s.fx.byTier[t.key])==='무지개'?' selected':''}>🌈 연출: 무지개</option>
+        </select>
+        <div class="editbox hide" data-editbox="${esc(t.key)}">
+          <input data-el="${esc(t.key)}" style="width:2.6rem;text-align:center" value="${esc(t.label)}" placeholder="등급">
+          <input data-en="${esc(t.key)}" value="${esc(t.name)}" placeholder="상품 이름">
+          <button class="btn main sm" data-esave="${esc(t.key)}">저장</button>
+          <button class="btn sm" data-ecancel="${esc(t.key)}">취소</button>
+        </div>
+      </td>
+      <td>${rest} / ${t.qty}</td>
+      <td class="col-ch dim">${s.total ? (t.qty / s.total * 100).toFixed(1) : 0}%</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="h">
+      <div style="min-width:0">
+        <div class="t">${esc(s.title)}${s.hidden ? ' <span class="small dim">(내림)</span>' : ''}</div>
+        <div class="meta">
+          <button class="btn sm" data-a="price" style="padding:2px 7px">${won(s.pricePerDraw)}</button>
+          · 남은 <b style="color:var(--txt)">${left}</b> / ${s.total}장
+        </div>
+        <div class="price hide" data-box="price">
+          <input type="number" inputmode="numeric" value="${s.pricePerDraw}" data-i="price">
+          <button class="btn main sm" data-a="psave">바꾸기</button>
+          <button class="btn sm" data-a="pcancel">취소</button>
+        </div>
+      </div>
+      <span class="tag ${done ? 'done' : 'live'}">${esc(s.status)}</span>
+    </div>
+
+    <div class="bar"><i style="width:${s.total ? sold / s.total * 100 : 0}%"></i></div>
+    <div class="small dim">${sold}장 팔림</div>
+
+    <table style="margin-top:10px">
+      <tr><th class="l">등급 · 상품</th><th style="width:74px">남음</th><th class="col-ch" style="width:56px">확률</th></tr>
+      ${rows}
+      ${s.lastPrize ? `<tr><td class="l">
+        <label class="thwrap" title="${(ph.LAST || []).length > 1 ? '사진 추가하기(여러 장)' : '사진 올리기/바꾸기'}">
+          ${(ph.LAST || [])[0] ? `<img class="th" src="${ph.LAST[0]}">` : '<span class="th" style="display:inline-block"></span>'}
+          ${(ph.LAST || []).length > 1 ? `<span class="cnt">${ph.LAST.length}</span>` : ''}
+          <span class="cam">📷</span>
+          <input type="file" accept="image/*" data-photo="LAST">
+        </label>
+        <span class="nm warn">라스트원 · ${esc(s.lastPrize.name)}</span></td>
+        <td colspan="2" class="small dim">마지막 장</td></tr>` : ''}
+    </table>
+
+    <div class="acts">
+      <button class="btn sm" data-a="money">정산 보기</button>
+      <button class="btn sm" data-a="bgm">🎵 배경음악</button>
+      ${!done ? `<button class="btn sm" data-a="hide">${s.hidden ? '손님 화면에 올리기' : '손님 화면에서 내리기'}</button>` : ''}
+      ${!done ? `<button class="btn sm" data-a="close">마감하기</button>` : ''}
+      ${done ? `<button class="btn sm" data-a="verify">봉인 확인</button>` : ''}
+      <button class="btn sm" data-a="clone">🔁 복제해서 다시 시작</button>
+      ${done ? `<button class="btn sm danger" data-a="del">삭제</button>` : ''}
+    </div>
+
+    <div class="fold hide" data-box="money"></div>
+    <div class="fold hide" data-box="bgm"></div>
+    <div class="fold hide" data-box="verify"></div>
+    <div class="small dim" style="margin-top:11px">봉인 지문</div>
+    <div class="mono">${esc(s.sealHash || '')}</div>`;
+
+  const box = n => el.querySelector(`[data-box="${n}"]`);
+  const on = (a, fn) => { const b = el.querySelector(`[data-a="${a}"]`); if (b) b.onclick = fn; };
+
+  on('price',   () => box('price').classList.toggle('hide'));
+  on('pcancel', () => box('price').classList.add('hide'));
+  on('psave',   e => savePrice(id, s, el.querySelector('[data-i="price"]'), e.currentTarget));
+  on('money',   () => toggleMoney(id, s, box('money')));
+  on('bgm',     () => toggleBgmBox(id, box('bgm')));
+  on('verify',  () => verify(id, s, box('verify')));
+  on('hide',    async () => {
+    try { await updateDoc(doc(db, COL.sets, id), { hidden: !s.hidden });
+      logChange(id, 'hide', s.hidden ? '손님 화면에 올림' : '손님 화면에서 내림');
+      toast(s.hidden ? '손님 화면에 올렸습니다' : '손님 화면에서 내렸습니다'); }
+    catch (e) { toast('실패: ' + (e.code || e.message), false); }
+  });
+  on('close', e => closeSet(id, e.currentTarget));
+  on('del',   e => softDelete(id, e.currentTarget));
+  on('clone', e => cloneSet(id, s, e.currentTarget));
+
+  el.querySelectorAll('[data-photo]').forEach(input => {
+    input.onchange = () => uploadTierPhoto(id, input.dataset.photo, input);
+  });
+
+  el.querySelectorAll('[data-editname]').forEach(btn => {
+    const key = btn.dataset.editname;
+    const box = el.querySelector(`[data-editbox="${key}"]`);
+    btn.onclick = () => box.classList.toggle('hide');
+    el.querySelector(`[data-ecancel="${key}"]`).onclick = () => box.classList.add('hide');
+    el.querySelector(`[data-esave="${key}"]`).onclick = e =>
+      saveTierName(id, s, key, el.querySelector(`[data-el="${key}"]`), el.querySelector(`[data-en="${key}"]`), e.currentTarget);
+  });
+
+  el.querySelectorAll('[data-fx]').forEach(sel => {
+    sel.onchange = () => saveTierFx(id, s, sel.dataset.fx, sel.value);
+  });
+  return el;
+}
+
+/* ─────────────── 복제해서 다시 시작 ───────────────
+   같은 쿠지를 새 재고로 다시 판다(사장님: "쿠지 방금 다 끝났는데 같은판 다시 시작").
+   상품 구성·사진·가격·원가는 그대로 가져오지만,
+   ⚠️ 뽑기 순서는 절대 그대로 안 쓴다 — 새로 들어온 재고니까 새로 섞어 새로 봉인해야
+   공정성 증명이 이번 판에도 성립한다. 판매 기록(soldCount 등)도 0부터 다시 시작한다. */
+async function cloneSet(id, s, btn) {
+  btn.disabled = true; btn.textContent = '복제하는 중…';
+  try {
+    // 캐시를 안 믿는다 — 방금 만들어졌거나 방금 복제된 세트는 사진이 다 올라가기 전에
+    // 목록 화면이 먼저 캐시해버려서 몇 장이 빠진 채로 굳을 수 있다(2026-08-14 실사용 중 발견:
+    // I·J·K 세 장이 복제할 때마다 빠졌다). 복제는 자주 누르는 버튼이 아니니 매번 새로 읽는다.
+    const photos = await loadPhotos(id);
+    const costSnap = await getDoc(doc(db, COL.sets, id, COL.vault, 'cost'));
+
+    const flat = [];
+    (s.tiers || []).forEach(t => { for (let i = 0; i < t.qty; i++) flat.push(t.key); });
+    const order = shuffle(flat);
+    const salt = makeSalt();
+    const hash = await sealHash(salt, order);
+
+    const newRef = await addDoc(collection(db, COL.sets), {
+      shopId: SHOP_ID,
+      title: s.title, pricePerDraw: s.pricePerDraw,
+      tiers: (s.tiers || []).map(t => ({ key: t.key, label: t.label, name: t.name, qty: t.qty, top: !!t.top })),
+      lastPrize: s.lastPrize || null,
+      total: flat.length, soldCount: 0, soldByTier: {}, soldNumbers: [],
+      sealHash: hash,
+      status: '판매중', hidden: false, deleted: false,
+      fx: s.fx || { reveal: 'touch', speed: 'normal', byTier: {} },
+      createdAt: serverTimestamp()
+    });
+    await setDoc(doc(db, COL.sets, newRef.id, COL.vault, 'seal'), { salt, order });
+    logChange(newRef.id, 'create', `복제로 생성 (제비 ${flat.length}장, 봉인 지문 기록)`);
+
+    for (const key of Object.keys(photos)) {
+      await setDoc(doc(db, COL.sets, newRef.id, COL.images, key), { photos: photos[key] });
+    }
+    if (costSnap.exists()) {
+      await setDoc(doc(db, COL.sets, newRef.id, COL.vault, 'cost'), costSnap.data());
+    }
+
+    toast(`"${s.title}" 을 새 재고로 다시 열었습니다 (${flat.length}장, 새로 봉인함)`);
+  } catch (e) {
+    console.error(e);
+    toast('복제하지 못했습니다: ' + (e.code || e.message), false);
+  } finally {
+    btn.disabled = false; btn.textContent = '🔁 복제해서 다시 시작';
+  }
+}
+
+/* ─────────────── 등급별 사진 올리기/추가하기 ───────────────
+   세트를 만들 때 빠뜨렸거나(복제 과정에서 캐시 문제로 빠진 적도 있었다 — 위 cloneSet 참고)
+   나중에 사진을 더 넣고 싶을 때 여기서 바로 채운다. 등급 하나에 "택1" 상품처럼
+   사진이 여러 장일 수 있어서, 여기서 올리면 기존 사진을 지우지 않고 뒤에 추가한다
+   (장을 빼거나 순서를 바꾸는 세밀한 편집은 make.html — 새로 만들 때 — 에서 한다).
+   사진은 sets 문서가 아니라 하위 컬렉션(images)에 있어서 실시간 목록이 저절로
+   새로고침되지 않는다 — 그래서 저장 직후 화면을 직접 바꿔준다. */
+async function uploadTierPhoto(setId, key, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const wrap = input.closest('.thwrap');
+  try {
+    const r = await shrinkPhoto(file);
+    if (!photoCache[setId]) photoCache[setId] = {};
+    const next = [...(photoCache[setId][key] || []), r.data];
+    await savePhotos(setId, key, next);
+    logChange(setId, 'photo', `${key} 상품 사진 변경 (${next.length}장)`);
+    photoCache[setId][key] = next;
+
+    let img = wrap.querySelector('img.th');
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'th';
+      wrap.querySelector('span.th')?.remove();
+      wrap.insertBefore(img, wrap.querySelector('.cam'));
+    }
+    img.src = next[0];
+
+    let cnt = wrap.querySelector('.cnt');
+    if (next.length > 1) {
+      if (!cnt) { cnt = document.createElement('span'); cnt.className = 'cnt'; wrap.insertBefore(cnt, wrap.querySelector('.cam')); }
+      cnt.textContent = next.length;
+    } else if (cnt) cnt.remove();
+
+    toast(`사진을 저장했습니다 (이 등급 총 ${next.length}장)`);
+  } catch (e) {
+    toast(e.message || '사진을 올리지 못했습니다', false);
+  } finally {
+    input.value = '';
+  }
+}
+
+/* ─────────────── 배경음악(쿠지별) ───────────────
+   손님이 이 쿠지 뽑기 화면에 들어와 있는 동안 조용히 깔리는 곡. 안 올려두면
+   sfx.js 의 기본 곡이 그대로 나간다. 자주 여닫는 칸이 아니라서 열 때마다
+   새로 읽어온다(캐시 안 씀 — money·verify 칸과 같은 방식). */
+async function toggleBgmBox(id, box) {
+  const opening = box.classList.contains('hide');
+  box.classList.toggle('hide');
+  if (opening) renderBgmBox(id, box);
+}
+async function renderBgmBox(id, box) {
+  box.innerHTML = '<p class="dim small">불러오는 중…</p>';
+  const bgm = await loadBgm(id);
+  box.innerHTML = `
+    <p class="dim small" style="margin:0 0 8px">${bgm
+      ? `현재 곡: ${esc(bgm.name || '(이름 없음)')} · ${(bgm.bytes / 1024).toFixed(0)}KB`
+      : '이 쿠지는 기본 브금을 쓰고 있습니다.'}</p>
+    <div class="acts">
+      <label class="btn sm">곡 올리기(교체)<input type="file" accept="audio/*" data-bgmfile style="display:none"></label>
+      ${bgm ? '<button class="btn sm" data-bgmremove>기본 브금으로 되돌리기</button>' : ''}
+    </div>
+    <p class="dim small" style="margin-top:8px">30~60초 정도 짧은 루프, 용량 900KB 이하 mp3를 권장합니다. 너무 크면 올라가지 않습니다.</p>`;
+
+  box.querySelector('[data-bgmfile]').onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const r = await readAudioFile(file);
+      await saveBgm(id, r.data, r.name, r.bytes);
+      logChange(id, 'bgm', `배경음악 교체: ${r.name}`);
+      toast(`"${r.name}" 을 이 쿠지의 배경음악으로 저장했습니다`);
+      renderBgmBox(id, box);
+    } catch (err) {
+      toast(err.message || '올리지 못했습니다', false);
+    }
+  };
+  box.querySelector('[data-bgmremove]')?.addEventListener('click', async () => {
+    await removeBgm(id);
+    logChange(id, 'bgm', '배경음악을 기본곡으로 되돌림');
+    toast('기본 브금으로 되돌렸습니다');
+    renderBgmBox(id, box);
+  });
+}
+
+/* ─────────────── 등급 이름 고치기 ───────────────
+   만들 때 상품 이름 칸에 등급 글자까지 같이 쳐서 "A · A · 최애의아이..." 처럼
+   겹치는 실수가 있었다(2026-08-14). key(t1, t2...)는 봉인 순서·뽑기 기록이
+   물고 있으니 절대 안 바꾸고, label·name 만 고친다. 지난 뽑기 기록의 등급 이름은
+   그때 스냅샷으로 남아 있어서 여기서 고쳐도 안 흔들린다. */
+async function saveTierName(id, s, key, elLabel, elName, btn) {
+  const label = elLabel.value.trim(), name = elName.value.trim();
+  if (!label) return toast('등급 이름을 넣어주세요', false);
+  if (!name) return toast('상품 이름을 넣어주세요', false);
+  btn.disabled = true;
+  try {
+    const tiers = (s.tiers || []).map(t => t.key === key ? { ...t, label, name } : t);
+    await updateDoc(doc(db, COL.sets, id), { tiers });
+    const old = (s.tiers || []).find(t => t.key === key) || {};
+    logChange(id, 'tier', `등급/상품 이름 변경: ${old.label}상 ${old.name} → ${label}상 ${name}`);
+    toast('고쳤습니다');
+  } catch (e) {
+    toast('고치지 못했습니다: ' + (e.code || e.message), false);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* 등급별 뽑기 연출 강도. fx.byTier 에 저장하면 draw.html 이 뽑을 때 그대로 읽는다.
+   무지개는 가장 귀한 상품 한둘에만 쓰라고 사장님이 요청(2026-08-14) — 그래서 기본값이 아니라
+   등급마다 직접 골라야만 켜진다. */
+async function saveTierFx(id, s, key, value) {
+  try {
+    const byTier = { ...((s.fx && s.fx.byTier) || {}) };
+    if (value) byTier[key] = value; else delete byTier[key];
+    const fx = { reveal: 'touch', speed: 'normal', ...(s.fx || {}), byTier };
+    await updateDoc(doc(db, COL.sets, id), { fx });
+    const tl = ((s.tiers || []).find(t => t.key === key) || {}).label || key;
+    logChange(id, 'fx', `${tl}상 뽑기 연출 변경: ${(s.fx && s.fx.byTier && s.fx.byTier[key]) || '자동'} → ${value || '자동'}`);
+    toast(value ? `연출을 "${value}"로 바꿨습니다` : '연출을 자동으로 되돌렸습니다');
+  } catch (e) {
+    toast('바꾸지 못했습니다: ' + (e.code || e.message), false);
+  }
+}
+
+/* ─────────────── 가격 ───────────────
+   이미 팔린 것은 뽑을 때 그 시점 가격으로 기록에 박혀 있다.
+   그래서 여기서 가격을 바꿔도 지난 매출은 안 흔들린다. */
+async function savePrice(id, s, input, btn) {
+  const v = Number(input.value);
+  if (!v || v <= 0) return toast('가격을 제대로 넣어주세요', false);
+  if (v === s.pricePerDraw) return toast('가격이 그대로입니다', false);
+  btn.disabled = true;
+  try {
+    await updateDoc(doc(db, COL.sets, id), { pricePerDraw: v });
+    logChange(id, 'price', `1회 가격 변경: ${won(s.pricePerDraw)} → ${won(v)}`);
+    toast(`${won(v)} 으로 바꿨습니다` +
+      ((s.soldCount || 0) ? ` · 이미 팔린 ${s.soldCount}장은 옛 가격 그대로입니다` : ''));
+  } catch (e) { toast('바꾸지 못했습니다: ' + (e.code || e.message), false); }
+  finally { btn.disabled = false; }
+}
+
+/* ─────────────── 정산 ───────────────
+   뽑기 기록을 합산한다. 각 기록에 그때의 가격·원가가 박혀 있어서
+   나중에 가격이나 원가를 고쳐도 지난 장부가 안 흔들린다. */
+async function toggleMoney(id, s, box) {
+  if (!box.classList.contains('hide')) { box.classList.add('hide'); return; }
+  box.classList.remove('hide');
+  box.innerHTML = '<p class="dim small" style="margin:0">불러오는 중…</p>';
+  try {
+    const snap = await getDocs(query(collection(db, COL.draws), where('setId', '==', id)));
+    let revenue = 0, cost = 0, hasCost = false;
+    snap.forEach(d => {
+      const x = d.data();
+      revenue += Number(x.price) || 0;
+      const c = Number(x.cost) || 0;
+      if (c) hasCost = true;
+      cost += c;
+    });
+    // 남은 재고의 원가 (원가를 넣은 세트만)
+    let stock = 0;
+    const cd = await getDoc(doc(db, COL.sets, id, COL.vault, 'cost'));
+    if (cd.exists()) {
+      const map = {};
+      (cd.data().tiers || []).forEach(t => { map[t.key] = Number(t.cost) || 0; });
+      const by = s.soldByTier || {};
+      (s.tiers || []).forEach(t => { stock += (t.qty - (by[t.key] || 0)) * (map[t.key] || 0); });
+    }
+    box.innerHTML = `
+      <div class="kv">
+        <span class="k">판매</span><span>${snap.size} / ${s.total}장</span>
+        <span class="k">매출</span><span>${won(revenue)}</span>
+        ${hasCost ? `<span class="k">나간 상품 원가</span><span class="bad">− ${won(cost)}</span>
+          <span class="tot">순익</span>
+          <span class="tot ${revenue - cost >= 0 ? 'ok' : 'bad'}">${won(revenue - cost)}</span>
+          ${stock ? `<span class="k small">남은 재고 원가</span><span class="small dim">${won(stock)}</span>` : ''}`
+        : `<span class="k small">원가</span><span class="small dim">안 넣으셨습니다</span>`}
+      </div>`;
+  } catch (e) {
+    box.innerHTML = `<p class="bad small" style="margin:0">정산을 못 불러왔습니다: ${esc(e.code || e.message)}</p>`;
+  }
+}
+
+/* ─────────────── 마감 ───────────────
+   다 안 팔렸어도 접을 수 있다. 접는 순간 봉인 원본을 공개해
+   손님이 직접 지문을 다시 계산해 대조할 수 있게 만든다. */
+async function closeSet(id, btn) {
+  if (btn.dataset.armed !== '1') {
+    btn.dataset.armed = '1'; btn.textContent = '한 번 더 누르면 마감';
+    setTimeout(() => { btn.dataset.armed = '0'; btn.textContent = '마감하기'; }, 4000);
+    return;
+  }
+  btn.disabled = true; btn.textContent = '마감 중…';
+  try {
+    const seal = await getDoc(doc(db, COL.sets, id, COL.vault, 'seal'));
+    if (!seal.exists()) throw new Error('봉인 원본을 찾을 수 없습니다');
+    await updateDoc(doc(db, COL.sets, id), {
+      status: '마감', salt: seal.data().salt, order: seal.data().order,
+      closedAt: serverTimestamp()
+    });
+    logChange(id, 'close', '마감 · 봉인 원본 공개');
+    toast('마감했습니다 · 봉인을 공개했습니다');
+  } catch (e) {
+    toast('마감 실패: ' + (e.code || e.message), false);
+    btn.disabled = false; btn.textContent = '마감하기';
+  }
+}
+
+/* ─────────────── 변경 기록 ───────────────
+   sets/{id}/changes 에 "언제 무엇을 바꿨는지"를 한 줄씩 쌓는다. 고치지도 지우지도 않는다.
+   기록이 실패해도 본 작업은 막지 않는다. (이 기능을 넣은 2026-10-14 이전 변경은 기록이 없다) */
+async function logChange(setId, type, text) {
+  try {
+    await addDoc(collection(db, COL.sets, setId, 'changes'),
+      { at: serverTimestamp(), type, text, by: (auth.currentUser || {}).uid || null });
+  } catch (e) { console.warn('변경 기록 실패', e); }
+}
+const fmtAt = ts => {
+  const d = ts && ts.toDate ? ts.toDate() : null;
+  if (!d) return '시각 확인 중';
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
+
+/* 봉인 확인 → 자세히 보기: 뽑힌 순서(언제 몇 번에서 무엇이 나왔는지)와 쿠지 변경 이력 */
+async function showDetail(id, s, box) {
+  box.innerHTML = '<p class="dim small" style="margin:8px 0 0">불러오는 중…</p>';
+  try {
+    const [dSnap, cSnap] = await Promise.all([
+      getDocs(query(collection(db, COL.draws), where('setId', '==', id))),
+      getDocs(collection(db, COL.sets, id, 'changes'))]);
+    const nameOf = key => { const t = (s.tiers || []).find(x => x.key === key); return t ? t.name : ''; };
+    const draws = dSnap.docs.map(d => d.data()).sort((a, b) => (a.at ? a.at.toMillis() : 0) - (b.at ? b.at.toMillis() : 0));
+    const logs = cSnap.docs.map(d => d.data()).sort((a, b) => (a.at ? a.at.toMillis() : 0) - (b.at ? b.at.toMillis() : 0));
+    const rows = draws.map(x => `<tr><td>${esc(fmtAt(x.at))}</td>
+      <td>${x.isLast ? '-' : esc(x.orderIndex) + '번'}</td>
+      <td>${esc(x.tierLabel || '')}${x.isLast ? '' : '상'}</td><td>${esc(nameOf(x.tierKey) || (x.isLast && s.lastPrize ? s.lastPrize.name : ''))}</td></tr>`).join('');
+    const crows = logs.map(x => `<tr><td>${esc(fmtAt(x.at))}</td><td>${esc(x.text)}</td></tr>`).join('');
+    box.innerHTML = `
+      <div class="small" style="margin:10px 0 4px"><b>뽑힌 기록 ${draws.length}건</b></div>
+      <div style="max-height:320px;overflow:auto"><table class="small" style="width:100%;border-collapse:collapse">
+        <tr class="dim"><td>언제</td><td>번호</td><td>등급</td><td>상품</td></tr>${rows || '<tr><td colspan="4" class="dim">기록 없음</td></tr>'}</table></div>
+      <div class="small" style="margin:12px 0 4px"><b>쿠지 변경 이력 ${logs.length}건</b></div>
+      <div style="max-height:240px;overflow:auto"><table class="small" style="width:100%;border-collapse:collapse">
+        ${crows || '<tr><td class="dim">기록 없음 (변경 기록 기능을 넣은 2026-10-14 이후 변경부터 남습니다)</td></tr>'}</table></div>
+      <p class="dim small" style="margin:8px 0 0">처음 만든 순서의 지문은 위 검증으로 확인됩니다. 사진·디자인 변경은 이 기록에 남은 것만 표시됩니다.</p>`;
+    box.querySelectorAll('td').forEach(td => { td.style.padding = '3px 6px'; td.style.borderBottom = '1px solid #ffffff14'; });
+  } catch (e) {
+    box.innerHTML = `<p class="bad small" style="margin:8px 0 0">불러오지 못했습니다: ${esc(e.code || e.message)}</p>`;
+  }
+}
+
+/* 공개된 원본으로 지문을 다시 계산해 대조한다. 손님도 똑같이 할 수 있어야 증명이 된다. */
+async function verify(id, s, box) {
+  box.classList.remove('hide');
+  if (!s.salt || !s.order) {
+    box.innerHTML = '<p class="dim small" style="margin:0">봉인이 아직 공개되지 않았습니다</p>';
+    return;
+  }
+  const again = await sealHash(s.salt, s.order);
+  box.innerHTML = again === s.sealHash
+    ? `<p class="ok small" style="margin:0">✔ 일치합니다 — 처음 잠근 그대로입니다 (제비 ${s.order.length}장)</p>`
+    : '<p class="bad small" style="margin:0">✕ 안 맞습니다 — 내용이 바뀌었습니다</p>';
+  box.insertAdjacentHTML('beforeend', '<button class="btn sm" data-detail style="margin-top:8px">자세히 보기</button><div data-detailbox></div>');
+  box.querySelector('[data-detail]').onclick = e => { e.currentTarget.classList.add('hide'); showDetail(id, s, box.querySelector('[data-detailbox]')); };
+}
+
+/* 진짜로 지우지 않는다. 목록에서만 사라지고 판매 기록은 남는다 */
+async function softDelete(id, btn) {
+  if (btn.dataset.armed !== '1') {
+    btn.dataset.armed = '1'; btn.textContent = '한 번 더 누르면 삭제';
+    setTimeout(() => { btn.dataset.armed = '0'; btn.textContent = '삭제'; }, 4000);
+    return;
+  }
+  try {
+    await updateDoc(doc(db, COL.sets, id), { deleted: true, deletedAt: serverTimestamp() });
+    toast('목록에서 지웠습니다. 판매 기록은 남아 있습니다');
+  } catch (e) { toast('삭제 실패: ' + (e.code || e.message), false); }
+}
+</script>
+</body>
+</html>

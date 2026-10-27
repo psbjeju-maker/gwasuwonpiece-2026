@@ -1,0 +1,16 @@
+/* 자개 틀 — 조각(코너4·테두리4·별)을 반복해 어떤 크기에도 늘어난다. 디자인 패키지(쿠지_크기조절_자개프레임)에서 조각만 WebP 로 잘라 씀(6MB→0.2MB) */
+.kuji-frame{--corner:clamp(56px,9vw,88px);position:relative;isolation:isolate;box-sizing:border-box;min-width:280px;min-height:300px;border-radius:24px;background:rgba(8,21,35,.94);color:#f7f3e8;border:0;padding:calc(var(--corner)*.9) calc(var(--corner)*.68) calc(var(--corner)*1.1)}
+.kuji-frame__art{position:absolute;inset:0;pointer-events:none;user-select:none;z-index:2;overflow:visible}
+.kuji-frame__art i{position:absolute;display:block;background-repeat:no-repeat;pointer-events:none}
+.kuji-frame__art .tl,.kuji-frame__art .tr{top:0;width:var(--corner);height:calc(var(--corner)*.88);background-size:100% 100%}
+.kuji-frame__art .bl,.kuji-frame__art .br{bottom:0;width:var(--corner);height:calc(var(--corner)*1.2);background-size:100% 100%}
+.kuji-frame__art .tl{left:0;background-image:url('corner-tl.webp')}.kuji-frame__art .tr{right:0;background-image:url('corner-tr.webp')}
+.kuji-frame__art .bl{left:0;background-image:url('corner-bl.webp')}.kuji-frame__art .br{right:0;background-image:url('corner-br.webp')}
+.kuji-frame__art .t,.kuji-frame__art .b{left:var(--corner);right:var(--corner);background-repeat:repeat-x;background-size:auto 100%}
+.kuji-frame__art .t{top:0;height:calc(var(--corner)*.88);background-image:url('edge-top.webp')}
+.kuji-frame__art .b{bottom:0;height:calc(var(--corner)*.64);background-image:url('edge-bottom.webp')}
+.kuji-frame__art .l,.kuji-frame__art .r{top:calc(var(--corner)*.88);bottom:calc(var(--corner)*1.2);width:calc(var(--corner)*.6);background-repeat:repeat-y;background-size:100% auto}
+.kuji-frame__art .l{left:0;background-image:url('edge-left.webp')}.kuji-frame__art .r{right:0;background-image:url('edge-right.webp')}
+.kuji-frame__art .star{top:0;left:50%;transform:translateX(-50%);width:calc(var(--corner)*.64);height:calc(var(--corner)*.6);background-image:url('ornament-star.webp');background-size:100% 100%}
+.kuji-frame__content{position:relative;z-index:3;min-width:0}
+@media(max-width:600px){.kuji-frame{--corner:64px;border-radius:18px;padding:58px 30px 70px}}

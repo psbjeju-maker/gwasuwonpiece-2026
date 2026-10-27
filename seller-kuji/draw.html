@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>쿠지 뽑기 · 셀러 쿠지</title>
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d2547">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="assets/frame/frame.css">
+<style>
+  body{-webkit-user-select:none;user-select:none}
+  /* <button> 은 브라우저가 글자색을 검정으로 강제한다(--txt 가 안 먹힌다).
+     어두운 판 위에서 검정 글자가 거의 안 보였다 — 명시로 되돌린다. */
+  .setrow{width:100%;text-align:left;padding:14px;margin-bottom:9px;cursor:pointer;color:var(--txt)}
+  .setrow .t{font-weight:800;font-size:15px}
+  .setrow .m{font-size:12px;color:var(--dim);margin-top:3px}
+  /* 손님 모드 배지 — 어디서든 눌러서 잠금을 풀 수 있어야 한다.
+     뽑기 전(대기 화면)에는 풀 방법이 아예 없어서 화면이 얼어버린 적이 있었다(2026-08-13). */
+  .lockbadge{font-size:12px;font-weight:800;color:var(--brand-lo);
+             background:none;border:0;padding:0;font-family:inherit;cursor:pointer}
+  #unlockOverlay{position:fixed;inset:0;background:rgba(6,7,12,.86);z-index:80;
+                 display:flex;align-items:center;justify-content:center;padding:20px}
+  .unlockcard{width:min(320px,92vw);margin:0}
+  .qtybox{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .qtybox input{width:5rem;text-align:center;font-size:20px;font-weight:800}
+  .qtybox .cost{flex:1;text-align:right;font-size:13px;color:var(--dim)}
+  /* ===== 딱지 판 스타일 시작 (디자인 교체 시 이 블록만 바꾸면 된다) =====
+     3000번까지 가도 한 화면엔 100개(10x10)만 그리고, 1~30장 바로가기로 넘긴다.
+     칸은 태블릿 손가락 기준으로 크게(56~64px, 숫자 18~22px). 예전 38px/11.5px 은 너무 작았다. */
+  #ready{padding-bottom:190px}
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px;
+         padding:14px 6px 12px;margin:8px 0;
+         background:rgba(0,0,0,.16);border-radius:12px}
+  @media(min-width:720px){.board{grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;padding:14px 10px 12px}}
+  .tile{position:relative;width:100%;min-width:0;height:56px;display:flex;align-items:center;justify-content:center;
+        border-radius:10px;font-size:18px;font-weight:800;font-family:inherit;
+        cursor:pointer;background:#142c3b;border:1px solid #70817d;color:#fff5d9;
+        transition:transform .16s cubic-bezier(.3,1.5,.5,1),box-shadow .16s,background .12s;padding:0;
+        -webkit-tap-highlight-color:transparent}
+  @media(min-width:720px){.tile{font-size:20px;height:62px}}
+  @media(min-width:1000px){.tile{height:60px;font-size:21px}}
+  @media(min-width:1000px){#drawBox.wrap{max-width:1000px}}
+  .tile.sold{opacity:.22;cursor:default;text-decoration:line-through;border-color:var(--line);color:var(--dim)}
+  .tile.pick{background:#c5e7dc;border-color:#eafbf5;color:#12312d;z-index:2;
+             transform:translateY(-8px) scale(1.08);
+             box-shadow:0 14px 16px -8px #000c,0 0 0 2px #eafbf5}
+  @keyframes flashTile{0%,100%{box-shadow:0 0 0 0 #ffd84d00}30%,70%{box-shadow:0 0 0 5px #ffd84d,0 0 22px 4px #ffd84d99}}
+  .tile.flash{animation:flashTile 1.1s ease-in-out 2;z-index:2;border-color:#ffd84d}
+  .boardbar{display:flex;justify-content:space-between;align-items:center;gap:8px;
+            font-size:13px;color:var(--dim);margin-bottom:10px}
+  .boardbar button{min-width:76px;min-height:44px;font-size:15px}
+  .boardmsg{padding:20px;text-align:center;color:var(--dim);font-size:13px;grid-column:1/-1}
+  .pager{margin-top:8px}
+  .jump{display:flex;gap:8px;margin-bottom:8px}
+  .jump input{flex:1;min-width:0;font-size:18px;text-align:center;font-weight:800;min-height:48px}
+  .jump button{min-width:76px;min-height:48px;font-size:16px}
+  .pgtabs{position:relative;display:flex;gap:6px;overflow-x:auto;padding:8px 4px 8px;
+          scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .pgtab{position:relative;flex:none;min-width:48px;min-height:44px;padding:0 6px;border-radius:10px;
+         background:#142c3b;border:1px solid #70817d;color:#fff5d9;
+         font-size:16px;font-weight:800;font-family:inherit;cursor:pointer}
+  .pgtab.on{background:#c5e7dc;border-color:#eafbf5;color:#12312d}
+  .pgtab.done{opacity:.35}
+  .pgtab .bd{position:absolute;top:-6px;right:-4px;min-width:20px;height:20px;border-radius:10px;
+             background:#ffd84d;color:#1b1b1b;font-size:12px;font-weight:900;line-height:20px;text-align:center;padding:0 4px}
+  .tray{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(8,21,35,.97);
+        border-top:1px solid #70817d;box-shadow:0 -10px 24px -10px #000;
+        padding:10px 14px calc(12px + env(safe-area-inset-bottom))}
+  .trayin{max-width:760px;margin:0 auto}
+  .trayhd{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--dim);margin-bottom:6px}
+  .trayhd b{color:var(--txt);font-size:15px}
+  .chips{display:flex;gap:7px;overflow-x:auto;min-height:44px;padding:2px 0 6px;align-items:center;scrollbar-width:thin}
+  .chips .empty{font-size:12.5px;color:var(--dim-2)}
+  @keyframes chipPop{0%{transform:scale(.3)}70%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .chip{flex:none;min-width:52px;height:42px;padding:0 10px;border-radius:9px;background:#c5e7dc;
+        border:1px solid #eafbf5;color:#12312d;font-size:17px;font-weight:800;font-family:inherit;cursor:pointer}
+  .chip.new{animation:chipPop .3s ease-out}
+  .ghost{position:fixed;z-index:90;pointer-events:none;border-radius:10px;background:#c5e7dc;color:#12312d;
+         display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;
+         box-shadow:0 8px 18px #0008}
+  #drawBtn{margin-top:4px}
+  /* ===== 딱지 판 스타일 끝 ===== */
+  #stage{position:relative;width:100%;aspect-ratio:9/13;border-radius:16px;overflow:hidden;
+         box-shadow:0 20px 50px -18px #000, 0 0 0 1px #ffffff10 inset;margin-bottom:12px}
+  .prog{text-align:center;font-size:12px;color:var(--dim);margin-bottom:8px}
+  .rlist{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+  .ritem{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:11px;
+         background:var(--panel-2);border:1px solid var(--line)}
+  .ritem.hi{border-color:var(--brand);background:rgba(30,90,168,.14)}   /* top 이 아니라 hi — 공용 .top(상단바) 과 이름이 겹쳐 레이아웃이 깨졌었다 */
+  .ritem .g{width:34px;height:34px;border-radius:8px;object-fit:cover;background:#0b0f18;flex:none}
+  .ritem .nm{flex:1;font-size:13.5px}
+  .ritem .lb{font-size:11px;color:var(--brand-lo);font-weight:800}
+  .lastbanner{padding:14px;border:2px dashed var(--brand);border-radius:12px;text-align:center;
+              margin:14px 0;background:rgba(30,90,168,.10)}
+  .center{text-align:center}
+  /* 상위상 공개 후 자동으로 안 넘어가고 이 버튼을 눌러야 다음으로 간다 —
+     노래가 끝날 때까지, 손님이 충분히 볼 때까지 화면을 붙잡아 두려는 것이라 눈에 띄어야 한다. */
+  @keyframes holdPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(30,90,168,.55)}
+                        50%{transform:scale(1.03);box-shadow:0 0 0 10px rgba(30,90,168,0)}}
+  #holdNext{animation:holdPulse 1.6s ease-in-out infinite}
+  /* 전체화면 뽑기판: 강하게 눌러도 확대·당김새로고침·선택·드래그 안 먹게 */
+  html,body{overscroll-behavior:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+  body{touch-action:pan-y;-webkit-user-drag:none}
+  img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
+  /* 연출 스테이지가 화면 높이를 넘지 않게 — 넘으면 아래 "다음으로" 버튼이 안 보이는데
+     스테이지는 touch-action:none 이라 스크롤도 안 됐다 */
+  #stage{max-height:calc(100dvh - 190px);width:auto;max-width:100%;margin-left:auto;margin-right:auto}
+  #holdNext{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;width:auto;margin:0}
+  #revealPanel{padding-bottom:90px}
+  #pinOverlay{position:fixed;inset:0;background:rgba(6,7,12,.86);z-index:95;display:flex;align-items:center;justify-content:center;padding:20px}
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div id="loginBox" class="wrap login hide">
+  <div class="card">
+    <h1>쿠지 뽑기</h1>
+    <p>입장 번호를 입력하세요. 한 번 들어오면 계속 유지됩니다.</p>
+    <input id="email" type="email" style="display:none" autocomplete="username" placeholder="이메일" class="mb">
+    <input id="pw" type="password" autocomplete="current-password" placeholder="입장 번호" inputmode="numeric" class="mb">
+    <button id="loginBtn" class="btn main wide big">들어가기</button>
+  </div>
+</div>
+
+<!-- 세트 고르기 -->
+<div id="pickBox" class="wrap hide">
+  <div class="top">
+    <div><h1>뽑을 쿠지를 고르세요</h1><div class="sub" id="who"></div></div>
+    <nav><a href="admin.html">관리</a><button id="logoutBtn">나가기</button></nav>
+  </div>
+  <div id="setList"><p class="dim small">불러오는 중…</p></div>
+</div>
+
+<!-- 뽑기 -->
+<div id="drawBox" class="wrap hide">
+  <div class="top">
+    <button id="backBtn" class="btn sm">← 세트 바꾸기</button>
+    <span class="sub" id="leftLabel"></span>
+  </div>
+
+  <!-- 대기·연출·결과 내내 안 사라지는 쿠지 이름표. 뽑는 도중에 다른 쿠지와
+       헷갈리는 사고를 막으려고 화면 맨 위에 고정해 크게 띄운다. -->
+  <div class="kujiband" id="kujiBand"></div>
+
+  <!-- 대기 -->
+  <div id="ready">
+    <div class="card kuji-frame"><div class="kuji-frame__art" aria-hidden="true"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i><i class="star"></i></div><div class="kuji-frame__content">
+      <h2 id="setTitle"></h2>
+      <p class="hint" id="setMeta"></p>
+      <div class="qtybox">
+        <span class="small dim">결제받은 장수</span>
+        <input id="qty" type="number" inputmode="numeric" value="1" min="1">
+        <span class="cost" id="cost"></span>
+      </div>
+      <p class="small dim" style="margin:0 0 2px" id="drawHint">아래 판에서 딱지를 결제한 장수만큼 골라주세요.</p>
+      <div id="pager" class="pager hide">
+        <div class="jump">
+          <input id="jumpNo" type="number" inputmode="numeric" min="1" placeholder="좋아하는 번호로 이동">
+          <button id="jumpBtn" class="btn main" type="button">이동</button>
+        </div>
+        <div id="pgTabs" class="pgtabs"></div>
+      </div>
+      <div id="board" class="board"></div>
+      <div class="boardbar">
+        <button id="pgPrev" class="btn" type="button">◀ 이전</button>
+        <span id="pageInfo"></span>
+        <button id="pgNext" class="btn" type="button">다음 ▶</button>
+      </div>
+      <button id="undoBtn" class="btn wide sm hide" style="margin-top:8px">↩️ 직전 뽑기 되돌리기</button>
+    </div></div>
+    <div id="tray" class="tray hide">
+      <div class="trayin">
+        <div class="trayhd"><span>내가 고른 번호</span><b id="pickCount"></b></div>
+        <div id="trayChips" class="chips"></div>
+        <button id="drawBtn" class="btn main wide big" disabled>선택한 것 열기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 복구 — 뽑기(재고 차감·기록)는 이미 서버에 확정됐는데, 화면이 결과를 한 번도
+       못 보여준 채 꺼졌다가 다시 열렸을 때 뜬다. 재고를 안 건드리는 안전한 기본 대응. -->
+  <div id="recoveryBox" class="hide">
+    <div class="card" style="border-color:var(--brand)">
+      <h2 style="margin:0 0 4px">⚠️ 이전 결과가 아직 확인되지 않았습니다</h2>
+      <p class="hint">기기 오류 등으로 화면이 꺼져서 직전 뽑기 결과를 못 보여준 것 같습니다. 재고는 이미 차감돼 있습니다 — 아래에서 결과를 다시 보여주세요.</p>
+      <p class="small" id="recoverySummary" style="margin:10px 0"></p>
+      <button id="recoveryShowBtn" class="btn main wide big">결과 다시 보기</button>
+      <button id="recoveryUndoBtn" class="btn wide sm" style="margin-top:8px">↩️ 이 뽑기 되돌리기</button>
+    </div>
+  </div>
+
+  <!-- 연출 -->
+  <div id="revealPanel" class="hide">
+    <div class="prog" id="rvProg"></div>
+    <div id="stage"></div>
+    <button id="holdNext" class="btn main wide big hide" style="margin-bottom:8px">🎉 다음으로 넘어가기</button>
+    <button id="skipAll" class="btn wide">전부 스킵</button>
+  </div>
+
+  <!-- 결과 -->
+  <div id="resultPanel" class="hide">
+    <div class="card kuji-frame"><div class="kuji-frame__art" aria-hidden="true"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i><i class="star"></i></div><div class="kuji-frame__content">
+      <h2>뽑은 상품</h2>
+      <div class="rlist" id="rlist"></div>
+      <div id="lastBanner" class="lastbanner hide"></div>
+      <button id="nextBtn" class="btn main wide big" style="margin-top:6px">다음 손님</button>
+      <p id="nextHint" class="small dim center hide" style="margin-top:10px">
+        위 🔒 손님 모드를 눌러 직원이 확인해야 다음으로 넘어갑니다
+      </p>
+    </div></div>
+  </div>
+</div>
+
+<!-- 손님 모드 풀기 — 어느 화면에서든 위 🔒 손님 모드를 누르면 뜬다.
+     로그인 비밀번호와는 다른 번호다(계정 비밀번호가 아니라 매장 PIN). -->
+
+<!-- 되돌리기 확인 — 재고를 실제로 줄이는 유일한 화면이라 번호를 한 번 더 확인받는다.
+     진짜 보안은 firestore.rules(사장님 계정만 soldCount 를 줄일 수 있음)가 담당하고,
+     이건 손님모드 풀기와 같은 급의 "직원 확인 절차"일 뿐이다 — 손님모드 번호를 그대로 쓴다. -->
+<div id="rollbackOverlay" class="hide" style="position:fixed;inset:0;background:rgba(6,7,12,.86);z-index:85;
+     display:flex;align-items:center;justify-content:center;padding:20px">
+  <div class="card unlockcard">
+    <h2 style="margin:0 0 4px">뽑기 되돌리기</h2>
+    <p class="hint" id="rollbackDetail"></p>
+    <p class="small" style="color:#e0607a;margin:0 0 10px">⚠️ 손님에게 이미 상품을 드렸다면 취소하지 마세요. 되돌린 번호를 나중에 다시 뽑으면 같은 상품이 또 나옵니다.</p>
+    <input id="rollbackPin" type="password" inputmode="numeric" autocomplete="off" placeholder="매장 번호" class="mb">
+    <button id="rollbackBtn" class="btn main wide">되돌리기 실행</button>
+    <button id="rollbackCancel" class="btn wide sm" style="margin-top:8px">취소</button>
+  </div>
+</div>
+
+<div id="pinOverlay" class="hide">
+  <div class="card unlockcard">
+    <h2 style="margin:0 0 4px">직원 확인</h2>
+    <p class="hint" id="pinHint">뽑기를 열려면 번호를 입력하세요.</p>
+    <input id="pinPw" type="password" inputmode="numeric" autocomplete="off" placeholder="번호" class="mb">
+    <button id="pinOk" class="btn main wide">확인</button>
+    <button id="pinCancel" class="btn wide sm" style="margin-top:8px">취소</button>
+  </div>
+</div>
+
+<div id="toast" class="hide"></div>
+
+<script type="module">
+import { db, auth, signIn, logout, watchAuth, ROLE, ROLE_NAME, SHOP_ID, COL,
+         collection, doc, getDoc, updateDoc, runTransaction, query, where, onSnapshot, serverTimestamp,
+         toast, esc, won, loadPhotos, leftOf, loadBgm, LOGIN_HINT } from './app.js';
+import { KujiSeal } from './seal.js';
+import * as Sfx from './sfx.js';
+import { UNLOCK_PIN } from './config.js';
+
+const $ = id => document.getElementById(id);
+let me = null, unsubList = null, unsubSet = null;
+let currentId = null, currentSet = null, photos = {}, soldOut = false;
+let seal = null;
+const locked = false;   // 손님 모드는 없앴다(2026-10-14) — 쿠지 선택 화면의 PIN 이 대신한다
+try { localStorage.removeItem('kuji_customer_lock'); } catch {}
+let selected = new Set();   // 지금 판에서 손가락으로 짚어 고른 딱지 번호
+
+/* ─────────────── 로그인 ─────────────── */
+$('email').value = LOGIN_HINT;
+$('loginBtn').onclick = doLogin;
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+$('logoutBtn').onclick = () => logout();
+function doLogin() {
+  signIn($('email').value, $('pw').value)
+    .catch(e => toast(e.code === 'auth/invalid-credential'
+      ? '번호가 틀렸습니다' : (e.code || e.message), false));
+}
+
+const show = id => ['loginBox', 'pickBox', 'drawBox'].forEach(x =>
+  $(x).classList.toggle('hide', x !== id));
+
+watchAuth(({ user, role, shop }) => {
+  if (!user || role === ROLE.none) {
+    show('loginBox');
+    if (unsubList) { unsubList(); unsubList = null; }
+    closeSetView();
+    return;
+  }
+  me = { user, role, shop };
+  $('who').textContent = `${shop.name} · ${ROLE_NAME[role]}`;
+  show('pickBox');
+  watchList();
+});
+
+/* ─────────────── 세트 고르기 ─────────────── */
+function watchList() {
+  if (unsubList) unsubList();
+  unsubList = onSnapshot(
+    query(collection(db, COL.sets), where('shopId', '==', SHOP_ID)),
+    snap => {
+      const box = $('setList');
+      const docs = snap.docs.filter(d => d.data().status !== '마감' && !d.data().deleted)
+        .sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
+      if (!docs.length) { box.innerHTML = '<p class="dim small">판매중인 쿠지가 없습니다. 관리 화면에서 먼저 만들어주세요.</p>'; return; }
+      box.innerHTML = '';
+      docs.forEach(d => {
+        const s = d.data(), left = leftOf(s);
+        const b = document.createElement('button');
+        b.className = 'card setrow';
+        b.innerHTML = `<div class="t">${esc(s.title)}${s.hidden ? ' <span class="small dim">(손님 화면에서 내림)</span>' : ''}</div>
+          <div class="m">${won(s.pricePerDraw)} / 1회 · 남은 <b style="color:var(--txt)">${left}</b> / ${s.total}장</div>`;
+        b.onclick = () => askPin(`「${s.title}」 뽑기를 열려면 번호를 입력하세요.`, () => { enterFs(); openSet(d.id, s.title); });
+        box.appendChild(b);
+      });
+    });
+}
+
+$('backBtn').onclick = () => { closeSetView(); show('pickBox'); exitFs(); };
+
+/* ─────────────── 전체화면 + 오작동 방지 ─────────────── */
+function enterFs() {
+  // 앱으로 설치해 연 경우엔 이미 전체화면이라 브라우저의 "전체 화면 종료" 안내문구가 뜨지 않는다 — 건드리지 않는다
+  if (matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches) return;
+  const el = document.documentElement;
+  const f = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (f && !document.fullscreenElement && !document.webkitFullscreenElement) { try { const r = f.call(el, { navigationUI: 'hide' }); if (r && r.catch) r.catch(() => {}); } catch {} }
+  try { screen.orientation && screen.orientation.lock && screen.orientation.lock(screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape').catch(() => {}); } catch {}
+}
+function exitFs() {
+  try { screen.orientation && screen.orientation.unlock && screen.orientation.unlock(); } catch {}
+  const f = document.exitFullscreen || document.webkitExitFullscreen;
+  if (f && (document.fullscreenElement || document.webkitFullscreenElement)) { try { const r = f.call(document); if (r && r.catch) r.catch(() => {}); } catch {} }
+}
+// 세게 눌러서 전체화면이 풀렸으면 다음 터치에 다시 들어간다(뽑기 화면에 있을 때만)
+document.addEventListener('pointerdown', () => { if (currentId) enterFs(); }, true);
+['gesturestart', 'gesturechange', 'gestureend', 'contextmenu', 'dragstart', 'selectstart'].forEach(ev =>
+  document.addEventListener(ev, e => { if (!/INPUT|TEXTAREA/.test((e.target || {}).tagName || '')) e.preventDefault(); }, { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
+function closeSetView() {
+  if (unsubSet) { unsubSet(); unsubSet = null; }
+  if (seal) { seal.destroy(); seal = null; }
+  currentId = null; currentSet = null;
+  Sfx.stopBgm();   // 뽑기 판을 나가면 배경음도 같이 멈춘다
+}
+
+/* ─────────────── 세트 열기 ─────────────── */
+async function openSet(id, title) {
+  currentId = id;
+  enterFs();
+  show('drawBox');
+  toReady();
+  $('kujiBand').textContent = title || '';   // 목록에서 이미 아는 제목을 즉시 띄운다 — 첫 스냅샷을 기다리며 잠깐이라도 비거나 이전 쿠지 이름이 남지 않게
+  Sfx.startBgm();   // 뽑기 판에 들어오면 조용히 분위기 브금이 깔린다(일단 이전 곡·기본곡 그대로)
+  loadBgm(id).then(bgm => { if (currentId === id) Sfx.setBgmSource(bgm?.data); });   // 이 쿠지에 올려둔 곡이 있으면 갈아 끼운다
+  photos = await loadPhotos(id);
+  let firstSnap = true;
+  if (unsubSet) unsubSet();
+  unsubSet = onSnapshot(doc(db, COL.sets, id), snap => {
+    if (!snap.exists()) return;
+    currentSet = snap.data();
+
+    // 이 화면을 연 뒤 맨 처음 받은 스냅샷에서만 복구 여부를 본다.
+    // (우리가 방금 뽑은 결과도 lastBatch 에 잡히는데, 그건 이미 화면에 떠 있으니
+    //  두 번째 스냅샷부터는 아래 검사를 건너뛰어야 복구 배너가 잘못 뜨지 않는다)
+    if (firstSnap) {
+      firstSnap = false;
+      const lb = currentSet.lastBatch;
+      if (lb && !lb.shown && !lb.voided) { showRecovery(lb); return; }
+    }
+
+    const left = leftOf(currentSet);
+    const stopped = me.shop && me.shop.active === false;
+    soldOut = left <= 0 || stopped;
+    $('leftLabel').innerHTML = `남은 <b style="color:var(--txt)">${left}</b> / ${currentSet.total}장`;
+    $('kujiBand').textContent = currentSet.title;
+    $('setTitle').textContent = currentSet.title;
+    $('setMeta').textContent = `${won(currentSet.pricePerDraw)} / 1회`;
+    $('drawHint').textContent = stopped ? '정지된 매장입니다'
+      : left <= 0 ? '완판된 쿠지입니다'
+      : '아래 판에서 딱지를 결제한 장수만큼 골라주세요.';
+    $('qty').max = left;
+    paintCost();
+    renderBoard();
+    applyLock();
+  });
+}
+
+function paintCost() {
+  const qty = Math.max(1, Number($('qty').value) || 1);
+  $('cost').textContent = currentSet ? won(qty * currentSet.pricePerDraw) : '';
+}
+// 뽑는 장수 수정도 번호를 눌러야 한다 — 입력을 마치고 칸을 벗어나면 다시 잠긴다
+$('qty').readOnly = true;
+const qtyAsk = e => {
+  if (!$('qty').readOnly) return;
+  e.preventDefault(); $('qty').blur();
+  askPin('뽑는 장수를 바꾸려면 번호를 입력하세요.', () => { $('qty').readOnly = false; $('qty').focus(); $('qty').select(); });
+};
+$('qty').addEventListener('pointerdown', qtyAsk);
+$('qty').addEventListener('focus', qtyAsk);
+$('qty').addEventListener('blur', () => { $('qty').readOnly = true; });
+$('qty').oninput = () => {
+  paintCost();
+  // 장수를 줄였는데 이미 그보다 많이 골라뒀으면 뒤에서부터 뺀다
+  const cap = needCap();
+  if (selected.size > cap) selected = new Set([...selected].slice(0, cap));
+  renderBoard();
+};
+
+function toReady() {
+  window.scrollTo(0, 0);
+  $('ready').classList.remove('hide');
+  $('recoveryBox').classList.add('hide');
+  $('revealPanel').classList.add('hide');
+  $('resultPanel').classList.add('hide');
+  $('qty').readOnly = true;
+  $('qty').value = 1;   // 다음 손님은 1장부터. 앞 손님 수량이 남아 있으면 실수로 그만큼 또 판다
+  selected = new Set();
+  paintCost();
+  renderBoard();
+  applyLock();
+}
+$('nextBtn').onclick = () => { closeSetView(); show('pickBox'); exitFs(); };   // 뽑기 한 번 끝나면 쿠지 선택으로 — 다음 뽑기는 PIN 을 또 눌러야 한다
+
+/* ─────────────── 딱지 판 ───────────────
+   실물 쿠지처럼 전체 번호가 다 보이고, 손님(또는 직원)이 결제한 장수만큼
+   직접 짚어 고른다. 몇 번에 뭐가 들었는지는 세트를 만들 때 이미 봉인돼
+   정해져 있으므로, 여기서 번호를 고른다고 유불리가 생기지 않는다 —
+   실물 박스에 손을 넣어 아무 종이나 집는 것과 같다. */
+function needCap() {
+  if (!currentSet) return 1;
+  const left = leftOf(currentSet);
+  return Math.max(1, Math.min(Number($('qty').value) || 1, left));
+}
+
+const PAGE = 100;
+let boardPage = 1, boardSetId = null, lastAdded = null;
+const pageCount = () => Math.max(1, Math.ceil(((currentSet && currentSet.total) || 0) / PAGE));
+
+function renderBoard() {
+  const box = $('board');
+  const hideAll = () => { $('pager').classList.add('hide'); $('tray').classList.add('hide'); };
+  if (!currentSet) { box.innerHTML = ''; hideAll(); return; }
+  if (soldOut) {
+    box.innerHTML = `<div class="boardmsg">${leftOf(currentSet) <= 0 ? '이 쿠지는 다 나갔습니다' : '지금은 뽑을 수 없습니다'}</div>`;
+    $('pickCount').textContent = '';
+    $('drawBtn').disabled = true;
+    $('pageInfo').textContent = '';
+    $('pgPrev').style.visibility = 'hidden'; $('pgNext').style.visibility = 'hidden';
+    hideAll();
+    return;
+  }
+  $('tray').classList.remove('hide');
+  if (boardSetId !== currentId) { boardSetId = currentId; boardPage = 1; }
+  boardPage = Math.min(Math.max(1, boardPage), pageCount());
+  const soldSet = new Set(currentSet.soldNumbers || []);
+  // 다른 기기에서 방금 먼저 뽑아간 번호가 골라둔 것에 있으면 빼준다
+  let removed = false;
+  selected.forEach(n => { if (soldSet.has(n)) { selected.delete(n); removed = true; } });
+  if (removed) toast('방금 다른 곳에서 먼저 뽑힌 번호가 있어 선택에서 뺐습니다', false);
+
+  const from = (boardPage - 1) * PAGE + 1, to = Math.min(currentSet.total, boardPage * PAGE);
+  const frag = document.createDocumentFragment();
+  for (let n = from; n <= to; n++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.n = n;
+    const isSold = soldSet.has(n);
+    btn.className = 'tile' + (isSold ? ' sold' : (selected.has(n) ? ' pick' : ''));
+    btn.textContent = n;
+    btn.disabled = isSold;
+    if (!isSold) btn.onclick = () => toggleTile(n);
+    frag.appendChild(btn);
+  }
+  box.innerHTML = '';
+  box.appendChild(frag);
+  paintPickBar();
+}
+
+function paintPager() {
+  const pages = pageCount(), total = currentSet.total;
+  const multi = pages > 1;
+  $('pager').classList.toggle('hide', !multi);
+  $('pgPrev').style.visibility = multi && boardPage > 1 ? 'visible' : 'hidden';
+  $('pgNext').style.visibility = multi && boardPage < pages ? 'visible' : 'hidden';
+  const from = (boardPage - 1) * PAGE + 1, to = Math.min(total, boardPage * PAGE);
+  $('pageInfo').textContent = multi ? `${from}~${to}번 · ${boardPage} / ${pages}장` : '';
+  if (!multi) return;
+  const sold = new Array(pages + 1).fill(0), pick = new Array(pages + 1).fill(0);
+  (currentSet.soldNumbers || []).forEach(n => { sold[Math.ceil(n / PAGE)]++; });
+  selected.forEach(n => { pick[Math.ceil(n / PAGE)]++; });
+  let h = '';
+  for (let p = 1; p <= pages; p++) {
+    const size = Math.min(PAGE, total - (p - 1) * PAGE);
+    h += `<button type="button" class="pgtab${p === boardPage ? ' on' : ''}${sold[p] >= size ? ' done' : ''}" data-p="${p}" title="${(p - 1) * PAGE + 1}~${Math.min(total, p * PAGE)}번">${p}${pick[p] ? `<span class="bd">${pick[p]}</span>` : ''}</button>`;
+  }
+  const tabs = $('pgTabs');
+  tabs.innerHTML = h;
+  const act = tabs.querySelector('.on');
+  if (act) tabs.scrollLeft = act.offsetLeft - tabs.clientWidth / 2 + act.offsetWidth / 2;
+}
+
+function gotoPage(p) {
+  boardPage = Math.min(Math.max(1, p), pageCount());
+  renderBoard();
+}
+$('pgTabs').onclick = e => { const t = e.target.closest('.pgtab'); if (t) gotoPage(Number(t.dataset.p)); };
+$('pgPrev').onclick = () => { gotoPage(boardPage - 1); $('pager').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+$('pgNext').onclick = () => { gotoPage(boardPage + 1); $('pager').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+
+/* 좋아하는 번호로 이동 — 그 번호가 있는 장으로 넘기고 칸을 깜빡여 알려준다 */
+function jumpTo() {
+  if (!currentSet) return;
+  const total = currentSet.total, n = Math.floor(Number($('jumpNo').value));
+  if (!(n >= 1 && n <= total)) { toast(`1~${total} 사이 번호를 넣어주세요`, false); return; }
+  boardPage = Math.ceil(n / PAGE);
+  renderBoard();
+  const t = $('board').querySelector(`[data-n="${n}"]`);
+  if (t) {
+    t.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    t.classList.add('flash');
+    setTimeout(() => t.classList.remove('flash'), 2400);
+  }
+  if ((currentSet.soldNumbers || []).includes(n)) toast(`${n}번은 이미 나간 번호예요`, false);
+  $('jumpNo').select();
+}
+$('jumpBtn').onclick = jumpTo;
+$('jumpNo').addEventListener('keydown', e => { if (e.key === 'Enter') jumpTo(); });
+
+/* 고른 딱지가 하단 트레이로 날아가 모인다 (연출일 뿐이라 실패해도 선택엔 영향 없다) */
+function fly(btn) {
+  try {
+    const r = btn.getBoundingClientRect(), t = $('trayChips').getBoundingClientRect();
+    const g = document.createElement('div');
+    g.className = 'ghost'; g.textContent = btn.dataset.n;
+    g.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
+    document.body.appendChild(g);
+    const a = g.animate([
+      { transform: 'translate(0,0) scale(1)', opacity: 1 },
+      { transform: `translate(${t.left + 24 - r.left - r.width / 2}px,${t.top + 20 - r.top - r.height / 2}px) scale(.5)`, opacity: .25 }
+    ], { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
+    a.onfinish = () => g.remove();
+  } catch (e) { /* noop */ }
+}
+
+function toggleTile(n) {
+  const cap = needCap();
+  const btn = $('board').querySelector(`[data-n="${n}"]`);
+  if (selected.has(n)) {
+    selected.delete(n);
+    if (btn) btn.classList.remove('pick');
+    lastAdded = null;
+    Sfx.playUi('deselect');
+  } else {
+    if (selected.size >= cap) { Sfx.playUi('limit'); toast(`이번엔 ${cap}장까지만 고를 수 있습니다`, false); return; }
+    selected.add(n);
+    if (btn) { btn.classList.add('pick'); fly(btn); }
+    Sfx.playUi('select');
+    lastAdded = n;
+  }
+  paintPickBar();
+}
+
+function paintPickBar() {
+  const cap = needCap();
+  $('pickCount').textContent = `${selected.size} / ${cap}장`;
+  $('drawBtn').disabled = soldOut || selected.size === 0 || selected.size !== cap;
+  const nums = [...selected].sort((x, y) => x - y);
+  $('trayChips').innerHTML = nums.length
+    ? nums.map(n => `<button type="button" class="chip${n === lastAdded ? ' new' : ''}" data-n="${n}" title="누르면 선택 해제">${n}</button>`).join('')
+    : '<span class="empty">아직 고른 번호가 없어요. 딱지를 눌러 골라주세요.</span>';
+  if (currentSet) paintPager();
+}
+$('trayChips').onclick = e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  const n = Number(c.dataset.n);
+  selected.delete(n); lastAdded = null;
+  const t = $('board').querySelector(`[data-n="${n}"]`); if (t) t.classList.remove('pick');
+  paintPickBar();
+};
+
+/* ─────────────── 손님 모드 (기기를 손님에게 넘길 때) ───────────────
+   그대로 두면 세트를 바꾸거나 관리 화면으로 들어가 원가까지 볼 수 있다.
+   그래서 딱지 고르기·뽑기만 남기고 다 잠근다. 한 번 뽑으면 직원이 매장 번호를
+   넣어야 다음으로 넘어간다 = 손님 한 명당 한 번.
+
+   🔒 손님 모드 배지는 대기·연출·결과 화면 어디서나 항상 눌러서 풀 수 있다.
+   전에는 결과 화면에만 풀기 버튼이 있어서, 뽑기 전(딱지 고르는 중)에 잠그면
+   화면이 안 풀리고 얼어버렸다(2026-08-13 실사용 중 발견). */
+function applyLock() {
+  const lb = currentSet && currentSet.lastBatch;
+  $('undoBtn').classList.toggle('hide', !lb || lb.voided);
+}
+/* ─────────────── 뽑기 ───────────────
+   손님(또는 직원)이 판에서 직접 짚어 고른 번호를 그대로 연다.
+   몇 번에 뭐가 들었는지는 세트를 만들 때 이미 봉인돼 정해져 있으므로,
+   여기서는 "그 번호가 아직 안 나갔는지"만 다시 확인하고 확정한다.
+   (다른 기기가 그 사이 먼저 가져갔을 수 있어 트랜잭션 안에서 한 번 더 대조한다) */
+const DRAW_PIN = '9999';   // 쿠지를 고를 때(세트 목록) 입력한다 — 한 번 뽑으면 목록으로 돌아가 다시 입력
+$('drawBtn').onclick = () => { Sfx.playUi('confirm'); doDraw(); };
+let pinThen = null;
+function askPin(msg, then) {
+  pinThen = then;
+  $('pinHint').textContent = msg;
+  $('pinPw').value = '';
+  $('pinOverlay').classList.remove('hide');
+  $('pinPw').focus();
+}
+$('pinCancel').onclick = () => { pinThen = null; $('pinOverlay').classList.add('hide'); };
+$('pinPw').addEventListener('keydown', e => { if (e.key === 'Enter') $('pinOk').click(); });
+$('pinOk').onclick = () => {
+  if ($('pinPw').value.trim() !== DRAW_PIN) { toast('번호가 틀렸습니다', false); $('pinPw').value = ''; return; }
+  $('pinOverlay').classList.add('hide');
+  const f = pinThen; pinThen = null;
+  if (f) f();
+};
+
+async function doDraw() {
+  const picked = [...selected];
+  if (!picked.length) return;
+  const btn = $('drawBtn');
+  btn.disabled = true; btn.textContent = '여는 중…';
+  try {
+    const result = await runTransaction(db, async tx => {
+      const setRef = doc(db, COL.sets, currentId);
+      const sealRef = doc(db, COL.sets, currentId, COL.vault, 'seal');
+      const costRef = doc(db, COL.sets, currentId, COL.vault, 'cost');
+      const [setSnap, sealSnap, costSnap] = await Promise.all(
+        [tx.get(setRef), tx.get(sealRef), tx.get(costRef)]);
+
+      if (!setSnap.exists()) throw new Error('세트를 찾을 수 없습니다');
+      const s = setSnap.data();
+      if (s.status === '마감') throw new Error('이미 마감된 쿠지입니다');
+      if (!sealSnap.exists()) throw new Error('봉인 원본을 찾을 수 없습니다');
+
+      const order = sealSnap.data().order;
+      const soldNumbers = s.soldNumbers || [];
+      const soldSet = new Set(soldNumbers);
+      const taken = picked.filter(n => soldSet.has(n));
+      if (taken.length) throw new Error(`${taken.join('·')}번은 방금 다른 곳에서 먼저 뽑혔습니다. 다시 골라주세요`);
+
+      const cost = costSnap.exists() ? costSnap.data() : null;
+      const costOf = key => cost ? (cost.tiers.find(t => t.key === key) || {}).cost || 0 : 0;
+
+      const soldByTier = { ...(s.soldByTier || {}) };
+      const items = picked.map(num => {
+        const key = order[num - 1];
+        const tier = (s.tiers || []).find(t => t.key === key) || { label: '?', name: '?' };
+        soldByTier[key] = (soldByTier[key] || 0) + 1;
+        return { number: num, key, label: tier.label, name: tier.name, top: !!tier.top };
+      });
+
+      const newSoldCount = (s.soldCount || 0) + picked.length;
+      const reachedLast = newSoldCount >= s.total && !!s.lastPrize;
+
+      // draws 문서 id를 미리 만들어둔다 — lastBatch 에 같이 적어야
+      // "직전 뽑기 되돌리기"가 어떤 기록을 지울지 알 수 있다.
+      const drawIds = [];
+      items.forEach(it => {
+        const ref = doc(collection(db, COL.draws));
+        drawIds.push(ref.id);
+        tx.set(ref, {
+          shopId: SHOP_ID, setId: currentId, tierKey: it.key, tierLabel: it.label,
+          price: s.pricePerDraw, cost: costOf(it.key), orderIndex: it.number,
+          isLast: false, at: serverTimestamp(), by: auth.currentUser.uid
+        });
+      });
+      if (reachedLast) {
+        const ref = doc(collection(db, COL.draws));
+        drawIds.push(ref.id);
+        tx.set(ref, {
+          shopId: SHOP_ID, setId: currentId, tierKey: 'LAST', tierLabel: '라스트원',
+          price: 0, cost: cost ? (cost.lastCost || 0) : 0, orderIndex: null,
+          isLast: true, at: serverTimestamp(), by: auth.currentUser.uid
+        });
+        items.push({ number: null, key: 'LAST', label: '라스트원', name: s.lastPrize.name, top: true, isLastPrize: true });
+      }
+
+      tx.update(setRef, {
+        soldCount: newSoldCount,
+        soldByTier,
+        soldNumbers: [...soldNumbers, ...picked],
+        lastDrawAt: serverTimestamp(),
+        // 결과를 화면이 한 번도 못 보여준 채 꺼지면(오류·재부팅) 다시 열었을 때
+        // 이걸로 복구한다. shown=true 가 되기 전까지는 "아직 안 보여준 결과"다.
+        lastBatch: { items, numbers: picked, drawIds, at: serverTimestamp(), shown: false, voided: false }
+      });
+
+      return items;
+    });
+
+    selected = new Set();
+    startReveal(result);
+  } catch (e) {
+    console.error(e);
+    toast('뽑지 못했습니다: ' + (e.message || e.code), false);
+    btn.disabled = false; btn.textContent = '선택한 것 열기';
+    renderBoard();   // 실패했을 수 있으니 최신 상태로 다시 그린다
+  }
+}
+
+/* ─────────────── 연출 — 한 장씩 봉인지로 공개 ─────────────── */
+let queue = [], qi = 0;
+
+function startReveal(items) {
+  window.scrollTo(0, 0);
+  queue = items; qi = 0;
+  $('ready').classList.add('hide');
+  $('resultPanel').classList.add('hide');
+  $('revealPanel').classList.remove('hide');
+  $('holdNext').classList.add('hide');
+  if (!seal) {
+    seal = KujiSeal.mount($('stage'));
+    seal.onDone = onCardRevealed;
+  }
+  loadCard();
+}
+
+/* 상위상(⭐)·라스트원상은 공개음이 다 끝날 때까지, 그리고 "다음으로" 버튼을
+   손님이 직접 눌러 넘길 때까지 화면을 계속 붙잡아 둔다 — 짧게 스쳐 지나가면
+   아쉽다는 사장님 요청(2026-08-26). 그 외 등급은 지금까지처럼 짧게 보여주고
+   자동으로 다음 장으로 넘어간다. */
+function onCardRevealed() {
+  const it = queue[qi];
+  const isTop = !!(it && (it.top || it.isLastPrize));
+  qi++;
+  if (isTop) $('holdNext').classList.remove('hide');
+  else setTimeout(loadCard, 650);
+}
+
+$('holdNext').onclick = () => {
+  $('holdNext').classList.add('hide');
+  loadCard();
+};
+
+function loadCard() {
+  if (qi >= queue.length) { finishReveal(); return; }
+  const it = queue[qi];
+  $('rvProg').textContent = it.number != null
+    ? `${it.number}번 · ${qi + 1} / ${queue.length}`
+    : `${qi + 1} / ${queue.length}`;
+  const tier = (currentSet.tiers || []).find(t => t.key === it.key) || { top: it.top };
+  const power = it.isLastPrize ? '강' : KujiSeal.powerOf(tier, (currentSet.fx || {}).byTier);
+  // 등급 사진이 "N개 중 택1"로 여러 장이어도 봉인 뜯는 연출에서는 대표로 첫 장만 보여준다.
+  const img = ((it.key === 'LAST' ? photos.LAST : photos[it.key]) || [])[0];
+  seal.load({ label: it.isLastPrize ? '라스트원상' : (it.label + ' 상'), name: it.name, img, power });
+}
+
+$('skipAll').onclick = () => { finishReveal(); };
+
+function finishReveal() {
+  window.scrollTo(0, 0);
+  $('revealPanel').classList.add('hide');
+  $('holdNext').classList.add('hide');
+  $('resultPanel').classList.remove('hide');
+
+  // 결과를 실제로 화면에 그린 순간 "봤다"로 표시한다 — 정상 흐름이든 복구든 여기를
+  // 지나면 이 배치는 이미 보여준 것이므로, 이후 오류가 나도 복구 배너가 다시 뜨지 않는다.
+  if (currentId) updateDoc(doc(db, COL.sets, currentId), { 'lastBatch.shown': true }).catch(() => {});
+
+  // 같은 등급이 여러 장 나오면 한 줄로 묶어서 "K · 2개" 처럼 보여준다.
+  // 라스트원은 별도 배너로 알리므로 여기 목록에는 안 넣는다(아래).
+  const groups = new Map();
+  queue.filter(it => !it.isLastPrize).forEach(it => {
+    const g = groups.get(it.key);
+    if (g) g.count++;
+    else groups.set(it.key, { key: it.key, label: it.label, name: it.name, top: it.top, count: 1 });
+  });
+
+  const box = $('rlist');
+  box.innerHTML = [...groups.values()].map(g => {
+    const img = (photos[g.key] || [])[0];
+    return `<div class="ritem${g.top ? ' hi' : ''}">
+      ${img ? `<img class="g" src="${img}">` : '<span class="g" style="display:inline-block"></span>'}
+      <span class="nm">${esc(g.name)}</span>
+      <span class="lb">${esc(g.label)}${g.top ? ' ⭐' : ''} · ${g.count}개</span>
+    </div>`;
+  }).join('');
+
+  const lastItem = queue.find(it => it.isLastPrize);
+  $('lastBanner').classList.toggle('hide', !lastItem);
+  if (lastItem) $('lastBanner').innerHTML =
+    `🎉 <b>라스트원상 당첨!</b><br>마지막 장까지 구매하셔서 <b>${esc(lastItem.name)}</b> 을 추가로 받으십니다`;
+
+  // 손님 모드였으면 직원이 매장 번호로 확인해야 다음으로 넘어간다 (위 🔒 배지)
+  $('nextBtn').classList.remove('hide');
+}
+
+/* ─────────────── 복구 — 결과를 한 번도 못 보여준 채 화면이 꺼졌을 때 ───────────────
+   뽑기(재고 차감·기록)는 트랜잭션으로 이미 확정됐다. 여기서는 재고를 전혀 건드리지
+   않고, 저장해둔 lastBatch 그대로를 애니메이션 없이 다시 그리기만 한다. */
+function showRecovery(lb) {
+  $('ready').classList.add('hide');
+  $('revealPanel').classList.add('hide');
+  $('resultPanel').classList.add('hide');
+  $('recoveryBox').classList.remove('hide');
+  const lines = lb.items.map(it => it.isLastPrize
+    ? '🎉 라스트원상 · ' + it.name
+    : `${it.label}상 · ${it.name}`);
+  $('recoverySummary').innerHTML = lines.map(esc).join('<br>');
+}
+
+$('recoveryShowBtn').onclick = () => {
+  if (!currentSet || !currentSet.lastBatch) return;
+  queue = currentSet.lastBatch.items;
+  qi = queue.length;   // 다 열린 것으로 치고 바로 결과 화면으로
+  $('recoveryBox').classList.add('hide');
+  finishReveal();
+};
+
+/* ─────────────── 되돌리기 — 관리자 전용 ───────────────
+   실물 재고를 실제로 되돌리는 유일한 기능. firestore.rules 에서 soldCount 를
+   줄이는 건 사장님 계정만 허용돼 있다 — 매장 번호를 맞게 넣어도 직원 계정으로
+   로그인된 태블릿에서는 서버가 그대로 막는다(진짜 보안 경계는 그쪽이다). */
+function openRollback() {
+  const lb = currentSet && currentSet.lastBatch;
+  if (!lb || lb.voided) { toast('되돌릴 뽑기가 없습니다', false); return; }
+  const tiers = [...new Set(lb.items.filter(it => !it.isLastPrize).map(it => it.label + '상'))].join('·');
+  $('rollbackDetail').textContent =
+    `${lb.numbers.join('·')}번 (${tiers}${lb.items.some(it => it.isLastPrize) ? ' · 라스트원상' : ''}) 뽑기를 취소합니다.`;
+  $('rollbackPin').value = '';
+  $('rollbackOverlay').classList.remove('hide');
+  $('rollbackPin').focus();
+}
+$('undoBtn').onclick = openRollback;
+$('recoveryUndoBtn').onclick = openRollback;
+$('rollbackCancel').onclick = () => $('rollbackOverlay').classList.add('hide');
+$('rollbackPin').addEventListener('keydown', e => { if (e.key === 'Enter') doRollback(); });
+$('rollbackBtn').onclick = doRollback;
+
+async function doRollback() {
+  if ($('rollbackPin').value.trim() !== UNLOCK_PIN) { toast('번호가 틀렸습니다', false); return; }
+  const lb = currentSet && currentSet.lastBatch;
+  if (!lb || lb.voided) { $('rollbackOverlay').classList.add('hide'); return; }
+  const btn = $('rollbackBtn');
+  btn.disabled = true; btn.textContent = '되돌리는 중…';
+  try {
+    await runTransaction(db, async tx => {
+      const setRef = doc(db, COL.sets, currentId);
+      const setSnap = await tx.get(setRef);
+      if (!setSnap.exists()) throw new Error('세트를 찾을 수 없습니다');
+      const s = setSnap.data();
+      const b = s.lastBatch;
+      if (!b || b.voided) throw new Error('이미 처리됐습니다');
+
+      const removeSet = new Set(b.numbers);
+      const soldNumbers = (s.soldNumbers || []).filter(n => !removeSet.has(n));
+      const soldByTier = { ...(s.soldByTier || {}) };
+      b.items.forEach(it => {
+        if (it.key === 'LAST') return;   // 라스트원은 등급 카운트가 아니다
+        soldByTier[it.key] = Math.max(0, (soldByTier[it.key] || 0) - 1);
+      });
+
+      tx.update(setRef, {
+        soldCount: Math.max(0, (s.soldCount || 0) - b.numbers.length),
+        soldByTier,
+        soldNumbers,
+        lastBatch: { ...b, voided: true, voidedAt: serverTimestamp() }
+      });
+      // 뽑기 기록은 진짜로 지운다(firestore.rules 가 "잘못 누른 것 되돌리기"용으로
+      // 사장님에게만 열어둔 삭제 권한이다). 손님에게는 애초에 안 보이는 기록이라
+      // 지운다고 공정성 증명이 흔들리지 않는다 — 그건 봉인 해시가 따로 담당한다.
+      b.drawIds.forEach(id => tx.delete(doc(db, COL.draws, id)));
+    });
+    toast('되돌렸습니다. 해당 번호를 다시 뽑을 수 있습니다');
+    $('rollbackOverlay').classList.add('hide');
+    toReady();
+  } catch (e) {
+    console.error(e);
+    toast('되돌리지 못했습니다: ' + (e.code === 'permission-denied'
+      ? '사장님 계정으로 로그인해야 되돌릴 수 있습니다' : (e.message || e.code)), false);
+  } finally {
+    btn.disabled = false; btn.textContent = '되돌리기 실행';
+  }
+}
+</script>
+</body>
+</html>
