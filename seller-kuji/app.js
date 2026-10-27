@@ -84,7 +84,7 @@ export async function roleOf(user, shopId = SHOP_ID) {
              : ROLE.none;
   return { role, shop };
 }
-export const ROLE_NAME = { owner:'사장님', staff:'직원', none:'권한 없음' };
+export const ROLE_NAME = { owner:'셀러', staff:'직원', none:'권한 없음' };
 
 /* 화면마다 이걸 부르면 로그인 상태가 바뀔 때 알아서 다시 그린다.
    cb({ user, role, shop }) */

@@ -45,7 +45,7 @@
 <div id="loginBox" class="wrap login hide">
   <div class="card">
     <h1>쿠지 세트 만들기</h1>
-    <p>사장님 전용입니다.</p>
+    <p>셀러 전용입니다.</p>
     <input id="email" type="email" style="display:none" autocomplete="username" placeholder="이메일" class="mb">
     <input id="pw" type="password" autocomplete="current-password" placeholder="입장 번호" inputmode="numeric" class="mb">
     <button id="loginBtn" class="btn main wide big">들어가기</button>
@@ -143,7 +143,7 @@ watchAuth(({ user, role, shop }) => {
   const on = !!user && role === ROLE.owner;
   $('loginBox').classList.toggle('hide', on);
   $('main').classList.toggle('hide', !on);
-  if (user && role !== ROLE.owner) toast('사장님 계정으로 로그인해 주세요', false);
+  if (user && role !== ROLE.owner) toast('번호를 확인해 주세요', false);
   if (!on) return;
   me = { user, role, shop };
   $('who').textContent = `${shop.name} · ${ROLE_NAME[role]}`;
