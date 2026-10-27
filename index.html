@@ -778,6 +778,8 @@ function peel(r){
   sheet('<div class="res"><img src="assets/characters/success.png" alt=""><div class="big">'+ok+'</div><p style="font-size:18px;color:var(--ink)">이제 상자를 열어 볼까요?</p><button class="btn p" id="btnBox" type="button">상자 열어 보기</button></div>');
   $('btnBox').onclick=function(){openBox(r)};
 }
+/* 상자 그림은 열기 전에 미리 받아 디코딩해 둔다 — 밀 때 처음 로드되며 끊기는 것 방지 */
+(function(){['closed','lid_open','glow','body','lid','lock'].forEach(function(n){var i=new Image();i.src='assets/box/'+n+'.webp';if(i.decode)i.decode().catch(function(){})})})();
 function openBox(r){
   var win=r.tier&&r.tier!=='X';
   $('stTitle').textContent='상자를 열어 봐!';
@@ -799,15 +801,16 @@ function openBox(r){
   bx.style.height=(T+446*K+8)+'px';
   var pz=$('bxPrize'); pz.style.left=(X0+BW/2)+'px'; pz.style.top=(T+40*K)+'px';
   var p=0,y0=null,auto=false,done=false,lockOff=false;
+  var eLid=$('bxLid'),eOpen=$('bxOpen'),eGlow=$('bxGlow'),eHint=$('bxHint'),eLock=$('bxLock'),pend=false;
   function draw(){
-    var a=Math.min(1,p/.5), b=Math.max(0,(p-.45)/.55);
+    var b=Math.max(0,(p-.45)/.55);
     var c=Math.min(1,p/.55);
-    $('bxLid').style.transform='translateY('+(-c*70*K)+'px) perspective(500px) rotateX('+(c*35)+'deg)'; $('bxLid').style.opacity=p<.45?1:0;
-    $('bxOpen').style.transform='translateY('+((1-b)*60*K)+'px) perspective(500px) rotateX('+((1-b)*-40)+'deg)'; $('bxOpen').style.opacity=b>0?1:0;
-    $('bxGlow').style.opacity=Math.min(1,b*1.4); $('bxGlow').style.transform='scale('+(.5+b*.6)+')';
+    eLid.style.transform='translateY('+(-c*70*K)+'px) perspective(500px) rotateX('+(c*35)+'deg)'; eLid.style.opacity=p<.45?1:0;
+    eOpen.style.transform='translateY('+((1-b)*60*K)+'px) perspective(500px) rotateX('+((1-b)*-40)+'deg)'; eOpen.style.opacity=b>0?1:0;
+    eGlow.style.opacity=Math.min(1,b*1.4); eGlow.style.transform='scale('+(.5+b*.6)+')';
     pz.style.opacity=b>.3?Math.min(1,(b-.3)/.4):0; pz.style.transform='translate(-50%,'+(-b*120)+'%) scale('+(.6+b*.5)+')';
-    $('bxHint').style.opacity=p>.05?0:1;
-    if(p>.06&&!lockOff){lockOff=true;$('bxLock').classList.add('off');sfx('pop');buzz(20)}
+    eHint.style.opacity=p>.05?0:1;
+    if(p>.06&&!lockOff){lockOff=true;eLock.classList.add('off');sfx('pop');buzz(20)}
   }
   function open(){
     if(auto) return; auto=true; var from=p,t0=performance.now();
@@ -818,7 +821,7 @@ function openBox(r){
     bx.classList.add(win?'win':'lose'); setTimeout(function(){showResult(r)},win?1300:900);
   }
   bx.addEventListener('pointerdown',function(e){if(auto)return;y0=e.clientY;try{bx.setPointerCapture(e.pointerId)}catch(_){}});
-  bx.addEventListener('pointermove',function(e){if(y0==null||auto)return;p=Math.max(0,Math.min(1,(y0-e.clientY)/160));draw();if(p>=.6){y0=null;open()}});
+  bx.addEventListener('pointermove',function(e){if(y0==null||auto)return;p=Math.max(0,Math.min(1,(y0-e.clientY)/160));if(p>=.6){y0=null;draw();open()}else if(!pend){pend=true;requestAnimationFrame(function(){pend=false;draw()})}});
   function up(){if(y0==null)return;y0=null;if(p>=.6)open();else{var from=p,t0=performance.now();(function back(now){var k=Math.min(1,(now-t0)/180);p=from*(1-k);draw();if(k<1&&!auto)requestAnimationFrame(back)})(t0)}}
   bx.addEventListener('pointerup',up);bx.addEventListener('pointercancel',up);
   $('bxSkip').onclick=open;

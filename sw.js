@@ -1,5 +1,5 @@
 /* 오프라인 대응 — 한 번 열어두면 신호가 없어도 QR이 열리고 채점까지 된다. */
-var CACHE = "ggg-v70";
+var CACHE = "ggg-v71";
 var FILES = [
   "./", "./index.html", "./legacy.html", "./staff.html", "./style.css", "./data.js", "./assets.js", "./store.js", "./qr.js", "./ev-client.js", "./mqscan.js", "./mhcards.js", "./kujiboard.js", "./seal.js", "./sfx.js", "./app.js", "./catch.js", "./jsqr.js", "./map.jpg",
   "./guide.html",
@@ -21,6 +21,7 @@ var FILES = [
   "./assets/monsters/slime.webp", "./assets/monsters/frog.webp", "./assets/monsters/bat.webp", "./assets/monsters/snake.webp", "./assets/monsters/goblin.webp", "./assets/monsters/orc.webp", "./assets/monsters/skeleton.webp", "./assets/monsters/troll.webp", "./assets/monsters/vampire.webp", "./assets/monsters/knight.webp",
   /* mh머니 트럼프 카드 */
   "./assets/cards/back.webp", "./assets/cards/H1.webp", "./assets/cards/H2.webp", "./assets/cards/H3.webp", "./assets/cards/H4.webp", "./assets/cards/H5.webp", "./assets/cards/H6.webp", "./assets/cards/H7.webp", "./assets/cards/H8.webp", "./assets/cards/H9.webp", "./assets/cards/H10.webp", "./assets/cards/H11.webp", "./assets/cards/H12.webp", "./assets/cards/H13.webp",
+  "./assets/box/closed.webp", "./assets/box/lid_open.webp", "./assets/box/glow.webp", "./assets/box/body.webp", "./assets/box/lid.webp", "./assets/box/lock.webp",
   "./assets/sfx/reveal_low.mp3", "./assets/sfx/reveal_mid.mp3", "./assets/sfx/reveal_top.mp3", "./assets/sfx/reveal_rainbow.mp3", "./assets/sfx/ui_confirm.mp3", "./assets/sfx/ui_select.mp3",
   "./assets/honor/frame.webp", "./assets/honor/ribbon.webp", "./assets/honor/sparkles.webp",
   /* 2026-10-05 미션 배지 */
