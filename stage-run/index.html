@@ -81,7 +81,7 @@ function render(){
     h+='<div class="st">'+(t.src==='mp3'?'<span class="tag ok">음원 파일 있음</span>':t.src==='yt'?'<span class="tag ok">유튜브</span>':'<span class="tag w">음원 대기</span>')+(t.start?'<span class="tag">시작: '+t.start+'</span>':'')+'</div>';
     h+='<div class="mc">🎤 '+mcText(t,i)+'</div>';
     t.notes.forEach(function(x){h+='<div class="note">'+x+'</div>'});
-    if(t.video)h+='<div class="pf" style="margin-top:8px">① 먼저 틀 영상 (18초)</div><video controls playsinline preload="none" src="'+t.video+'"></video>';
+    if(t.video)h+='<div class="pf" style="margin-top:8px">① 먼저 틀 영상 (18초) — 끝나면 노래가 바로 이어서 나와요</div><video controls playsinline preload="auto" src="'+t.video+'" onended="var a=document.getElementById('a'+i+'');a.currentTime=0;a.play()"></video>';
     if(t.src==='mp3'){
       h+=(t.video?'<div class="pf" style="margin-top:8px">② 노래</div>':'')+'<audio controls preload="metadata" id="a'+i+'" src="'+t.file+'"'+(t.at?' data-at="'+t.at+'"':'')+'></audio>';
       if(t.at)h+='<button class="btn o" onclick="goAt('+i+')">'+t.at+'초 위치로 이동 · 재생</button>';
