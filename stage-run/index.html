@@ -61,7 +61,7 @@ var T=[
 {n:"레벨업",who:"김기훈",song:"신의 뜻대로 (神のまにまに)",art:"레루리리 (Rerulili)",src:"mp3",file:"audio/kihun.mp3",at:21,start:"0분 21초부터",notes:["혼자 부름 · 마이크 1개","복장: 일반 유카타로 변경 (원래 보컬로이드 카이토)"]},
 {n:"설거지의악마",who:"소상필",song:"私は最強",art:"Ado / 원피스 필름 레드 (우타)",src:"mp3",file:"audio/sangpil.mp3",start:"처음부터",notes:["마이크 1개"]},
 {n:"고길동의 하루",who:"최민우",song:"콧치노 켄토",art:"네 기꺼이 (본인 제작 음원)",src:"mp3",file:"audio/minwoo.mp3",start:"처음부터",notes:["곡 중간 연기·관객 소통 구간 있음 (신청서)","리허설·음원 체크 꼭 요청"]},
-{n:"H",who:"소라",song:"Happy Halloween",art:"Junky (곡 변경 여부 미확인)",src:"none",url:"",start:"",notes:["MR 아직 못 받음 · 곡 2개 신청했던 건 확인 필요","마지막 순서"]}
+{n:"H",who:"소라",song:"메스머라이저 · Happy Halloween",art:"2곡 (Happy Halloween: Junky)",src:"none",url:"",start:"",notes:["2곡 연속 무대 — MR 아직 못 받음 (메스머라이저 · Happy Halloween)","마지막 순서"]}
 ];
 var K="stage-run-v1", S={};
 try{S=JSON.parse(localStorage.getItem(K)||"{}")}catch(e){}
@@ -69,7 +69,7 @@ S.cur=S.cur||0; S.ln=S.ln||{};
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
 function mcText(t,i){
   var last=i===T.length-1;
-  return (i===0?"첫 번째 무대는 ":last?"마지막 무대입니다! ":"다음 무대는 ")+"<b>"+t.n+"</b> 팀, <b>"+t.who+"</b>님의 <b>"+t.song+"</b>입니다. 큰 박수로 맞아주세요!";
+  return (i===0?"첫 번째 무대는 ":last?"마지막 무대입니다! ":"다음 무대는 ")+"<b>"+t.n+"</b> 팀, <b>"+t.who+"</b>님의 "+(t.song.indexOf(" · ")>0?"<b>"+t.song.split(" · ").join("</b>, <b>")+"</b> 두 곡입니다.":"<b>"+t.song+"</b>입니다.")+" 큰 박수로 맞아주세요!";
 }
 function render(){
   var h='';
