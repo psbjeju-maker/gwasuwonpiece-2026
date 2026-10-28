@@ -81,7 +81,7 @@ function render(){
     h+='<div class="st">'+(t.src==='mp3'?'<span class="tag ok">음원 파일 있음</span>':t.src==='yt'?'<span class="tag ok">유튜브</span>':'<span class="tag w">음원 대기</span>')+(t.start?'<span class="tag">시작: '+t.start+'</span>':'')+'</div>';
     h+='<div class="mc">🎤 '+mcText(t,i)+'</div>';
     t.notes.forEach(function(x){h+='<div class="note">'+x+'</div>'});
-    if(t.video)h+='<div class="pf" style="margin-top:8px">① 먼저 틀 영상 (18초) — 끝나면 노래가 바로 이어서 나와요</div><video controls playsinline preload="auto" src="'+t.video+'" onended="var a=document.getElementById('a'+i+'');a.currentTime=0;a.play()"></video>';
+    if(t.video)h+='<div class="pf" style="margin-top:8px">① 먼저 틀 영상 (18초) — 끝나면 노래가 바로 이어서 나와요</div><video controls playsinline preload="auto" src="'+t.video+'" data-nx="'+i+'"></video>';
     if(t.src==='mp3'){
       h+=(t.video?'<div class="pf" style="margin-top:8px">② 노래</div>':'')+'<audio controls preload="metadata" id="a'+i+'" src="'+t.file+'"'+(t.at?' data-at="'+t.at+'"':'')+'></audio>';
       if(t.at)h+='<button class="btn o" onclick="goAt('+i+')">'+t.at+'초 위치로 이동 · 재생</button>';
@@ -106,5 +106,6 @@ function goAt(i){var a=document.getElementById('a'+i);a.currentTime=+a.dataset.a
 function sl(i,v){S.ln[i]=v;save();var y=document.getElementById('y'+i);y.href=v||'#'}
 document.addEventListener('play',function(e){document.querySelectorAll('audio,video').forEach(function(a){if(a!==e.target)a.pause()})},true);
 document.addEventListener('loadedmetadata',function(e){var a=e.target;if(a.dataset&&a.dataset.at&&a.currentTime<1)a.currentTime=+a.dataset.at},true);
+document.addEventListener('ended',function(e){var v=e.target;if(v.dataset&&v.dataset.nx!==undefined){var a=document.getElementById('a'+v.dataset.nx);if(a){a.currentTime=0;a.play()}}},true);
 render();
 </script></body></html>
