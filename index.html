@@ -326,7 +326,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
   </div>
   <img class="hmap" id="hMap" src="assets/hunt/map.webp" alt="" hidden>
   <button class="btn big" id="btnMain" type="button" hidden>보물찾기 시작</button>
-  <button class="btn" id="btnHunt2" type="button" hidden style="margin-top:10px;min-height:52px">보물찾기 하러 가기</button>
+  <button class="btn big" id="btnHunt2" data-k="hunt" type="button" hidden>보물찾기 하러 가기</button>
 
   <p class="plays" id="hPlays"></p>
   <p class="next" id="hNext"></p>
@@ -556,20 +556,45 @@ function startGps(){
 }
 function stopGps(){if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null}}
 function setRadar(n,u,w,c){$('dist').textContent=n;$('unit').textContent=u;$('heat').textContent=w;document.documentElement.style.setProperty('--heat',c||'rgba(226,196,137,.5)')}
+/* 한 번에 2곳만 보여 준다. 처음엔 내 위치에서 20m 이상 떨어진 곳, 그다음엔 방금 판 자리에서 20m 이상 떨어진 곳을 무작위로 */
+var MOVE_M=20,SHOW_N=2,SHOWN=[],LASTREF=null;
+try{SHOWN=JSON.parse(sessionStorage.getItem('gw.shown.'+EID)||'[]');LASTREF=JSON.parse(sessionStorage.getItem('gw.lastref.'+EID)||'null')}catch(e){}
+function saveShown(){try{sessionStorage.setItem('gw.shown.'+EID,JSON.stringify(SHOWN))}catch(e){}}
+function setLastRef(s){LASTREF={lat:s.lat,lng:s.lng};try{sessionStorage.setItem('gw.lastref.'+EID,JSON.stringify(LASTREF))}catch(e){}SHOWN=[];saveShown()}
+function pickShown(live){
+  var ids={};live.forEach(function(s){ids[s.id]=s});
+  SHOWN=SHOWN.filter(function(id){return ids[id]});
+  if(!pos) return SHOWN.map(function(id){return ids[id]});
+  var ref=LASTREF||pos, guard=0;
+  while(SHOWN.length<SHOW_N&&guard++<SHOW_N){
+    var pool=live.filter(function(s){return SHOWN.indexOf(s.id)<0});
+    if(!pool.length) break;
+    var keep=SHOWN.map(function(id){return ids[id]});
+    var far=pool.filter(function(s){return distM(ref,s)>=MOVE_M&&distM(pos,s)>=MOVE_M&&keep.every(function(k){return distM(k,s)>=MOVE_M})});
+    /* 처음엔 너무 멀지 않게(20~80m) 우선 */
+    var mid=far.filter(function(s){return distM(pos,s)<=80});
+    var from=mid.length?mid:far;
+    if(!from.length){var m=0;pool.forEach(function(s){m=Math.max(m,distM(ref,s))});from=pool.filter(function(s){return distM(ref,s)>=m-10})}
+    SHOWN.push(from[Math.floor(Math.random()*from.length)].id);
+  }
+  saveShown();
+  return SHOWN.map(function(id){return ids[id]});
+}
 var DUG={X:'꽝',wrong:'퀴즈 실패',quiz:'퀴즈 중',npc:'NPC 미션 중',open:'상자 열기 전',battle:'전투 중'};
 function update(){
   if(!data) return;
-  var R=data.pool.radiusM||5, live=data.spots.filter(function(s){return s.live&&!s.dug});
+  var R=data.pool.radiusM||5, allLive=data.spots.filter(function(s){return s.live&&!s.dug}), live=pickShown(allLive), shownIds={};
+  live.forEach(function(s){shownIds[s.id]=1});
   var pl=data.plays||{};
   $('rotLine').textContent=(pl.left!=null?'남은 도전 '+pl.left+'회 · ':'')+(data.nextAt?'보물 위치는 '+hm(data.nextAt)+'에 바뀌어요':'');
   /* 목록: 열린 보물 + 진행 중/끝난 보물 */
-  $('tlist').innerHTML=data.spots.map(function(s){
+  $('tlist').innerHTML=data.spots.filter(function(s){return s.dug||shownIds[s.id]}).map(function(s){
     var d=pos?Math.round(distM(pos,s)):null, st=s.dug?(TIER[s.dug]||DUG[s.dug]||'진행 중'):'';
     var pending=s.dug==='npc'||s.dug==='open'||s.dug==='quiz'||s.dug==='battle';
     return '<div class="tl"><img class="tpin" src="assets/hunt/pin.png" alt=""><div><b>'+esc(s.name||'보물')+'</b><small>'+esc(s.hint||'힌트 없음')+'</small></div>'+
       (pending?'<button data-cont="'+esc(s.id)+'" type="button">이어하기</button>':s.dug?'<span class="chip">'+esc(st)+'</span>':(d!=null?'<span class="d">'+(d>=1000?(d/1000).toFixed(1)+'km':d+'m')+'</span>':'')+(s.live?'<button class="skip" data-skip="'+esc(s.id)+'" type="button">패스</button>':''))+'</div>';
   }).join('')||'<p class="gpsline">지금 열린 보물이 없어요. 잠시 후 다시 확인해 주세요.</p>';
-  if(!live.length){setRadar('-','지금 찾을 보물이 없어요','',null);$('btnDig').hidden=true;return}
+  if(!allLive.length){setRadar('-','지금 찾을 보물이 없어요','',null);$('btnDig').hidden=true;return}
   if(!pos){setRadar('…','위치 확인 중','',null);return}
   near=null;var best=1e12;live.forEach(function(s){var d=distM(pos,s);if(d<best){best=d;near=s}});
   var allow=R+Math.min(pos.acc||0,10),d=Math.round(best),word,color;
@@ -587,7 +612,7 @@ function update(){
 var taps=0,digging=false,task=null,spot=null,answering=false;
 $('btnDig').onclick=function(){
   if(!near||!pos) return;
-  spot=near;taps=0;task=null;digging=true;digQ=0;digRun=false;
+  spot=near;setLastRef(spot);taps=0;task=null;digging=true;digQ=0;digRun=false;
   $('stage').hidden=false;$('sheet').className='sheet';$('sheet').innerHTML='';
   $('chest').src='assets/box/closed.webp';$('chest').className='chest';$('hole').style.setProperty('--hw','40px');$('tapBar').style.width='0';
   $('taps').hidden=false;$('stTitle').textContent='땅을 파세요!';$('stSub').textContent='화면을 계속 두드리면 삽질해요';
