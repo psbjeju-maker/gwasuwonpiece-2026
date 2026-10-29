@@ -62,9 +62,8 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
 </head>
 <body>
 <div class="wrap">
-  <h1>보물 관리 <span class="envtag" id="envTag"></span></h1>
-  <div class="envbar" id="envBar"></div>
-  <p class="sub">과수원피스 · 후보 장소에 서서 「여기 등록」을 누르면 그 GPS 위치가 보물 후보가 돼요. 시스템이 후보 중에서 무작위로 보물을 열어요.</p>
+  <h1>보물 관리 <span class="envtag">본 행사</span></h1>
+  <p class="sub">과수원피스 · 보물 위치를 옮기거나 새로 묻을 때만 써요.</p>
 
   <div class="card" id="loginBox">
     <h2>관리자 로그인</h2>
@@ -78,115 +77,26 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     <div class="who"><span id="who"></span><button class="btn btn--sm" id="btnLogout">로그아웃</button></div>
 
     <div class="card">
-      <h2>여기를 보물 후보로 등록</h2>
+      <h2>내 위치</h2>
       <div class="gps" id="gpsBox">위치 확인 중…</div>
-      <label for="name">자리 이름 (손님에게 보여요, 비워도 됨)</label>
-      <input id="name" placeholder="예) 귤나무 언덕" maxlength="30">
-      <label for="hint">힌트 (손님에게 보여요)</label>
-      <input id="hint" placeholder="예) 빨간 우체통 근처" maxlength="120">
-      <label for="task">상자 과제</label>
-      <select id="task"><option value="quiz">오타쿠 퀴즈</option><option value="npc">NPC 미션</option><option value="monster">몬스터 전투</option></select>
-      <select id="npcId" style="margin-top:8px" hidden></select>
-      <select id="monster" style="margin-top:8px" hidden></select>
-      <label for="memo">위치 메모 (관리자만 봐요)</label>
-      <textarea id="memo" placeholder="예) 3번째 귤나무 왼쪽 돌 밑"></textarea>
-      <div class="row"><button class="btn btn--p btn--b" id="btnBury" disabled>여기 등록</button></div>
-      <p class="msg" id="buryMsg"></p>
-      <div id="monAll" hidden style="margin-top:10px"><button class="btn btn--b" id="btnMonAll" type="button" disabled>테스트용: 몬스터 10종 한 번에 등록 (내 위치)</button><p class="note">매장 테스트에서만 보여요. 지금 서 있는 곳 둘레에 10마리가 모두 생겨서, 한 자리에서 전투 5종을 다 해 볼 수 있어요.</p></div>
+      <p class="sub" style="margin-top:8px">보물 위치를 옮기려면 그 자리에 서서 오차가 ±15m 이하로 뜰 때까지 기다린 뒤, 아래 목록에서 「여기로 위치 옮기기」를 누르세요.</p>
     </div>
 
     <div class="card">
-      <h2>테스트 보물 한꺼번에 깔기</h2>
-      <p class="sub">가운데를 기준으로 바둑판처럼 간격을 두고 보물(퀴즈)을 한 번에 등록해요. 건물 안이나 도로 위에 놓이는 자리도 있어요. 테스트가 끝나면 「테스트 보물 전부 삭제」로 지워요.</p>
-      <label for="bkCenter">가운데</label>
-      <select id="bkCenter"><option value="store">박서방 노형점 (월랑로 59)</option><option value="me">지금 내 위치</option></select>
-      <div class="row">
-        <div><label for="bkN">개수</label><input id="bkN" type="number" value="50" min="1" max="100"></div>
-        <div><label for="bkStep">간격(m)</label><input id="bkStep" type="number" value="10" min="5" max="100"></div>
-        <div><label for="bkShift">가운데에서 동쪽으로 옮기기(m)</label><input id="bkShift" type="number" value="0" min="0" max="300"></div>
-      </div>
-      <div class="row"><button class="btn btn--p btn--b" id="btnBulk">한꺼번에 깔기</button></div>
-      <div class="row"><button class="btn btn--b" id="btnRelay">테스트 보물 지우고 다시 깔기</button></div>
-      <div class="row"><button class="btn btn--b" id="btnBulkDel">테스트 보물 전부 삭제</button></div>
-      <div class="row"><button class="btn btn--b" id="btnFarDel">매장에서 1km 넘게 떨어진 보물 삭제</button></div>
-      <p class="msg" id="bulkMsg"></p>
-    </div>
-
-    <div class="card">
-      <div class="row" style="margin-top:0;align-items:center"><h2 style="margin:0">보물 후보</h2><button class="btn btn--sm" id="btnReload" style="flex:0 0 auto">새로고침</button></div>
+      <div class="row" style="margin-top:0;align-items:center"><h2 style="margin:0">보물 목록</h2><button class="btn btn--sm" id="btnReload" style="flex:0 0 auto">새로고침</button></div>
       <div id="spots"><p class="sub">불러오는 중…</p></div>
     </div>
 
     <div class="card">
-      <h2>상품판 (전체 칸)</h2>
-      <p class="sub" id="poolNow"></p>
-      <p class="sub">본 행사 확정: A·B·C 합계 10개(각 수량은 정해지면 입력), D 20개, E 30개. 사진 주소를 넣으면 손님 현황판에 사진과 남은 수량이 보여요.</p>
-      <div class="grid4" id="poolGrid" style="margin-top:12px"></div>
-      <div class="row">
-        <div><label for="total">전체 칸 (나머지는 꽝, 최대 10000)</label><input id="total" type="number" min="1" max="10000" value="50"></div>
-      </div>
-      <div class="row"><button class="btn btn--b" id="btnPool">상품판 새로 깔기</button></div>
-      <p class="sub" style="margin-top:6px">새로 깔면 남은 칸이 처음 개수로 돌아가요. 퀴즈를 맞힌 사람만 이 판에서 1칸을 뽑고, 틀리면 판을 안 쓰고 꽝이에요.</p>
-      <p class="msg" id="poolMsg"></p>
-    </div>
-
-    <div class="card">
-      <h2>운영 설정</h2>
-      <div class="row">
-        <div><label for="maxActive">동시에 열 보물 수 (0 = 후보 전부)</label><input id="maxActive" type="number" min="0"></div>
-        <div><label for="rotateMin">위치 바꾸는 간격(분)</label><input id="rotateMin" type="number" min="5"></div>
-      </div>
-      <div class="row">
-        <div><label for="radiusM">파기 가능 거리(m) · 현장 GPS 오차 보고 조정</label><input id="radiusM" type="number" min="2" max="50"></div>
-        <div><label for="basePlays">1인 기본 도전 횟수 (0 = 제한 없음)</label><input id="basePlays" type="number" min="0" max="100"></div>
-      </div>
-      <p class="sub">도전 1회 = 보물 파기를 시작할 때 서버에서 한 번만 빠져요. 퀴즈를 틀려도 1회. 새로고침·통신 끊김으로는 더 안 빠져요.</p>
-      <h3 style="margin:16px 0 4px;font-size:15px">감귤</h3>
-      <label for="gyulRule">지급 기준 (손님 현황판에 보여요)</label><input id="gyulRule" maxlength="200" placeholder="예) 상자를 연 분께 선착순 1개씩">
-      <label for="gyulStock">남은 감귤 수 (비우면 안 보임)</label><input id="gyulStock" type="number" min="0">
-      <h3 style="margin:16px 0 4px;font-size:15px">보물찾기 횟수 추가 <span class="chip">검토안 · 기본 꺼짐</span></h3>
-      <p class="sub">법적 확인 전에는 켜지 마세요. 켜면 손님 현황판에 가격·횟수·구성·한도·구매 장소가 보이고, 「보물찾기 횟수 추가」 담당 화면에서 지급해요.</p>
-      <label style="display:flex;gap:10px;align-items:center;margin-top:10px"><input id="xOn" type="checkbox" style="width:24px;min-height:24px"> 보물찾기 횟수 추가 켜기</label>
-      <div class="row">
-        <div><label for="xPrice">가격(원)</label><input id="xPrice" type="number" min="0"></div>
-        <div><label for="xPlays">추가 횟수</label><input id="xPlays" type="number" min="1"></div>
-      </div>
-      <div class="row">
-        <div><label for="xGyul">구매 1건당 감귤</label><input id="xGyul" type="number" min="0"></div>
-        <div><label for="xGyulStock">구매용 감귤 따로 확보한 수</label><input id="xGyulStock" type="number" min="0"></div>
-      </div>
-      <div class="row">
-        <div><label for="xPer">1인 구매 한도 (0 = 없음)</label><input id="xPer" type="number" min="0"></div>
-        <div><label for="xTotal">전체 판매 한도 (0 = 없음)</label><input id="xTotal" type="number" min="0"></div>
-      </div>
-      <label for="xPlace">구매 장소</label><input id="xPlace" maxlength="40" placeholder="본부">
-      <h3 style="margin:16px 0 4px;font-size:15px">기타</h3>
-      <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input id="freeOn" type="checkbox" style="width:24px;min-height:24px"> 무료 뽑기권 지급 켜기 (운영자 확정 후)</label>
-      <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input id="paidOn" type="checkbox" style="width:24px;min-height:24px"> 유료 뽑기(현장 결제) 판매 켜기 — 당일 사용 안 함</label>
-      <div><label for="freePer">1인 무료권 한도 (0 = 제한 없음)</label><input id="freePer" type="number" min="0"></div>
-      <h3 style="margin:16px 0 4px;font-size:15px">NPC 목록</h3>
-      <p class="sub">한 줄에 하나: 아이디 | 이름 | 장소 | 미션 문장 | 활동(O/X). NPC 담당 PIN은 스태프 화면 총괄에서 "NPC 미션 + 아이디"로 만들어요.</p>
-      <textarea id="npcs" style="min-height:120px;font-size:14px" placeholder="n1 | 해적 선장 | 무대 옆 | 선장에게 해적왕이 되겠다고 외치기 | O"></textarea>
-      <div class="row"><button class="btn btn--b" id="btnCfg">설정 저장</button></div>
-      <p class="msg" id="cfgMsg"></p>
-    </div>
-
-    <div class="card">
-      <h2>손님 홈 시간표</h2>
-      <p class="sub">손님 앱 홈에는 지금 시간대의 큰 버튼 하나만 떠요. 한 줄에 하나: 시작-끝 | 종류 | 제목 | 선장 대사(비우면 기본) | 버튼 글자 | 링크<br>종류: <b>보물찾기</b> · <b>투표</b>(노래방 진행자가 시작해야 열림) · <b>안내</b>(버튼 없음) · <b>링크</b>(버튼 → 주소). 비워 두면 하루 종일 보물찾기예요.</p>
-      <textarea id="sched" style="min-height:140px;font-size:14px" placeholder="13:00-15:00 | 보물찾기 | 보물찾기 시간
-15:00-15:40 | 안내 | 노래방 무대 | 무대 앞으로 모여 줘!
-15:40-16:00 | 투표 | 노래방 인기투표"></textarea>
-      <div class="row"><button class="btn btn--b" id="btnSched">시간표 저장</button></div>
-      <p class="msg" id="schedMsg"></p>
-    </div>
-
-    <div class="card" id="copyCard" hidden>
-      <h2>테스트 설정을 본 행사에 적용</h2>
-      <p class="sub">이 테스트에서 맞춘 운영 설정(파기 거리, 기본 횟수, 위치 바꾸는 간격, 동시 개수, NPC, 감귤 기준, 추가 판매 값)을 본 행사에 그대로 넣어요. 보물 장소·상품판은 옮기지 않고, 판매 켜짐은 본 행사 값을 유지해요.</p>
-      <label style="display:flex;gap:10px;align-items:center;margin-top:10px"><input id="cpHome" type="checkbox" style="width:24px;min-height:24px"> 손님 홈 시간표도 같이</label>
-      <div class="row"><button class="btn btn--p btn--b" id="btnCopy">본 행사에 적용</button></div>
-      <p class="msg" id="copyMsg"></p>
+      <h2>보물 추가</h2>
+      <p class="sub">서 있는 자리에 새 보물을 하나 더 묻어요. 이름을 비우면 번호가 자동으로 붙어요.</p>
+      <label for="name">이름 (비워도 됨)</label>
+      <input id="name" maxlength="30">
+      <label for="task">상자 과제</label>
+      <select id="task"><option value="quiz">오타쿠 퀴즈</option><option value="monster">몬스터 전투</option></select>
+      <select id="monster" style="margin-top:8px" hidden></select>
+      <div class="row"><button class="btn btn--p btn--b" id="btnBury" disabled>여기에 묻기</button></div>
+      <p class="msg" id="buryMsg"></p>
     </div>
 
     <div class="card">
@@ -197,25 +107,22 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
   </div>
 </div>
 
-
 <script src="ev-client.js?v=8"></script>
 <script>
 (function(){
 'use strict';
-/* ?ev=test → 매장 테스트(gwtest). 코드는 같고 데이터만 따로 */
-var TEST=/[?&]ev=test\b/.test(location.search), EID=TEST?'gwtest':'gwasu', TIERS=['A','B','C','D','E','FREE'];
-var TIER_TXT={TOP:'특상',A:'A',B:'B',C:'C',D:'D',E:'E',FREE:'무료권',X:'꽝'};
-var CFG=null;
+var EID='gwasu', TIER_TXT={TOP:'특상',A:'A',B:'B',C:'C',D:'D',E:'E',FREE:'무료권',X:'꽝'};
 var $=function(s){return document.querySelector(s)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-document.getElementById('envTag').textContent=TEST?'매장 테스트':'본 행사';
-document.getElementById('envTag').className='envtag'+(TEST?' test':'');
-document.getElementById('envBar').innerHTML=TEST?'테스트 데이터예요. 본 행사 보물·상품판에는 영향 없어요. <a href="bury.html">본 행사 관리로 →</a>':'실제 행사 데이터예요. <a href="bury.html?ev=test">매장 테스트 관리로 →</a>';
-document.getElementById('copyCard').hidden=!TEST;
-document.getElementById('poolGrid').innerHTML='<span>등급</span><span>상품 이름</span><span>개수</span>'+TIERS.map(function(k){return '<span>'+TIER_TXT[k]+'</span><input id="pn'+k+'"><input id="pc'+k+'" type="number" min="0">'+(k==='FREE'?'':'<span></span><input class="img" id="pi'+k+'" placeholder="사진 주소 (https://…, 비워도 됨)">')}).join('');
 function msg(el,t,cls){el.textContent=t||'';el.className='msg'+(cls?' '+cls:'')}
 function dt(ms){return ms?new Date(ms+9*3600e3).toISOString().slice(5,16).replace('T',' '):'-'}
-var pos=null, watchId=null, poolFilled=false;
+function distM(a,b){var R=6371000,r=function(x){return x*Math.PI/180},dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng);
+  var h=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return 2*R*Math.asin(Math.sqrt(h))}
+/* 몬스터 10종(서버 handlers.js MONSTERS 와 같아야 함) */
+var MONS={slime:['슬라임','가위바위보'],frog:['개구리','가위바위보'],bat:['박쥐','사투리 퀴즈'],snake:['뱀','사투리 퀴즈'],goblin:['고블린','포토카드 만들기'],orc:['오크','포토카드 만들기'],skeleton:['스켈레톤','SNS 올리기'],troll:['트롤','SNS 올리기'],vampire:['뱀파이어','사탕 받아오기'],knight:['돌하르방 기사','사탕 받아오기']};
+$('#monster').innerHTML=Object.keys(MONS).map(function(k){return '<option value="'+k+'">'+MONS[k][0]+' · '+MONS[k][1]+'</option>'}).join('');
+$('#task').onchange=function(){$('#monster').hidden=this.value!=='monster'};
+var pos=null, watchId=null, SPOTS=[];
 
 function showMain(){
   var i=EV.sessionInfo(), ok=!!i&&i.role==='admin';
@@ -241,194 +148,50 @@ function startGps(){
     pos={lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),acc:Math.round(p.coords.accuracy)};
     box.className='gps '+(pos.acc<=15?'ok':'warn');
     box.innerHTML='<b>'+pos.lat+', '+pos.lng+'</b><br>오차 약 ±'+pos.acc+'m'+(pos.acc>15?' — 잠깐 기다리면 더 정확해져요':' — 좋아요');
-    $('#btnBury').disabled=false;$('#btnMonAll').disabled=false;
+    $('#btnBury').disabled=false;
   },function(e){box.className='gps';box.textContent='위치를 못 받았어요: '+(e.message||e.code)+' — 브라우저 위치 권한을 허용해 주세요.'},
   {enableHighAccuracy:true,maximumAge:0,timeout:20000});
 }
 
-$('#monAll').hidden=!TEST;
-$('#btnMonAll').onclick=function(){
-  if(!pos) return;
-  var b=this, keys=Object.keys(MONS), n=0, fail=0; b.disabled=true;
-  (function next(){
-    if(n>=keys.length){b.disabled=false;msg($('#buryMsg'),'몬스터 '+(keys.length-fail)+'마리 등록'+(fail?' (실패 '+fail+')':'')+'! 아래 목록과 손님 화면에서 확인해요','ok');load();return}
-    var k=keys[n], m=MONS[k]; n++;
-    msg($('#buryMsg'),'등록 중… '+n+'/'+keys.length);
-    /* 서로 0.4m씩만 떨어뜨려 모두 같은 반경 안에 들게 한다 */
-    EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat+n*0.0000036,lng:pos.lng,acc:pos.acc,name:'[테스트] '+m[0],hint:BATS[m[1]],task:'monster',monster:k,memo:'몬스터 일괄 등록(테스트)'}).then(next,function(){fail++;next()});
-  })();
-};
-/* 이름을 비워 두면 「보물 01, 02…」로 번호를 이어서 붙인다 */
-function autoName(){var n=0;(SPOTS||[]).forEach(function(x){var m=/^보물 (\d+)$/.exec(x.name||'');if(m)n=Math.max(n,+m[1])});return '보물 '+('0'+(n+1)).slice(-2)}
+function autoName(){var n=0;SPOTS.forEach(function(x){var m=/^보물 (\d+)$/.exec(x.name||'');if(m)n=Math.max(n,+m[1])});return '보물 '+('0'+(n+1)).slice(-2)}
 $('#btnBury').onclick=function(){
   if(!pos) return;
   var b=this; b.disabled=true; msg($('#buryMsg'),'묻는 중…');
-  EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat,lng:pos.lng,acc:pos.acc,name:$('#name').value.trim()||autoName(),hint:$('#hint').value.trim(),task:$('#task').value,npcId:$('#npcId').value,monster:$('#monster').value,memo:$('#memo').value.trim()}).then(function(r){
-    b.disabled=false; msg($('#buryMsg'),'묻었어요! ('+(r.name||r.id)+' · 오차 ±'+r.acc+'m)','ok');
-    $('#name').value=''; $('#hint').value=''; $('#memo').value=''; load();
+  EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat,lng:pos.lng,acc:pos.acc,name:$('#name').value.trim()||autoName(),task:$('#task').value,monster:$('#monster').value}).then(function(r){
+    b.disabled=false; msg($('#buryMsg'),'묻었어요! ('+(r.name||r.id)+' · 오차 ±'+r.acc+'m)','ok'); $('#name').value=''; load();
   },function(e){b.disabled=false;msg($('#buryMsg'),e.message||'묻지 못했어요','bad')});
 };
 
-var KIND={'보물찾기':'hunt','투표':'vote','안내':'info','링크':'link'},KIND_TXT={hunt:'보물찾기',vote:'투표',info:'안내',link:'링크'};
-function fillSched(c){$('#sched').value=(c.slots||[]).map(function(x){return [x.from+'-'+x.to,KIND_TXT[x.kind],x.title,x.line,x.btn,x.url].join(' | ').replace(/( \| )+$/,'')}).join('\n')}
-var schedLoaded=false;
-$('#btnSched').onclick=function(){
-  var bad=null,slots=$('#sched').value.split('\n').map(function(l){return l.trim()}).filter(Boolean).map(function(l){
-    var c=l.split('|').map(function(x){return x.trim()}),t=(c[0]||'').split(/[-~]/).map(function(x){x=x.trim();return x.length===4?'0'+x:x});
-    if(!KIND[c[1]]&&!KIND_TXT[c[1]])bad=l;
-    return {from:t[0],to:t[1],kind:KIND[c[1]]||c[1],title:c[2]||'',line:c[3]||'',btn:c[4]||'',url:c[5]||''};
-  });
-  if(bad){msg($('#schedMsg'),'종류를 확인해 주세요: '+bad,'bad');return}
-  var b=this;b.disabled=true;
-  EV.staff('ownerHomeCfg',{eventId:EID,slots:slots}).then(function(c){b.disabled=false;fillSched(c);msg($('#schedMsg'),'저장했어요. 손님 앱에 30초 안에 반영돼요.','ok')},
-    function(e){b.disabled=false;msg($('#schedMsg'),e.message||'저장 못 했어요','bad')});
-};
-
-function load(){
-  if(!schedLoaded)EV.staff('ownerHomeCfg',{eventId:EID}).then(function(c){schedLoaded=true;fillSched(c)},function(){});
-  EV.staff('staffDigStatus',{eventId:EID}).then(render,function(e){$('#spots').innerHTML='<p class="msg bad">'+esc(e.message||'못 불러왔어요')+'</p>'});
-}
+function load(){EV.staff('staffDigStatus',{eventId:EID}).then(render,function(e){$('#spots').innerHTML='<p class="msg bad">'+esc(e.message||'못 불러왔어요')+'</p>'})}
 $('#btnReload').onclick=load;
-
-/* 테스트 보물 한꺼번에 (2026-10-21 매장 테스트) */
-var STORE={lat:33.4902306,lng:126.4741710}, BULK_MEMO='매장 테스트(한꺼번에)', SPOTS=[];
-$('#btnBulk').onclick=function(){
-  var c=$('#bkCenter').value==='me'?pos:STORE; if(!c){msg($('#bulkMsg'),'아직 내 위치를 못 받았어요.','bad');return}
-  var N=Math.max(1,Math.min(parseInt($('#bkN').value,10)||50,100)), step=Math.max(5,parseInt($('#bkStep').value,10)||10);
-  var mLat=1/111320, mLng=1/(111320*Math.cos(c.lat*Math.PI/180)), shift=Math.max(0,Math.min(parseInt($('#bkShift').value,10)||0,300));
-  if(shift)c={lat:c.lat,lng:c.lng+shift*mLng};
-  var side=Math.ceil(Math.sqrt(N)), half=(side-1)/2, list=[];
-  for(var r=0;r<side;r++)for(var k=0;k<side;k++){if(list.length>=N)break;
-    var dy=(r-half)*step+(Math.random()-.5)*4, dx=(k-half)*step+(Math.random()-.5)*4, dist=Math.round(Math.hypot(dx,dy));
-    var dir=(dy<-3?'북':dy>3?'남':'')+(dx<-3?'서':dx>3?'동':'');
-    list.push({lat:c.lat-dy*mLat,lng:c.lng+dx*mLng,name:'테스트 보물 '+(list.length+1),hint:dist<5?'가운데 바로 근처':(dir||'가운데')+'쪽 약 '+dist+'m'})}
-  var b=this,i=0,fail=0; b.disabled=true;
-  (function next(){
-    if(i>=list.length){b.disabled=false;msg($('#bulkMsg'),(list.length-fail)+'곳 깔았어요'+(fail?' (실패 '+fail+')':'')+'.',fail?'bad':'ok');load();return}
-    var x=list[i++]; msg($('#bulkMsg'),'까는 중… '+i+' / '+list.length);
-    EV.staff('ownerDigBury',{eventId:EID,lat:x.lat,lng:x.lng,acc:0,name:x.name,hint:x.hint,task:'quiz',memo:BULK_MEMO}).then(next,function(){fail++;next()});
-  })();
-};
-/* 이미 깐 테스트 보물을 지우고 지금 개수·간격으로 다시 깐다 */
-$('#btnRelay').onclick=function(){
-  var t=SPOTS.filter(function(x){return x.memo===BULK_MEMO});
-  if(!confirm('테스트 보물 '+t.length+'곳을 지우고 '+($('#bkN').value||50)+'곳을 '+($('#bkStep').value||10)+'m 간격으로 다시 깔까요?')) return;
-  var b=this,i=0; b.disabled=true;
-  (function next(){
-    if(i>=t.length){b.disabled=false;SPOTS=SPOTS.filter(function(x){return x.memo!==BULK_MEMO});$('#btnBulk').onclick.call($('#btnBulk'));return}
-    msg($('#bulkMsg'),'지우는 중… '+(i+1)+' / '+t.length);
-    EV.staff('ownerDigSpotStatus',{eventId:EID,id:t[i++].id,status:'delete'}).then(next,next);
-  })();
-};
-$('#btnFarDel').onclick=function(){
-  var t=SPOTS.filter(function(x){return distM(STORE,x)>1000}); if(!t.length){msg($('#bulkMsg'),'1km 넘게 떨어진 보물이 없어요.');return}
-  if(!confirm('매장(월랑로 59)에서 1km 넘게 떨어진 보물 '+t.length+'곳을 삭제할까요?\n'+t.slice(0,8).map(function(x){return '· '+(x.name||x.id)+' ('+(distM(STORE,x)/1000).toFixed(1)+'km)'}).join('\n'))) return;
-  var b=this,i=0; b.disabled=true;
-  (function next(){
-    if(i>=t.length){b.disabled=false;msg($('#bulkMsg'),t.length+'곳 지웠어요.','ok');load();return}
-    msg($('#bulkMsg'),'지우는 중… '+(i+1)+' / '+t.length);
-    EV.staff('ownerDigSpotStatus',{eventId:EID,id:t[i++].id,status:'delete'}).then(next,next);
-  })();
-};
-$('#btnBulkDel').onclick=function(){
-  var t=SPOTS.filter(function(x){return x.memo===BULK_MEMO}); if(!t.length){msg($('#bulkMsg'),'지울 테스트 보물이 없어요.');return}
-  var b=this,i=0; b.disabled=true;
-  (function next(){
-    if(i>=t.length){b.disabled=false;msg($('#bulkMsg'),t.length+'곳 지웠어요.','ok');load();return}
-    msg($('#bulkMsg'),'지우는 중… '+(i+1)+' / '+t.length);
-    EV.staff('ownerDigSpotStatus',{eventId:EID,id:t[i++].id,status:'delete'}).then(next,next);
-  })();
-};
-
-/* 몬스터 10종과 전투(서버 handlers.js MONSTERS 와 같아야 함). 전투 5종 × 2곳 */
-var MONS={slime:['슬라임','rps'],frog:['개구리','rps'],bat:['박쥐','dialect'],snake:['뱀','dialect'],goblin:['고블린','photocard'],orc:['오크','photocard'],skeleton:['스켈레톤','sns'],troll:['트롤','sns'],vampire:['뱀파이어','candy'],knight:['돌하르방 기사','candy']};
-var BATS={rps:'가위바위보',dialect:'사투리 퀴즈',photocard:'포토카드 만들기',sns:'SNS 올리기',candy:'사탕 받아오기'};
-function monSummary(list){
-  var mon=list.filter(function(x){return x.task==='monster'&&x.status==='active'});
-  if(!mon.length) return '';
-  var cnt={};Object.keys(BATS).forEach(function(k){cnt[k]=0});
-  mon.forEach(function(x){var m=MONS[x.monster];if(m)cnt[m[1]]++});
-  return '<div class="note" style="margin-bottom:8px">몬스터 자리 '+mon.length+'/10 · '+Object.keys(BATS).map(function(k){return BATS[k]+' '+cnt[k]+'/2'}).join(' · ')+'</div>';
-}
 function render(r){
-  SPOTS=r.spots;
-  var sp=r.spots.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
-  $('#spots').innerHTML=sp.length?monSummary(sp)+sp.map(function(x,i){
+  SPOTS=r.spots.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
+  $('#spots').innerHTML=SPOTS.length?SPOTS.map(function(x){
     var d=pos?Math.round(distM(pos,x)):null;
-    return '<div class="item"><div class="top"><b>'+(i+1)+'. '+esc(x.name||('자리 '+x.id))+'</b><span class="chip '+x.status+'">'+(x.status!=='active'?'후보 제외':x.live?'지금 열림':'대기')+'</span><span class="chip">'+(x.task==='npc'?'NPC '+esc(x.npcId):x.task==='monster'?'몬스터 '+esc((MONS[x.monster]||[x.monster])[0])+' · '+esc(BATS[(MONS[x.monster]||[])[1]]||''):'퀴즈')+'</span>'+
-      '<button class="btn btn--sm" data-st="'+(x.status==='active'?'off':'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'빼기':'넣기')+'</button>'+
+    return '<div class="item"><div class="top"><b>'+esc(x.name||('자리 '+x.id))+'</b><span class="chip '+x.status+'">'+(x.status==='active'?'켜짐':'꺼짐')+'</span><span class="chip">'+(x.task==='monster'?'몬스터':'퀴즈')+'</span></div>'+
+      '<div class="row">'+
       '<button class="btn btn--sm" data-mv="'+esc(x.id)+'">여기로 위치 옮기기</button>'+
+      '<button class="btn btn--sm" data-st="'+(x.status==='active'?'off':'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'끄기':'켜기')+'</button>'+
       '<button class="btn btn--sm" data-st="delete" data-id="'+esc(x.id)+'">삭제</button></div>'+
-      '<div class="note">'+(x.hint?'힌트: '+esc(x.hint)+' · ':'')+(x.memo?esc(x.memo)+' · ':'')+'판 사람 '+x.digs+' · 당첨 '+x.wins+(d!=null?' · 지금 여기서 '+d+'m':'')+
-      ' · <a target="_blank" rel="noopener" href="https://maps.google.com/?q='+x.lat+','+x.lng+'">지도</a></div></div>';
-  }).join(''):'<p class="sub">아직 묻은 자리가 없어요.</p>';
-
-  var p=r.pool, s=p.slots;
-  if(!CFG){CFG=r.cfg;fillCfg()}
-  $('#poolNow').textContent='지금 남은 칸 '+p.left+'/'+p.total+' · '+TIERS.concat('X').map(function(k){return TIER_TXT[k]+' '+s[k].left+'/'+s[k].count}).join(' · ')+' · 파기 거리 '+p.radiusM+'m';
-  if(!poolFilled){
-    TIERS.forEach(function(k){$('#pn'+k).value=s[k].name||'';$('#pc'+k).value=s[k].count;if($('#pi'+k))$('#pi'+k).value=s[k].img||''});
-    $('#total').value=p.total; poolFilled=true;
-  }
-  $('#poolNow').textContent+=(r.nextAt?' · 다음 위치 변경 '+new Date(r.nextAt).toTimeString().slice(0,5):'')+(r.stats&&r.stats.freeIssued?' · 무료권 발급 '+r.stats.freeIssued+' / 사용 '+(r.stats.freeUsed||0):'')+(r.stats?' · 참가자 '+(r.stats.players||0)+'명 · 도전 '+(r.stats.tries||0)+'회'+(r.stats.extraSold?' · 추가 판매 '+r.stats.extraSold+'건':''):'');
+      '<div class="note">판 사람 '+(x.digs||0)+' · 당첨 '+(x.wins||0)+(d!=null?' · 지금 여기서 '+d+'m':'')+' · <a target="_blank" rel="noopener" href="https://maps.google.com/?q='+x.lat+','+x.lng+'">지도</a></div></div>';
+  }).join(''):'<p class="sub">아직 묻은 보물이 없어요.</p>';
   $('#winners').innerHTML=r.winners.length?'<table><tr><th>시각</th><th>닉네임</th><th>상품</th><th>코드</th><th></th></tr>'+
     r.winners.sort(function(a,b){return (b.at||0)-(a.at||0)}).map(function(w){return '<tr><td>'+dt(w.at).slice(6)+'</td><td>'+esc(w.nickname)+'</td><td>'+esc(TIER_TXT[w.tier])+' '+esc(w.prize)+'</td><td>'+esc(w.pickupCode)+'</td><td>'+(w.given?'지급':'')+'</td></tr>'}).join('')+'</table>':'<p class="sub">아직 없어요.</p>';
 }
-/* 보물 위치 옮기기: 지금 서 있는 자리(내 GPS)로 이 보물의 좌표를 바꾼다 */
 $('#spots').addEventListener('click',function(e){
-  var m=e.target.closest('[data-mv]'); if(!m) return;
-  if(!pos){alert('아직 내 위치를 못 받았어요. 잠깐 기다렸다가 다시 눌러 주세요.');return}
-  if(pos.acc>15&&!confirm('위치 오차가 ±'+pos.acc+'m예요. 그래도 여기로 옮길까요?')) return;
-  else if(pos.acc<=15&&!confirm('이 보물을 지금 서 있는 자리로 옮길까요?')) return;
-  m.disabled=true;
-  EV.staff('ownerDigSpotStatus',{eventId:EID,id:m.dataset.mv,lat:pos.lat,lng:pos.lng,acc:pos.acc}).then(load,function(er){m.disabled=false;alert(er.message||'옮기지 못했어요')});
-});
-$('#spots').addEventListener('click',function(e){
+  var m=e.target.closest('[data-mv]');
+  if(m){
+    if(!pos){alert('아직 내 위치를 못 받았어요. 잠깐 기다렸다가 다시 눌러 주세요.');return}
+    if(!confirm(pos.acc>15?'위치 오차가 ±'+pos.acc+'m예요. 그래도 여기로 옮길까요?':'이 보물을 지금 서 있는 자리로 옮길까요?')) return;
+    m.disabled=true;
+    EV.staff('ownerDigSpotStatus',{eventId:EID,id:m.dataset.mv,lat:pos.lat,lng:pos.lng,acc:pos.acc}).then(load,function(er){m.disabled=false;alert(er.message||'옮기지 못했어요')});
+    return;
+  }
   var b=e.target.closest('[data-st]'); if(!b) return;
-  if(b.dataset.st==='delete'&&!confirm('이 보물 자리를 삭제할까요?')) return;
+  if(b.dataset.st==='delete'&&!confirm('이 보물을 삭제할까요?')) return;
   b.disabled=true;
   EV.staff('ownerDigSpotStatus',{eventId:EID,id:b.dataset.id,status:b.dataset.st}).then(load,function(er){b.disabled=false;alert(er.message||'바꾸지 못했어요')});
 });
-
-$('#btnPool').onclick=function(){
-  var prizes={}, sum=0;
-  TIERS.forEach(function(k){var n=parseInt($('#pc'+k).value,10)||0;prizes[k]={name:$('#pn'+k).value.trim(),count:n,img:$('#pi'+k)?$('#pi'+k).value.trim():''};sum+=n});
-  var total=parseInt($('#total').value,10)||50;
-  if(sum>total){msg($('#poolMsg'),'상품 개수('+sum+')가 전체 칸('+total+')보다 많아요.','bad');return}
-  if(!confirm('상품판을 새로 깔까요? 전체 '+total+'칸 = 상품 '+sum+' + 꽝 '+(total-sum)+'\n남은 칸이 처음으로 돌아가요.')) return;
-  var b=this; b.disabled=true;
-  EV.staff('ownerDigPool',{eventId:EID,total:total,prizes:prizes}).then(function(){b.disabled=false;msg($('#poolMsg'),'새로 깔았어요.','ok');poolFilled=false;load()},
-    function(e){b.disabled=false;msg($('#poolMsg'),e.message||'저장 못 했어요','bad')});
-};
-
-function fillCfg(){
-  $('#maxActive').value=CFG.maxActive||0; $('#rotateMin').value=CFG.rotateMin||30; $('#freeOn').checked=!!CFG.freeEnabled; $('#paidOn').checked=!!CFG.paidDraw; $('#freePer').value=CFG.freePerPerson||0;
-  $('#radiusM').value=CFG.radiusM||5; $('#basePlays').value=CFG.basePlays==null?10:CFG.basePlays; $('#gyulRule').value=CFG.gyulRule||''; $('#gyulStock').value=CFG.gyulStock==null?'':CFG.gyulStock;
-  var x=CFG.extra||{}; $('#xOn').checked=!!x.enabled; $('#xPrice').value=x.price||0; $('#xPlays').value=x.plays||5; $('#xGyul').value=x.gyul||0; $('#xGyulStock').value=x.gyulStock||0; $('#xPer').value=x.perPerson||0; $('#xTotal').value=x.total||0; $('#xPlace').value=x.place||'';
-  var n=CFG.npcs||{}; $('#npcs').value=Object.keys(n).map(function(k){var x=n[k];return [k,x.name,x.place,x.line,x.active===false?'X':'O'].join(' | ')}).join('\n');
-  $('#npcId').innerHTML=Object.keys(n).map(function(k){return '<option value="'+esc(k)+'">'+esc(k+' · '+n[k].name)+'</option>'}).join('')||'<option value="">NPC 먼저 등록</option>';
-}
-$('#task').onchange=function(){$('#npcId').hidden=this.value!=='npc';$('#monster').hidden=this.value!=='monster'};
-$('#monster').innerHTML=Object.keys(MONS).map(function(k){return '<option value="'+k+'">'+MONS[k][0]+' · '+BATS[MONS[k][1]]+'</option>'}).join('');
-$('#btnCfg').onclick=function(){
-  var npcs={};
-  $('#npcs').value.split('\n').forEach(function(l){var c=l.split('|').map(function(x){return x.trim()});if(!c[0])return;npcs[c[0]]={name:c[1]||c[0],place:c[2]||'',line:c[3]||'',active:(c[4]||'O').toUpperCase()!=='X'}});
-  var b=this; b.disabled=true;
-  EV.staff('ownerDigCfg',{eventId:EID,maxActive:parseInt($('#maxActive').value,10)||0,rotateMin:parseInt($('#rotateMin').value,10)||30,freeEnabled:$('#freeOn').checked,paidDraw:$('#paidOn').checked,freePerPerson:parseInt($('#freePer').value,10)||0,npcs:npcs,
-    radiusM:parseInt($('#radiusM').value,10)||5,basePlays:parseInt($('#basePlays').value,10)||0,gyulRule:$('#gyulRule').value.trim(),gyulStock:$('#gyulStock').value===''?null:parseInt($('#gyulStock').value,10)||0,
-    extra:{enabled:$('#xOn').checked,price:+$('#xPrice').value||0,plays:+$('#xPlays').value||5,gyul:+$('#xGyul').value||0,gyulStock:+$('#xGyulStock').value||0,perPerson:+$('#xPer').value||0,total:+$('#xTotal').value||0,place:$('#xPlace').value.trim()}}).then(function(c){
-    b.disabled=false; CFG=c; fillCfg(); msg($('#cfgMsg'),'저장했어요.','ok'); load();
-  },function(e){b.disabled=false;msg($('#cfgMsg'),e.message||'저장 못 했어요','bad')});
-};
-
-$('#btnCopy').onclick=function(){
-  if(!confirm('테스트 운영 설정을 본 행사에 적용할까요?'+($('#cpHome').checked?'\n손님 홈 시간표도 바뀌어요.':''))) return;
-  var b=this;b.disabled=true;
-  EV.staff('ownerDigCopyCfg',{eventId:EID,home:$('#cpHome').checked}).then(function(){b.disabled=false;msg($('#copyMsg'),'본 행사에 적용했어요.','ok')},function(e){b.disabled=false;msg($('#copyMsg'),e.message||'적용 못 했어요','bad')});
-};
-
-function distM(a,b){var R=6371000,r=function(x){return x*Math.PI/180},dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng);
-  var h=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return 2*R*Math.asin(Math.sqrt(h))}
 
 showMain();
 setInterval(function(){if(!$('#main').hidden&&!EV.sessionInfo())showMain()},30000);
