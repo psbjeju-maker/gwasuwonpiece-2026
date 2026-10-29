@@ -258,10 +258,12 @@ $('#btnMonAll').onclick=function(){
     EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat+n*0.0000036,lng:pos.lng,acc:pos.acc,name:'[테스트] '+m[0],hint:BATS[m[1]],task:'monster',monster:k,memo:'몬스터 일괄 등록(테스트)'}).then(next,function(){fail++;next()});
   })();
 };
+/* 이름을 비워 두면 「보물 01, 02…」로 번호를 이어서 붙인다 */
+function autoName(){var n=0;(SPOTS||[]).forEach(function(x){var m=/^보물 (\d+)$/.exec(x.name||'');if(m)n=Math.max(n,+m[1])});return '보물 '+('0'+(n+1)).slice(-2)}
 $('#btnBury').onclick=function(){
   if(!pos) return;
   var b=this; b.disabled=true; msg($('#buryMsg'),'묻는 중…');
-  EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat,lng:pos.lng,acc:pos.acc,name:$('#name').value.trim(),hint:$('#hint').value.trim(),task:$('#task').value,npcId:$('#npcId').value,monster:$('#monster').value,memo:$('#memo').value.trim()}).then(function(r){
+  EV.staff('ownerDigBury',{eventId:EID,lat:pos.lat,lng:pos.lng,acc:pos.acc,name:$('#name').value.trim()||autoName(),hint:$('#hint').value.trim(),task:$('#task').value,npcId:$('#npcId').value,monster:$('#monster').value,memo:$('#memo').value.trim()}).then(function(r){
     b.disabled=false; msg($('#buryMsg'),'묻었어요! ('+(r.name||r.id)+' · 오차 ±'+r.acc+'m)','ok');
     $('#name').value=''; $('#hint').value=''; $('#memo').value=''; load();
   },function(e){b.disabled=false;msg($('#buryMsg'),e.message||'묻지 못했어요','bad')});
