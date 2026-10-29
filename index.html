@@ -556,8 +556,8 @@ function startGps(){
 }
 function stopGps(){if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null}}
 function setRadar(n,u,w,c){$('dist').textContent=n;$('unit').textContent=u;$('heat').textContent=w;document.documentElement.style.setProperty('--heat',c||'rgba(226,196,137,.5)')}
-/* 한 번에 2곳만 보여 준다. 처음엔 내 위치에서 20m 이상 떨어진 곳, 그다음엔 방금 판 자리에서 20m 이상 떨어진 곳을 무작위로 */
-var MOVE_M=20,SHOW_N=2,SHOWN=[],LASTREF=null;
+/* 다음 보물은 무작위로 하나 정하되, 방금 판 자리(처음엔 내 위치)에서 20m 이상 떨어진 곳 중 가까운 편(20~45m)을 우선 */
+var MOVE_M=20,SHOW_N=1,SHOWN=[],LASTREF=null;
 try{SHOWN=JSON.parse(sessionStorage.getItem('gw.shown.'+EID)||'[]');LASTREF=JSON.parse(sessionStorage.getItem('gw.lastref.'+EID)||'null')}catch(e){}
 function saveShown(){try{sessionStorage.setItem('gw.shown.'+EID,JSON.stringify(SHOWN))}catch(e){}}
 function setLastRef(s){LASTREF={lat:s.lat,lng:s.lng};try{sessionStorage.setItem('gw.lastref.'+EID,JSON.stringify(LASTREF))}catch(e){}SHOWN=[];saveShown()}
@@ -570,9 +570,8 @@ function pickShown(live){
     var pool=live.filter(function(s){return SHOWN.indexOf(s.id)<0});
     if(!pool.length) break;
     var keep=SHOWN.map(function(id){return ids[id]});
-    var far=pool.filter(function(s){return distM(ref,s)>=MOVE_M&&distM(pos,s)>=MOVE_M&&keep.every(function(k){return distM(k,s)>=MOVE_M})});
-    /* 처음엔 너무 멀지 않게(20~80m) 우선 */
-    var mid=far.filter(function(s){return distM(pos,s)<=80});
+    var far=pool.filter(function(s){return distM(ref,s)>=MOVE_M});
+    var mid=far.filter(function(s){return distM(ref,s)<=45});
     var from=mid.length?mid:far;
     if(!from.length){var m=0;pool.forEach(function(s){m=Math.max(m,distM(ref,s))});from=pool.filter(function(s){return distM(ref,s)>=m-10})}
     SHOWN.push(from[Math.floor(Math.random()*from.length)].id);
@@ -596,8 +595,12 @@ function update(){
   }).join('')||'<p class="gpsline">지금 열린 보물이 없어요. 잠시 후 다시 확인해 주세요.</p>';
   if(!allLive.length){setRadar('-','지금 찾을 보물이 없어요','',null);$('btnDig').hidden=true;return}
   if(!pos){setRadar('…','위치 확인 중','',null);return}
-  near=null;var best=1e12;live.forEach(function(s){var d=distM(pos,s);if(d<best){best=d;near=s}});
-  var allow=R+Math.min(pos.acc||0,10),d=Math.round(best),word,color;
+  near=null;var best=1e12,bestAll=1e12,nearAll=null;
+  live.forEach(function(s){var d=distM(pos,s);if(d<best)best=d});
+  allLive.forEach(function(s){var d=distM(pos,s);if(d<bestAll){bestAll=d;nearAll=s}});
+  var allow=R+Math.min(pos.acc||0,10);
+  if(bestAll<=allow){near=nearAll;best=bestAll}
+  var d=Math.round(best),word,color;
   if(best<=allow){word='바로 여기! 땅을 파 보세요';color='#FF8A3D'}
   else if(best<30){word='아주 뜨거워요!';color='#FF8A3D'}
   else if(best<70){word='따뜻해요';color='#F2C14E'}
