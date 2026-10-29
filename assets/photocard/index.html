@@ -23,6 +23,7 @@ html,body{background:var(--color-bg,#0F1120)}
 .stkBox .xdel{position:absolute;left:50%;bottom:-48px;width:30px;height:30px;margin-left:-15px;border-radius:50%;background:#E5484D;color:#fff;font-weight:900;font-size:15px;line-height:30px;text-align:center;pointer-events:auto;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.45)}
 #stkWrap .slots{margin-top:0}
 #stkWrap .slot{max-width:none}
+.slot{aspect-ratio:750/705 !important}
 #stkLayer{position:absolute;inset:0;overflow:hidden;border-radius:12px;pointer-events:none}
 .stkItem{position:absolute;aspect-ratio:1;object-fit:contain;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.45))}
 .stkItem.sel{outline:2px dashed rgba(255,255,255,.9);outline-offset:-2px;border-radius:10px}
@@ -263,6 +264,7 @@ var CARD_LINES=['좋아, 해보자!','그 정도면 충분하지.','와쿠와쿠
    기술명/설명/대사는 더 이상 개별 topY로 고정하지 않고 기술명 아래부터 gap을 두고 세로로 흘려 쌓는다(desc/quote에 topY 없음). */
 var CARD_LAYOUT={
   base:750, radius:24,
+  artH:705, /* 사진이 들어가는 그림 영역 높이(750x1020 기준) — 이 아래는 글씨 패널이라 사진·스티커를 넣지 않는다 */
   /* 폰트는 프로젝트에 실제로 있는 파일만 쓴다(fonts/) — JejuGothic(400 1종, 제목·기술명용 개성 폰트),
      SCDream(400/600/800 3종, 나머지 가독성 폰트). 가짜 굵기(없는 weight 강제 지정) 금지 —
      JejuGothic은 항상 실제 400으로, weight 지정이 필요한 굵은 인상은 fillWeighted()의 미세 다중칠로만 보강한다. */
@@ -407,13 +409,15 @@ function drawCard(ctx2,W,H,data,imgs,pos,t){
   /* 1) 사진 — 카드 전체를 object-fit:cover로 채운다(약 85%+가 그대로 사진).
      "등장"은 카드 자체가 3D로 뒤집히는 연출(flipCard)이 담당하므로 사진/틀은 항상 바로 보인다 — 텍스트만 순차 등장 */
   var aBase=1;
+  var AH=Math.round(L.artH*k);
   ctx2.save();roundRectPath(ctx2,0,0,W,H,radius);ctx2.clip();
   ctx2.globalAlpha=aBase;
-  var img=imgs[0], p0=(pos&&pos[0])||{x:0.5,y:0.18};
-  if(img){var sc=Math.max(W/img.width,H/img.height)*((p0&&p0.z)||1), dw=img.width*sc, dh=img.height*sc;
-    ctx2.drawImage(img,-(dw-W)*(p0.x!=null?p0.x:0.5),-(dh-H)*(p0.y!=null?p0.y:0.18),dw,dh);}
+  var img=imgs[0], p0=(pos&&pos[0])||{x:0.5,y:0.5};
+  ctx2.beginPath();ctx2.rect(0,0,W,AH);ctx2.clip();
+  if(img){var sc=Math.max(W/img.width,AH/img.height)*((p0&&p0.z)||1), dw=img.width*sc, dh=img.height*sc;
+    ctx2.drawImage(img,-(dw-W)*(p0.x!=null?p0.x:0.5),-(dh-AH)*(p0.y!=null?p0.y:0.5),dw,dh);}
   ctx2.restore();
-  drawStickers(ctx2,W,H,data);
+  ctx2.save();ctx2.beginPath();ctx2.rect(0,0,W,AH);ctx2.clip();drawStickers(ctx2,W,AH,data);ctx2.restore();
   /* 2~6) 스크림·미터스트립·캡션 그라데이션·레어도 광택(foil)·얇은 테두리(frame) — 디자인팩이 정한 레이어 순서 그대로,
      텍스트 뒤 대비판·구분선·레어도별 금속결/냉광/온광/홀로그램이 이미 이 PNG들에 들어 있어 별도로 그리지 않는다 */
   ctx2.save();ctx2.globalAlpha=aBase;
