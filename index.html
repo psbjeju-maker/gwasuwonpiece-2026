@@ -326,6 +326,7 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
   </div>
   <img class="hmap" id="hMap" src="assets/hunt/map.webp" alt="" hidden>
   <button class="btn big" id="btnMain" type="button" hidden>보물찾기 시작</button>
+  <button class="btn" id="btnHunt2" type="button" hidden style="margin-top:10px;min-height:52px">보물찾기 하러 가기</button>
 
   <p class="plays" id="hPlays"></p>
   <p class="next" id="hNext"></p>
@@ -425,7 +426,8 @@ function boot(){
   });
 }
 $('btnRetry').onclick=boot;
-function route(){var h=location.hash; if(h==='#hunt'&&canHunt()&&curSlot().kind==='hunt') openHunt(); else if(h==='#rewards') openRewards(); else show('scHome')}
+function huntOpen(){var k=curSlot().kind;return k==='hunt'||k==='link'||k==='info'||k==='vote'}
+function route(){var h=location.hash; if(h==='#hunt'&&canHunt()&&huntOpen()) openHunt(); else if(h==='#rewards') openRewards(); else show('scHome')}
 window.addEventListener('hashchange',function(){if(HOME)route()});
 function go(hash){if(location.hash===hash)route();else location.hash=hash}
 
@@ -489,6 +491,7 @@ function renderHome(){
     if(c.btn&&c.kind!=='link') btn.textContent=c.btn;
     btn.hidden=c.kind==='info'||(c.kind==='link'&&!c.url);
   }
+  $('btnHunt2').hidden=!(c.kind==='link'||c.kind==='vote'||c.kind==='info')||!canHunt();
   if(needPass){line=LINE.nopass;img='thinking';btn.hidden=true}
   $('hNoPass').hidden=!needPass;
   $('hLine').innerHTML=line; $('hNpc').src='assets/characters/'+img+'.png';
@@ -514,8 +517,9 @@ $('btnRecheck').onclick=boot;
 $('btnMain').onclick=function(){
   var k=this.dataset.k;
   if(k==='hunt') go('#hunt'); else if(k==='vote') openVote(); else if(k==='rewards') go('#rewards');
-  else if(k==='link'&&this.dataset.url) location.href=this.dataset.url;
+  else if(k==='link'&&this.dataset.url){try{localStorage.setItem('ggg_rank_nick',String(HOME.nickname||'').slice(0,10))}catch(e){} location.href=this.dataset.url}
 };
+$('btnHunt2').onclick=function(){go('#hunt')};
 $('btnBoard').onclick=function(){$('board').hidden=false};
 $('board').addEventListener('click',function(e){if(e.target.id==='board'||e.target.closest('[data-bclose]'))$('board').hidden=true});
 $('btnRewards').onclick=function(){$('board').hidden=true;go('#rewards')};
