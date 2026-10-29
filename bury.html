@@ -355,6 +355,7 @@ function render(r){
     var d=pos?Math.round(distM(pos,x)):null;
     return '<div class="item"><div class="top"><b>'+(i+1)+'. '+esc(x.name||('자리 '+x.id))+'</b><span class="chip '+x.status+'">'+(x.status!=='active'?'후보 제외':x.live?'지금 열림':'대기')+'</span><span class="chip">'+(x.task==='npc'?'NPC '+esc(x.npcId):x.task==='monster'?'몬스터 '+esc((MONS[x.monster]||[x.monster])[0])+' · '+esc(BATS[(MONS[x.monster]||[])[1]]||''):'퀴즈')+'</span>'+
       '<button class="btn btn--sm" data-st="'+(x.status==='active'?'off':'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'빼기':'넣기')+'</button>'+
+      '<button class="btn btn--sm" data-mv="'+esc(x.id)+'">여기로 위치 옮기기</button>'+
       '<button class="btn btn--sm" data-st="delete" data-id="'+esc(x.id)+'">삭제</button></div>'+
       '<div class="note">'+(x.hint?'힌트: '+esc(x.hint)+' · ':'')+(x.memo?esc(x.memo)+' · ':'')+'판 사람 '+x.digs+' · 당첨 '+x.wins+(d!=null?' · 지금 여기서 '+d+'m':'')+
       ' · <a target="_blank" rel="noopener" href="https://maps.google.com/?q='+x.lat+','+x.lng+'">지도</a></div></div>';
@@ -371,6 +372,15 @@ function render(r){
   $('#winners').innerHTML=r.winners.length?'<table><tr><th>시각</th><th>닉네임</th><th>상품</th><th>코드</th><th></th></tr>'+
     r.winners.sort(function(a,b){return (b.at||0)-(a.at||0)}).map(function(w){return '<tr><td>'+dt(w.at).slice(6)+'</td><td>'+esc(w.nickname)+'</td><td>'+esc(TIER_TXT[w.tier])+' '+esc(w.prize)+'</td><td>'+esc(w.pickupCode)+'</td><td>'+(w.given?'지급':'')+'</td></tr>'}).join('')+'</table>':'<p class="sub">아직 없어요.</p>';
 }
+/* 보물 위치 옮기기: 지금 서 있는 자리(내 GPS)로 이 보물의 좌표를 바꾼다 */
+$('#spots').addEventListener('click',function(e){
+  var m=e.target.closest('[data-mv]'); if(!m) return;
+  if(!pos){alert('아직 내 위치를 못 받았어요. 잠깐 기다렸다가 다시 눌러 주세요.');return}
+  if(pos.acc>15&&!confirm('위치 오차가 ±'+pos.acc+'m예요. 그래도 여기로 옮길까요?')) return;
+  else if(pos.acc<=15&&!confirm('이 보물을 지금 서 있는 자리로 옮길까요?')) return;
+  m.disabled=true;
+  EV.staff('ownerDigSpotStatus',{eventId:EID,id:m.dataset.mv,lat:pos.lat,lng:pos.lng,acc:pos.acc}).then(load,function(er){m.disabled=false;alert(er.message||'옮기지 못했어요')});
+});
 $('#spots').addEventListener('click',function(e){
   var b=e.target.closest('[data-st]'); if(!b) return;
   if(b.dataset.st==='delete'&&!confirm('이 보물 자리를 삭제할까요?')) return;
