@@ -672,6 +672,18 @@ function showTask(t){
       '<button class="btn p" id="btnNpcChk" type="button">미션 완료했어요 (확인)</button><button class="btn" id="btnLater" type="button" style="margin-top:8px">나중에 하기</button><p class="err" id="qErr"></p>');
     $('btnNpcChk').onclick=function(){var b=this;b.disabled=true;EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0}).then(function(r){b.disabled=false;if(r.open||r.done){task=r;showTask(r)}else $('qErr').textContent='아직 완료 처리가 안 됐어요. '+(mon?'스태프':'NPC')+'에게 번호를 보여주세요.'},function(e){b.disabled=false;$('qErr').textContent=e.message||''})};
     $('btnLater').onclick=function(){closeStage();openHunt()};
+    var POSE6=['귀여운 척','멋있는 척','무서운 척','놀란 척','화난 척','슬픈 척'];
+    if(t.npc.id==='mon_candy'){
+      /* 포즈 인증 미션: 스태프가 이 폰에 직접 PIN 을 눌러 확인하고 스탬프를 찍어 준다 */
+      $('sheet').innerHTML='<span class="tag">몬스터 전투 · '+esc(mon?mon.battleName:'포즈 인증 미션')+'</span><div class="q">포즈 인증 미션</div>'+
+        '<p style="margin:0 0 8px">코스어와 함께 <b style="font-size:1.25em">'+POSE6[Math.floor(Math.random()*POSE6.length)]+'</b> 포즈로 사진을 찍으세요. 스태프에게 사진을 검사받으면 스탬프를 찍고 이 폰에 확인 번호를 눌러 줘요.</p>'+
+        '<input id="candyPin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="스태프 확인 번호" style="width:100%;box-sizing:border-box;font-size:22px;text-align:center;padding:10px;margin:4px 0 8px">'+
+        '<button class="btn p" id="btnCandy" type="button">스태프 확인</button><button class="btn" id="btnLater" type="button" style="margin-top:8px">나중에 하기</button><p class="err" id="qErr"></p>';
+      $('btnLater').onclick=function(){closeStage();openHunt()};
+      $('btnCandy').onclick=function(){var b=this,pin=$('candyPin').value.trim();if(!pin){$('qErr').textContent='스태프가 확인 번호를 눌러 주세요.';return}
+        b.disabled=true;
+        EV.call('candyConfirm',{eventId:EID,spotId:spot.id,pin:pin}).then(function(){return EV.call('digStart',{eventId:EID,spotId:spot.id,lat:0,lng:0})}).then(function(r){b.disabled=false;task=r;showTask(r)},function(e){b.disabled=false;$('qErr').textContent=e.message||'확인에 실패했어요.'})};
+    }
     return;
   }
   $('stSub').textContent='자물쇠를 열려면 오타쿠 퀴즈를 맞혀야 해요';
@@ -1020,8 +1032,8 @@ if(/[?&]votepreview=1/.test(location.search)){var vp=document.createElement('scr
 
 /* ---------- 몬스터 전투 미리보기 (?monsterpreview=1): 서버·GPS 없이 화면과 흐름만 눌러 본다 ---------- */
 if(PV){(function(){
-  var LIST=[['slime','슬라임','rps','가위바위보 대결'],['frog','개구리','rps','가위바위보 대결'],['bat','박쥐','dialect','제주 사투리 퀴즈 대결'],['snake','뱀','dialect','제주 사투리 퀴즈 대결'],['goblin','고블린','photocard','포토카드 만들기 미션'],['orc','오크','photocard','포토카드 만들기 미션'],['skeleton','스켈레톤','sns','SNS 올리기 미션'],['troll','트롤','sns','SNS 올리기 미션'],['vampire','뱀파이어','candy','트릭 오어 트릿 미션'],['knight','돌하르방 기사','candy','트릭 오어 트릿 미션']];
-  var LINES={photocard:'포토카드를 만들어서 스태프에게 보여 주면 몬스터가 쓰러져요!',sns:'행사 사진을 SNS에 올리고 게시물을 스태프에게 보여 주면 몬스터가 쓰러져요!',candy:'스태프에게 「사탕을 주지 않으면 장난을 치겠다!」 외치고 사탕을 받아 오면 몬스터가 쓰러져요!'};
+  var LIST=[['slime','슬라임','rps','가위바위보 대결'],['frog','개구리','rps','가위바위보 대결'],['bat','박쥐','dialect','제주 사투리 퀴즈 대결'],['snake','뱀','dialect','제주 사투리 퀴즈 대결'],['goblin','고블린','photocard','포토카드 만들기 미션'],['orc','오크','photocard','포토카드 만들기 미션'],['skeleton','스켈레톤','sns','SNS 올리기 미션'],['troll','트롤','sns','SNS 올리기 미션'],['vampire','뱀파이어','candy','포즈 인증 미션'],['knight','돌하르방 기사','candy','포즈 인증 미션']];
+  var LINES={photocard:'포토카드를 만들어서 스태프에게 보여 주면 몬스터가 쓰러져요!',sns:'행사 사진을 SNS에 올리고 게시물을 스태프에게 보여 주면 몬스터가 쓰러져요!',candy:'코스어와 랜덤 포즈(6가지 중 하나)로 사진을 찍고 스태프에게 검사받으면 몬스터가 쓰러져요!'};
   var QS=[{q:"대문 대신 걸치는 나무 「정낭」 3개가 전부 걸쳐 있다. 집주인은 지금?",c:["집에서 낮잠 중이다", "멀리 가서 한참 안 돌아온다", "잠깐 마실 나갔다", "손님을 기다리는 중이다"],a:1},
           {q:"제주어 「요망지다」는 칭찬일까 욕일까?",c:["욕 — 요사스럽다", "칭찬 — 야무지고 똘똘하다", "칭찬 — 키가 크다", "욕 — 게으르다"],a:1},
           {q:"해녀가 물 위로 올라와 「휘이~」 하고 내쉬는 숨소리의 이름은?",c:["허벅소리", "숨비소리", "테왁소리", "물질소리"],a:1}];

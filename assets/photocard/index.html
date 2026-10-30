@@ -44,6 +44,32 @@ html,body{background:var(--color-bg,#0F1120)}
 .cardWrap.settle .cardFx--holo{opacity:1;animation:holoSweep 3.4s linear infinite}
 @keyframes holoSweep{from{background-position:120% 0}to{background-position:-120% 0}}
 @media (prefers-reduced-motion: reduce){.cardWrap.settle .cardFx--holo{animation:none;opacity:.5}}
+
+/* ---- 2026-10-30 만드는 화면 할로윈 단장 (CSS 위주, 로직 무변경) ---- */
+html,body{background:radial-gradient(120% 60% at 50% -10%,#3a1d5e 0%,#1a1236 38%,#0F1120 75%) fixed,#0F1120}
+#s-photo::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(1.5px 1.5px at 12% 18%,#ffd98a,transparent),radial-gradient(1.5px 1.5px at 82% 12%,#fff,transparent),radial-gradient(2px 2px at 66% 38%,#ffb347,transparent),radial-gradient(1.5px 1.5px at 24% 62%,#fff,transparent),radial-gradient(1.5px 1.5px at 90% 74%,#ffd98a,transparent),radial-gradient(2px 2px at 8% 88%,#ffb347,transparent);opacity:.7}
+#s-photo>*{position:relative;z-index:1}
+.hero__title{font-size:28px;letter-spacing:-.02em;background:linear-gradient(90deg,#FFD58A,#FF9A3C 55%,#D9A7FF);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;text-shadow:none;filter:drop-shadow(0 2px 10px rgba(255,140,40,.35))}
+.hero__sub{color:#CFC8E6}
+.stepTag{display:flex;align-items:center;gap:8px;width:min(86vw,360px);margin:20px auto 0;font-weight:800;font-size:15px;color:#FFE2B0}
+.stepTag i{font-style:normal;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#FFB347,#FF7A1F);color:#2a1200;font-size:13px;font-weight:900;box-shadow:0 0 12px rgba(255,150,50,.55)}
+.stepTag small{font-weight:600;color:#B7ADD3;font-size:12px}
+#stkWrap{border-radius:16px;box-shadow:0 0 0 2px rgba(255,170,70,.55),0 0 26px rgba(255,130,40,.28),0 14px 34px rgba(0,0,0,.45)}
+#stkWrap .slot{border:2px dashed rgba(255,190,110,.7);background:linear-gradient(160deg,rgba(255,160,60,.10),rgba(140,90,255,.12));color:#FFE2B0;font-weight:800;font-size:16px;line-height:1.6;box-shadow:none}
+#stkWrap .slot.slot--filled{border:0}
+.stkBar{gap:10px;padding:14px 4px 8px;scrollbar-width:none}
+.stkBar::-webkit-scrollbar{display:none}
+.stkBar button{background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border:1px solid rgba(255,190,110,.28);border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .12s,box-shadow .12s}
+.stkBar button:active{transform:scale(.94);box-shadow:0 0 14px rgba(255,150,50,.6)}
+.stkTools button,.slotAdj button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;color:#EDE6FF;font-weight:700}
+.stkTools button:active,.slotAdj button:active{background:rgba(255,160,60,.25);border-color:#FFB347}
+.field{width:min(86vw,360px);margin-left:auto;margin-right:auto}
+.field input{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,190,110,.35);border-radius:14px;color:#fff}
+.field input:focus{outline:0;border-color:#FFB347;box-shadow:0 0 0 3px rgba(255,160,60,.25)}
+#btnMake,#btnDone{background:linear-gradient(180deg,#FFC24D,#FF8F2B);color:#2a1200;font-weight:900;font-size:17px;letter-spacing:-.01em;border-radius:16px;box-shadow:0 6px 22px rgba(255,130,30,.5),inset 0 1px 0 rgba(255,255,255,.55);animation:mkGlow 2.4s ease-in-out infinite}
+#btnMake:active,#btnDone:active{transform:scale(.98)}
+@keyframes mkGlow{0%,100%{box-shadow:0 6px 22px rgba(255,130,30,.45),inset 0 1px 0 rgba(255,255,255,.55)}50%{box-shadow:0 6px 30px rgba(255,150,50,.85),inset 0 1px 0 rgba(255,255,255,.55)}}
+@media (prefers-reduced-motion: reduce){#btnMake,#btnDone{animation:none}}
 </style>
 </head>
 <body>
@@ -54,13 +80,16 @@ html,body{background:var(--color-bg,#0F1120)}
       <h1 class="hero__title">오늘의 나를 카드로!</h1>
       <p class="hero__sub">사진을 넣고 스티커로 꾸미면 나만의 랜덤 포토카드가 탄생해요. 카드가 완성되면 몬스터를 쓰러뜨릴 수 있어요!</p>
     </div>
+    <div class="stepTag"><i>1</i>사진 넣기 <small>탭해서 내 사진 선택</small></div>
     <div id="stkWrap"><div class="slots slots--one" id="slots"></div><div id="stkLayer"></div></div>
+    <div class="stepTag"><i>2</i>스티커 붙이기 <small>옆으로 밀어서 고르기</small></div>
     <div class="stkBar" id="stkBar"></div>
     <div class="stkTools" id="stkTools"><button type="button" data-k="small">작게</button><button type="button" data-k="big">크게</button><button type="button" data-k="left">↺ 왼쪽</button><button type="button" data-k="right">↻ 오른쪽</button><button type="button" data-k="del" class="del">지우기</button></div>
     <div class="slotAdj" id="slotAdj"><button type="button" data-dz="0.85">－ 사진 축소</button><button type="button" data-dz="1.18">＋ 사진 확대</button><button type="button" data-dy="-0.15">▲ 사진 위로</button><button type="button" data-dy="0.15">▼ 사진 아래로</button></div>
     <p class="caption" style="margin-top:8px">사진을 넣은 뒤 끌어서 위치를 맞추고, 아래 스티커를 눌러 붙여요. 스티커는 한 손가락으로 옮기고 두 손가락으로 크기·회전을 바꿔요.</p>
 
-    <div class="field" style="margin-top:16px">
+    <div class="stepTag"><i>3</i>이름 정하기 <small>선택</small></div>
+    <div class="field" style="margin-top:10px">
       <label for="inCardNick">닉네임 (선택, 최대 8자)</label>
       <input id="inCardNick" placeholder="예) 감귤" maxlength="8">
     </div>
