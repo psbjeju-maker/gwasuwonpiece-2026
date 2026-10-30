@@ -293,8 +293,18 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 <!-- 등록 / 이어하기 -->
 <section class="scr" id="scReg" hidden>
   <div class="top"><h1>황금 귤을 찾아라</h1></div>
-  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영해!<br>닉네임과 번호로 시작하면 <b>참가번호</b>가 나와.</p></div>
-  <div class="card" id="regBox">
+  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영해!<br>패스를 산 친구는 <b>스태프에게 폰을 보여 주세요</b>.<br>스태프가 확인하면 바로 입장돼요.</p></div>
+  <div class="card" id="pinBox">
+    <h2>패스 입장</h2>
+    <label for="pnNick">닉네임 (안 적으면 자동)</label><input id="pnNick" maxlength="12" autocomplete="nickname">
+    <label for="pnPin">스태프 확인 번호</label><input id="pnPin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="스태프가 눌러 줘요">
+    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer">이미 입장했는데 처음 화면이 나와요</summary>
+      <label for="pnCode">내 참가번호</label><input id="pnCode" maxlength="12" autocomplete="off" placeholder="입장 때 받은 참가번호"></details>
+    <button class="btn p" id="btnPin" type="button" style="margin-top:16px">스태프 확인 · 입장하기</button>
+    <p class="err" id="pnErr"></p>
+    <button class="btn" id="toNoPass" type="button" style="background:none;color:var(--teal);min-height:44px">패스 없이 체험할래요 (이름·번호로 시작)</button>
+  </div>
+  <div class="card" id="regBox" hidden>
     <label for="inNick">닉네임</label><input id="inNick" maxlength="12" autocomplete="nickname">
     <label for="inPhone">휴대폰 번호</label><input id="inPhone" inputmode="numeric" maxlength="13" placeholder="010-0000-0000">
     <button class="btn p" id="btnReg" type="button" style="margin-top:16px">시작하기</button>
@@ -434,8 +444,15 @@ function go(hash){if(location.hash===hash)route();else location.hash=hash}
 /* ---------- 등록 ---------- */
 function fmtPhone(e){var v=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=v.length>7?v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7):v.length>3?v.slice(0,3)+'-'+v.slice(3):v}
 $('inPhone').addEventListener('input',fmtPhone);$('rcPhone').addEventListener('input',fmtPhone);
-$('toRec').onclick=function(){$('regBox').hidden=true;$('recBox').hidden=false};
-$('toReg').onclick=function(){$('regBox').hidden=false;$('recBox').hidden=true};
+$('toRec').onclick=function(){$('pinBox').hidden=true;$('regBox').hidden=true;$('recBox').hidden=false};
+$('toReg').onclick=function(){$('pinBox').hidden=false;$('regBox').hidden=true;$('recBox').hidden=true};
+$('toNoPass').onclick=function(){$('pinBox').hidden=true;$('regBox').hidden=false;$('recBox').hidden=true};
+$('btnPin').onclick=function(){
+  var b=this,pin=$('pnPin').value.trim();
+  if(!pin){$('pnErr').textContent='스태프가 확인 번호를 눌러 주세요.';return}
+  b.disabled=true;$('pnErr').textContent='';
+  EV.call('enterByPin',{eventId:EID,pin:pin,nickname:$('pnNick').value.trim(),code:$('pnCode').value.trim()}).then(function(){b.disabled=false;$('pnPin').value='';boot()},function(e){b.disabled=false;$('pnErr').textContent=e.message||'입장하지 못했어요. 스태프에게 말해 주세요.'});
+};
 $('btnReg').onclick=function(){
   var b=this,n=$('inNick').value.trim(),p=$('inPhone').value.replace(/\D/g,'');
   if(!n){$('regErr').textContent='닉네임을 적어 주세요.';return}
