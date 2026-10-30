@@ -124,7 +124,7 @@
   async function raw(name, data, needAuth) {
     try {
       var fb = needAuth ? await ensureAnon() : await boot();
-      var r = await fb.app().functions(REGION).httpsCallable(name, { timeout: 20000 })(data || {});
+      var r = await fb.app().functions(REGION).httpsCallable(name, { timeout: /^owner(Reset|DigRehearsalReset)/.test(name) ? 300000 : 20000 })(data || {});
       return r.data;
     } catch (e) { throw norm(e); }
   }

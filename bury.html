@@ -76,6 +76,14 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
   <div id="main" hidden>
     <div class="who"><span id="who"></span><button class="btn btn--sm" id="btnLogout">로그아웃</button></div>
 
+    <div class="card" id="rehCard">
+      <h2>리허설 · 정식 시작</h2>
+      <p class="sub" id="rehState">불러오는 중…</p>
+      <div class="row"><button class="btn btn--b" id="btnPractice" disabled>-</button></div>
+      <div class="row"><button class="btn btn--b" id="btnReset" style="background:var(--bad);color:#fff">전부 초기화 (보물 기록 · 이름 등록한 사람)</button></div>
+      <p class="msg" id="rehMsg"></p>
+    </div>
+
     <div class="card">
       <h2>내 위치</h2>
       <div class="gps" id="gpsBox">위치 확인 중…</div>
@@ -107,7 +115,7 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
   </div>
 </div>
 
-<script src="ev-client.js?v=8"></script>
+<script src="ev-client.js?v=9"></script>
 <script>
 (function(){
 'use strict';
@@ -162,9 +170,31 @@ $('#btnBury').onclick=function(){
   },function(e){b.disabled=false;msg($('#buryMsg'),e.message||'묻지 못했어요','bad')});
 };
 
+var PRACTICE=null;
+function rehShow(c){
+  PRACTICE=!!c.practice;
+  $('#rehState').innerHTML=PRACTICE?'지금 <b style="color:var(--acc)">무한 체험 중</b> — 횟수 제한 없음, 상품 재고도 안 줄어요.':'지금 <b style="color:var(--ok)">정식 운영 중</b> — 1인 '+(c.basePlays||10)+'회, 상품 재고가 줄어요.';
+  var b=$('#btnPractice'); b.disabled=false; b.textContent=PRACTICE?'정식 시작 (1인 10회로 바꾸기)':'무한 체험으로 되돌리기';
+  b.className='btn btn--b'+(PRACTICE?' btn--p':'');
+}
+$('#btnPractice').onclick=function(){
+  var b=this, to=!PRACTICE;
+  if(!to&&!confirm('정식 시작할까요? 지금부터 1인 10회로 제한되고 상품 재고가 줄어요. (시작 전에 아래 「전부 초기화」를 먼저 눌렀는지 확인!)')) return;
+  b.disabled=true; msg($('#rehMsg'),'바꾸는 중…');
+  EV.staff('ownerDigPractice',{eventId:EID,on:to,basePlays:10}).then(function(c){rehShow(c);msg($('#rehMsg'),to?'무한 체험으로 바꿨어요.':'정식 시작! 이제 1인 10회예요.','ok')},function(e){b.disabled=false;msg($('#rehMsg'),e.message||'바꾸지 못했어요','bad')});
+};
+$('#btnReset').onclick=function(){
+  var w=prompt('보물찾기 기록, 이름 등록한 사람, 상품 재고를 전부 지워요. 되돌릴 수 없어요.
+계속하려면 「초기화」라고 입력하세요.');
+  if(w===null) return;
+  if(w.trim()!=='초기화'){msg($('#rehMsg'),'확인 문구가 맞지 않아요.','bad');return}
+  var b=this; b.disabled=true; msg($('#rehMsg'),'지우는 중… (잠시 걸려요)');
+  EV.staff('ownerDigRehearsalReset',{eventId:EID,confirm:'초기화'}).then(function(r){b.disabled=false;msg($('#rehMsg'),'초기화 완료 — 참가자 '+r.accounts+'명 삭제'+(r.kept?' ('+r.kept+'명은 탐라문화제 기록이 있어 계정 유지)':''),'ok');load()},function(e){b.disabled=false;msg($('#rehMsg'),e.message||'초기화하지 못했어요','bad')});
+};
 function load(){EV.staff('staffDigStatus',{eventId:EID}).then(render,function(e){$('#spots').innerHTML='<p class="msg bad">'+esc(e.message||'못 불러왔어요')+'</p>'})}
 $('#btnReload').onclick=load;
 function render(r){
+  if(r.cfg) rehShow(r.cfg);
   SPOTS=r.spots.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
   $('#spots').innerHTML=SPOTS.length?SPOTS.map(function(x){
     var d=pos?Math.round(distM(pos,x)):null;
