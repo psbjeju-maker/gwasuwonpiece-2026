@@ -489,8 +489,11 @@ $('btnPin').onclick=function(){
   }
   $('btnStaffPass').onclick=openStaffPass;
   /* 캐릭터 얼굴을 누르면 스태프 창(확인 번호 입력)이 열린다 */
-  ['hNpc'].forEach(function(id){var im=$(id);if(im){im.style.cursor='pointer';im.addEventListener('click',openStaffPass)}});
-  var hr=document.querySelector('#scReg .hero img');if(hr)hr.addEventListener('click',function(){var p=$('pnPin');if(p){var d=p.closest('details');if(d)d.open=true;p.focus()}});
+  /* 시작 화면·홈 화면 모두 얼굴을 2.5초 안에 5번 누르면 열린다 */
+  [$('hNpc'),document.querySelector('#scReg .hero img')].forEach(function(im){
+    if(!im)return;var c=0,tm=0;
+    im.addEventListener('click',function(){var now=Date.now();c=now-tm<2500?c+1:1;tm=now;if(c>=5){c=0;openStaffPass()}});
+  });
   function alert_ok(m){var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:310;background:#1B2D44;color:#F2D59B;padding:12px 18px;border-radius:99px;font-weight:700';document.body.appendChild(d);setTimeout(function(){d.remove()},3000)}
 })();
 $('btnRec').onclick=function(){
