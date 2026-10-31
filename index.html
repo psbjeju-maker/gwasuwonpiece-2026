@@ -472,6 +472,7 @@ $('btnPin').onclick=function(){
     var cnt=(HOME&&HOME.passCount)||1;
     ov.innerHTML='<div class="card" style="width:min(92vw,340px);margin:0"><h2>스태프 패스 지급</h2><p class="muted">참가번호 '+esc(HOME&&HOME.code||'')+' · 지금 '+(HOME&&HOME.pass?'패스 '+((HOME.passCount)||1)+'장':'패스 없음')+'</p>'+
       '<label for="spPin">스태프 확인 번호</label><input id="spPin" type="password" inputmode="numeric" autocomplete="off" maxlength="8">'+
+      '<p class="muted" style="margin:4px 0 0">새로 패스를 산 손님이면 장수를 <b>지금보다 늘려서</b> 적용하세요. 늘린 만큼 보물찾기 횟수가 더 생겨요.</p>'+
       '<label>패스 장수</label><div id="spCnt" style="display:flex;gap:8px;margin:6px 0 4px"></div>'+
       '<button class="btn p" id="spOk" type="button" style="margin-top:14px">패스 적용</button><button class="btn" id="spX" type="button" style="margin-top:8px">닫기</button><p class="err" id="spErr"></p></div>';
     document.body.appendChild(ov);
@@ -487,6 +488,9 @@ $('btnPin').onclick=function(){
     };
   }
   $('btnStaffPass').onclick=openStaffPass;
+  /* 캐릭터 얼굴을 누르면 스태프 창(확인 번호 입력)이 열린다 */
+  ['hNpc'].forEach(function(id){var im=$(id);if(im){im.style.cursor='pointer';im.addEventListener('click',openStaffPass)}});
+  var hr=document.querySelector('#scReg .hero img');if(hr)hr.addEventListener('click',function(){var p=$('pnPin');if(p){var d=p.closest('details');if(d)d.open=true;p.focus()}});
   function alert_ok(m){var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:310;background:#1B2D44;color:#F2D59B;padding:12px 18px;border-radius:99px;font-weight:700';document.body.appendChild(d);setTimeout(function(){d.remove()},3000)}
 })();
 $('btnRec').onclick=function(){
