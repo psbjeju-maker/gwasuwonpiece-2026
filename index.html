@@ -547,7 +547,7 @@ function renderHome(){
     if(c.btn&&c.kind!=='link') btn.textContent=c.btn;
     btn.hidden=c.kind==='info'||(c.kind==='link'&&!c.url);
   }
-  $('btnHunt2').hidden=!(c.kind==='link'||c.kind==='vote'||c.kind==='info')||!canHunt();
+  $('btnHunt2').hidden=!(c.kind==='link'||c.kind==='vote'||c.kind==='info');
   if(needPass){line=LINE.nopass;img='thinking';btn.hidden=true}
   $('hNoPass').hidden=!needPass;
   $('hLine').innerHTML=line; $('hNpc').src='assets/characters/'+img+'.png';
@@ -575,7 +575,9 @@ $('btnMain').onclick=function(){
   if(k==='hunt') go('#hunt'); else if(k==='vote') openVote(); else if(k==='rewards') go('#rewards');
   else if(k==='link'&&this.dataset.url){try{localStorage.setItem('ggg_rank_nick',String(HOME.nickname||'').slice(0,10))}catch(e){} location.href=this.dataset.url}
 };
-$('btnHunt2').onclick=function(){go('#hunt')};
+$('btnHunt2').onclick=function(){
+  if(!canHunt()){$('hLine').innerHTML=LINE.nopass;$('hNpc').src='assets/characters/thinking.png';$('hNoPass').hidden=false;return}
+  go('#hunt')};
 $('btnBoard').onclick=function(){$('board').hidden=false};
 $('board').addEventListener('click',function(e){if(e.target.id==='board'||e.target.closest('[data-bclose]'))$('board').hidden=true});
 $('btnRewards').onclick=function(){$('board').hidden=true;go('#rewards')};
