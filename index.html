@@ -293,16 +293,17 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 <!-- 등록 / 이어하기 -->
 <section class="scr" id="scReg" hidden>
   <div class="top"><h1>황금 귤을 찾아라</h1></div>
-  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영해!<br>패스를 산 친구는 <b>스태프에게 폰을 보여 주세요</b>.<br>스태프가 확인하면 바로 입장돼요.</p></div>
+  <div class="hero"><img src="assets/characters/greeting.png" alt=""><p>과수원피스에 온 걸 환영해!<br>닉네임만 적고 들어가면 돼요.<br>패스를 산 친구는 <b>스태프에게 폰을 보여 주세요</b>.</p></div>
   <div class="card" id="pinBox">
-    <h2>패스 입장</h2>
+    <h2>입장하기</h2>
     <label for="pnNick">닉네임 (안 적으면 자동)</label><input id="pnNick" maxlength="12" autocomplete="nickname">
-    <label for="pnPin">스태프 확인 번호</label><input id="pnPin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="스태프가 눌러 줘요">
-    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer">이미 입장했는데 처음 화면이 나와요</summary>
-      <label for="pnCode">내 참가번호</label><input id="pnCode" maxlength="12" autocomplete="off" placeholder="입장 때 받은 참가번호"></details>
-    <button class="btn p" id="btnPin" type="button" style="margin-top:16px">스태프 확인 · 입장하기</button>
+    <button class="btn p" id="btnPlain" type="button" style="margin-top:16px">들어가기</button>
     <p class="err" id="pnErr"></p>
-    <button class="btn" id="toNoPass" type="button" style="background:none;color:var(--teal);min-height:44px">패스 없이 체험할래요 (이름·번호로 시작)</button>
+    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer">이미 입장했는데 처음 화면이 나와요 (스태프 도움)</summary>
+      <label for="pnCode">내 참가번호</label><input id="pnCode" maxlength="12" autocomplete="off" placeholder="입장 때 받은 참가번호">
+      <label for="pnPin">스태프 확인 번호</label><input id="pnPin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="스태프가 눌러 줘요">
+      <button class="btn" id="btnPin" type="button" style="margin-top:10px">다시 연결하기</button></details>
+    <button class="btn" id="toNoPass" type="button" style="background:none;color:var(--teal);min-height:44px">이전에 이름·번호로 등록했어요</button>
   </div>
   <div class="card" id="regBox" hidden>
     <label for="inNick">닉네임</label><input id="inNick" maxlength="12" autocomplete="nickname">
@@ -331,7 +332,8 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
   <div class="hero"><img id="hNpc" src="assets/characters/neutral.png" alt=""><p id="hLine"></p></div>
 
   <div id="hNoPass" hidden>
-    <div class="card passno"><p class="muted" style="text-align:center">패스 판매처에 보여주세요</p><div class="code" id="npCode">-</div><img id="npQr" alt="참가번호 QR"></div>
+    <div class="card passno"><p class="muted" style="text-align:center">패스가 있으면 이 폰을 스태프에게 보여 주세요</p><div class="code" id="npCode">-</div></div>
+    <button class="btn p" id="btnStaffPass" type="button" style="margin-top:12px">스태프 확인 (스태프가 눌러 주세요)</button>
     <button class="btn" id="btnRecheck" type="button" style="margin-top:12px">패스 받았어요 (새로고침)</button>
   </div>
   <img class="hmap" id="hMap" src="assets/hunt/map.webp" alt="" hidden>
@@ -446,19 +448,47 @@ function fmtPhone(e){var v=e.target.value.replace(/\D/g,'').slice(0,11);e.target
 $('inPhone').addEventListener('input',fmtPhone);$('rcPhone').addEventListener('input',fmtPhone);
 $('toRec').onclick=function(){$('pinBox').hidden=true;$('regBox').hidden=true;$('recBox').hidden=false};
 $('toReg').onclick=function(){$('pinBox').hidden=false;$('regBox').hidden=true;$('recBox').hidden=true};
-$('toNoPass').onclick=function(){$('pinBox').hidden=true;$('regBox').hidden=false;$('recBox').hidden=true};
+$('toNoPass').onclick=function(){$('pinBox').hidden=true;$('regBox').hidden=true;$('recBox').hidden=false};
+$('btnPlain').onclick=function(){
+  var b=this;b.disabled=true;$('pnErr').textContent='';
+  EV.call('enterPlain',{nickname:$('pnNick').value.trim()}).then(function(){b.disabled=false;boot()},function(e){b.disabled=false;$('pnErr').textContent=e.message||'입장하지 못했어요. 다시 눌러 주세요.'});
+};
 $('btnPin').onclick=function(){
-  var b=this,pin=$('pnPin').value.trim();
-  if(!pin){$('pnErr').textContent='스태프가 확인 번호를 눌러 주세요.';return}
+  var b=this,pin=$('pnPin').value.trim(),code=$('pnCode').value.trim();
+  if(!code||!pin){$('pnErr').textContent='참가번호와 스태프 확인 번호를 모두 넣어 주세요.';return}
   b.disabled=true;$('pnErr').textContent='';
-  EV.call('enterByPin',{eventId:EID,pin:pin,nickname:$('pnNick').value.trim(),code:$('pnCode').value.trim()}).then(function(){b.disabled=false;$('pnPin').value='';boot()},function(e){b.disabled=false;$('pnErr').textContent=e.message||'입장하지 못했어요. 스태프에게 말해 주세요.'});
+  EV.call('enterByPin',{eventId:EID,pin:pin,code:code}).then(function(){b.disabled=false;$('pnPin').value='';boot()},function(e){b.disabled=false;$('pnErr').textContent=e.message||'연결하지 못했어요. 스태프에게 말해 주세요.'});
 };
-$('btnReg').onclick=function(){
-  var b=this,n=$('inNick').value.trim(),p=$('inPhone').value.replace(/\D/g,'');
-  if(!n){$('regErr').textContent='닉네임을 적어 주세요.';return}
-  b.disabled=true;$('regErr').textContent='';
-  EV.register(n,p).then(function(){b.disabled=false;boot()},function(e){b.disabled=false;$('regErr').textContent=e.message||'등록하지 못했어요.'});
-};
+/* 스태프 패스 지급: 홈 제목을 2.5초 안에 5번 누르면 열린다 → 스태프 PIN + 패스 장수 */
+(function(){
+  var n=0,t=0;
+  document.querySelector('#scHome .top h1').addEventListener('click',function(){
+    var now=Date.now();n=now-t<2500?n+1:1;t=now;if(n<5)return;n=0;openStaffPass();
+  });
+  function openStaffPass(){
+    if(document.getElementById('spOv'))return;
+    var ov=document.createElement('div');ov.id='spOv';
+    ov.style.cssText='position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px';
+    var cnt=(HOME&&HOME.passCount)||1;
+    ov.innerHTML='<div class="card" style="width:min(92vw,340px);margin:0"><h2>스태프 패스 지급</h2><p class="muted">참가번호 '+esc(HOME&&HOME.code||'')+' · 지금 '+(HOME&&HOME.pass?'패스 '+((HOME.passCount)||1)+'장':'패스 없음')+'</p>'+
+      '<label for="spPin">스태프 확인 번호</label><input id="spPin" type="password" inputmode="numeric" autocomplete="off" maxlength="8">'+
+      '<label>패스 장수</label><div id="spCnt" style="display:flex;gap:8px;margin:6px 0 4px"></div>'+
+      '<button class="btn p" id="spOk" type="button" style="margin-top:14px">패스 적용</button><button class="btn" id="spX" type="button" style="margin-top:8px">닫기</button><p class="err" id="spErr"></p></div>';
+    document.body.appendChild(ov);
+    var box=ov.querySelector('#spCnt');
+    function paint(){box.innerHTML=[1,2,3,4,5].map(function(k){return '<button type="button" data-k="'+k+'" class="btn'+(k===cnt?' p':'')+'" style="min-height:48px;flex:1;padding:0">'+k+'</button>'}).join('')}
+    paint();box.onclick=function(e){var b=e.target.closest('button');if(b){cnt=+b.dataset.k;paint()}};
+    ov.querySelector('#spX').onclick=function(){ov.remove()};
+    ov.querySelector('#spOk').onclick=function(){
+      var b=this,pin=ov.querySelector('#spPin').value.trim();
+      if(!pin){ov.querySelector('#spErr').textContent='스태프 확인 번호를 눌러 주세요.';return}
+      b.disabled=true;ov.querySelector('#spErr').textContent='';
+      EV.call('enterByPin',{eventId:EID,pin:pin,count:cnt}).then(function(r){ov.remove();alert_ok('패스 '+r.passCount+'장 적용'+(r.plays?' · 보물찾기 '+r.plays+'회':''));boot()},function(e){b.disabled=false;ov.querySelector('#spErr').textContent=e.message||'적용하지 못했어요.'});
+    };
+  }
+  $('btnStaffPass').onclick=openStaffPass;
+  function alert_ok(m){var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:310;background:#1B2D44;color:#F2D59B;padding:12px 18px;border-radius:99px;font-weight:700';document.body.appendChild(d);setTimeout(function(){d.remove()},3000)}
+})();
 $('btnRec').onclick=function(){
   var b=this;b.disabled=true;$('recErr').textContent='';
   EV.recover($('rcPhone').value.replace(/\D/g,''),$('rcNick').value.trim()).then(function(){b.disabled=false;boot()},function(e){b.disabled=false;$('recErr').textContent=e.message||'이어하지 못했어요.'});
@@ -483,12 +513,12 @@ var LINE={
   info:'지금은 무대를 즐기는 시간이야. 앞쪽으로 와서 같이 보자!',
   link:'지금 할 수 있는 미션이 열렸어! 아래 버튼을 눌러 봐~',
   end:'오늘 같이 놀아 줘서 고마워! 받을 상품이 있으면 잊지 말고 챙겨 가.',
-  nopass:'이건 <b>당일 패스</b>가 있어야 할 수 있어. 판매처에서 손목띠를 사고 아래 번호를 보여줘!'
+  nopass:'이건 <b>당일 패스</b>가 있어야 할 수 있어. 패스가 있으면 이 폰을 스태프에게 보여 줘!'
 };
 function renderHome(){
   var h=HOME; if(h.serverTime) OFF=h.serverTime-Date.now();
   $('hCode').textContent=h.code; $('npCode').textContent=h.code; $('rwCode').textContent=h.code;
-  qr($('npQr'),'PSBP-'+h.code); qr($('rwQr'),'PSBP-'+h.code);
+  qr($('rwQr'),'PSBP-'+h.code);
   var notice=h.live&&h.live.notice; $('hNotice').hidden=!notice; if(notice)$('hNoticeText').textContent=notice;
   var wins=h.rewards.filter(function(r){return !r.given}).length;
   $('hRwSub').textContent=(h.free?'· 무료권 '+h.free+'장 ':'')+(wins?'· 받을 상품 '+wins+'개':'');
@@ -526,7 +556,7 @@ function renderHome(){
   $('bdGyul').innerHTML=g.rule||g.stock!=null?'<h3 class="bh">감귤</h3><p class="muted" style="color:var(--ink)">'+esc(g.rule||'')+'</p>'+(g.stock!=null?'<p class="muted">남은 감귤 약 '+g.stock+'개'+(g.stock<=0?' · 오늘 준비한 감귤이 다 나갔어요':'')+'</p>':''):'';
   var x=h.extra;
   $('bdExtra').innerHTML=x?'<h3 class="bh">추가 도전</h3><p class="info">'+x.price.toLocaleString()+'원에 도전 '+x.plays+'회'+(x.gyul?' + 감귤 '+x.gyul+'개':'')+' · '+esc(x.place||'본부')+'에서 현장 결제'+(x.perPerson?'<br>한 사람당 '+x.perPerson+'번까지 (지금 '+x.mine+'번 삼)':'')+(pz.topGone?'<br><b>상위 상품은 이미 모두 당첨됐어요.</b>':'')+'</p>':'';
-  $('bdPass').hidden=!h.passRequired; $('bdPass').textContent=h.pass?'당일 패스 확인됨'+(h.bandNo?' · 손목띠 '+h.bandNo:''):(h.passRequired?'아직 패스가 없어요':'지금은 패스 없이 체험할 수 있어요');
+  $('bdPass').hidden=!h.passRequired; $('bdPass').textContent=h.pass?'당일 패스 확인됨'+(h.passCount>1?' · '+h.passCount+'장':'')+(h.bandNo?' · 손목띠 '+h.bandNo:''):(h.passRequired?'아직 패스가 없어요':'지금은 패스 없이 체험할 수 있어요');
   $('bdTT').innerHTML=s.length?s.map(function(x){var cls=t>=x.from&&t<x.to?'on':t>=x.to?'past':'';
     return '<div class="'+cls+'"><span>'+x.from+' ~ '+x.to+'</span><b>'+esc(x.title||'')+'</b>'+(cls==='on'?'<span class="chip ok" style="width:auto">지금</span>':'')+'</div>'}).join(''):'<p class="muted">시간표는 곧 올라와요.</p>';
 }
