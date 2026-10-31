@@ -112,6 +112,8 @@ label{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-top
 .tl .tpin{width:30px;height:36px;object-fit:contain;flex:0 0 auto}
 
 /* 파기 무대 */
+html,body{touch-action:manipulation}
+.hero img,.top h1{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 #stage{position:fixed;inset:0;z-index:20;background:linear-gradient(#1b2d44 0 38%,#5a3a1e 38%,#3e2712);overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 #stage .st{position:absolute;top:calc(env(safe-area-inset-top,0px) + 22px);left:0;right:0;text-align:center;font-size:22px;font-weight:700;color:var(--gold-on-navy);padding:0 16px}
 #stage .ss{position:absolute;top:calc(env(safe-area-inset-top,0px) + 58px);left:0;right:0;text-align:center;font-size:15px;color:#D7DEE7;padding:0 16px}
