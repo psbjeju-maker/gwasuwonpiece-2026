@@ -341,6 +341,7 @@ html,body{touch-action:manipulation}
   <img class="hmap" id="hMap" src="assets/hunt/map.webp" alt="" hidden>
   <button class="btn big" id="btnMain" type="button" hidden>보물찾기 시작</button>
   <button class="btn big" id="btnHunt2" data-k="hunt" type="button" hidden>보물찾기 하러 가기</button>
+ <button class="btn big" id="btnVote2" type="button" hidden>노래방 투표하기</button>
 
   <p class="plays" id="hPlays"></p>
   <p class="next" id="hNext"></p>
@@ -550,6 +551,7 @@ function renderHome(){
   $('btnHunt2').hidden=!(c.kind==='link'||c.kind==='vote'||c.kind==='info');
   if(needPass){line=LINE.nopass;img='thinking';btn.hidden=true}
   $('hNoPass').hidden=!needPass;
+  $('btnVote2').hidden=!(c.kind==='link'&&v.status==='open'&&canHunt());
   $('hLine').innerHTML=line; $('hNpc').src='assets/characters/'+img+'.png';
   var s=h.schedule||[],t=nowHM(),nx=c.kind==='wait'?null:s.filter(function(x){return x.from>t})[0];
   $('hNext').textContent=nx?'다음 '+nx.from+' · '+(nx.title||''):'';
@@ -578,6 +580,7 @@ $('btnMain').onclick=function(){
 $('btnHunt2').onclick=function(){
   if(!canHunt()){$('hLine').innerHTML=LINE.nopass;$('hNpc').src='assets/characters/thinking.png';$('hNoPass').hidden=false;return}
   go('#hunt')};
+$('btnVote2').onclick=function(){openVote()};
 $('btnBoard').onclick=function(){$('board').hidden=false};
 $('board').addEventListener('click',function(e){if(e.target.id==='board'||e.target.closest('[data-bclose]'))$('board').hidden=true});
 $('btnRewards').onclick=function(){$('board').hidden=true;go('#rewards')};
