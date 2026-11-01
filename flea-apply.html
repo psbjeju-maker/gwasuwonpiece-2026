@@ -135,7 +135,7 @@ button:disabled{opacity:.6}
       document.getElementById("code").textContent=data.code;
       document.getElementById("done").classList.add("on");
       window.scrollTo(0,0);
-      try{fetch(KAKAO,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(data)}).catch(function(){});}catch(x){}
+      try{fetch(KAKAO,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({},data,{name:""}))}).catch(function(){});}catch(x){}
     }).catch(function(err){
       if(err&&err.dup){
         btn.disabled=false;btn.textContent="신청하기";
