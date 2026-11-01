@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>플리마켓 1주차 셀러 신청 · 박서방 제주지점</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--cobalt:#1E5AA8;--navy:#0d2547;--bg:#eef4fb;--ink:#0d2547;--mute:#5b6b82;--line:#c9d7ea;--bad:#c0392b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:520px;margin:0 auto;padding:28px 20px 48px}
+.head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.head img{width:64px;height:64px;flex:none}
+.shop{font-weight:800;font-size:15px;color:var(--cobalt)}
+h1{font-size:28px;line-height:1.2;letter-spacing:-.02em;font-weight:800;margin-top:2px}
+.info{background:#fff;border-radius:16px;padding:18px 20px;margin-bottom:22px;box-shadow:0 4px 14px #0d254714}
+.info div{display:flex;gap:14px;padding:6px 0}
+.info dt{flex:none;width:56px;font-weight:800;color:var(--cobalt)}
+.info dd{font-weight:600}
+.info small{display:block;color:var(--mute);font-weight:500;font-size:14px}
+form{background:#fff;border-radius:16px;padding:22px 20px;box-shadow:0 4px 14px #0d254714}
+.f{margin-bottom:20px}
+label.t,.t{display:block;font-weight:800;margin-bottom:8px}
+.req{color:var(--bad);margin-left:3px}
+input[type=text],input[type=tel]{width:100%;font:inherit;font-size:17px;padding:13px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input[type=text]:focus,input[type=tel]:focus{outline:none;border-color:var(--cobalt);box-shadow:0 0 0 3px #1E5AA826}
+.seg{display:flex;gap:10px}
+.seg label{flex:1;position:relative}
+.seg input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.seg span{display:block;text-align:center;padding:13px 0;border:1.5px solid var(--line);border-radius:10px;font-weight:800;font-size:17px;color:var(--mute)}
+.seg input:checked+span{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+.seg input:focus-visible+span{box-shadow:0 0 0 3px #1E5AA840}
+.err{display:none;color:var(--bad);font-size:14px;font-weight:600;margin-top:6px}
+.f.bad .err{display:block}
+.f.bad input[type=text],.f.bad input[type=tel]{border-color:var(--bad)}
+button{width:100%;font:inherit;font-weight:800;font-size:19px;color:#fff;background:var(--cobalt);border:0;border-radius:999px;padding:16px;cursor:pointer}
+button:disabled{opacity:.6}
+.note{font-size:13px;color:var(--mute);margin-top:12px;text-align:center}
+.msg{display:none;margin-top:14px;padding:12px 14px;border-radius:10px;background:#fdecea;color:var(--bad);font-weight:600;font-size:15px}
+.msg.show{display:block}
+.done{display:none;background:#fff;border-radius:16px;padding:32px 22px;text-align:center;box-shadow:0 4px 14px #0d254714}
+.done.on{display:block}
+.done h2{font-size:24px;margin-bottom:10px}
+.code{display:inline-block;margin:16px 0 6px;font-size:28px;font-weight:800;letter-spacing:.06em;color:var(--cobalt)}
+.done p{color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <img src="flea-logo.png" alt="박서방 캐릭터">
+    <div>
+      <div class="shop">박서방 제주지점</div>
+      <h1>플리마켓 1주차<br>셀러 신청</h1>
+    </div>
+  </div>
+
+  <dl class="info">
+    <div><dt>품목</dt><dd>피규어 · 굿즈</dd></div>
+    <div><dt>일시</dt><dd>11/7(토) · 8(일)</dd></div>
+    <div><dt>수수료</dt><dd>판매액의 10%<small>수수료는 최대 8만 원까지만</small></dd></div>
+    <div><dt>지원</dt><dd>책상 1개 · 의자 2개<small>책상 180×75cm / 등받이 없는 의자</small></dd></div>
+  </dl>
+
+  <form id="f" novalidate>
+    <div class="f"><label class="t" for="booth">부스명<span class="req">*</span></label>
+      <input type="text" id="booth" name="teamName" maxlength="40" autocomplete="organization">
+      <p class="err">부스명을 입력해 주세요.</p></div>
+
+    <div class="f"><label class="t" for="phone">전화번호<span class="req">*</span></label>
+      <input type="tel" id="phone" name="phone" placeholder="010-0000-0000" inputmode="numeric" autocomplete="tel">
+      <p class="err">연락 가능한 휴대폰 번호를 정확히 입력해 주세요.</p></div>
+
+    <div class="f" id="fExp"><span class="t">전에 참여한 적이 있나요?<span class="req">*</span></span>
+      <div class="seg">
+        <label><input type="radio" name="exp" value="예"><span>예</span></label>
+        <label><input type="radio" name="exp" value="아니오"><span>아니오</span></label>
+      </div>
+      <p class="err">하나를 선택해 주세요.</p></div>
+
+    <button type="submit" id="btn">신청하기</button>
+    <p class="note">입력하신 정보는 셀러 안내 연락에만 사용합니다.</p>
+    <div class="msg" id="msg"></div>
+  </form>
+
+  <div class="done" id="done">
+    <h2>신청이 접수됐습니다</h2>
+    <div class="code" id="code">—</div>
+    <p>접수번호 · 확인되는 대로 연락드리겠습니다.</p>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  var FIREBASE={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
+  var COL="gwasuwonpiece_applications";
+  var KAKAO="https://script.google.com/macros/s/AKfycbyU9PKs_J3ObrkRQ2AQr3jGLONxq6T_VIB0LnIkSBNAC42dRcyPIk2EjXmRUIJG5qyWoA/exec";
+  var db=null;
+  try{var app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE);db=firebase.firestore(app);}catch(e){}
+
+  var f=document.getElementById("f"),btn=document.getElementById("btn"),msg=document.getElementById("msg");
+  function digits(v){return String(v).replace(/\D/g,"");}
+  function validPhone(v){return /^01[016789]\d{7,8}$/.test(digits(v));}
+  function mark(id,bad){document.getElementById(id).classList.toggle("bad",bad);}
+  function fail(html){btn.disabled=false;btn.textContent="신청하기";msg.innerHTML=html;msg.classList.add("show");}
+  var CONTACT="신청이 되지 않았습니다. 인터넷 연결을 확인하고 다시 눌러 주세요. 계속 안 되면 <a href='https://litt.ly/psb_jeju'>박서방 제주지점 SNS</a>로 DM 주시거나 <a href='tel:064-742-0083'>064-742-0083</a>으로 전화 주세요.";
+
+  f.addEventListener("submit",function(e){
+    e.preventDefault();msg.classList.remove("show");
+    var booth=f.teamName.value.trim(),phone=f.phone.value,exp=(f.exp.value||"");
+    var okB=!!booth,okP=validPhone(phone),okE=!!exp;
+    f.teamName.parentNode.classList.toggle("bad",!okB);
+    f.phone.parentNode.classList.toggle("bad",!okP);
+    mark("fExp",!okE);
+    if(!(okB&&okP&&okE))return;
+    if(!db){fail(CONTACT);return;}
+
+    var p=digits(phone);
+    var data={type:"flea",status:"pending",createdAt:new Date().toISOString(),
+      teamName:booth,name:booth,phone:p,experience:exp,
+      zone:"플리마켓 1주차 11/7-8 ("+(exp==="예"?"재참여":"첫 참여")+")",
+      code:"F-"+p.slice(-4)};
+    btn.disabled=true;btn.textContent="접수하는 중…";
+    var ref=db.collection(COL).doc("flea_"+p);
+    ref.get().then(function(s){
+      if(s.exists){var o=s.data()||{};throw{dup:o};}
+      return ref.set(data);
+    }).then(function(){
+      f.hidden=true;
+      document.getElementById("code").textContent=data.code;
+      document.getElementById("done").classList.add("on");
+      window.scrollTo(0,0);
+      try{fetch(KAKAO,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(data)}).catch(function(){});}catch(x){}
+    }).catch(function(err){
+      if(err&&err.dup){
+        btn.disabled=false;btn.textContent="신청하기";
+        msg.innerHTML="<b>이미 접수된 번호입니다.</b> 접수번호 <b>"+(err.dup.code||data.code)+"</b> · 다시 신청하지 않으셔도 됩니다.";
+        msg.classList.add("show");
+      }else fail(CONTACT);
+    });
+  });
+  [f.teamName,f.phone].forEach(function(i){i.addEventListener("input",function(){i.parentNode.classList.remove("bad");});});
+  f.addEventListener("change",function(){mark("fExp",false);});
+})();
+</script>
+</body>
+</html>
