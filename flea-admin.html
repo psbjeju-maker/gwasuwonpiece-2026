@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>플리마켓 신청 관리 · 박서방 제주지점</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--cobalt:#1E5AA8;--navy:#0d2547;--bg:#eef4fb;--ink:#0d2547;--mute:#5b6b82;--line:#c9d7ea;--ok:#1a9b57;--no:#c0392b;--wait:#d17a00}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif;line-height:1.5;-webkit-text-size-adjust:100%}
+header{background:var(--navy);color:#fff;padding:16px 16px 14px}
+header h1{font-size:19px;font-weight:800}
+header p{font-size:13px;opacity:.75;margin-top:2px}
+main{max-width:640px;margin:0 auto;padding:14px 14px 60px}
+.sum{display:flex;gap:8px;margin-bottom:12px}
+.sum div{flex:1;background:#fff;border-radius:12px;padding:10px 6px;text-align:center;box-shadow:0 2px 8px #0d254712}
+.sum b{display:block;font-size:22px;color:var(--cobalt)}
+.sum span{font-size:12px;color:var(--mute)}
+.bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab{flex:1;min-width:64px;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 4px;font:inherit;font-weight:700;font-size:14px;color:var(--mute);cursor:pointer}
+.tab.on{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+.tools{display:flex;gap:8px;margin-bottom:12px}
+.btn{border:0;border-radius:10px;background:var(--cobalt);color:#fff;padding:10px 14px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.ghost{background:#fff;color:var(--cobalt);border:1.5px solid var(--cobalt)}
+.btn.sm{padding:8px 11px;font-size:13px}
+.btn.ok{background:var(--ok)}.btn.no{background:var(--no)}.btn.wt{background:#fff;color:var(--mute);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.5}
+details{background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:12px;box-shadow:0 2px 8px #0d254712}
+summary{font-weight:800;cursor:pointer}
+details label{display:block;font-weight:700;font-size:13px;margin:12px 0 4px;color:var(--mute)}
+textarea{width:100%;height:170px;font:inherit;font-size:14px;padding:10px;border:1.5px solid var(--line);border-radius:10px}
+.hint{font-size:12px;color:var(--mute);margin-top:4px}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px #0d254712}
+.top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.top b{font-size:17px}
+.code{margin-left:auto;font-size:12px;color:var(--mute)}
+.pill{font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;color:#fff}
+.pill.accepted{background:var(--ok)}.pill.rejected{background:var(--no)}.pill.pending{background:var(--wait)}
+.pill.exp{background:#fff;color:var(--cobalt);border:1.5px solid var(--cobalt)}
+.row{font-size:14px;margin-top:6px;color:var(--mute)}
+.row a{color:var(--cobalt);font-weight:700;text-decoration:none}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.sent{font-size:12px;font-weight:700;color:var(--ok);align-self:center}
+.empty,.status{text-align:center;color:var(--mute);padding:30px 10px}
+.status.bad{color:var(--no)}
+</style>
+</head>
+<body>
+<header>
+  <h1>플리마켓 1주차 신청 관리</h1>
+  <p>11/7(토) · 8(일) · 피규어·굿즈 셀러</p>
+</header>
+<main>
+  <div class="sum" id="sum"></div>
+  <div class="bar" id="tabs"></div>
+  <div class="tools">
+    <button class="btn ghost sm" id="reload" type="button">새로고침</button>
+    <button class="btn ghost sm" id="csv" type="button">CSV 내려받기</button>
+  </div>
+
+  <details>
+    <summary>문자 문구 (수정 가능)</summary>
+    <label for="msgOk">선정 문자</label>
+    <textarea id="msgOk"></textarea>
+    <label for="msgNo">미선정 문자</label>
+    <textarea id="msgNo"></textarea>
+    <p class="hint">{부스명} 자리에 신청자 부스명이 들어갑니다. 고친 문구는 이 폰(브라우저)에 저장됩니다.</p>
+  </details>
+
+  <div id="list"><div class="status">불러오는 중…</div></div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  var FIREBASE={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
+  var COL="gwasuwonpiece_applications";
+  var DEF_OK="[박서방 제주지점 플리마켓 1주차]\n{부스명}님, 셀러로 선정되셨습니다!\n\n일시: 11/7(토) · 8(일)\n장소: 박서방 제주지점\n수수료: 판매액의 10% (최대 8만 원)\n지원: 책상 1개(180×75cm), 등받이 없는 의자 2개\n\n문의는 이 번호로 답장 주세요.";
+  var DEF_NO="[박서방 제주지점 플리마켓 1주차]\n{부스명}님, 신청해 주셔서 감사합니다.\n이번 1주차는 모집 인원이 차서 함께하지 못하게 되었습니다.\n다음 기회에 꼭 모시겠습니다.\n\n문의는 이 번호로 답장 주세요.";
+  var db=null;
+  try{var app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE);db=firebase.firestore(app);}catch(e){}
+
+  var rows=[],filter="all";
+  var $=function(id){return document.getElementById(id)};
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  function fmtPhone(p){p=String(p||"").replace(/\D/g,"");return p.length===11?p.replace(/(\d{3})(\d{4})(\d{4})/,"$1-$2-$3"):p}
+  function when(iso){var d=new Date(iso);if(isNaN(d))return"";return (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+  function status(r){return r.status||"pending"}
+
+  $("msgOk").value=ls("flea_msg_ok")||DEF_OK;
+  $("msgNo").value=ls("flea_msg_no")||DEF_NO;
+  $("msgOk").addEventListener("input",function(){ls("flea_msg_ok",this.value);render()});
+  $("msgNo").addEventListener("input",function(){ls("flea_msg_no",this.value);render()});
+
+  function smsHref(r){
+    var tpl=status(r)==="accepted"?$("msgOk").value:$("msgNo").value;
+    var body=tpl.split("{부스명}").join(r.teamName||r.name||"");
+    return "sms:"+String(r.phone||"").replace(/\D/g,"")+"?&body="+encodeURIComponent(body);
+  }
+
+  function counts(){
+    var c={all:rows.length,pending:0,accepted:0,rejected:0,again:0};
+    rows.forEach(function(r){c[status(r)]++;if(r.experience==="예")c.again++});
+    return c;
+  }
+
+  function render(){
+    var c=counts();
+    $("sum").innerHTML=[["접수",c.all],["선정",c.accepted],["대기",c.pending],["재참여",c.again]].map(function(x){return"<div><b>"+x[1]+"</b><span>"+x[0]+"</span></div>"}).join("");
+    var T=[["all","전체",c.all],["pending","대기",c.pending],["accepted","선정",c.accepted],["rejected","미선정",c.rejected]];
+    $("tabs").innerHTML=T.map(function(t){return'<button type="button" class="tab'+(filter===t[0]?" on":"")+'" data-f="'+t[0]+'">'+t[1]+" "+t[2]+"</button>"}).join("");
+    var list=rows.filter(function(r){return filter==="all"||status(r)===filter});
+    if(!list.length){$("list").innerHTML='<div class="empty">해당하는 신청이 없습니다.</div>';return}
+    $("list").innerHTML=list.map(function(r){
+      var st=status(r),label={pending:"대기",accepted:"선정",rejected:"미선정"}[st];
+      var sentSame=r.smsSent===st;
+      var sms="";
+      if(st==="pending")sms='<span class="sent" style="color:var(--mute)">선정·미선정을 고르면 문자를 보낼 수 있어요</span>';
+      else sms='<a class="btn sm '+(st==="accepted"?"":"no")+'" href="'+esc(smsHref(r))+'">'+(st==="accepted"?"선정 문자 보내기":"미선정 문자 보내기")+'</a>'+
+        '<button type="button" class="btn sm wt" data-sent="'+esc(r._id)+'">'+(sentSame?"발송 취소":"발송함 체크")+'</button>'+(sentSame?'<span class="sent">문자 발송함 '+esc(when(r.smsSentAt))+'</span>':"");
+      return '<div class="card"><div class="top"><b>'+esc(r.teamName||r.name||"이름 없음")+'</b>'+
+        '<span class="pill '+st+'">'+label+'</span><span class="pill exp">'+(r.experience==="예"?"재참여":"첫 참여")+'</span>'+
+        '<span class="code">'+esc(r.code||"")+" · "+esc(when(r.createdAt))+'</span></div>'+
+        '<div class="row">전화 <a href="tel:'+esc(String(r.phone||"").replace(/\D/g,""))+'">'+esc(fmtPhone(r.phone))+'</a></div>'+
+        '<div class="acts">'+
+        '<button type="button" class="btn sm ok" data-st="accepted" data-id="'+esc(r._id)+'">선정</button>'+
+        '<button type="button" class="btn sm wt" data-st="pending" data-id="'+esc(r._id)+'">대기로</button>'+
+        '<button type="button" class="btn sm no" data-st="rejected" data-id="'+esc(r._id)+'">미선정</button></div>'+
+        '<div class="acts">'+sms+'</div></div>';
+    }).join("");
+  }
+
+  function load(){
+    if(!db){$("list").innerHTML='<div class="status bad">서버에 연결되지 않았습니다. 인터넷을 확인하고 새로고침해 주세요.</div>';return}
+    $("list").innerHTML='<div class="status">불러오는 중…</div>';
+    db.collection(COL).where("type","==","flea").get().then(function(snap){
+      rows=[];snap.forEach(function(d){rows.push(Object.assign({_id:d.id},d.data()))});
+      rows.sort(function(a,b){return String(a.createdAt).localeCompare(String(b.createdAt))});
+      render();
+    }).catch(function(){$("list").innerHTML='<div class="status bad">불러오지 못했습니다. 잠시 뒤 새로고침해 주세요.</div>'});
+  }
+
+  function save(id,patch,btn){
+    if(btn)btn.disabled=true;
+    return db.collection(COL).doc(id).set(patch,{merge:true}).then(function(){
+      rows.forEach(function(r){if(r._id===id)Object.assign(r,patch)});render();
+    }).catch(function(){if(btn)btn.disabled=false;alert("저장하지 못했습니다. 인터넷을 확인하고 다시 눌러 주세요.")});
+  }
+
+  document.addEventListener("click",function(e){
+    var t=e.target.closest("button");if(!t)return;
+    if(t.dataset.f){filter=t.dataset.f;render();return}
+    if(t.dataset.st){save(t.dataset.id,{status:t.dataset.st,statusAt:new Date().toISOString()},t);return}
+    if(t.dataset.sent){
+      var r=rows.filter(function(x){return x._id===t.dataset.sent})[0];if(!r)return;
+      var st=status(r);
+      save(r._id,r.smsSent===st?{smsSent:"",smsSentAt:""}:{smsSent:st,smsSentAt:new Date().toISOString()},t);
+    }
+  });
+  $("reload").addEventListener("click",load);
+  $("csv").addEventListener("click",function(){
+    if(!rows.length){alert("내려받을 신청이 없습니다.");return}
+    var cols=["code","status","teamName","phone","experience","createdAt","smsSent","smsSentAt"];
+    var q=function(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"'};
+    var csv="﻿"+cols.join(",")+"\n"+rows.map(function(r){return cols.map(function(c){return q(c==="phone"?fmtPhone(r[c]):r[c])}).join(",")}).join("\n");
+    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+    a.download="플리마켓1주차_신청_"+new Date().toISOString().slice(0,10)+".csv";a.click();
+  });
+  load();
+})();
+</script>
+</body>
+</html>
