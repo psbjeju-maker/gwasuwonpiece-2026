@@ -78,7 +78,7 @@ textarea{width:100%;height:170px;font:inherit;font-size:14px;padding:10px;border
 (function(){
   var FIREBASE={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
   var COL="gwasuwonpiece_applications";
-  var DEF_OK="[박서방 제주지점 플리마켓 1주차]\n{부스명}님, 셀러로 선정되셨습니다!\n\n일시: 11/7(토) · 8(일)\n장소: 박서방 제주지점\n수수료: 판매액의 10% (최대 8만 원)\n지원: 책상 1개(180×75cm), 등받이 없는 의자 2개\n\n문의는 이 번호로 답장 주세요.";
+  var DEF_OK="[박서방 제주지점 플리마켓 1주차]\n{부스명}님, 셀러로 선정되셨습니다!\n\n일시: 11/7(토) · 8(일)\n장소: 박서방 제주지점\n매장 오픈: 오전 9시\n플리마켓 시작: 오전 10시 30분\n수수료: 판매액의 10% (최대 8만 원)\n지원: 책상 1개(180×75cm), 등받이 없는 의자 2개\n\n[자리·물건]\n- 자리는 당일 선착순입니다. 전날 미리 맡아 둘 수 없습니다.\n- 물건은 전날 가져다 두셔도 됩니다.\n- 다른 셀러 공간을 침범하지 말아 주세요.\n- 이동 동선에 방해가 되면 가게에서 물품 위치를 조정할 수 있습니다.\n\n[비라이센스 제품]\n- 비라이센스 제품을 판매하면 참여가 제한됩니다.\n- 정품 여부로 시비가 생기면 우선 해당 제품 판매를 중지하고, 정품 여부는 나중에 확인합니다.\n\n[판매 금액 신고]\n- 판매 금액을 고의로 줄여서 신고하면 앞으로 2년 동안 행사 판매가 제한됩니다.\n- 가게 사정이 많이 힘듭니다. 판매 금액만큼은 정확하게 신고해 주세요. 제발 도와주세요.\n\n문의는 이 번호로 답장 주세요.";
   var DEF_NO="[박서방 제주지점 플리마켓 1주차]\n{부스명}님, 신청해 주셔서 감사합니다.\n이번 1주차는 모집 인원이 차서 함께하지 못하게 되었습니다.\n다음 기회에 꼭 모시겠습니다.\n\n문의는 이 번호로 답장 주세요.";
   var db=null;
   try{var app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE);db=firebase.firestore(app);}catch(e){}
@@ -91,9 +91,9 @@ textarea{width:100%;height:170px;font:inherit;font-size:14px;padding:10px;border
   function when(iso){var d=new Date(iso);if(isNaN(d))return"";return (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
   function status(r){return r.status||"pending"}
 
-  $("msgOk").value=ls("flea_msg_ok")||DEF_OK;
+  $("msgOk").value=ls("flea_msg_ok_1104")||DEF_OK;
   $("msgNo").value=ls("flea_msg_no")||DEF_NO;
-  $("msgOk").addEventListener("input",function(){ls("flea_msg_ok",this.value);render()});
+  $("msgOk").addEventListener("input",function(){ls("flea_msg_ok_1104",this.value);render()});
   $("msgNo").addEventListener("input",function(){ls("flea_msg_no",this.value);render()});
 
   function smsHref(r){
