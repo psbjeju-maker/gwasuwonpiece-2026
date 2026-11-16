@@ -63,6 +63,14 @@ button:disabled{opacity:.6}
 .done h2{font-size:24px;margin-bottom:10px}
 .code{display:inline-block;margin:16px 0 6px;font-size:30px;font-weight:900;letter-spacing:.06em;color:var(--red)}
 .done p{color:var(--mute)}
+.cap{background:var(--cream);border-radius:18px;padding:16px 20px;margin-bottom:18px}
+.cap .row{display:flex;justify-content:space-between;align-items:baseline;font-weight:800}
+.cap .row b{font-size:28px;color:var(--red)}
+.cap .bar{height:14px;border-radius:999px;background:#ead9bd;margin:10px 0 6px;overflow:hidden}
+.cap .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),#e9b44c 70%,var(--red));border-radius:999px;transition:width .6s}
+.cap small{display:block;color:var(--mute);font-weight:600}
+.cap.full b{color:var(--bad)}
+.seg label.off{opacity:.35;pointer-events:none}
 .closed{display:none;background:var(--cream);border-radius:18px;padding:28px 22px;text-align:center;font-weight:700}
 </style>
 </head>
@@ -77,6 +85,12 @@ button:disabled{opacity:.6}
     <div class="price">테이블당 하루 50,000원<small></small></div>
     <div class="sub" style="margin-top:12px;font-size:16px">1테이블 2일 100,000원 · 2테이블 2일 200,000원</div>
   </header>
+
+  <div class="cap" id="cap" aria-live="polite">
+    <div class="row"><span>실시간 신청 현황</span><span><b id="capUsed">-</b> / 20 테이블</span></div>
+    <div class="bar"><i id="capBar"></i></div>
+    <small id="capMsg">현황을 불러오는 중입니다…</small>
+  </div>
 
   <dl class="info">
     <div><dt>모집</dt><dd>선착순 접수<small>피규어 플리마켓 · 프라모델 플리마켓 · 2차창작 · 체험부스 · 기업 홍보 부스</small></dd></div>
@@ -145,6 +159,31 @@ button:disabled{opacity:.6}
 
 </div>
 
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {getFirestore,collection,query,where,getCountFromServer} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+const CAP=20;
+const cfg={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
+const db=getFirestore(initializeApp(cfg,"santa-count"));
+const col=collection(db,"gwasuwonpiece_applications");
+async function fetchUsed(){
+  const n=async t=>(await getCountFromServer(query(col,where("event","==","산타왔수다"),where("tables","==",t)))).data().count;
+  const [a,b]=await Promise.all([n("1"),n("2")]);
+  return a+2*b;
+}
+function paint(used){
+  const left=Math.max(0,CAP-used),full=left<=0;
+  document.getElementById("capUsed").textContent=Math.min(used,CAP);
+  document.getElementById("capBar").style.width=Math.min(100,used/CAP*100)+"%";
+  document.getElementById("capMsg").textContent=full?"선착순 마감되었습니다.":"남은 테이블 "+left+"개 · 선착순 접수 중";
+  document.getElementById("cap").classList.toggle("full",full);
+  window.__santa={used,left,full};
+  window.dispatchEvent(new Event("santa-count"));
+}
+window.santaRefresh=async()=>{try{paint(await fetchUsed());return window.__santa}catch(e){document.getElementById("capMsg").textContent="현황을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.";return null}};
+window.santaRefresh();
+setInterval(window.santaRefresh,15000);
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
@@ -177,7 +216,16 @@ button:disabled{opacity:.6}
   function fail(html){btn.disabled=false;btn.textContent="신청하기";msg.innerHTML=html;msg.classList.add("show");}
   var CONTACT="신청이 되지 않았습니다. 인터넷 연결을 확인하고 다시 눌러 주세요. 계속 안 되면 <a href='https://litt.ly/psb_jeju'>메이커앤하비 SNS</a>로 DM 주시거나 <a href='tel:064-742-0083'>064-742-0083</a>으로 전화 주세요.";
 
-  f.addEventListener("submit",function(e){
+  function applyCap(){
+    var c=window.__santa;if(!c)return;
+    var two=f.querySelector('input[name=tables][value="2"]'),one=f.querySelector('input[name=tables][value="1"]');
+    two.parentNode.classList.toggle("off",c.left<2);one.parentNode.classList.toggle("off",c.left<1);
+    if(c.left<2&&two.checked){two.checked=false;}
+    if(c.left<1)btn.disabled=true;else if(btn.textContent==="신청하기")btn.disabled=false;
+    if(c.full&&!f.hidden){f.hidden=true;var cl=document.getElementById("closed");cl.textContent="선착순 20테이블이 모두 마감되었습니다.";cl.style.display="block";}
+  }
+  window.addEventListener("santa-count",applyCap);applyCap();
+  f.addEventListener("submit",async function(e){
     e.preventDefault();msg.classList.remove("show");
     var booth=f.teamName.value.trim(),rep=f.rep.value.trim(),phone=f.phone.value,items=f.items.value.trim();
     var tables=f.tables.value||"",setup=f.setup.value||"",cat=f.cat.value||"";
@@ -188,6 +236,7 @@ button:disabled{opacity:.6}
     mark("fItems",!ok[3]);mark("fTables",!ok[4]);mark("fSetup",!ok[5]);mark("fCat",!ok[6]);
     if(ok.indexOf(false)>=0)return;
     if(!db){fail(CONTACT);return;}
+    if(window.santaRefresh){var cur=await window.santaRefresh();if(cur&&cur.left<parseInt(tables,10)){applyCap();fail(cur.left<1?"선착순 20테이블이 모두 마감되었습니다.":"남은 테이블이 "+cur.left+"개입니다. 테이블 수를 다시 선택해 주세요.");return;}}
 
     var p=digits(phone);
     var data={type:"booth",event:"산타왔수다",status:"pending",round:isExtra?"추가":"1차",createdAt:new Date().toISOString(),
