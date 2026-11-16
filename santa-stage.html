@@ -94,7 +94,7 @@ button:disabled{opacity:.6}
   <dl class="info">
     <div><dt>무대</dt><dd>12월 12일(토)<small>무대 시간·순서는 신청 후 문자로 안내드립니다</small></dd></div>
     <div><dt>장소</dt><dd>중문 컨벤션 2센터</dd></div>
-    <div><dt>종목</dt><dd>노래 · 댄스 · 기타 공연<small>1팀 1곡(3~5분 이내)을 기준으로 받습니다</small></dd></div>
+    <div><dt>종목</dt><dd>노래 · 댄스 · 노래하며 춤 · 기타<small>1팀 1곡(3~5분 이내)을 기준으로 받습니다</small></dd></div>
     <div><dt>접수</dt><dd>선착순<small>신청이 끝나면 개별 문자로 안내드립니다</small></dd></div>
   </dl>
 
@@ -105,9 +105,19 @@ button:disabled{opacity:.6}
       <div class="seg">
         <label><input type="radio" name="genre" value="노래"><span>노래</span></label>
         <label><input type="radio" name="genre" value="댄스"><span>댄스</span></label>
+        <label><input type="radio" name="genre" value="노래하며 춤"><span>노래하며 춤</span></label>
         <label><input type="radio" name="genre" value="기타"><span>기타</span></label>
       </div>
+      <p class="hint">노래만 · 춤만 · 노래하면서 춤추는 무대 중 어느 쪽인지 골라 주세요.</p>
       <p class="err">참가 종목을 선택해 주세요.</p></div>
+
+    <div class="f" id="fMic"><span class="t">마이크 필요 여부<span class="req">*</span></span>
+      <div class="seg">
+        <label><input type="radio" name="mic" value="필요"><span>마이크 필요</span></label>
+        <label><input type="radio" name="mic" value="필요 없음"><span>필요 없음</span></label>
+      </div>
+      <p class="hint">직접 노래하거나 말하는 부분이 있으면 필요를 골라 주세요.</p>
+      <p class="err">마이크 필요 여부를 선택해 주세요.</p></div>
 
     <div class="f"><label class="t" for="rep">대표자 이름<span class="req">*</span></label>
       <input type="text" id="rep" name="rep" maxlength="20" autocomplete="name">
@@ -138,7 +148,7 @@ button:disabled{opacity:.6}
     </div>
 
     <div class="f"><label class="t" for="memo">남기실 말씀</label>
-      <textarea id="memo" name="memo" maxlength="300" placeholder="인원 수, 마이크 개수, 코스프레 캐릭터 등"></textarea></div>
+      <textarea id="memo" name="memo" maxlength="300" placeholder="인원 수, 필요한 마이크 개수, 코스프레 캐릭터 등"></textarea></div>
 
     <button type="submit" id="btn">무대 신청하기</button>
     <p class="note">입력하신 정보는 무대 진행 안내 연락에만 사용합니다.</p>
@@ -195,9 +205,9 @@ button:disabled{opacity:.6}
 
   f.addEventListener("submit",function(e){
     e.preventDefault();msg.classList.remove("show");
-    var rep=f.rep.value.trim(),phone=f.phone.value,song=f.song.value.trim(),genre=f.genre.value||"",mr=f.mr.value||"";
-    var ok=[!!genre,!!rep,validPhone(phone),!!song,!!mr];
-    mark("fGenre",!ok[0]);f.rep.parentNode.classList.toggle("bad",!ok[1]);f.phone.parentNode.classList.toggle("bad",!ok[2]);f.song.parentNode.classList.toggle("bad",!ok[3]);mark("fMr",!ok[4]);
+    var rep=f.rep.value.trim(),phone=f.phone.value,song=f.song.value.trim(),genre=f.genre.value||"",mic=f.mic.value||"",mr=f.mr.value||"";
+    var ok=[!!genre,!!rep,validPhone(phone),!!song,!!mr,!!mic];
+    mark("fGenre",!ok[0]);f.rep.parentNode.classList.toggle("bad",!ok[1]);f.phone.parentNode.classList.toggle("bad",!ok[2]);f.song.parentNode.classList.toggle("bad",!ok[3]);mark("fMr",!ok[4]);mark("fMic",!ok[5]);
     if(ok.indexOf(false)>=0)return;
     if(!db){fail(CONTACT);return;}
     btn.disabled=true;btn.textContent="접수하는 중…";
@@ -205,7 +215,7 @@ button:disabled{opacity:.6}
       var over=(n!==null)&&n>=CAP;
       var p=digits(phone),team=f.teamName.value.trim();
       var data={type:"stage",event:EVENT,status:"pending",createdAt:new Date().toISOString(),
-        name:rep,teamName:team||rep,phone:p,genre:genre,song:song,mr:mr,mrUrl:f.mrUrl.value.trim(),memo:f.memo.value.trim(),
+        name:rep,teamName:team||rep,phone:p,genre:genre,mic:mic,song:song,mr:mr,mrUrl:f.mrUrl.value.trim(),memo:f.memo.value.trim(),
         zone:(over?"[대기] ":"")+"산타왔수다 12일 무대 · "+genre+" · "+song.slice(0,40)+" · 음원 "+mr,
         code:"T-"+p.slice(-4),over:over,usedBefore:n};
       var ref=db.collection(COL).doc("santastage_"+p);
@@ -229,7 +239,7 @@ button:disabled{opacity:.6}
     });
   });
   [f.rep,f.phone,f.song].forEach(function(i){i.addEventListener("input",function(){i.parentNode.classList.remove("bad");});});
-  f.addEventListener("change",function(){mark("fGenre",false);mark("fMr",false);});
+  f.addEventListener("change",function(){mark("fGenre",false);mark("fMr",false);mark("fMic",false);});
 })();
 </script>
 </body>
