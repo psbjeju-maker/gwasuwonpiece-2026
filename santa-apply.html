@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>싼타왔수다 부스 신청 · 메이커앤하비</title>
-<meta property="og:title" content="싼타왔수다 부스 신청">
+<title>산타왔수다 부스 신청 · 메이커앤하비</title>
+<meta property="og:title" content="산타왔수다 부스 신청">
 <meta property="og:description" content="테이블당 하루 50,000원 · 1테이블 2일 100,000원 · 2테이블 2일 200,000원 · 중문 컨벤션 2센터">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -72,7 +72,7 @@ button:disabled{opacity:.6}
 
   <header class="hero">
     <img class="logo" src="mhlogo.png" alt="Maker&amp;Hobby 메이커앤하비">
-    <h1>싼타왔수다<br>부스 신청</h1>
+    <h1>산타왔수다<br>부스 신청</h1>
     <div class="sub" id="subTitle">선착순 부스 모집</div>
     <div class="price">테이블당 하루 50,000원<small></small></div>
     <div class="sub" style="margin-top:12px;font-size:16px">1테이블 2일 100,000원 · 2테이블 2일 200,000원</div>
@@ -190,9 +190,9 @@ button:disabled{opacity:.6}
     if(!db){fail(CONTACT);return;}
 
     var p=digits(phone);
-    var data={type:"booth",event:"싼타왔수다",status:"pending",round:isExtra?"추가":"1차",createdAt:new Date().toISOString(),
+    var data={type:"booth",event:"산타왔수다",status:"pending",round:isExtra?"추가":"1차",createdAt:new Date().toISOString(),
       teamName:booth,name:rep,phone:p,category:cat,items:items,tables:tables,setup:setup,fee:parseInt(tables,10)*100000,
-      zone:"싼타왔수다"+(isExtra?"(추가모집)":"")+" · "+cat+" · "+tables+"테이블 "+(tables*100000).toLocaleString("ko-KR")+"원 · "+setup+" · "+items.slice(0,40),
+      zone:"산타왔수다"+(isExtra?"(추가모집)":"")+" · "+cat+" · "+tables+"테이블 "+(tables*100000).toLocaleString("ko-KR")+"원 · "+setup+" · "+items.slice(0,40),
       code:"S-"+p.slice(-4)};
     btn.disabled=true;btn.textContent="접수하는 중…";
     var ref=db.collection(COL).doc("santa_"+p);
