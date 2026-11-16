@@ -173,9 +173,9 @@ async function fetchUsed(){
 }
 function paint(used){
   const left=Math.max(0,CAP-used),full=left<=0;
-  document.getElementById("capUsed").textContent=Math.min(used,CAP);
+  document.getElementById("capUsed").textContent=used;
   document.getElementById("capBar").style.width=Math.min(100,used/CAP*100)+"%";
-  document.getElementById("capMsg").textContent=full?"선착순 마감되었습니다.":"남은 테이블 "+left+"개 · 선착순 접수 중";
+  document.getElementById("capMsg").textContent=full?"정원 20테이블이 모두 찼습니다 · 계속 접수 중이며 선정 후 개별 안내드립니다":"남은 테이블 "+left+"개 · 선착순 접수 중";
   document.getElementById("cap").classList.toggle("full",full);
   window.__santa={used,left,full};
   window.dispatchEvent(new Event("santa-count"));
@@ -216,15 +216,8 @@ setInterval(window.santaRefresh,15000);
   function fail(html){btn.disabled=false;btn.textContent="신청하기";msg.innerHTML=html;msg.classList.add("show");}
   var CONTACT="신청이 되지 않았습니다. 인터넷 연결을 확인하고 다시 눌러 주세요. 계속 안 되면 <a href='https://litt.ly/psb_jeju'>메이커앤하비 SNS</a>로 DM 주시거나 <a href='tel:064-742-0083'>064-742-0083</a>으로 전화 주세요.";
 
-  function applyCap(){
-    var c=window.__santa;if(!c)return;
-    var two=f.querySelector('input[name=tables][value="2"]'),one=f.querySelector('input[name=tables][value="1"]');
-    two.parentNode.classList.toggle("off",c.left<2);one.parentNode.classList.toggle("off",c.left<1);
-    if(c.left<2&&two.checked){two.checked=false;}
-    if(c.left<1)btn.disabled=true;else if(btn.textContent==="신청하기")btn.disabled=false;
-    if(c.full&&!f.hidden){f.hidden=true;var cl=document.getElementById("closed");cl.textContent="선착순 20테이블이 모두 마감되었습니다.";cl.style.display="block";}
-  }
-  window.addEventListener("santa-count",applyCap);applyCap();
+  function applyCap(){}
+  window.addEventListener("santa-count",applyCap);
   f.addEventListener("submit",async function(e){
     e.preventDefault();msg.classList.remove("show");
     var booth=f.teamName.value.trim(),rep=f.rep.value.trim(),phone=f.phone.value,items=f.items.value.trim();
@@ -236,13 +229,14 @@ setInterval(window.santaRefresh,15000);
     mark("fItems",!ok[3]);mark("fTables",!ok[4]);mark("fSetup",!ok[5]);mark("fCat",!ok[6]);
     if(ok.indexOf(false)>=0)return;
     if(!db){fail(CONTACT);return;}
-    if(window.santaRefresh){var cur=await window.santaRefresh();if(cur&&cur.left<parseInt(tables,10)){applyCap();fail(cur.left<1?"선착순 20테이블이 모두 마감되었습니다.":"남은 테이블이 "+cur.left+"개입니다. 테이블 수를 다시 선택해 주세요.");return;}}
+    var over=false,beforeUsed=0;if(window.santaRefresh){var cur=await window.santaRefresh();if(cur){beforeUsed=cur.used;over=(cur.used+parseInt(tables,10))>20;}}
 
     var p=digits(phone);
     var data={type:"booth",event:"산타왔수다",status:"pending",round:isExtra?"추가":"1차",createdAt:new Date().toISOString(),
       teamName:booth,name:rep,phone:p,category:cat,items:items,tables:tables,setup:setup,fee:parseInt(tables,10)*100000,
       zone:"산타왔수다"+(isExtra?"(추가모집)":"")+" · "+cat+" · "+tables+"테이블 "+(tables*100000).toLocaleString("ko-KR")+"원 · "+setup+" · "+items.slice(0,40),
-      code:"S-"+p.slice(-4)};
+      code:"S-"+p.slice(-4),over:over,usedBefore:beforeUsed};
+    if(over)data.zone="[정원초과] "+data.zone;
     btn.disabled=true;btn.textContent="접수하는 중…";
     var ref=db.collection(COL).doc("santa_"+p);
     ref.get().then(function(s){
@@ -252,7 +246,8 @@ setInterval(window.santaRefresh,15000);
       f.hidden=true;
       document.getElementById("code").textContent=data.code;
       document.getElementById("done").classList.add("on");
-      if(isExtra)document.getElementById("doneMsg").innerHTML="접수번호 · 추가 모집 신청은 11월 30일(월)에 선정 결과를 개별 문자로 안내드리며, 선정되시면 입금 방법도 함께 안내합니다.";
+      if(over)document.getElementById("doneMsg").innerHTML="접수번호 · 정원(20테이블)을 넘어 <b>정원 초과로 접수</b>되었습니다.<br>선정 결과는 개별 문자로 안내드리며, 선정되시면 입금 방법도 함께 안내합니다.";
+      else if(isExtra)document.getElementById("doneMsg").innerHTML="접수번호 · 추가 모집 신청은 11월 30일(월)에 선정 결과를 개별 문자로 안내드리며, 선정되시면 입금 방법도 함께 안내합니다.";
       window.scrollTo(0,0);
       try{fetch(KAKAO,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(data)}).catch(function(){});}catch(x){}
     }).catch(function(err){
