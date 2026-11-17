@@ -86,7 +86,7 @@ button:disabled{opacity:.6}
   </header>
 
   <div class="cap" id="cap" aria-live="polite">
-    <div class="row"><span>실시간 신청 현황</span><span><b id="capUsed">-</b> / <span id="capMax">10</span> 팀</span></div>
+    <div class="row"><span>실시간 신청 현황</span><span><b id="capUsed">-</b> / <span id="capMax">12</span> 팀</span></div>
     <div class="bar"><i id="capBar"></i></div>
     <small id="capMsg">현황을 불러오는 중입니다…</small>
   </div>
@@ -167,7 +167,7 @@ button:disabled{opacity:.6}
 <script>
 (function(){
   /* 설정: 확정되면 여기만 고치세요 */
-  var CAP=10;                       // 확정 팀 수 (넘으면 대기 접수)
+  var CAP=12;                       // 확정 팀 수 (넘으면 대기 접수)
   var CLOSE_AT="";                  // 예: "2026-12-05T23:59:59+09:00" (비우면 마감 없음)
   var FIREBASE={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
   var COL="gwasuwonpiece_applications",EVENT="산타왔수다 무대";
@@ -194,7 +194,7 @@ button:disabled{opacity:.6}
     if(!db)return Promise.resolve(null);
     return db.collection(COL).where("event","==",EVENT).get().then(function(q){paint(q.size);return q.size;}).catch(function(){document.getElementById("capMsg").textContent="현황을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.";return null;});
   }
-  refresh();setInterval(refresh,15000);
+  if(db){db.collection(COL).where("event","==",EVENT).onSnapshot(function(q){paint(q.size);},function(){refresh();setInterval(refresh,15000);});}
 
   function digits(v){return String(v).replace(/\D/g,"");}
   function validPhone(v){return /^01[016789]\d{7,8}$/.test(digits(v));}
