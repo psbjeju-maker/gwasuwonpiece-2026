@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>귤 자르기 크리스마스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* 산타왔수다 귤 자르기 — 보물찾기 앱과 같은 매거진 스타일(흰 바탕·남색/주황·체크 띠), 크리스마스는 그림(빨강 모자·선물·석탄)에만 */
+@font-face{font-family:"SCDream";font-weight:600;font-display:swap;src:url('../fonts/SCDream5.woff') format('woff')}
+@font-face{font-family:"SCDream";font-weight:800;font-display:swap;src:url('../fonts/SCDream7.woff') format('woff')}
+:root{--navy:#1B2550;--org:#F58A1F;--red:#C8102E;--dim:#6B7186;--line:#D9DCE6;--ok:#2E9E6A}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#fff;color:var(--navy);font-family:Pretendard,system-ui,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer;border:0;border-radius:0}
+header{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;padding:calc(9px + env(safe-area-inset-top,0px)) 18px 9px}
+header .in{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:10px}
+header img{height:24px}
+header .t{font-weight:800;font-size:15px;flex:1}
+header a{color:#fff;font-size:13px;opacity:.85;text-decoration:none}
+.wrap{max-width:480px;margin:0 auto;padding:0 18px calc(30px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:18px}
+.ptitle{font-weight:900;font-size:clamp(42px,14vw,58px);line-height:.88;letter-spacing:-2.6px;text-transform:uppercase}
+.ptitle em{font-style:normal;color:var(--org)}
+.xtag{background:var(--red);color:#fff;font-weight:900;font-size:12px;letter-spacing:1.5px;padding:5px 9px}
+.status{display:flex;border:2px solid var(--navy);margin:18px 0 12px}
+.status .t{background:var(--org);color:#fff;font-weight:800;font-size:14px;padding:0 12px;display:flex;align-items:center;white-space:nowrap}
+.status .b{flex:1;background:var(--navy);color:#fff;display:flex;align-items:baseline;justify-content:space-between;padding:12px 15px;gap:10px}
+.status .b span{font-size:16px;font-weight:700}
+.status .b b{font-size:32px;font-weight:900;color:var(--org);letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.status.live .t{background:var(--red)}
+.btn{display:block;width:100%;padding:17px;font-size:19px;font-weight:900;letter-spacing:1px;background:var(--org);color:#fff}
+.btn:active{opacity:.85}
+.btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--navy);padding:15px}
+.btn[disabled]{opacity:.4;cursor:default}
+.row{display:flex;gap:10px}.row>*{flex:1}
+input{width:100%;font:inherit;font-size:17px;padding:15px 14px;border-radius:0;border:2px solid var(--navy);background:#fff;color:var(--navy);margin-bottom:10px}
+input:focus{outline:none;border-color:var(--org)}
+.mine{margin-top:12px;text-align:center;font-weight:800;font-size:15px;min-height:22px;color:var(--dim)}
+.mine b{color:var(--org);font-size:20px}
+h2{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:900;margin:30px 0 6px}
+h2:after{content:'';flex:1;height:2px;background:var(--navy)}
+h2 .live{order:2;font-size:12px;color:var(--ok);font-weight:800}
+h2 .live:before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.new div{display:flex;align-items:center;gap:14px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.new svg{width:46px;height:46px;flex:none}
+.new .n{font-weight:900;font-size:17px;flex:1}
+.new .v{font-weight:900;font-size:20px;color:var(--org);font-variant-numeric:tabular-nums}
+.new .v.minus{color:var(--dim)}
+ol.rank{list-style:none;margin:0;padding:0}
+ol.rank li{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--line);font-weight:800;font-size:17px}
+ol.rank .n{width:28px;font-size:20px;font-weight:900;color:var(--dim);letter-spacing:-1px}
+ol.rank li:nth-child(-n+3) .n{color:var(--org)}
+ol.rank .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ol.rank .sc{font-weight:900;font-variant-numeric:tabular-nums}
+ol.rank li.me{background:#FFF3E6}
+ol.rank li.flash{animation:fl 1.6s}
+@keyframes fl{from{background:#FFD9B0}}
+.empty{color:var(--dim);font-weight:700;padding:14px 2px}
+.tvlink{display:block;margin:18px auto 0;background:none;color:var(--dim);font-size:13px;text-decoration:underline}
+.chk{height:30px;margin:26px -18px 0;background:conic-gradient(var(--navy) 25%,#fff 0 50%,var(--navy) 0 75%,#fff 0) 0 0/30px 30px}
+
+/* 게임 무대 (엔진이 쓰는 id) */
+#catchStage{position:fixed;inset:0;z-index:50;background:#0D1733;display:flex;flex-direction:column}
+#catchStage[hidden]{display:none}
+#catchBar{display:flex;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;background:var(--navy);color:#fff;font-weight:800}
+#catchClose{background:#fff;color:var(--navy);padding:6px 12px;font-size:13px;font-weight:800}
+#catchWrap{flex:1;position:relative}
+#catchCv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+body.catch-on{overflow:hidden}
+
+/* 결과 */
+#result{position:fixed;inset:0;z-index:60;background:rgba(10,16,40,.92);display:flex;align-items:center;justify-content:center;padding:16px}
+#result[hidden]{display:none}
+.rcard{width:100%;max-width:400px;background:#fff;border:4px solid var(--navy);padding:22px 20px;text-align:center}
+.rcard .mode{display:inline-block;background:var(--org);color:#fff;font-weight:900;font-size:13px;padding:4px 10px;letter-spacing:1px}
+.rcard .mode.prac{background:var(--dim)}
+.rcard .rk{font-size:64px;font-weight:900;color:var(--org);line-height:1.05;margin-top:8px;letter-spacing:-2px}
+.rcard .rk small{font-size:24px}
+.rcard .pts{margin-top:8px;font-size:15px;font-weight:700;color:var(--dim)}
+.rcard .pts b{display:block;font-size:40px;color:var(--navy);font-weight:900;letter-spacing:-1px}
+.rcard .err{color:var(--red);font-size:13px;margin-top:8px;font-weight:700}
+.rcard .btns{display:flex;gap:8px;margin-top:18px}
+
+/* 크리스마스 업데이트 안내 — 처음 한 번 */
+#upd{position:fixed;inset:0;z-index:70;background:var(--navy);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:24px 22px calc(54px + env(safe-area-inset-bottom,0px));overflow:hidden}
+#upd[hidden]{display:none}
+#upd:after{content:'';position:absolute;left:0;right:0;bottom:0;height:26px;background:conic-gradient(#fff 25%,var(--navy) 0 50%,#fff 0 75%,var(--navy) 0) 0 0/26px 26px}
+#upd .in{max-width:420px;width:100%;margin:0 auto}
+#upd .k{display:inline-block;background:var(--red);font-weight:900;font-size:13px;letter-spacing:2px;padding:5px 10px}
+#upd .h{font-weight:900;font-size:58px;line-height:.86;letter-spacing:-2.6px;text-transform:uppercase;margin:14px 0 22px}
+#upd .h em{font-style:normal;color:var(--org)}
+#upd .it{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.18)}
+#upd .it:last-of-type{border-bottom:1px solid rgba(255,255,255,.18)}
+#upd .it svg{width:52px;height:52px;flex:none;background:#fff}
+#upd .it .n{font-size:19px;font-weight:900;flex:1}
+#upd .it .v{font-size:22px;font-weight:900;color:var(--org)}
+#upd .btn{margin-top:24px}
+
+/* TV 랭킹판 (부스 노트북·TV) */
+#board{position:fixed;inset:0;z-index:40;background:#fff;display:grid;grid-template-columns:40% 1fr;gap:0 3vw;padding:3vh 3vw calc(3vh + 4.2vh)}
+#board[hidden]{display:none}
+#board .l{display:flex;flex-direction:column;gap:2vh;min-width:0}
+#board .bt{font-weight:900;font-size:7vw;line-height:.86;letter-spacing:-.35vw;text-transform:uppercase}
+#board .bt em{font-style:normal;color:var(--org)}
+#board .bx{align-self:flex-start;background:var(--red);color:#fff;font-weight:900;font-size:1.3vw;letter-spacing:.2vw;padding:.6vh .8vw}
+#board .bs{border:.25vw solid var(--navy);display:flex;margin-top:auto}
+#board .bs .t{background:var(--org);color:#fff;font-weight:900;font-size:1.6vw;padding:0 1.2vw;display:flex;align-items:center}
+#board .bs .b{flex:1;background:var(--navy);color:#fff;padding:1.4vh 1.4vw;display:flex;justify-content:space-between;align-items:baseline}
+#board .bs .b span{font-size:1.6vw;font-weight:800}
+#board .bs .b b{font-size:5vw;font-weight:900;color:var(--org);letter-spacing:-.2vw;font-variant-numeric:tabular-nums}
+#board .qr{display:flex;align-items:center;gap:1vw;font-weight:900;font-size:1.5vw}
+#board .qr img{width:9vw;height:auto;border:.2vw solid var(--navy)}
+#board .r{display:flex;flex-direction:column;min-width:0}
+#board .lbl{display:flex;align-items:center;gap:1vw;font-size:1.5vw;font-weight:900;margin-bottom:.6vh}
+#board .lbl:after{content:'';flex:1;height:.25vw;background:var(--navy)}
+#bList{list-style:none;margin:0;padding:0;flex:1;display:grid;grid-template-rows:repeat(10,1fr)}
+#bList li{display:flex;align-items:center;gap:1.4vw;border-bottom:1px solid var(--line);font-size:2.6vw;font-weight:900;min-width:0}
+#bList .n{width:2.4em;color:var(--dim);letter-spacing:-.1vw}
+#bList li:nth-child(-n+3) .n{color:var(--org)}
+#bList .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#bList .sc{font-variant-numeric:tabular-nums}
+#bList li.flash{animation:fl 2.2s}
+#ticker{min-height:1.4em;font-size:1.8vw;font-weight:900;color:var(--org);margin-top:1vh}
+#board .chkb{position:absolute;left:0;right:0;bottom:0;height:4.2vh;background:conic-gradient(var(--navy) 25%,#fff 0 50%,var(--navy) 0 75%,#fff 0) 0 0/4.2vh 4.2vh}
+#bClose{position:absolute;right:1vw;top:1vh;background:none;color:#C5C9D6;font-size:12px}
+@media (max-width:760px){#board{grid-template-columns:1fr;overflow:auto}#board .bt{font-size:40px}#bList li{font-size:20px;min-height:44px}#board .bs .b b{font-size:30px}#board .bs .t,#board .bs .b span,#board .lbl,#board .qr,#board .bx{font-size:14px}#ticker{font-size:16px}#board .qr img{width:80px}}
+</style>
+</head>
+<body>
+<header><div class="in"><img src="img/mhlogo.png" alt="메이커앤하비"><div class="t">산타왔수다 귤 자르기</div><a href="index.html">보물찾기</a></div></header>
+
+<main class="wrap">
+  <div class="top">
+    <div class="xtag">CHRISTMAS UPDATE</div>
+    <div class="ptitle">Tangerine<br><em>Cut</em></div>
+  </div>
+
+  <div class="status" id="status"><div class="t" id="stT">랭킹전</div><div class="b"><span id="stS">오늘</span><b id="stB">13:00</b></div></div>
+
+  <input id="nick" maxlength="10" placeholder="닉네임" autocomplete="off">
+  <div class="row">
+    <button class="btn ghost" id="pracBtn">연습</button>
+    <button class="btn" id="rankBtn">랭킹 도전</button>
+  </div>
+  <div class="mine" id="mine"></div>
+
+  <h2>NEW</h2>
+  <div class="new" id="newList"></div>
+
+  <h2>TOP 10<span class="live" id="liveTag">실시간</span></h2>
+  <ol class="rank" id="rankList"><li class="empty">불러오는 중</li></ol>
+  <button class="tvlink" id="tvBtn">TV 랭킹판</button>
+  <div class="chk"></div>
+</main>
+
+<div id="catchStage" hidden>
+  <div id="catchBar"><span id="catchTitle"></span><button id="catchClose">그만하기</button></div>
+  <div id="catchWrap"><canvas id="catchCv"></canvas></div>
+</div>
+
+<div id="result" hidden>
+  <div class="rcard">
+    <span class="mode" id="rMode">랭킹전</span>
+    <div class="rk" id="rRank">-</div>
+    <div class="pts">이번 점수<b id="rScore">0</b></div>
+    <div class="err" id="rErr"></div>
+    <div class="btns"><button class="btn ghost" id="rHome">확인</button><button class="btn" id="rAgain">한 번 더</button></div>
+  </div>
+</div>
+
+<div id="upd" hidden><div class="in">
+  <span class="k">UPDATE</span>
+  <div class="h">Christmas<br><em>Special</em></div>
+  <div id="updList"></div>
+  <button class="btn" id="updOk">확인</button>
+</div></div>
+
+<div id="board" hidden>
+  <div class="l">
+    <div class="bx">CHRISTMAS UPDATE</div>
+    <div class="bt">Tangerine<br><em>Cut</em></div>
+    <div class="qr"><img src="img/catch-qr.png" alt="" onerror="this.parentNode.style.display='none'">QR 찍고 도전!</div>
+    <div class="bs" id="bStatus"><div class="t" id="bT">랭킹전</div><div class="b"><span id="bS">오늘</span><b id="bB">13:00</b></div></div>
+  </div>
+  <div class="r">
+    <div class="lbl">TOP 10</div>
+    <ol id="bList"></ol>
+    <div id="ticker"></div>
+  </div>
+  <div class="chkb"></div>
+  <button id="bClose">닫기</button>
+</div>
+
+<script src="data.js"></script>
+<script src="catch-xmas.js"></script>
+<script>
+(function(){
+'use strict';
+var D=window.SANTA, C=D.catchGame;
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function norm(s){return String(s||'').trim().toLowerCase()}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function today(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+
+/* ---------- 아이콘 (평평한 도형) ---------- */
+var IC={
+  santa:'<svg viewBox="0 0 60 60"><circle cx="30" cy="36" r="18" fill="#F58A1F"/><path d="M14 24 Q22 6 46 9 Q36 14 44 24 Z" fill="#D7263D"/><circle cx="47" cy="9" r="4" fill="#fff" stroke="#E3E6EE"/><rect x="12" y="21" width="34" height="7" rx="3.5" fill="#fff" stroke="#E3E6EE"/></svg>',
+  gift:'<svg viewBox="0 0 60 60"><rect x="12" y="20" width="36" height="32" fill="#C8102E"/><rect x="12" y="20" width="36" height="7" fill="#A00D25"/><rect x="26" y="20" width="8" height="32" fill="#fff"/><rect x="12" y="33" width="36" height="6" fill="#fff"/><ellipse cx="23" cy="16" rx="8" ry="4.5" transform="rotate(-25 23 16)" fill="#fff" stroke="#E3E6EE"/><ellipse cx="37" cy="16" rx="8" ry="4.5" transform="rotate(25 37 16)" fill="#fff" stroke="#E3E6EE"/></svg>',
+  coal:'<svg viewBox="0 0 60 60"><path d="M48 30 L44 41 L36 48 L22 47 L13 40 L11 29 L18 17 L29 12 L41 16 Z" fill="#2A2A33"/><path d="M18 17 L29 12 L34 26 L20 28 Z" fill="#4A4A57"/><path d="M34 26 L41 16 L48 30 L39 33 Z" fill="#6A6A78"/></svg>'
+};
+var NEW=[['santa','산타귤','+80'],['gift','선물 상자','+2초'],['coal','석탄','−30']];
+function newRows(){return NEW.map(function(x){return '<div class="it"><span>'+IC[x[0]]+'</span><span class="n">'+x[1]+'</span><span class="v'+(x[2][0]==='−'?' minus':'')+'">'+x[2]+'</span></div>'}).join('')}
+$('newList').innerHTML=NEW.map(function(x){return '<div>'+IC[x[0]]+'<span class="n">'+x[1]+'</span><span class="v'+(x[2][0]==='−'?' minus':'')+'">'+x[2]+'</span></div>'}).join('');
+$('updList').innerHTML=newRows();
+if(ls('santa_catch_upd')!=='1')$('upd').hidden=false;
+$('updOk').onclick=function(){ls('santa_catch_upd','1');$('upd').hidden=true};
+
+/* ---------- 닉네임: 보물찾기 앱에서 쓴 이름을 그대로 ---------- */
+var hunt=null;try{hunt=JSON.parse(ls('santa_hunt_v1')||'null')}catch(e){}
+var myName=ls('santa_catch_nick')||(hunt&&hunt.nick)||'';
+$('nick').value=myName;
+
+/* ---------- 연습 횟수 / 랭킹전 시간 ---------- */
+var forceRank=/[?&]rank=1/.test(location.search);
+function pracKey(){return 'santa_catch_prac_'+today()}
+function pracLeft(){return Math.max(0,C.practice-(+ls(pracKey())||0))}
+function rankState(){
+  var now=new Date(),p=C.rankAt.split(':'),s=new Date(now);s.setHours(+p[0],+p[1],0,0);
+  var e=new Date(s.getTime()+C.rankMin*60000);
+  if(forceRank)return {st:'live',left:C.rankMin*60000-(now.getTime()%(C.rankMin*60000))};
+  if(now<s)return {st:'wait',at:C.rankAt};
+  if(now<e)return {st:'live',left:e-now};
+  return {st:'end'};
+}
+function mmss(ms){var t=Math.ceil(ms/1000);return Math.floor(t/60)+':'+('0'+t%60).slice(-2)}
+function paintStatus(){
+  var r=rankState(),t,s,b;
+  if(r.st==='wait'){t='랭킹전';s='연습 '+pracLeft()+'/'+C.practice;b=r.at}
+  else if(r.st==='live'){t='랭킹전 중';s='남은 시간';b=mmss(r.left)}
+  else{t='랭킹전';s='오늘 결과';b='끝'}
+  $('stT').textContent=t;$('stS').textContent=s;$('stB').textContent=b;$('status').classList.toggle('live',r.st==='live');
+  $('bT').textContent=t;$('bS').textContent=r.st==='wait'?'오늘':s;$('bB').textContent=b;
+  $('rankBtn').disabled=r.st!=='live';
+  $('pracBtn').disabled=pracLeft()<=0;
+  $('pracBtn').textContent='연습 ('+pracLeft()+')';
+}
+setInterval(paintStatus,1000);paintStatus();
+
+/* ---------- 랭킹 저장소: Firestore(santaCatch) — 연결 안 되면 이 기기 안에만 ---------- */
+var entries=[],first=true,online=false,lastMine=null;
+var Store={
+  init:async function(){
+    var SDK='https://www.gstatic.com/firebasejs/10.12.2/';
+    function load(src){return new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
+    if(!window.firebase){await load(SDK+'firebase-app-compat.js');await load(SDK+'firebase-firestore-compat.js')}
+    if(!firebase.apps.length)firebase.initializeApp({apiKey:'AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts',authDomain:'psbjeju-kuji.firebaseapp.com',projectId:'psbjeju-kuji',appId:'1:627012765686:web:41178983d00eb37fd029d7'});
+    this.c=firebase.firestore().collection(C.collection);
+  },
+  listen:function(ok,err){this.c.where('day','==',today()).onSnapshot(ok,err)},
+  add:function(d){d.at=firebase.firestore.FieldValue.serverTimestamp();return this.c.add(d)}
+};
+function localList(){try{return JSON.parse(ls('santa_catch_local_'+today())||'[]')}catch(e){return []}}
+function localAdd(d){var l=localList();d.at=Date.now();l.push(d);ls('santa_catch_local_'+today(),JSON.stringify(l))}
+function row(v){return {name:String(v.name||'').slice(0,10),score:+v.score||0,at:v.at&&v.at.toMillis?v.at.toMillis():(+v.at||Date.now())}}
+function board(){
+  var m={};
+  entries.forEach(function(e){var k=norm(e.name);if(!k)return;var b=m[k];if(!b||e.score>b.score||(e.score===b.score&&e.at<b.at))m[k]=e});
+  return Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return b.score-a.score||a.at-b.at});
+}
+function rankOf(n,l){var k=norm(n);for(var i=0;i<l.length;i++)if(norm(l[i].name)===k)return i+1;return 0}
+function li(e,i,flash){return '<li class="'+(norm(e.name)===norm(myName)?'me ':'')+(flash&&norm(e.name)===flash?'flash':'')+'"><span class="n">'+(i+1)+'</span><span class="nm">'+esc(e.name)+'</span><span class="sc">'+e.score.toLocaleString()+'</span></li>'}
+function render(flash){
+  var l=board(),top=l.slice(0,10);
+  $('rankList').innerHTML=top.length?top.map(function(e,i){return li(e,i,flash)}).join(''):'<li class="empty">13:00 첫 기록을 기다려요</li>';
+  $('bList').innerHTML=top.map(function(e,i){return li(e,i,flash)}).join('');
+  var r=myName?rankOf(myName,l):0;
+  $('mine').innerHTML=r?esc(myName)+' <b>'+r+'위</b> · '+l[r-1].score.toLocaleString()+'점':'';
+  if(lastMine){var rr=rankOf(lastMine,l);$('rRank').innerHTML=rr?rr+'<small>위</small>':'-'}
+}
+function ticker(e){var l=board(),t=$('ticker');t.textContent=e.name+' '+e.score.toLocaleString()+'점 → '+rankOf(e.name,l)+'위!';clearTimeout(ticker.h);ticker.h=setTimeout(function(){t.textContent=''},9000)}
+function useLocal(){online=false;$('liveTag').style.display='none';entries=localList().map(row);render()}
+(async function(){
+  try{await Store.init()}catch(e){return useLocal()}
+  Store.listen(function(s){
+    online=true;$('liveTag').style.display='';
+    var added=[];if(!first)s.docChanges().forEach(function(c){if(c.type==='added')added.push(row(c.doc.data()))});
+    entries=s.docs.map(function(d){return row(d.data())});first=false;
+    render(added.length?norm(added[0].name):null);if(added.length)ticker(added[0]);
+  },useLocal);
+})();
+
+/* ---------- 게임 시작 ---------- */
+function getNick(){
+  var n=$('nick').value.trim().slice(0,10);
+  if(!n){$('nick').focus();$('nick').placeholder='닉네임을 먼저 적어 주세요';return ''}
+  myName=n;ls('santa_catch_nick',n);return n;
+}
+var mode='prac';
+function play(m){
+  var n=getNick();if(!n)return;
+  if(m==='prac'){if(pracLeft()<=0)return;ls(pracKey(),String((+ls(pracKey())||0)+1))}
+  else if(rankState().st!=='live')return;
+  mode=m;$('result').hidden=true;paintStatus();
+  CatchGame.start(async function(score,isBest,st){
+    $('rScore').textContent=score.toLocaleString();$('rErr').textContent='';
+    $('rMode').textContent=m==='rank'?'랭킹전':'연습';$('rMode').className='mode'+(m==='rank'?'':' prac');
+    $('rAgain').disabled=m==='rank'?rankState().st!=='live':pracLeft()<=0;
+    $('rAgain').textContent=m==='rank'?'한 번 더':'연습 ('+pracLeft()+')';
+    $('result').hidden=false;
+    if(m!=='rank'){lastMine=null;$('rRank').innerHTML='<small>최고</small> '+(+ls('santa_catch_best')||score).toLocaleString();return}
+    lastMine=n;$('rRank').textContent='…';
+    var d={name:n,score:score,combo:st.combo,gift:st.gift||0,day:today()};
+    if(!online){localAdd(d);entries=localList().map(row);render();return}
+    try{await Store.add(d)}catch(e){$('rErr').textContent='저장 안 됨 — 부스에 알려 주세요';localAdd(d)}
+  });
+}
+$('pracBtn').onclick=function(){play('prac')};
+$('rankBtn').onclick=function(){play('rank')};
+$('rAgain').onclick=function(){play(mode)};
+$('rHome').onclick=function(){$('result').hidden=true;render()};
+$('tvBtn').onclick=function(){$('board').hidden=false;try{document.documentElement.requestFullscreen().catch(function(){})}catch(e){}};
+$('bClose').onclick=function(){$('board').hidden=true;try{document.exitFullscreen().catch(function(){})}catch(e){}};
+if(location.hash==='#tv'){$('board').hidden=false;$('upd').hidden=true}
+})();
+</script>
+</body>
+</html>

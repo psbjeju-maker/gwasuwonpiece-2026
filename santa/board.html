@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>보물찾기 현황판</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* 부스 노트북 현황판 — 매거진 스타일(흰 바탕·남색/주황·체크 띠), 장식 없음 */
+:root{--navy:#1B2550;--org:#F58A1F;--dim:#6B7186;--line:#D9DCE6}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#fff;color:var(--navy);font-family:Pretendard,system-ui,sans-serif;overflow:hidden}
+.page{position:relative;height:100vh;display:grid;grid-template-columns:44% 1fr;gap:0 3vw;padding:3vh 3vw calc(3vh + 4.2vh)}
+.left{position:relative}
+.title{font-weight:900;font-size:7.6vw;line-height:.86;letter-spacing:-.38vw;text-transform:uppercase}
+.title em{font-style:normal;color:var(--org)}
+.char{position:absolute;left:0;bottom:-1vh;height:66vh}
+.right{display:flex;flex-direction:column;gap:2.4vh;padding-top:1vh}
+.lbl{display:flex;align-items:center;gap:1vw;font-size:1.5vw;font-weight:900;margin-bottom:.6vh}
+.lbl:after{content:'';flex:1;height:.25vw;background:var(--navy)}
+.big{display:flex;align-items:baseline;gap:.8vw;font-weight:900;letter-spacing:-.3vw;line-height:1}
+.big b{font-size:10vw;color:var(--org)}
+.big span{font-size:3.4vw}
+.list{font-size:2.1vw;font-weight:800}
+.list div{display:flex;justify-content:space-between;padding:1vh .2vw;border-bottom:1px solid var(--line)}
+.list div span{color:var(--dim);font-weight:700;font-size:1.5vw}
+.list .no{color:var(--dim);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:2.4vw}
+.big.over b{color:var(--dim)}
+.endtag{display:none;background:var(--navy);color:#fff;font-weight:900;font-size:2.4vw;padding:1vh 1.4vw;align-self:flex-start}
+.endtag.on{display:inline-block}
+.ex{display:flex;border:.25vw solid var(--navy);align-self:flex-start}
+.ex span{background:var(--org);color:#fff;font-weight:900;font-size:1.6vw;padding:.8vh 1vw}
+.ex b{background:var(--navy);color:#fff;font-weight:900;font-size:2.2vw;padding:.6vh 1.4vw}
+.chk{position:absolute;left:0;right:0;bottom:0;height:4.2vh;background:conic-gradient(var(--navy) 25%,#fff 0 50%,var(--navy) 0 75%,#fff 0) 0 0/4.2vh 4.2vh}
+/* 당첨 순간 — 화면 전체 */
+.win{position:fixed;inset:0;background:var(--navy);color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.win.on{display:flex}
+.win .k{font-size:3vw;font-weight:900;color:var(--org);letter-spacing:.3vw}
+.win .n{font-size:11vw;font-weight:900;letter-spacing:-.4vw;line-height:1.05;margin:1vh 0}
+.win .p{font-size:3vw;font-weight:800}
+/* 스태프 입력 */
+.staff{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border:.3vw solid var(--navy);padding:3vh 3vw;display:none;min-width:36vw}
+.staff.on{display:block}
+.staff h4{margin:0 0 1.4vh;font-size:1.8vw}
+.staff input{width:100%;font:inherit;font-size:2vw;padding:1.2vh 1vw;border:.2vw solid var(--navy);outline:0}
+.staff p{margin:1.2vh 0 0;font-size:1.1vw;color:var(--dim)}
+.help{position:fixed;right:1vw;bottom:5vh;font-size:.9vw;color:#B9BDCB}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="left">
+    <div class="title">Treasure<br><em>Hunt</em></div>
+    <img class="char" src="img/rita/main.webp" alt="">
+  </div>
+  <div class="right">
+    <div>
+      <div class="lbl">오늘 남은 피규어 · A~K 13장</div>
+      <div class="big" id="bigN"><b id="left">10</b><span id="total">/ 10</span></div>
+      <div class="endtag" id="endTag">오늘 교환 종료</div>
+    </div>
+    <div class="ex"><span>교환소</span><b id="exTxt">4장 → 1장</b></div>
+    <div class="two">
+      <div><div class="lbl">세트 완성</div><div class="list" id="sets"></div></div>
+      <div><div class="lbl">상자 당첨</div><div class="list" id="wins"></div></div>
+    </div>
+  </div>
+  <div class="chk"></div>
+</div>
+
+<div class="win" id="win"><div class="k" id="winK">피규어 당첨!</div><div class="n" id="winN"></div><div class="p" id="winP"></div></div>
+<div class="staff" id="staff"><h4 id="staffH">피규어 당첨</h4><input id="staffIn" placeholder="닉네임" maxlength="12"><p>Enter 확인 · Esc 취소</p></div>
+<div class="help">2 세트 완성 · 1 상자 당첨 · 0 되돌리기</div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+'use strict';
+var D = window.SANTA, B = D.board;
+/* 세트 완성 피규어는 하루 10개 선착순 — 날짜가 바뀌면 새로 센다. 상자 당첨(상위상)은 기록만, 10개에서 안 뺀다 */
+function today(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+var KEY = 'santa_board_v2_'+today();
+var S = load();
+function load(){ var d=null; try{ d=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){} return d||{ log:[] }; }
+function setsDone(){ return S.log.filter(function(x){return x.type==='set';}).length; }
+function leftN(){ return Math.max(0, B.figureDaily - setsDone()); }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function hm(t){ var d=new Date(t); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+
+function render(){
+  var n=leftN();
+  $('left').textContent = n;
+  $('total').textContent = '/ '+B.figureDaily;
+  $('bigN').classList.toggle('over', n===0);
+  $('endTag').classList.toggle('on', n===0);
+  $('exTxt').textContent = B.exchange;
+  var row=function(x){ return '<div>'+esc(x.nick)+'<span>'+hm(x.at)+'</span></div>'; };
+  var w=S.log.filter(function(x){return x.type==='box';}).slice(-6).reverse();
+  var s=S.log.filter(function(x){return x.type==='set';}).slice(-6).reverse();
+  $('wins').innerHTML = w.length ? w.map(row).join('') : '<div class="no">아직 없어요</div>';
+  $('sets').innerHTML = s.length ? s.map(row).join('') : '<div class="no">아직 없어요</div>';
+}
+
+
+/* 종소리 (파일 없이 합성) */
+var ac=null;
+function bell(n){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    for (var i=0;i<(n||1);i++){
+      var t=ac.currentTime+i*0.35;
+      [880,1320,1760].forEach(function(f,k){
+        var o=ac.createOscillator(), g=ac.createGain();
+        o.type='sine'; o.frequency.value=f; g.gain.setValueAtTime(0.0001,t);
+        g.gain.exponentialRampToValueAtTime(0.35/(k+1),t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+1.2);
+        o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+1.3);
+      });
+    }
+  }catch(e){}
+}
+
+function showWin(type,nick){
+  $('winK').textContent = type==='set' ? '세트 완성!' : '피규어 당첨!';
+  $('winN').textContent = nick;
+  $('winP').textContent = type==='set' ? (leftN() ? '오늘 남은 피규어 '+leftN() : '오늘 피규어 끝!') : '';
+  $('win').classList.add('on'); bell(4);
+  clearTimeout(showWin.h); showWin.h=setTimeout(function(){ $('win').classList.remove('on'); }, 7000);
+}
+
+var mode=null;
+function ask(type){
+  mode=type; $('staffH').textContent = type==='set' ? '세트 완성' : '피규어 당첨';
+  $('staffIn').value=''; $('staff').classList.add('on'); $('staffIn').focus();
+}
+$('staffIn').addEventListener('keydown',function(e){
+  if (e.key==='Enter'){ var n=this.value.trim(); if(!n) return;
+    if (mode==='set' && leftN()===0){ $('staff').classList.remove('on'); mode=null; return; }
+    S.log.push({type:mode,nick:n,at:Date.now()}); save(); render();
+    $('staff').classList.remove('on'); showWin(mode,n); mode=null; e.stopPropagation(); }
+  if (e.key==='Escape'){ $('staff').classList.remove('on'); mode=null; }
+});
+document.addEventListener('keydown',function(e){
+  if (mode) return;
+  if (e.key==='1'){ e.preventDefault(); ask('box'); }
+  else if (e.key==='2'){ e.preventDefault(); ask('set'); }
+  else if (e.key==='0' && S.log.length){ S.log.pop(); save(); render(); }
+  else if (e.key==='Escape') $('win').classList.remove('on');
+});
+$('win').onclick=function(){ $('win').classList.remove('on'); };
+
+render();
+})();
+</script>
+</body>
+</html>

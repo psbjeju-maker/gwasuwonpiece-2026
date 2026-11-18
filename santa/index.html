@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>산타왔수다 보물찾기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#fff;--navy:#1B2550;--org:#F58A1F;--ink:#1B2550;--dim:#6B7186;--line:#D9DCE6;--ok:#2E9E6A;--red:#E0462E}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:Pretendard,system-ui,sans-serif}
+body{min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:480px;margin:0 auto;padding:0 18px calc(96px + env(safe-area-inset-bottom,0px))}
+header{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;padding:calc(9px + env(safe-area-inset-top,0px)) 18px 9px}
+header .in{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:10px}
+header img{height:24px}
+header .t{font-weight:800;font-size:15px;flex:1}
+header .me{font-size:13px;opacity:.85}
+/* 매거진 타이틀 */
+.ptitle{font-weight:900;font-size:50px;line-height:.9;letter-spacing:-2.5px;color:var(--navy);margin:18px 0 0;text-transform:uppercase}
+.ptitle em{font-style:normal;color:var(--org)}
+.hero{position:relative;height:450px;margin:0 -18px;overflow:hidden}
+.hero .ptitle{position:absolute;left:14px;top:4px;font-size:66px;letter-spacing:-3px;line-height:.86;z-index:0}
+.hero .big{position:absolute;left:-2px;top:112px;height:340px;z-index:1}
+.hero .turn{position:absolute;right:6px;top:168px;width:55%;z-index:1}
+.hero .steps{position:absolute;right:10px;bottom:4px;width:55%;display:flex;justify-content:space-between;z-index:2}
+.steps div{text-align:center;font-size:12px;font-weight:800}
+.steps img{display:block;width:50px;height:44px;object-fit:contain;margin:0 auto 2px}
+.steps b{color:var(--org);font-size:15px;font-weight:900;margin-right:3px}
+.headline{font-size:36px;font-weight:900;letter-spacing:-1.5px;line-height:1.1;margin:14px 0 16px}
+.headline em{font-style:normal;color:var(--org)}
+/* 캐릭터 + 말 */
+.guide{display:flex;align-items:flex-end;gap:14px;margin:6px 0 8px}
+.guide img{width:auto;height:170px;max-width:40%;object-fit:contain;flex:none}
+.bub{position:relative;background:#fff;border:2px solid var(--navy);padding:12px 14px;font-size:17px;line-height:1.35;font-weight:800;margin-bottom:22px}
+.bub:before{content:'';position:absolute;left:-14px;bottom:14px;border:6px solid transparent;border-right:12px solid var(--navy)}
+.bub b{color:var(--org)}
+h2{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:900;margin:28px 0 6px;color:var(--navy)}
+h2:after{content:'';flex:1;height:2px;background:var(--navy)}
+.panel{background:#fff;border:2px solid var(--navy);padding:18px;margin:14px 0}
+.btn{display:block;width:100%;border:0;border-radius:0;padding:17px;font-size:19px;font-weight:900;letter-spacing:1px;background:var(--org);color:#fff}
+.btn:active{opacity:.85}
+.btn.navy{background:var(--navy);color:#fff}
+.btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--navy);padding:15px}
+.btn[disabled]{opacity:.45}
+.row{display:flex;gap:10px}.row>*{flex:1}
+input{width:100%;font:inherit;font-size:17px;padding:15px 14px;border-radius:0;border:2px solid var(--navy);background:#fff;color:var(--ink)}
+input:focus{outline:none;border-color:var(--org)}
+/* 가격 띠 */
+.pricebar{display:flex;border:2px solid var(--navy);margin:0 0 12px}
+.pricebar .t{background:var(--org);color:#fff;font-weight:800;font-size:14px;padding:0 11px;display:flex;align-items:center}
+.pricebar .b{flex:1;background:var(--navy);color:#fff;display:flex;align-items:baseline;justify-content:space-between;padding:13px 15px}
+.pricebar .b span{font-size:16px;font-weight:700}
+.pricebar .b b{font-size:32px;font-weight:900;color:var(--org);letter-spacing:-1px}
+.pricebar .b small{font-size:17px;margin-left:2px}
+/* 숫자 */
+.stat{display:flex;border:2px solid var(--navy);margin:8px 0 12px}
+.stat div{flex:1;padding:10px 14px}
+.stat div+div{border-left:2px solid var(--navy)}
+.stat b{display:block;font-size:34px;font-weight:900;letter-spacing:-1px;color:var(--navy);line-height:1.05}
+.stat span{font-size:13px;font-weight:700;color:var(--dim)}
+/* 구역 */
+.zone{display:flex;gap:14px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)}
+.zone .no{font-size:26px;font-weight:900;color:var(--org);width:38px;letter-spacing:-1px;flex:none}
+.zone img{width:44px;height:38px;object-fit:contain;flex:none;margin-left:auto}
+.zone .n{font-weight:900;font-size:16px}
+.zone .h{font-size:14.5px;color:var(--dim);margin-top:2px}
+.zone.done{opacity:.45}
+.zone.done .n:after{content:' · 찾음';color:var(--ok)}
+/* 일정 */
+.sched div{display:flex;gap:14px;padding:11px 2px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600}
+.sched b{min-width:62px;color:var(--org);font-weight:900}
+.chk{height:30px;margin:26px -18px 0;background:conic-gradient(var(--navy) 25%,#fff 0 50%,var(--navy) 0 75%,#fff 0) 0 0/30px 30px}
+/* 하단 탭 */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:2px solid var(--navy);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav .in{max-width:480px;margin:0 auto;display:flex}
+nav button{flex:1;border:0;background:none;padding:8px 0 10px;font-size:12.5px;font-weight:800;color:var(--dim)}
+nav button img{display:block;height:32px;margin:0 auto 2px;filter:grayscale(1) opacity(.45)}
+nav button.on{color:var(--navy)}
+nav button.on img{filter:none}
+/* 상품 */
+.pick{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.pick img{width:46px}
+.pick .nm{font-weight:800}
+.pick .cd{font-family:ui-monospace,monospace;font-size:16px;font-weight:700;color:var(--navy);letter-spacing:2px}
+.pick .st{margin-left:auto;font-size:13px;font-weight:900;color:var(--org)}
+.pick.given{opacity:.45}.pick.given .st{color:var(--ok)}
+/* 전체 화면 장면 */
+.scene{position:fixed;inset:0;z-index:20;background:var(--navy);color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 18px calc(40px + env(safe-area-inset-bottom,0px));text-align:center;overflow:hidden}
+.scene:after{content:'';position:absolute;left:0;right:0;bottom:0;height:26px;background:conic-gradient(#fff 25%,var(--navy) 0 50%,#fff 0 75%,var(--navy) 0) 0 0/26px 26px}
+.scene.on{display:flex}
+.scene h3{font-size:28px;margin:8px 0;font-weight:900;letter-spacing:-1px}
+.scene p{font-size:16px;opacity:.9;margin:4px 0 16px}
+.scene .btn{max-width:360px;position:relative}
+.scene>*:not(.fx):not(.glow){position:relative;z-index:1}
+.shout{font-size:36px!important;color:#fff}
+.mon{width:min(62vw,260px);transition:transform .08s;user-select:none;-webkit-user-drag:none;touch-action:manipulation}
+.mon.hit{transform:scale(.92) rotate(-4deg);filter:brightness(1.6)}
+.mon.dead{animation:poof .5s forwards}
+@keyframes poof{to{transform:scale(.2);opacity:0}}
+.hp{width:min(70vw,280px);height:12px;background:rgba(255,255,255,.2);overflow:hidden;margin:8px 0}
+.hp i{display:block;height:100%;background:var(--org);transition:width .1s}
+.timer{font-size:15px;opacity:.85}
+.dmg{position:absolute;font-weight:900;font-size:28px;color:var(--org);pointer-events:none;animation:up .6s forwards}
+@keyframes up{to{transform:translateY(-60px);opacity:0}}
+.qa{display:grid;gap:10px;width:100%;max-width:360px}
+.qa button{background:#fff;color:var(--navy);border:0;padding:15px;font-size:17px;font-weight:800}
+.qa button.ok{background:var(--ok);color:#fff}.qa button.bad{background:var(--red);color:#fff}
+.chest{width:min(64vw,270px);cursor:pointer}
+.chest.shake{animation:shake .5s infinite}
+.peek{position:relative;padding-top:142px;display:flex;justify-content:center}
+.peek .pface{position:absolute;top:0;left:50%;transform:translateX(-46%);height:170px;z-index:0}
+.peek .chest{position:relative;z-index:1}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+.glow{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(245,138,31,.45),transparent 62%);opacity:0;pointer-events:none}
+.glow.on{animation:glow 1.2s forwards}
+@keyframes glow{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+.fx{position:absolute;pointer-events:none;opacity:0}
+.fx.coins{width:140px;left:3%;top:12%;animation:pop .7s .25s forwards}
+.fx.conf{width:160px;right:2%;top:8%;animation:pop .7s .35s forwards}
+@keyframes pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+.mascot{height:120px;margin-bottom:-4px}
+.reveal{width:min(50vw,200px);box-shadow:0 10px 30px rgba(0,0,0,.4);animation:flip .6s both}
+@keyframes flip{from{transform:rotateY(90deg) scale(.6)}to{transform:none}}
+.tag{display:inline-block;background:var(--org);color:#fff;padding:4px 12px;font-size:13px;font-weight:900;margin-bottom:6px}
+.code{font-family:ui-monospace,monospace;font-size:24px;font-weight:700;letter-spacing:4px;background:#fff;color:var(--navy);padding:6px 16px;margin:6px 0 14px}
+.left{margin-top:14px;font-weight:800;font-size:15px;border:2px solid #fff;padding:6px 14px}
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(15,20,45,.55);display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet .bx{background:#fff;width:100%;max-width:480px;border-top:4px solid var(--navy);padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))}
+.sheet h4{margin:0 0 6px;font-size:20px;font-weight:900;color:var(--navy)}
+.sheet p{margin:0 0 14px;color:var(--dim);font-size:15px}
+.small{font-size:13px;color:var(--dim)}
+.boxhero{display:flex;align-items:center;gap:8px;margin:6px 0 10px}
+.boxhero img{width:46%}
+.boxhero .r{flex:1}
+.boxhero .r p{margin:6px 0 0;font-weight:800;font-size:16px}
+.figure{display:flex;gap:14px;align-items:center;background:var(--navy);color:#fff;padding:16px;margin:14px 0;font-size:17px;line-height:1.4;font-weight:700}
+.figure img{width:60px;transform:rotate(-6deg)}
+.figure em{font-style:normal;color:var(--org);font-weight:900}
+.catchgo{display:flex;align-items:center;gap:12px;border:2px solid var(--navy);padding:12px 14px;color:var(--navy);text-decoration:none;margin-top:10px}
+.catchgo .x{background:#C8102E;color:#fff;font-weight:900;font-size:10px;letter-spacing:1px;padding:4px 6px;line-height:1.2;text-align:center}
+.catchgo b{font-size:24px;font-weight:900;letter-spacing:-1px;text-transform:uppercase;flex:1}
+.catchgo b em{font-style:normal;color:var(--org)}
+.catchgo i{font-style:normal;font-weight:900;font-size:14px;color:var(--org)}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;font-weight:800;font-size:15px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header><div class="in"><img src="img/mhlogo.png" alt="메이커앤하비"><div class="t">산타왔수다 보물찾기</div><div class="me" id="me"></div></div></header>
+<main class="wrap" id="view"></main>
+<nav id="nav"><div class="in">
+  <button data-tab="home" class="on"><img src="img/ui/ic_map.webp" alt="">보물찾기</button>
+  <button data-tab="box"><img src="img/ui/ic_chest.webp" alt="">딸깍 상자</button>
+  <button data-tab="pick"><img src="img/ui/ic_gift.webp" alt="">받을 상품</button>
+</div></nav>
+
+<div class="scene" id="scene"></div>
+<div class="sheet" id="sheet"><div class="bx" id="sheetBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="../mqscan.js"></script>
+<script>
+(function(){
+'use strict';
+var D = window.SANTA;
+var SUITS = [['heart','하트','♥','#C81E2D'],['diamond','다이아','♦','#C81E2D'],['spade','스페이드','♠','#1C1E28'],['club','클로버','♣','#1C1E28']];
+var RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+var KEY = 'santa_hunt_v1';
+var S = load();
+var tab = 'home';
+
+function load(){
+  var d = null;
+  try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e){}
+  return d || { nick:'', pass:false, found:{}, boxes:0, packs:0, cards:{}, picks:[], seq:0 };
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function toast(t){ var e=$('toast'); e.textContent=t; e.classList.add('on'); clearTimeout(toast.h); toast.h=setTimeout(function(){e.classList.remove('on');},2200); }
+function josa(w,a,b){ var c=w.charCodeAt(w.length-1)-0xAC00; return w+((c>=0&&c<11172&&c%28)?a:b); }
+function rita(n){ return 'img/rita/'+n+'.webp'; }  // main = 6월 메이커앤하비 로고 캐릭터, 나머지는 의상 버전
+function guide(img, html, big){ return '<div class="guide'+(big?' big':'')+'"><img src="'+rita(img)+'" alt=""><div class="bub">'+html+'</div></div>'; }
+function won(n){ return n.toLocaleString('ko-KR')+'원'; }
+function cardImg(id){ return 'img/card/'+id+'.webp'; }
+function cardName(id){
+  if (id==='jred_JOKER') return '빨강 조커'; if (id==='jblack_JOKER') return '검정 조커';
+  var p=id.split('_'); var s=SUITS.filter(function(x){return x[0]===p[0];})[0]; return s[1]+' '+p[1];
+}
+function newCode(){
+  var a='ABCDEFGHJKMNPQRSTUVWXYZ23456789', c=''; for(var i=0;i<6;i++) c+=a[Math.floor(Math.random()*a.length)];
+  S.seq++; return c;
+}
+
+/* ---------- 상자 결과 — 카드는 부스에서 실물을 무작위로 뽑아 감. 앱은 '뽑기 1장'만 준다 ---------- */
+function rollBox(){
+  var x=Math.random(), acc=0;
+  for (var i=0;i<D.upper.length;i++){ acc+=D.upper[i].chance; if (x<acc) return { kind:'upper', id:D.upper[i].id, name:D.upper[i].name, tier:'gold' }; }
+  return { kind:'card', id:'back', name:'트럼프 카드 1장 뽑기', tier:'wood' };
+}
+function grant(res){
+  var code=newCode();
+  S.picks.unshift({ code:code, kind:res.kind, id:res.id, name:res.name, given:false, at:Date.now() });
+  save(); return code;
+}
+
+/* ---------- 화면 ---------- */
+function render(){
+  $('me').textContent = S.nick ? S.nick+' 님' : '';
+  document.querySelectorAll('nav button').forEach(function(b){ b.classList.toggle('on', b.dataset.tab===tab); });
+  $('nav').style.display = S.pass ? '' : 'none';
+  var v=$('view');
+  if (!S.pass) return v.innerHTML = viewEntry();
+  v.innerHTML = ({home:viewHome, box:viewBox, pick:viewPick})[tab]();
+  window.scrollTo(0,0);
+}
+
+function viewEntry(){
+  return '<div class="hero"><div class="ptitle">Treasure<br>Hunt</div><img class="big" src="'+rita('main')+'" alt=""><img class="turn" src="img/mag/turn.webp" alt="">'+
+  '<div class="steps"><div><img src="img/ui/ic_map.webp" alt=""><b>1</b>QR</div><div><img src="img/ui/ic_chest.webp" alt=""><b>2</b>상자</div><div><img src="img/ui/ic_gift.webp" alt=""><b>3</b>상품</div></div></div>'+
+  '<div class="headline">보물 <em>5개</em>를 찾아요!</div>'+
+  '<div class="pricebar"><div class="t">할인 판매</div><div class="b"><span>보물찾기 체험</span><b>'+D.passPrice.toLocaleString('ko-KR')+'<small>원</small></b></div></div>'+
+  '<input id="nick" maxlength="10" placeholder="닉네임" value="'+esc(S.nick)+'"><div style="height:10px"></div>'+
+  '<button class="btn" data-act="askPass">시작</button>'+
+  '<h2>오늘 일정</h2>'+viewSched()+'<div class="chk"></div>';
+}
+function viewSched(){
+  return '<div class="sched">'+D.schedule.map(function(s){ return '<div><b>'+esc(s.t)+'</b>'+esc(s.name)+'</div>'; }).join('')+'</div>';
+}
+function foundCount(){ return Object.keys(S.found).length; }
+function viewHome(){
+  var n=foundCount(), all=D.zones.length;
+  var msg = n<all ? '<b>QR</b> 찍고 상자 열기!'
+                  : '다 찾았어요!';
+  return '<div class="ptitle">Treasure <em>Hunt</em></div>'+guide(n<all?'2':'main', msg)+
+  '<div class="stat"><div><b>'+n+' / '+all+'</b><span>찾은 보물</span></div><div><b>'+S.picks.filter(function(p){return !p.given;}).length+'</b><span>받을 상품</span></div></div>'+
+  (n<all?'<button class="btn" data-act="scan">QR 찍기</button><div style="height:8px"></div><button class="btn ghost" data-act="typeCode">코드 입력</button>':'<button class="btn" data-tab-go="box">딸깍 상자</button>')+
+  '<h2>힌트</h2><div class="zones">'+D.zones.map(function(z){
+    var f=S.found[z.id];
+    return '<div class="zone'+(f?' done':'')+'"><div class="no">0'+(D.zones.indexOf(z)+1)+'</div><div><div class="n">'+esc(z.name)+'</div><div class="h">'+esc(z.hint)+'</div></div><img src="img/chest_'+(f?'wood_open':'wood_closed')+'.webp" alt=""></div>';
+  }).join('')+'</div>'+
+  '<h2>귤 자르기</h2><a class="catchgo" href="catch.html"><span class="x">CHRISTMAS<br>UPDATE</span><b>Tangerine <em>Cut</em></b><i>13:00 랭킹전</i></a>'+
+  '<h2>오늘 일정</h2>'+viewSched()+'<div class="chk"></div>';
+}
+function viewBox(){
+  return '<div class="ptitle">Bonus <em>Box</em></div>'+guide('Q','<b>보물찾기 한 번 더!</b>')+
+  '<div class="boxhero"><img src="img/chest_gold_closed.webp" alt=""><div class="r"><div class="headline" style="margin:0">상자 <em>'+D.packBoxes+'개</em></div><p>피규어·굿즈가 나와요!</p></div></div>'+
+  '<div class="pricebar"><div class="b"><span>딸깍 보물찾기</span><b>'+D.packPrice.toLocaleString('ko-KR')+'<small>원</small></b></div></div>'+
+  (S.boxes>0?'<button class="btn" data-act="open">열기 ('+S.boxes+')</button>':'<button class="btn" data-act="askPack">구매</button>')+
+  '<div class="figure"><img src="img/card/heart_A.webp" alt=""><div><b>같은 무늬 A~K 13장</b> 모으면<br><em>피규어</em> 교환!</div></div>'+
+  '<div class="stat"><div><b>10개</b><span>하루 선착순</span></div><div><b>'+esc(D.board.exchange)+'</b><span>부스 교환소</span></div></div><div class="chk"></div>';
+}
+function viewPick(){
+  var list=S.picks;
+  return '<div class="ptitle">My <em>Prize</em></div>'+guide('5', list.length?'부스에서 <b>코드</b> 보여 주기':'아직 없어요')+
+    list.map(function(p){
+      return '<div class="pick'+(p.given?' given':'')+'"><img src="'+(p.kind==='card'?cardImg(p.id):'img/chest_gold_open.webp')+'" alt=""><div><div class="nm">'+esc(p.name)+'</div><div class="cd">'+p.code+'</div></div><div class="st">'+(p.given?'받음':'받기 전')+'</div></div>';
+    }).join('')+
+    (list.some(function(p){return !p.given;})?'<div style="height:10px"></div><button class="btn navy" data-act="giveAll">스태프: 지급 완료</button>':'');
+}
+
+/* ---------- 스태프 확인 시트 ---------- */
+function staffSheet(title, desc, onOk){
+  $('sheetBox').innerHTML='<h4>'+title+'</h4><p>'+desc+'</p><input id="sc" inputmode="numeric" placeholder="스태프 코드" autocomplete="off"><div style="height:12px"></div><div class="row"><button class="btn ghost" data-act="closeSheet">취소</button><button class="btn navy" id="scOk">확인</button></div>';
+  $('sheet').classList.add('on'); setTimeout(function(){ $('sc').focus(); },50);
+  $('scOk').onclick=function(){ if ($('sc').value.trim()!==D.staffCode) return toast('코드가 틀려요'); closeSheet(); onOk(); };
+}
+function closeSheet(){ $('sheet').classList.remove('on'); }
+
+/* ---------- 구역 도착 → 조우 ---------- */
+function arrive(code){
+  code=String(code||'').trim().toUpperCase();
+  var z=D.zones.filter(function(z){ return z.code===code || code.indexOf('Z='+z.code)>=0; })[0];
+  if (!z) return toast('보물 QR이 아니에요');
+  if (S.found[z.id]) return toast(z.name+'은 이미 찾았어요');
+  if (foundCount()>=D.passBoxes) return toast('보물 '+D.passBoxes+'개를 다 찾았어요');
+  (Math.random()<0.5 ? battle : quiz)(z);
+}
+function scan(){
+  if (window.MQScan) MQScan.open({ hint:'QR을 비춰 주세요', parse:function(t){ return t; }, onToken:arrive, onManual:typeCode });
+  else typeCode();
+}
+function typeCode(){
+  $('sheetBox').innerHTML='<h4>보물 코드 입력</h4><input id="zc" maxlength="8" autocapitalize="characters" placeholder="예: SLIM"><div style="height:12px"></div><div class="row"><button class="btn ghost" data-act="closeSheet">취소</button><button class="btn" id="zcOk">확인</button></div>';
+  $('sheet').classList.add('on'); setTimeout(function(){ $('zc').focus(); },50);
+  $('zcOk').onclick=function(){ var v=$('zc').value; closeSheet(); arrive(v); };
+}
+
+function scene(html){ var s=$('scene'); s.innerHTML=html; s.classList.add('on'); return s; }
+function endScene(){ $('scene').classList.remove('on'); $('scene').innerHTML=''; render(); }
+
+function battle(z){
+  var m=D.monsters[Math.floor(Math.random()*D.monsters.length)], hp=m.hp, left=D.battleSec, started=false, over=false;
+  var s=scene('<span class="tag">'+esc(z.name)+'</span><h3>'+m.name+' 등장!</h3><p>마구 눌러요!</p>'+
+    '<div class="hp"><i id="hpb" style="width:100%"></i></div><img class="mon" id="mon" src="img/mon/'+m.id+'.webp" alt="'+m.name+'"><div class="timer" id="tm">'+D.battleSec+'초</div>');
+  var mon=$('mon'), t;
+  function finish(win){
+    over=true; clearInterval(t);
+    if (win) mon.classList.add('dead');
+    setTimeout(function(){ s.innerHTML='<h3>'+(win?'승리!':'도망갔어요')+'</h3><p>상자 획득!</p>'; foundZone(z); }, win?500:300);
+  }
+  mon.addEventListener('pointerdown', function(e){
+    if (over) return;
+    if (!started){ started=true; t=setInterval(function(){ left--; $('tm').textContent=left+'초'; if (left<=0) finish(false); },1000); $('tm').textContent=left+'초'; }
+    var d=1+(Math.random()<0.2?1:0); hp-=d;
+    $('hpb').style.width=Math.max(0,hp/m.hp*100)+'%';
+    mon.classList.add('hit'); setTimeout(function(){ mon.classList.remove('hit'); },80);
+    var f=document.createElement('div'); f.className='dmg'; f.textContent=d>1?'크리티컬!':'-'+d; f.style.left=(e.clientX-20)+'px'; f.style.top=(e.clientY-30)+'px'; s.appendChild(f); setTimeout(function(){ f.remove(); },600);
+    if (navigator.vibrate) try{ navigator.vibrate(15); }catch(_){}
+    if (hp<=0) finish(true);
+  });
+}
+function quiz(z){
+  var q=D.quiz[Math.floor(Math.random()*D.quiz.length)];
+  var s=scene('<span class="tag">'+esc(z.name)+'</span><img src="'+rita('3')+'" style="width:120px" alt=""><h3>퀴즈!</h3><p>'+esc(q.q)+'</p><div class="qa">'+q.a.map(function(a,i){ return '<button data-i="'+i+'">'+esc(a)+'</button>'; }).join('')+'</div>');
+  s.querySelectorAll('.qa button').forEach(function(b){ b.onclick=function(){
+    var i=+b.dataset.i, ok=i===q.ok;
+    s.querySelectorAll('.qa button').forEach(function(x){ x.disabled=true; if(+x.dataset.i===q.ok) x.classList.add('ok'); });
+    if(!ok) b.classList.add('bad');
+    setTimeout(function(){ s.innerHTML='<h3>'+(ok?'정답!':'땡!')+'</h3><p>상자 획득!</p>'; foundZone(z); },900);
+  }; });
+}
+function foundZone(z){ S.found[z.id]=Date.now(); save(); setTimeout(function(){ openChest(null); },900); }
+
+/* ---------- 상자 열기 ---------- */
+function openChest(fromPack){
+  var res=rollBox(), tier=res.tier;
+  var s=scene('<div class="glow" id="gl"></div><h3 class="shout">눌러서 열기!</h3><div class="peek"><img class="pface" src="'+rita('pirate_face')+'" alt=""><img class="chest shake" id="ch" src="img/chest_'+tier+'_closed.webp" alt=""></div>'+(fromPack?'<div class="left">남은 상자 '+S.boxes+'</div>':''));
+  $('ch').onclick=function(){
+    var ch=$('ch'); ch.onclick=null; ch.classList.remove('shake'); ch.src='img/chest_'+tier+'_open.webp'; $('gl').classList.add('on');
+    var code=grant(res);
+    setTimeout(function(){
+      var img = res.kind==='card' ? '<img class="reveal" src="'+cardImg('back')+'" alt="">' : '<img class="reveal" style="box-shadow:none;width:200px" src="img/chest_gold_open.webp" alt="">';
+      s.innerHTML='<div class="glow on"></div>'+(tier==='gold'?'<span class="tag">전설 상자</span>':'')+img+
+        '<h3>'+esc(res.name)+'</h3><div class="code">'+code+'</div><p>부스에서 코드 보여 주기</p>'+
+        (fromPack && S.boxes>0 ? '<button class="btn" id="nx">다음 ('+S.boxes+')</button>' : '<button class="btn" id="nx">확인</button>');
+      $('nx').onclick=function(){ if (fromPack && S.boxes>0){ S.boxes--; save(); openChest(true); } else endScene(); };
+    },700);
+  };
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener('click', function(e){
+  var t=e.target.closest('[data-tab],[data-tab-go],[data-act]'); if(!t) return;
+  if (t.dataset.tab || t.dataset.tabGo){ tab=t.dataset.tab||t.dataset.tabGo; return render(); }
+  var a=t.dataset.act;
+  if (a==='closeSheet') return closeSheet();
+  if (a==='askPass'){
+    var nk=($('nick').value||'').trim(); if(!nk) return toast('닉네임을 적어 주세요');
+    S.nick=nk; save();
+    return staffSheet('보물찾기 체험 '+won(D.passPrice), '스태프 확인', function(){ S.pass=true; save(); toast('시작!'); render(); });
+  }
+  if (a==='scan') return scan();
+  if (a==='typeCode') return typeCode();
+  if (a==='askPack'){
+    var price=D.packPrice;
+    return staffSheet('상자 '+D.packBoxes+'개 '+won(price), '스태프 확인', function(){ S.packs++; S.boxes+=D.packBoxes; save(); render(); toast('상자 +'+D.packBoxes); });
+  }
+  if (a==='open'){ if(S.boxes<=0) return; S.boxes--; save(); return openChest(true); }
+  if (a==='giveAll') return staffSheet('지급 완료','스태프 확인', function(){ S.picks.forEach(function(p){p.given=true;}); save(); render(); });
+});
+$('sheet').addEventListener('click', function(e){ if(e.target===this) closeSheet(); });
+
+// QR 이 주소 형태(…/santa/?z=SLIM)로 찍혀 들어온 경우
+var qz=new URLSearchParams(location.search).get('z');
+render();
+if (qz && S.pass){ history.replaceState(null,'',location.pathname); arrive(qz); }
+})();
+</script>
+</body>
+</html>
