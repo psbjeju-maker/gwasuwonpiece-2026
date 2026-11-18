@@ -144,6 +144,8 @@ nav button.on img{filter:none}
 .catchgo b{font-size:24px;font-weight:900;letter-spacing:-1px;text-transform:uppercase;flex:1}
 .catchgo b em{font-style:normal;color:var(--org)}
 .catchgo i{font-style:normal;font-weight:900;font-size:14px;color:var(--org)}
+.prac{display:flex;align-items:center;gap:10px;border:2px dashed var(--navy);padding:10px 12px;margin:0 0 10px;font-weight:800;font-size:15px}
+.prac b{background:var(--navy);color:#fff;padding:3px 8px;font-size:13px;letter-spacing:1px}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;font-weight:800;font-size:15px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.on{opacity:1}
 </style>
@@ -170,11 +172,16 @@ var D = window.SANTA;
 var SUITS = [['heart','하트','♥','#C81E2D'],['diamond','다이아','♦','#C81E2D'],['spade','스페이드','♠','#1C1E28'],['club','클로버','♣','#1C1E28']];
 var RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 var KEY = 'santa_hunt_v1';
+/* 연습 / 실전: 행사 시작(eventStart) 전에는 결제 없이 연습. 시작 시각이 지나면 연습 기록을 한 번 지우고 실전으로.
+   스태프가 미리 실전을 시험할 땐 주소 끝에 ?live=1 */
+var LIVE = /[?&]live=1/.test(location.search) || Date.now() >= Date.parse(D.eventStart);
 var S = load();
+if (LIVE && S.mode !== 'live'){ var keepNick=S.nick; S = load(true); S.nick=keepNick; S.mode='live'; save(); }
+if (!LIVE && !S.mode){ S.mode='practice'; save(); }
 var tab = 'home';
 
-function load(){
-  var d = null;
+function load(fresh){
+  var d = null; if (fresh) return { nick:'', pass:false, found:{}, boxes:0, packs:0, cards:{}, picks:[], seq:0 };
   try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e){}
   return d || { nick:'', pass:false, found:{}, boxes:0, packs:0, cards:{}, picks:[], seq:0 };
 }
@@ -204,7 +211,8 @@ function rollBox(){
 }
 function grant(res){
   var code=newCode();
-  S.picks.unshift({ code:code, kind:res.kind, id:res.id, name:res.name, given:false, at:Date.now() });
+  if (!LIVE) code='연습';
+  S.picks.unshift({ code:code, kind:res.kind, id:res.id, name:res.name, given:false, at:Date.now(), prac:!LIVE });
   save(); return code;
 }
 
@@ -225,7 +233,8 @@ function viewEntry(){
   '<div class="headline">보물 <em>5개</em>를 찾아요!</div>'+
   '<div class="pricebar"><div class="t">할인 판매</div><div class="b"><span>보물찾기 체험</span><b>'+D.passPrice.toLocaleString('ko-KR')+'<small>원</small></b></div></div>'+
   '<input id="nick" maxlength="10" placeholder="닉네임" value="'+esc(S.nick)+'"><div style="height:10px"></div>'+
-  '<button class="btn" data-act="askPass">시작</button>'+
+  (LIVE?'':'<div class="prac"><b>연습</b>12.12 오전 10시 오픈</div>')+
+  '<button class="btn" data-act="askPass">'+(LIVE?'시작':'연습 시작')+'</button>'+
   '<h2>오늘 일정</h2>'+viewSched()+'<div class="chk"></div>';
 }
 function viewSched(){
@@ -258,9 +267,9 @@ function viewPick(){
   var list=S.picks;
   return '<div class="ptitle">My <em>Prize</em></div>'+guide('5', list.length?'부스에서 <b>코드</b> 보여 주기':'아직 없어요')+
     list.map(function(p){
-      return '<div class="pick'+(p.given?' given':'')+'"><img src="'+(p.kind==='card'?cardImg(p.id):'img/chest_gold_open.webp')+'" alt=""><div><div class="nm">'+esc(p.name)+'</div><div class="cd">'+p.code+'</div></div><div class="st">'+(p.given?'받음':'받기 전')+'</div></div>';
+      return '<div class="pick'+(p.given?' given':'')+'"><img src="'+(p.kind==='card'?cardImg(p.id):'img/chest_gold_open.webp')+'" alt=""><div><div class="nm">'+esc(p.name)+'</div><div class="cd">'+p.code+'</div></div><div class="st">'+(p.prac?'연습':(p.given?'받음':'받기 전'))+'</div></div>';
     }).join('')+
-    (list.some(function(p){return !p.given;})?'<div style="height:10px"></div><button class="btn navy" data-act="giveAll">스태프: 지급 완료</button>':'');
+    (list.some(function(p){return !p.given && !p.prac;})?'<div style="height:10px"></div><button class="btn navy" data-act="giveAll">스태프: 지급 완료</button>':'');
 }
 
 /* ---------- 스태프 확인 시트 ---------- */
@@ -336,7 +345,7 @@ function openChest(fromPack){
     setTimeout(function(){
       var img = res.kind==='card' ? '<img class="reveal" src="'+cardImg('back')+'" alt="">' : '<img class="reveal" style="box-shadow:none;width:200px" src="img/chest_gold_open.webp" alt="">';
       s.innerHTML='<div class="glow on"></div>'+(tier==='gold'?'<span class="tag">전설 상자</span>':'')+img+
-        '<h3>'+esc(res.name)+'</h3><div class="code">'+code+'</div><p>부스에서 코드 보여 주기</p>'+
+        '<h3>'+esc(res.name)+'</h3>'+(LIVE?'<div class="code">'+code+'</div><p>부스에서 코드 보여 주기</p>':'<div class="code">연습</div><p>12.12 오전 10시 오픈</p>')+
         (fromPack && S.boxes>0 ? '<button class="btn" id="nx">다음 ('+S.boxes+')</button>' : '<button class="btn" id="nx">확인</button>');
       $('nx').onclick=function(){ if (fromPack && S.boxes>0){ S.boxes--; save(); openChest(true); } else endScene(); };
     },700);
@@ -352,16 +361,18 @@ document.addEventListener('click', function(e){
   if (a==='askPass'){
     var nk=($('nick').value||'').trim(); if(!nk) return toast('닉네임을 적어 주세요');
     S.nick=nk; save();
+    if (!LIVE){ S.pass=true; save(); toast('연습 시작!'); return render(); }
     return staffSheet('보물찾기 체험 '+won(D.passPrice), '스태프 확인', function(){ S.pass=true; save(); toast('시작!'); render(); });
   }
   if (a==='scan') return scan();
   if (a==='typeCode') return typeCode();
   if (a==='askPack'){
     var price=D.packPrice;
+    if (!LIVE){ S.packs++; S.boxes+=D.packBoxes; save(); render(); return toast('연습 상자 +'+D.packBoxes); }
     return staffSheet('상자 '+D.packBoxes+'개 '+won(price), '스태프 확인', function(){ S.packs++; S.boxes+=D.packBoxes; save(); render(); toast('상자 +'+D.packBoxes); });
   }
   if (a==='open'){ if(S.boxes<=0) return; S.boxes--; save(); return openChest(true); }
-  if (a==='giveAll') return staffSheet('지급 완료','스태프 확인', function(){ S.picks.forEach(function(p){p.given=true;}); save(); render(); });
+  if (a==='giveAll') return staffSheet('지급 완료','스태프 확인', function(){ S.picks.forEach(function(p){ if(!p.prac) p.given=true; }); save(); render(); });
 });
 $('sheet').addEventListener('click', function(e){ if(e.target===this) closeSheet(); });
 

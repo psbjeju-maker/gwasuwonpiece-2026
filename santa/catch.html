@@ -224,11 +224,15 @@ var myName=ls('santa_catch_nick')||(hunt&&hunt.nick)||'';
 $('nick').value=myName;
 
 /* ---------- 연습 횟수 / 랭킹전 시간 ---------- */
+/* 행사 시작(eventStart) 전에는 연습만 무제한. 시작 시각이 지나면 최고 기록을 한 번 지우고 연습 하루 2번 + 13:00 랭킹전 */
 var forceRank=/[?&]rank=1/.test(location.search);
+var LIVE=forceRank||/[?&]live=1/.test(location.search)||Date.now()>=Date.parse(D.eventStart);
+if(LIVE&&ls('santa_catch_live')!=='1'){try{localStorage.removeItem('santa_catch_best')}catch(e){}ls('santa_catch_live','1')}
 function pracKey(){return 'santa_catch_prac_'+today()}
-function pracLeft(){return Math.max(0,C.practice-(+ls(pracKey())||0))}
+function pracLeft(){return LIVE?Math.max(0,C.practice-(+ls(pracKey())||0)):99}
 function rankState(){
   var now=new Date(),p=C.rankAt.split(':'),s=new Date(now);s.setHours(+p[0],+p[1],0,0);
+  if(!LIVE)return {st:'pre'};
   var e=new Date(s.getTime()+C.rankMin*60000);
   if(forceRank)return {st:'live',left:C.rankMin*60000-(now.getTime()%(C.rankMin*60000))};
   if(now<s)return {st:'wait',at:C.rankAt};
@@ -238,14 +242,15 @@ function rankState(){
 function mmss(ms){var t=Math.ceil(ms/1000);return Math.floor(t/60)+':'+('0'+t%60).slice(-2)}
 function paintStatus(){
   var r=rankState(),t,s,b;
-  if(r.st==='wait'){t='랭킹전';s='연습 '+pracLeft()+'/'+C.practice;b=r.at}
+  if(r.st==='pre'){t='연습';s='랭킹전 오픈';b='12.12'}
+  else if(r.st==='wait'){t='랭킹전';s='연습 '+pracLeft()+'/'+C.practice;b=r.at}
   else if(r.st==='live'){t='랭킹전 중';s='남은 시간';b=mmss(r.left)}
   else{t='랭킹전';s='오늘 결과';b='끝'}
   $('stT').textContent=t;$('stS').textContent=s;$('stB').textContent=b;$('status').classList.toggle('live',r.st==='live');
   $('bT').textContent=t;$('bS').textContent=r.st==='wait'?'오늘':s;$('bB').textContent=b;
   $('rankBtn').disabled=r.st!=='live';
   $('pracBtn').disabled=pracLeft()<=0;
-  $('pracBtn').textContent='연습 ('+pracLeft()+')';
+  $('pracBtn').textContent=LIVE?'연습 ('+pracLeft()+')':'연습';
 }
 setInterval(paintStatus,1000);paintStatus();
 
@@ -301,14 +306,14 @@ function getNick(){
 var mode='prac';
 function play(m){
   var n=getNick();if(!n)return;
-  if(m==='prac'){if(pracLeft()<=0)return;ls(pracKey(),String((+ls(pracKey())||0)+1))}
+  if(m==='prac'){if(pracLeft()<=0)return;if(LIVE)ls(pracKey(),String((+ls(pracKey())||0)+1))}
   else if(rankState().st!=='live')return;
   mode=m;$('result').hidden=true;paintStatus();
   CatchGame.start(async function(score,isBest,st){
     $('rScore').textContent=score.toLocaleString();$('rErr').textContent='';
     $('rMode').textContent=m==='rank'?'랭킹전':'연습';$('rMode').className='mode'+(m==='rank'?'':' prac');
     $('rAgain').disabled=m==='rank'?rankState().st!=='live':pracLeft()<=0;
-    $('rAgain').textContent=m==='rank'?'한 번 더':'연습 ('+pracLeft()+')';
+    $('rAgain').textContent=m==='rank'?'한 번 더':(LIVE?'연습 ('+pracLeft()+')':'연습');
     $('result').hidden=false;
     if(m!=='rank'){lastMine=null;$('rRank').innerHTML='<small>최고</small> '+(+ls('santa_catch_best')||score).toLocaleString();return}
     lastMine=n;$('rRank').textContent='…';
