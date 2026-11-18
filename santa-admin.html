@@ -51,7 +51,7 @@ textarea{width:100%;height:170px;font:inherit;font-size:14px;padding:10px;border
 <body>
 <header>
   <h1>산타왔수다 부스 신청 관리</h1>
-  <p>12/12(토)·13(일) · 중문 컨벤션 2센터 · 정원 20테이블</p>
+  <p>12/12(토)·13(일) · 중문 컨벤션 제2센터 · 정원 20테이블</p>
 </header>
 <main>
   <div class="sum" id="sum"></div>
@@ -79,7 +79,7 @@ textarea{width:100%;height:170px;font:inherit;font-size:14px;padding:10px;border
 (function(){
   var FIREBASE={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
   var COL="gwasuwonpiece_applications";
-  var DEF_OK="[메이커앤하비 산타왔수다]\n{부스명}님, 부스로 선정되셨습니다!\n\n일시: 12/12(토)·13(일)\n장소: 중문 컨벤션 2센터\n사전 설치: 12/11(금) 가능\n부스비: {금액}원\n입금 방법: (여기에 입력)\n\n문의는 이 번호로 답장 주세요.";
+  var DEF_OK="[메이커앤하비 산타왔수다]\n{부스명}님, 부스로 선정되셨습니다!\n\n일시: 12/12(토)·13(일)\n장소: 중문 컨벤션 제2센터\n사전 설치: 12/11(금) 가능\n부스비: {금액}원\n입금 방법: (여기에 입력)\n\n문의는 이 번호로 답장 주세요.";
   var DEF_NO="[메이커앤하비 산타왔수다]\n{부스명}님, 신청해 주셔서 감사합니다.\n이번에는 모집 정원이 차서 함께하지 못하게 되었습니다.\n다음 기회에 꼭 모시겠습니다.";
   var db=null;
   try{var app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE);db=firebase.firestore(app);}catch(e){}
