@@ -226,7 +226,7 @@ $('nick').value=myName;
 /* ---------- 연습 횟수 / 랭킹전 시간 ---------- */
 /* 행사 시작(eventStart) 전에는 연습만 무제한. 시작 시각이 지나면 최고 기록을 한 번 지우고 연습 하루 2번 + 13:00 랭킹전 */
 var forceRank=/[?&]rank=1/.test(location.search);
-var LIVE=forceRank||/[?&]live=1/.test(location.search)||Date.now()>=Date.parse(D.eventStart);
+var LIVE=forceRank||/[?&]live=1/.test(location.search)||Date.now()>=Date.parse(D.eventStart||'2026-12-12T10:00:00+09:00');
 if(LIVE&&ls('santa_catch_live')!=='1'){try{localStorage.removeItem('santa_catch_best')}catch(e){}ls('santa_catch_live','1')}
 function pracKey(){return 'santa_catch_prac_'+today()}
 function pracLeft(){return LIVE?Math.max(0,C.practice-(+ls(pracKey())||0)):99}

@@ -174,7 +174,7 @@ var RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 var KEY = 'santa_hunt_v1';
 /* 연습 / 실전: 행사 시작(eventStart) 전에는 결제 없이 연습. 시작 시각이 지나면 연습 기록을 한 번 지우고 실전으로.
    스태프가 미리 실전을 시험할 땐 주소 끝에 ?live=1 */
-var LIVE = /[?&]live=1/.test(location.search) || Date.now() >= Date.parse(D.eventStart);
+var LIVE = /[?&]live=1/.test(location.search) || Date.now() >= Date.parse(D.eventStart||'2026-12-12T10:00:00+09:00');
 var S = load();
 if (LIVE && S.mode !== 'live'){ var keepNick=S.nick; S = load(true); S.nick=keepNick; S.mode='live'; save(); }
 if (!LIVE && !S.mode){ S.mode='practice'; save(); }
