@@ -460,20 +460,20 @@ function gCatch(){
     ctx.save();ctx.fillStyle='rgba(10,16,40,'+(0.55*ease)+')';ctx.fillRect(0,0,W,H);
     var cw=Math.min(W-80*U,640*U),ch=Math.min(H-160*U,(isBest?700:650)*U),cx=W/2,cy=H/2+(1-ease)*60;
     ctx.globalAlpha=ease;ctx.translate(cx,cy);
-    ctx.fillStyle='#FFFFFF';ctx.strokeStyle='#1B2550';ctx.lineWidth=6*U;
+    ctx.fillStyle='#FFFFFF';ctx.strokeStyle='#0F4A2E';ctx.lineWidth=6*U;
     rrect(-cw/2,-ch/2,cw,ch,2);ctx.fill();ctx.stroke();
     var y=-ch/2+70*U;
-    drawText('선물 배달 완료!',0,y,38,'#1B2550');y+=64*U;
+    drawText('선물 배달 완료!',0,y,38,'#0F4A2E');y+=64*U;
     var rows=[['자른 귤',cnt.fruit+'개'],['산타귤',cnt.gold+'개'],['선물 상자',cnt.gift+'개'],['최고 콤보',bestCombo+' COMBO'],['석탄',cnt.rotten+'개']];
     ctx.textBaseline='middle';
     rows.forEach(function(r){
       ctx.textAlign='left';ctx.font='600 '+Math.round(24*U)+'px SCDream, sans-serif';ctx.fillStyle='#6B7186';ctx.fillText(r[0],-cw/2+44*U,y);
-      ctx.textAlign='right';ctx.font='800 '+Math.round(28*U)+'px SCDream, sans-serif';ctx.fillStyle='#1B2550';ctx.fillText(r[1],cw/2-44*U,y);
-      ctx.fillStyle='rgba(27,37,80,.12)';ctx.fillRect(-cw/2+44*U,y+24*U,cw-88*U,2);y+=56*U;
+      ctx.textAlign='right';ctx.font='800 '+Math.round(28*U)+'px SCDream, sans-serif';ctx.fillStyle='#0F4A2E';ctx.fillText(r[1],cw/2-44*U,y);
+      ctx.fillStyle='rgba(15,74,46,.14)';ctx.fillRect(-cw/2+44*U,y+24*U,cw-88*U,2);y+=56*U;
     });
     y+=18*U;drawText('최종 점수',0,y,20,'#6B7186',null,600);y+=58*U;
-    drawText(score.toLocaleString(),0,y,66,'#F58A1F');y+=56*U;
-    drawText(catchRank(score),0,y,24,'#1B2550',null,600);y+=48*U;
+    drawText(score.toLocaleString(),0,y,66,'#C8102E');y+=56*U;
+    drawText(catchRank(score),0,y,24,'#0F4A2E',null,600);y+=48*U;
     if(isBest){ctx.save();ctx.translate(0,y);ctx.scale(1+Math.sin(resultT/120)*0.04,1+Math.sin(resultT/120)*0.04);drawText('NEW RECORD!',0,0,32,'#F0605A','rgba(255,255,255,.9)');ctx.restore();y+=44*U}
     if(resultReady){ctx.globalAlpha=ease*(0.6+Math.sin(resultT/200)*0.4);drawText('화면을 눌러 계속하기',0,ch/2-40*U,20,'#6B7186',null,600)}
     ctx.restore();
