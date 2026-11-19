@@ -311,7 +311,7 @@ function viewHome(){
     var a=H.adv[t], d=advDone(t);
     return '<div class="zone'+(d>=a.n?' done':'')+'"><div class="no">'+String.fromCharCode(65+i)+'</div><div><div class="n">'+esc(a.name)+'</div><div class="h">'+d+' / '+a.n+'</div></div><img src="img/chest_'+(d?'gold_open':'gold_closed')+'.webp" alt=""></div>';
   }).join('')+'</div>'+
-  '<h2>귤 자르기</h2><a class="catchgo" href="catch.html"><span class="x">CHRISTMAS<br>UPDATE</span><b>Tangerine <em>Cut</em></b><i>13:00 랭킹전</i></a>'+
+  '<h2>귤 자르기</h2><a class="catchgo" href="catch.html"><span class="x">크리스마스<br>업데이트</span><b>귤 <em>자르기</em></b><i>13:00 랭킹전</i></a>'+
   '<h2>오늘 일정</h2>'+viewSched()+'<div class="chk"></div>';
 }
 function viewBox(){

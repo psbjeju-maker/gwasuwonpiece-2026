@@ -406,16 +406,16 @@ function gCatch(){
     ctx.fillStyle=barC;ctx.fillRect(0,0,W*pct,bh);
     var secs=Math.ceil(left/1000),hudC=fever?'#FFD84A':'#FFFFFF';
     ctx.textBaseline='alphabetic';
-    ctx.textAlign='left';ctx.font='800 '+f1;ctx.fillStyle='rgba(255,255,255,.75)';ctx.fillText('TIME',m,40*U);
+    ctx.textAlign='left';ctx.font='800 '+f1;ctx.fillStyle='rgba(255,255,255,.75)';ctx.fillText('시간',m,40*U);
     ctx.font='800 '+f2;ctx.lineJoin='round';ctx.strokeStyle='rgba(60,30,0,.55)';ctx.lineWidth=6*U;ctx.strokeText(String(secs),m,80*U);
     ctx.fillStyle=secs<=5?'#F0605A':hudC;ctx.fillText(String(secs),m,80*U);
-    ctx.textAlign='right';ctx.font='800 '+f1;ctx.fillStyle='rgba(255,255,255,.75)';ctx.fillText('SCORE',W-m,40*U);
+    ctx.textAlign='right';ctx.font='800 '+f1;ctx.fillStyle='rgba(255,255,255,.75)';ctx.fillText('점수',W-m,40*U);
     ctx.font='800 '+f2;var s=String(score);while(s.length<5)s='0'+s;
     ctx.strokeText(s,W-m,80*U);ctx.fillStyle=fever?'#FFD84A':'#F5B331';ctx.fillText(s,W-m,80*U);
     if(combo>=2&&elapsed<comboUntil+300){
       var k=Math.min(1,(comboUntil-elapsed+300)/300),sz=30+Math.min(combo,15)*2.2,pop=1+Math.max(0,1-(elapsed-(comboUntil-900))/120)*0.35;
       ctx.save();ctx.translate(W/2,115*U);ctx.scale(pop,pop);ctx.globalAlpha=Math.min(1,k*2);
-      drawText(combo+' COMBO'+(combo>=5?'!':''),0,0,sz,combo>=10?'#FFD84A':(combo>=5?'#FF7A3D':'#FFFFFF'),'rgba(60,20,0,.7)');
+      drawText(combo+' 콤보'+(combo>=5?'!':''),0,0,sz,combo>=10?'#FFD84A':(combo>=5?'#FF7A3D':'#FFFFFF'),'rgba(60,20,0,.7)');
       ctx.restore();
     }
     if(fever){/* 금빛 가장자리 비네트 */
@@ -464,7 +464,7 @@ function gCatch(){
     rrect(-cw/2,-ch/2,cw,ch,2);ctx.fill();ctx.stroke();
     var y=-ch/2+70*U;
     drawText('선물 배달 완료!',0,y,38,'#0F4A2E');y+=64*U;
-    var rows=[['자른 귤',cnt.fruit+'개'],['산타귤',cnt.gold+'개'],['선물 상자',cnt.gift+'개'],['최고 콤보',bestCombo+' COMBO'],['석탄',cnt.rotten+'개']];
+    var rows=[['자른 귤',cnt.fruit+'개'],['산타귤',cnt.gold+'개'],['선물 상자',cnt.gift+'개'],['최고 콤보',bestCombo+' 콤보'],['석탄',cnt.rotten+'개']];
     ctx.textBaseline='middle';
     rows.forEach(function(r){
       ctx.textAlign='left';ctx.font='600 '+Math.round(24*U)+'px SCDream, sans-serif';ctx.fillStyle='#6B7186';ctx.fillText(r[0],-cw/2+44*U,y);
@@ -474,7 +474,7 @@ function gCatch(){
     y+=18*U;drawText('최종 점수',0,y,20,'#6B7186',null,600);y+=58*U;
     drawText(score.toLocaleString(),0,y,66,'#C8102E');y+=56*U;
     drawText(catchRank(score),0,y,24,'#0F4A2E',null,600);y+=48*U;
-    if(isBest){ctx.save();ctx.translate(0,y);ctx.scale(1+Math.sin(resultT/120)*0.04,1+Math.sin(resultT/120)*0.04);drawText('NEW RECORD!',0,0,32,'#F0605A','rgba(255,255,255,.9)');ctx.restore();y+=44*U}
+    if(isBest){ctx.save();ctx.translate(0,y);ctx.scale(1+Math.sin(resultT/120)*0.04,1+Math.sin(resultT/120)*0.04);drawText('최고 기록!',0,0,32,'#F0605A','rgba(255,255,255,.9)');ctx.restore();y+=44*U}
     if(resultReady){ctx.globalAlpha=ease*(0.6+Math.sin(resultT/200)*0.4);drawText('화면을 눌러 계속하기',0,ch/2-40*U,20,'#6B7186',null,600)}
     ctx.restore();
   }
@@ -488,7 +488,7 @@ function gCatch(){
     if(!finished){
       elapsed+=step;
       var left=Math.max(0,dur-elapsed);
-      if(left<=0){finished=true;endT=0;banner('TIME UP!','timeup');sfx('bonus',0.6);lastPt=null}
+      if(left<=0){finished=true;endT=0;banner('시간 끝!','timeup');sfx('bonus',0.6);lastPt=null}
       /* 피버 진입 */
       if(!rotWave&&elapsed>=8000){rotWave=true;banner('석탄 습격!','rotten');shake(8,16);sfx('boom',0.35)}
       if(!fever&&elapsed>=20000&&left<=10000){fever=true;banner('크리스마스 피버!','fever');flash('#FFE9A8',0.5);
