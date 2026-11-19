@@ -457,7 +457,7 @@ function gCatch(){
   /* ---- 결과 카드 ---- */
   function drawResult(){
     var p=Math.min(1,resultT/420),ease=1-Math.pow(1-p,3),isBest=score>(S.best.catch||0);
-    ctx.save();ctx.fillStyle='rgba(10,16,40,'+(0.55*ease)+')';ctx.fillRect(0,0,W,H);
+    ctx.save();ctx.fillStyle='rgba(8,36,22,'+(0.55*ease)+')';ctx.fillRect(0,0,W,H);
     var cw=Math.min(W-80*U,640*U),ch=Math.min(H-160*U,(isBest?700:650)*U),cx=W/2,cy=H/2+(1-ease)*60;
     ctx.globalAlpha=ease;ctx.translate(cx,cy);
     ctx.fillStyle='#FFFFFF';ctx.strokeStyle='#0F4A2E';ctx.lineWidth=6*U;
