@@ -126,6 +126,48 @@ nav button.on img{filter:none}
 .tag{display:inline-block;background:var(--org);color:#fff;padding:4px 12px;font-size:13px;font-weight:900;margin-bottom:6px}
 .code{font-family:ui-monospace,monospace;font-size:24px;font-weight:700;letter-spacing:4px;background:#fff;color:var(--navy);padding:6px 16px;margin:6px 0 14px}
 .left{margin-top:14px;font-weight:800;font-size:15px;border:2px solid #fff;padding:6px 14px}
+/* 몰입 연출 */
+.scene{background:radial-gradient(120% 80% at 50% 42%,#1D6E47 0%,#0F4A2E 48%,#062014 100%)}
+.scene.legend{background:radial-gradient(120% 80% at 50% 42%,#6B5A1E 0%,#2C3A1C 50%,#0A1A10 100%)}
+.cine{position:absolute!important;left:0;right:0;height:9vh;background:#000;z-index:3!important;animation:cineIn .5s cubic-bezier(.2,.8,.2,1) both}
+.cine.top{top:0}.cine.bot{bottom:0;animation-name:cineInB}
+@keyframes cineIn{from{transform:translateY(-100%)}}
+@keyframes cineInB{from{transform:translateY(100%)}}
+.intro{display:flex;flex-direction:column;align-items:center}
+.imap{width:150px;animation:mapIn .9s cubic-bezier(.2,.9,.25,1.2) both}
+@keyframes mapIn{from{transform:scale(3.4) rotate(-18deg);opacity:0;filter:blur(8px)}to{transform:none;opacity:1;filter:none}}
+.ino{font-weight:900;font-size:18px;letter-spacing:4px;color:#F2C14E;margin-top:14px;animation:fadeUp .4s .5s both}
+.inm{font-weight:900;font-size:clamp(40px,13vw,58px);line-height:1;letter-spacing:-2px;margin:6px 0 4px;animation:wipe .55s .65s cubic-bezier(.2,.8,.2,1) both}
+.isub{font-weight:900;font-size:15px;letter-spacing:2px;background:var(--org);padding:5px 12px;animation:slam .35s 1s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0);transform:translateX(-20px)}to{clip-path:inset(0 0 0 0)}}
+@keyframes slam{from{opacity:0;transform:scale(2.4)}60%{opacity:1;transform:scale(.92)}to{transform:none}}
+.chest.drop{animation:drop .62s cubic-bezier(.3,0,.5,1) both}
+@keyframes drop{0%{transform:translateY(-120vh) rotate(-8deg)}70%{transform:translateY(0) scale(1.08,.88)}85%{transform:translateY(-14px) scale(.97,1.03)}100%{transform:none}}
+.chest.idle{animation:idle 1.6s ease-in-out infinite}
+@keyframes idle{0%,100%{transform:rotate(0)}50%{transform:rotate(1.5deg) translateY(-3px)}}
+.chest.hold{animation:hold .06s linear infinite}
+@keyframes hold{0%{transform:translate(-3px,0) scale(1.1)}50%{transform:translate(3px,-2px) scale(1.12)}100%{transform:translate(-2px,1px) scale(1.1)}}
+.glow{transition:opacity .25s,transform .25s}
+.glow.gold{background:radial-gradient(circle,rgba(255,215,90,.6),transparent 62%)}
+.glow.white{background:radial-gradient(circle,rgba(255,255,255,.5),transparent 62%)}
+.beam{position:absolute;left:50%;top:0;bottom:0;width:150px;margin-left:-75px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);opacity:0;transform:scaleX(.2);transition:opacity .4s,transform .4s;pointer-events:none}
+.beam.on{opacity:1;transform:none}
+.beam.gold{background:linear-gradient(90deg,transparent,rgba(255,215,90,.55),transparent);width:220px;margin-left:-110px}
+.skip{position:absolute!important;top:calc(9vh + 10px);right:14px;z-index:4!important;background:rgba(0,0,0,.35);color:#fff;border:1px solid rgba(255,255,255,.5);font-size:13px;font-weight:800;padding:6px 12px}
+.shout.up2{color:#FFE27A!important;animation:slam .35s both}
+.band{position:absolute!important;left:0;right:0;top:50%;height:150px;margin-top:-150px;background:var(--org);z-index:0!important;animation:bandIn .45s .2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bandIn{from{transform:scaleX(0)}}
+.taps{display:flex;gap:10px;margin-top:18px}
+.taps i{width:14px;height:14px;border:2px solid #fff;transition:background .15s,transform .15s}
+.taps i.f{background:#fff;transform:scale(1.25)}
+.rise{animation:rise .9s cubic-bezier(.2,.9,.3,1.15) both}
+@keyframes rise{0%{transform:translateY(160px) scale(.2) rotateY(0);opacity:0;filter:brightness(0)}25%{opacity:1}60%{filter:brightness(0)}66%{filter:brightness(2.6)}75%{transform:translateY(-16px) scale(1.06) rotateY(720deg)}100%{transform:none;filter:none}}
+.scene h3.slam{animation:slam .45s .55s both}
+.code.up,.scene p.up{animation:fadeUp .4s .9s both}
+.btn.late{animation:fadeUp .4s 1.3s both}
+.tag.slam{animation:slam .45s .35s both}
+@media (prefers-reduced-motion:reduce){.rise,.chest.drop,.imap,.inm,.isub,.slam,.up,.late{animation-duration:.01s!important}}
 .sheet{position:fixed;inset:0;z-index:30;background:rgba(8,36,22,.6);display:none;align-items:flex-end;justify-content:center}
 .sheet.on{display:flex}
 .sheet .bx{background:#fff;width:100%;max-width:480px;border-top:4px solid var(--navy);padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))}
@@ -165,6 +207,7 @@ nav button.on img{filter:none}
 
 <script src="data.js"></script>
 <script src="../mqscan.js"></script>
+<script src="hunt-fx.js"></script>
 <script>
 (function(){
 'use strict';
@@ -287,7 +330,13 @@ function arrive(code){
   if (!z) return toast('보물 QR이 아니에요');
   if (S.found[z.id]) return toast(z.name+'은 이미 찾았어요');
   if (foundCount()>=D.passBoxes) return toast('보물 '+D.passBoxes+'개를 다 찾았어요');
-  (Math.random()<0.5 ? battle : quiz)(z);
+  var FX=window.HuntFX, n=D.zones.indexOf(z)+1;
+  var s=scene('<div class="cine top"></div><div class="cine bot"></div><div class="intro"><img class="imap" src="img/ui/ic_map.webp" alt=""><div class="ino">보물 0'+n+'</div><div class="inm">'+esc(z.name)+'</div><div class="isub">보물 발견!</div></div>');
+  s.classList.remove('legend');
+  if (FX){ FX.start(); FX.buzz([20,60,20]);
+    setTimeout(function(){ var c=FX.center(s.querySelector('.imap')); FX.burst(c.x,c.y,24,'spark',{sp:8,life:55}); FX.sfx('pop',.5); },850);
+    setTimeout(function(){ FX.shake(s,8,300); FX.sfx('boom',.35); FX.buzz(40); },1050); }
+  setTimeout(function(){ (Math.random()<0.5 ? battle : quiz)(z); }, 2100);
 }
 function scan(){
   if (window.MQScan) MQScan.open({ hint:'QR을 비춰 주세요', parse:function(t){ return t; }, onToken:arrive, onManual:typeCode });
@@ -300,7 +349,7 @@ function typeCode(){
 }
 
 function scene(html){ var s=$('scene'); s.innerHTML=html; s.classList.add('on'); return s; }
-function endScene(){ $('scene').classList.remove('on'); $('scene').innerHTML=''; render(); }
+function endScene(){ if (window.HuntFX) HuntFX.stop(); $('scene').classList.remove('on','legend'); $('scene').innerHTML=''; render(); }
 
 function battle(z){
   var m=D.monsters[Math.floor(Math.random()*D.monsters.length)], hp=m.hp, left=D.battleSec, started=false, over=false;
@@ -320,7 +369,9 @@ function battle(z){
     mon.classList.add('hit'); setTimeout(function(){ mon.classList.remove('hit'); },80);
     var f=document.createElement('div'); f.className='dmg'; f.textContent=d>1?'크리티컬!':'-'+d; f.style.left=(e.clientX-20)+'px'; f.style.top=(e.clientY-30)+'px'; s.appendChild(f); setTimeout(function(){ f.remove(); },600);
     if (navigator.vibrate) try{ navigator.vibrate(15); }catch(_){}
-    if (hp<=0) finish(true);
+    if (window.HuntFX){ HuntFX.burst(e.clientX,e.clientY,d>1?14:6,'spark',{sp:d>1?9:6,life:30}); if(d>1){ HuntFX.shake(s,7,220); HuntFX.sfx('pop',.4); } }
+    if (hp<=0){ if (window.HuntFX){ var c=HuntFX.center(mon); HuntFX.burst(c.x,c.y,40,'conf',{sp:10,life:80}); HuntFX.flash('#FFFFFF',260); HuntFX.shake(s,12,400); HuntFX.sfx('boom',.45); } finish(true); }
+    return;
   });
 }
 function quiz(z){
@@ -337,19 +388,68 @@ function foundZone(z){ S.found[z.id]=Date.now(); save(); setTimeout(function(){ 
 
 /* ---------- 상자 열기 ---------- */
 function openChest(fromPack){
-  var res=rollBox(), tier=res.tier;
-  var s=scene('<div class="glow" id="gl"></div><h3 class="shout">눌러서 열기!</h3><div class="peek"><img class="pface" src="'+rita('pirate_face')+'" alt=""><img class="chest shake" id="ch" src="img/chest_'+tier+'_closed.webp" alt=""></div>'+(fromPack?'<div class="left">남은 상자 '+S.boxes+'</div>':''));
-  $('ch').onclick=function(){
-    var ch=$('ch'); ch.onclick=null; ch.classList.remove('shake'); ch.src='img/chest_'+tier+'_open.webp'; $('gl').classList.add('on');
-    var code=grant(res);
-    setTimeout(function(){
-      var img = res.kind==='card' ? '<img class="reveal" src="'+cardImg('back')+'" alt="">' : '<img class="reveal" style="box-shadow:none;width:200px" src="img/chest_gold_open.webp" alt="">';
-      s.innerHTML='<div class="glow on"></div>'+(tier==='gold'?'<span class="tag">전설 상자</span>':'')+img+
-        '<h3>'+esc(res.name)+'</h3>'+(LIVE?'<div class="code">'+code+'</div><p>부스에서 코드 보여 주기</p>':'<div class="code">연습</div><p>12.12 오전 10시 오픈</p>')+
-        (fromPack && S.boxes>0 ? '<button class="btn" id="nx">다음 ('+S.boxes+')</button>' : '<button class="btn" id="nx">확인</button>');
-      $('nx').onclick=function(){ if (fromPack && S.boxes>0){ S.boxes--; save(); openChest(true); } else endScene(); };
-    },700);
+  var res=rollBox(), tier=res.tier, gold=tier==='gold', FX=window.HuntFX, T=[], done=false;
+  var code=grant(res);   // 결과는 먼저 저장(중간에 나가도 상품 유지)
+  function later(f,ms){ T.push(setTimeout(f,ms)); }
+  var s=scene('<div class="cine top"></div><div class="cine bot"></div><div class="beam" id="bm"></div><div class="glow" id="gl"></div><button class="skip" id="sk">건너뛰기</button><h3 class="shout" id="sh">눌러서 열기!</h3><div class="peek"><img class="pface" src="'+rita('pirate_face')+'" alt=""><img class="chest drop" id="ch" src="img/chest_wood_closed.webp" alt=""></div><div class="taps" id="tp"><i></i><i></i><i></i></div>'+(fromPack?'<div class="left">남은 상자 '+S.boxes+'</div>':''));
+  s.classList.remove('legend');
+  var ch=$('ch'), gl=$('gl'), bm=$('bm'), taps=0, busy=true;
+  if (FX) FX.start();
+  later(function(){   // 착지
+    bm.classList.add('on');
+    if (FX){ var c=FX.center(ch); FX.burst(c.x,c.top+c.h*.9,18,'dust',{sp:4,w:c.w*.8,life:50}); FX.shake(s,10); FX.sfx('boom',.3); FX.buzz(30); }
+  },430);
+  later(function(){ ch.classList.remove('drop'); ch.classList.add('idle'); busy=false; },640);
+  $('sk').onclick=function(){ showResult(); };
+
+  ch.onclick=function(){
+    if (busy) return; taps++;
+    $('tp').children[taps-1].classList.add('f');
+    var c=FX?FX.center(ch):null;
+    if (taps<3){
+      if (ch.animate) ch.animate([{transform:'scale(1)'},{transform:'scale(1.14,.84)'},{transform:'scale(.94,1.1)'},{transform:'scale(1)'}],{duration:280});
+      gl.classList.add('white'); gl.style.opacity=taps*.38; gl.style.transform='scale('+(.55+taps*.2)+')';
+      $('sh').textContent='한 번 더!';
+      if (FX){ FX.burst(c.x,c.top+c.h*.35,8+taps*8,'spark',{sp:5+taps*2,up:true,spread:2.4,life:45}); FX.shake(s,4+taps*4,300); FX.sfx('pop',.35+taps*.15); FX.buzz(15+taps*15); }
+      return;
+    }
+    // 세 번째: 버티기 → (전설이면 빛 색이 바뀌는 승급) → 폭발
+    busy=true; ch.onclick=null; ch.classList.remove('idle'); ch.classList.add('hold');
+    $('sh').textContent=''; gl.style.opacity=1; gl.style.transform='scale(1)';
+    if (FX) FX.buzz([30,30,60]);
+    var openAt=420;
+    if (gold){
+      openAt=1200;
+      later(function(){   // 승급 연출
+        gl.classList.remove('white'); gl.classList.add('gold'); bm.classList.add('gold'); s.classList.add('legend'); ch.src='img/chest_gold_closed.webp';
+        $('sh').textContent='승급!'; $('sh').className='shout up2';
+        if (FX){ FX.flash('#FFE27A',300); FX.shake(s,14,500); FX.sfx('bonus',.6); FX.buzz([60,40,60,40,140]); var c3=FX.center(ch); FX.burst(c3.x,c3.y,30,'spark',{sp:10,life:50,cols:['#FFE27A','#FFFFFF']}); }
+      },520);
+    }
+    later(function(){
+      ch.classList.remove('hold'); ch.src='img/chest_'+tier+'_open.webp'; $('sh').textContent='';
+      if (FX){
+        c=FX.center(ch);
+        FX.flash(gold?'#FFF1B8':'#FFFFFF', gold?700:380); FX.punch(s); FX.shake(s,gold?18:10,gold?600:380);
+        FX.burst(c.x,c.top+c.h*.3,gold?90:50,'conf',{up:true,spread:1.9,sp:gold?14:11,life:120,cols:gold?['#FFE27A','#F2C14E','#FFF6D0','#FFFFFF','#C8102E']:null});
+        FX.burst(c.x,c.top+c.h*.3,gold?40:20,'spark',{sp:9,life:60});
+        FX.sfx('boom',.5); if (gold){ FX.sfx('fanfare',.7); FX.rain(2600); } else FX.sfx('bonus',.5);
+      }
+    }, openAt);
+    later(showResult, openAt+(gold?750:650));
   };
+
+  function showResult(){
+    if (done) return; done=true; T.forEach(clearTimeout); T=[];
+    if (gold) s.classList.add('legend');
+    var img = res.kind==='card' ? '<img class="reveal rise" src="'+cardImg('back')+'" alt="">' : '<img class="reveal rise" style="box-shadow:none;width:200px" src="img/chest_gold_open.webp" alt="">';
+    s.innerHTML='<div class="cine top" style="animation:none"></div><div class="cine bot" style="animation:none"></div><div class="glow on'+(gold?' gold':' white')+'"></div>'+
+      (gold?'<div class="band"></div><span class="tag slam">전설 상자</span>':'')+img+
+      '<h3 class="slam">'+esc(res.name)+'</h3>'+(LIVE?'<div class="code up">'+code+'</div><p class="up">부스에서 코드 보여 주기</p>':'<div class="code up">연습</div><p class="up">12.12 오전 10시 오픈</p>')+
+      (fromPack && S.boxes>0 ? '<button class="btn late" id="nx">다음 ('+S.boxes+')</button>' : '<button class="btn late" id="nx">확인</button>');
+    if (FX) later(function(){ var r=s.querySelector('.reveal'); if(!r) return; var c2=FX.center(r); FX.flash('#FFFFFF',200); FX.burst(c2.x,c2.y,gold?30:16,'spark',{sp:7,life:50}); FX.sfx('pop',.4); FX.buzz(20); if(gold) FX.rain(1800); },560);
+    $('nx').onclick=function(){ if (fromPack && S.boxes>0){ S.boxes--; save(); openChest(true); } else endScene(); };
+  }
 }
 
 /* ---------- 이벤트 ---------- */
