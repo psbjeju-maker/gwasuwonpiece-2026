@@ -199,6 +199,18 @@ nav button.on img{filter:none}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;font-weight:800;font-size:15px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.on{opacity:1}
 
+.btn.hug{padding:22px;font-size:23px;margin:4px 0 14px}
+.stat [data-tab-go]{cursor:pointer}
+.where{border:2px solid var(--navy);background:#fff;margin:0 0 14px}
+.where summary{padding:13px 14px;font-weight:900;font-size:17px;cursor:pointer}
+.where .zone{padding:10px 14px}
+.buys{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 4px}
+.buys .buy{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;margin:0}
+.buys .buy .k{align-self:center;margin:0}
+.buys .buy b{font-size:19px;font-weight:900}
+.buys .buy .btn{width:100%}
+.figure small{display:block;font-size:13px;opacity:.8}
+.empty{font-size:22px;font-weight:900;text-align:center;padding:40px 0 20px;color:var(--dim)}
 /* 진짜 금색 (금속 그라데이션 + 빛 지나감) */
 .pricebar .b b,.figure em{background:linear-gradient(110deg,transparent 38%,rgba(255,255,255,.9) 50%,transparent 62%) 200% 0/250% 100% no-repeat,linear-gradient(180deg,#FFFDE8 0%,#FFE989 24%,#F5C845 52%,#FFE580 72%,#E0AE2C 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));animation:goldsheen 3.2s ease-in-out infinite}
 .dmg,.shout.up2{background:linear-gradient(180deg,#FFFDE8 0%,#FFE989 24%,#F5C845 52%,#FFE580 72%,#E0AE2C 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
@@ -211,16 +223,16 @@ nav button.on img{filter:none}
 <nav id="nav"><div class="in">
   <button data-tab="home" class="on"><img src="img/ui/ic_map.webp" alt="">보물찾기</button>
   <button data-tab="box"><img src="img/ui/ic_chest.webp" alt="">딸깍 상자</button>
-  <button data-tab="pick"><img src="img/ui/ic_gift.webp" alt="">받을 상품</button>
+  <button data-tab="pick"><img src="img/ui/ic_gift.webp" alt="">내 상품</button>
 </div></nav>
 
 <div class="scene" id="scene"></div>
 <div class="sheet" id="sheet"><div class="bx" id="sheetBox"></div></div>
 <div class="toast" id="toast"></div>
 
-<script src="data.js?v=1119c"></script>
+<script src="data.js?v=1119f"></script>
 <script src="../mqscan.js"></script>
-<script src="hunt-fx.js?v=1119c"></script>
+<script src="hunt-fx.js?v=1119f"></script>
 <script>
 (function(){
 'use strict';
@@ -234,7 +246,7 @@ var LIVE = /[?&]live=1/.test(location.search) || Date.now() >= Date.parse(D.even
 var S = load();
 if (LIVE && S.mode !== 'live'){ var keepNick=S.nick; S = load(true); S.nick=keepNick; S.mode='live'; save(); }
 if (!LIVE && !S.mode){ S.mode='practice'; save(); }
-var tab = 'home';
+var tab = ((location.search.match(/[?&]tab=(home|box|pick)/)||[])[1])||'home';
 
 function load(fresh){
   var d = null; if (fresh) return { nick:'', pass:false, found:{}, boxes:0, packs:0, adv:0, cards:{}, picks:[], seq:0 };
@@ -284,14 +296,12 @@ function render(){
 }
 
 function viewEntry(){
-  return '<div class="hero"><div class="ptitle">Treasure<br>Hunt</div><img class="big" src="'+rita('main')+'" alt=""><img class="turn" src="img/mag/turn.webp" alt="">'+
-  '<div class="steps"><div><img src="img/ui/ic_map.webp" alt=""><b>1</b>QR</div><div><img src="img/ui/ic_chest.webp" alt=""><b>2</b>상자</div><div><img src="img/ui/ic_gift.webp" alt=""><b>3</b>상품</div></div></div>'+
+  return '<div class="hero"><div class="ptitle">Treasure<br>Hunt</div><img class="big" src="'+rita('main')+'" alt=""><img class="turn" src="img/mag/turn.webp" alt=""></div>'+
   '<div class="headline">보물 <em>5개</em>를 찾아요!</div>'+
   '<div class="pricebar"><div class="t">할인 판매</div><div class="b"><span>보물찾기 체험</span><b>'+D.passPrice.toLocaleString('ko-KR')+'<small>원</small></b></div></div>'+
   '<input id="nick" maxlength="10" placeholder="닉네임" value="'+esc(S.nick)+'"><div style="height:10px"></div>'+
   (LIVE?'':'<div class="prac"><b>연습</b>12.12 오전 10시 오픈</div>')+
-  '<button class="btn" data-act="askPass">'+(LIVE?'시작':'연습 시작')+'</button>'+
-  '<h2>오늘 일정</h2>'+viewSched()+'<div class="chk"></div>';
+  '<button class="btn" data-act="askPass">'+(LIVE?'시작':'연습 시작')+'</button><div class="chk"></div>';
 }
 function viewSched(){
   return '<div class="sched">'+D.schedule.map(function(s){ return '<div><b>'+esc(s.t)+'</b>'+esc(s.name)+'</div>'; }).join('')+'</div>';
@@ -302,46 +312,58 @@ function foundCount(){ return Object.keys(S.found).length; }
 function tutDone(){ return H.tutorial.filter(function(q){ return S.found[q.id]; }).length; }
 function advDone(t){ return Object.keys(S.found).filter(function(id){ return id[0]!=='t' && qType(id)===t; }).length; }
 function viewHome(){
-  var td=tutDone(), tn=H.tutorial.length, tutLeft=td<tn;
-  var msg = tutLeft ? '<b>QR</b> 찍고 상자 열기!' : (S.adv>0 ? '<b>모험</b> 남은 보물 '+S.adv+'개' : '이제 <b>모험</b>!');
-  var canScan = tutLeft || S.adv>0;
-  return '<div class="ptitle">Treasure <em>Hunt</em></div>'+guide(tutLeft?'2':'main', msg)+
-  '<div class="stat"><div><b>'+foundCount()+' / 50</b><span>찾은 보물</span></div><div><b>'+S.picks.filter(function(p){return !p.given;}).length+'</b><span>받을 상품</span></div></div>'+
-  (canScan?'<button class="btn" data-act="scan">QR 찍기</button><div style="height:8px"></div><button class="btn ghost" data-act="typeCode">코드 입력</button>':'<button class="btn" data-tab-go="box">모험 떠나기</button>')+
-  '<h2>체험 '+td+' / '+tn+'</h2><div class="zones">'+H.tutorial.map(function(q,i){
+  var td=tutDone(), tn=H.tutorial.length, tutLeft=td<tn, canScan=tutLeft||S.adv>0, left=S.picks.filter(function(p){return !p.given;}).length;
+  var prog = tutLeft ? '<b>'+td+' / '+tn+'</b><span>찾은 보물</span>' : '<b>'+S.adv+'</b><span>남은 보물</span>';
+  return '<div class="ptitle">Treasure <em>Hunt</em></div>'+
+  '<div class="stat"><div>'+prog+'</div><div data-tab-go="pick"><b>'+left+'</b><span>받을 상품</span></div></div>'+
+  (canScan?'<button class="btn hug" data-act="scan">QR 찍기</button>':'<button class="btn hug" data-tab-go="box">모험 떠나기</button>')+
+  (tutLeft?'<details class="where"><summary>보물 위치</summary>'+H.tutorial.map(function(q,i){
     var f=S.found[q.id];
     return '<div class="zone'+(f?' done':'')+'"><div class="no">0'+(i+1)+'</div><div><div class="n">'+esc(q.name)+'</div><div class="h">'+esc(q.hint)+'</div></div><img src="img/chest_'+(f?'wood_open':'wood_closed')+'.webp" alt=""></div>';
-  }).join('')+'</div>'+
-  '<h2>모험 '+(foundCount()-td)+' / 45</h2><div class="zones">'+Object.keys(H.adv).map(function(t,i){
-    var a=H.adv[t], d=advDone(t);
-    return '<div class="zone'+(d>=a.n?' done':'')+'"><div class="no">'+String.fromCharCode(65+i)+'</div><div><div class="n">'+esc(a.name)+'</div><div class="h">'+d+' / '+a.n+'</div></div><img src="img/chest_'+(d?'gold_open':'gold_closed')+'.webp" alt=""></div>';
-  }).join('')+'</div>'+
-  '<h2>귤 자르기</h2><a class="catchgo" href="catch.html"><span class="x">크리스마스<br>업데이트</span><b>귤 <em>자르기</em></b><i>13:00 랭킹전</i></a>'+
-  '<h2>오늘 일정</h2>'+viewSched()+'<div class="chk"></div>';
+  }).join('')+'</details>':'')+
+  '<a class="catchgo" href="catch.html"><b>귤 <em>자르기</em></b><i>13:00 랭킹전</i></a><div class="chk"></div>';
 }
 function viewBox(){
-  return '<div class="ptitle">Bonus <em>Box</em></div>'+guide('Q','<b>보물찾기 한 번 더!</b>')+
-  (S.boxes>0?'<button class="btn" data-act="open">상자 열기 ('+S.boxes+')</button><div style="height:14px"></div>':'')+
-  '<div class="buy"><div class="bt"><span class="k">딸깍</span><b>상자 '+D.packBoxes+'개</b><i>바로 열기</i></div><div class="bp">'+won(D.packPrice)+'</div><button class="btn" data-act="askPack" data-kind="click">구매</button></div>'+
-  '<div class="buy adv"><div class="bt"><span class="k">모험</span><b>보물 '+H.advFinds+'개 찾기</b><i>+ 상자 '+H.advBonus+'개 더</i></div><div class="bp">'+won(D.packPrice)+'</div><button class="btn" data-act="askPack" data-kind="adv">구매</button></div>'+
-  (S.adv>0?'<div class="advleft">모험 남은 보물 <b>'+S.adv+'</b></div>':'')+
-  '<div class="figure"><img src="img/card/heart_A.webp" alt=""><div><b>같은 무늬 A~K 13장</b> 모으면<br><em>피규어</em> 교환!</div></div>'+
-  '<div class="stat"><div><b>10개</b><span>하루 선착순</span></div><div><b>'+esc(D.board.exchange)+'</b><span>부스 교환소</span></div></div><div class="chk"></div>';
+  return '<div class="ptitle">Bonus <em>Box</em></div>'+
+  (S.boxes>0?'<button class="btn hug" data-act="open">상자 열기 '+S.boxes+'</button>':'')+
+  '<div class="buys"><div class="buy"><span class="k">딸깍</span><b>상자 '+D.packBoxes+'</b><div class="bp">'+won(D.packPrice)+'</div><button class="btn" data-act="askPack" data-kind="click">구매</button></div>'+
+  '<div class="buy adv"><span class="k">모험</span><b>QR '+H.advFinds+' + 상자 '+H.advBonus+'</b><div class="bp">'+won(D.packPrice)+'</div><button class="btn" data-act="askPack" data-kind="adv">구매</button></div></div>'+
+  '<div class="figure"><img src="img/card/heart_A.webp" alt=""><div><b>같은 무늬 13장</b> → <em>피규어</em><small>하루 10개</small></div></div><div class="chk"></div>';
 }
 function viewPick(){
-  var list=S.picks;
-  return '<div class="ptitle">My <em>Prize</em></div>'+guide('5', list.length?'부스에서 <b>코드</b> 보여 주기':'아직 없어요')+
+  var list=S.picks.filter(function(p){return !p.given;}).concat(S.picks.filter(function(p){return p.given;}));
+  if (!list.length) return '<div class="ptitle">My <em>Prize</em></div><div class="empty">아직 없어요</div><button class="btn hug" data-tab-go="home">QR 찍으러 가기</button>';
+  return '<div class="ptitle">My <em>Prize</em></div>'+
+    (list.some(function(p){return !p.given && !p.prac;})?'<button class="btn hug navy" data-act="giveAll">받기</button>':'')+
     list.map(function(p){
       return '<div class="pick'+(p.given?' given':'')+'"><img src="'+(p.kind==='card'?cardImg(p.id):'img/chest_gold_open.webp')+'" alt=""><div><div class="nm">'+esc(p.name)+'</div><div class="cd">'+p.code+'</div></div><div class="st">'+(p.prac?'연습':(p.given?'받음':'받기 전'))+'</div></div>';
-    }).join('')+
-    (list.some(function(p){return !p.given && !p.prac;})?'<div style="height:10px"></div><button class="btn navy" data-act="giveAll">스태프: 지급 완료</button>':'');
+    }).join('');
 }
 
 /* ---------- 스태프 확인 시트 ---------- */
+/* 실전 서버 (쿠지 시스템 Cloud Functions). 연습은 서버를 부르지 않는다 */
+var API='https://asia-northeast3-psbjeju-kuji.cloudfunctions.net/';
+function api(fn, data){
+  return fetch(API+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:data||{}})})
+    .then(function(r){ return r.json().catch(function(){ return {error:{message:'연결이 안 돼요'}}; }); })
+    .then(function(j){ if (j.error) throw new Error(j.error.message||'다시 해 주세요'); return j.result; },
+          function(e){ if (e && e.message && !/fetch/i.test(e.message)) throw e; throw new Error('인터넷 연결을 확인해 주세요'); });
+}
+function sync(v){
+  if (!v) return; S.pass=!!v.pass; S.boxes=v.boxes||0; S.adv=v.adv||0; S.found=v.found||{};
+  S.picks=(v.picks||[]).map(function(k){ return {code:k.code, kind:k.kind, id:k.id, name:k.name, given:!!k.given, at:k.at, prac:false}; });
+  save();
+}
+function needPid(){ return S.pid ? Promise.resolve(S.pid) : api('santaJoin',{nick:S.nick}).then(function(r){ S.pid=r.pid; save(); return r.pid; }); }
+/* 스태프가 손님 폰에서 PIN 입력 → onOk(pin) 은 Promise 를 돌려준다 */
 function staffSheet(title, desc, onOk){
-  $('sheetBox').innerHTML='<h4>'+title+'</h4><p>'+desc+'</p><input id="sc" inputmode="numeric" placeholder="스태프 코드" autocomplete="off"><div style="height:12px"></div><div class="row"><button class="btn ghost" data-act="closeSheet">취소</button><button class="btn navy" id="scOk">확인</button></div>';
+  $('sheetBox').innerHTML='<h4>'+title+'</h4><p>'+desc+'</p><input id="sc" type="password" inputmode="numeric" placeholder="스태프 PIN" autocomplete="off"><div style="height:12px"></div><div class="row"><button class="btn ghost" data-act="closeSheet">취소</button><button class="btn navy" id="scOk">확인</button></div>';
   $('sheet').classList.add('on'); setTimeout(function(){ $('sc').focus(); },50);
-  $('scOk').onclick=function(){ if ($('sc').value.trim()!==D.staffCode) return toast('코드가 틀려요'); closeSheet(); onOk(); };
+  var busy=false;
+  $('scOk').onclick=function(){
+    var pin=$('sc').value.trim(); if (!pin || busy) return; busy=true; $('scOk').textContent='확인 중…';
+    Promise.resolve(onOk(pin)).then(function(){ closeSheet(); }, function(e){ busy=false; $('scOk').textContent='확인'; toast(e.message||'다시 해 주세요'); });
+  };
 }
 function closeSheet(){ $('sheet').classList.remove('on'); }
 
@@ -355,6 +377,11 @@ function arrive(raw){
   raw=String(raw||'').trim();
   var m=raw.match(/[?&]z=([A-Za-z0-9]+)/); var code=(m?m[1]:raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
   if (!code) return;
+  if (LIVE){
+    return needPid().then(function(pid){ return api('santaFind',{pid:pid, code:code}); }).then(function(v){
+      sync(v); var tut=v.id[0]==='t'; found(v.id, tut, qType(v.id), v.bonus);
+    }, function(e){ toast(e.message); if (/모험/.test(e.message)){ tab='box'; render(); } });
+  }
   sha(H.salt+code).then(function(h){
     var days = LIVE ? [today()] : Object.keys(H.codes);   // 연습 땐 이틀 코드 모두 허용
     var id=null; days.forEach(function(d){ if (!id && H.codes[d] && H.codes[d][h]) id=H.codes[d][h]; });
@@ -365,7 +392,7 @@ function arrive(raw){
     found(id, tut, t);
   }, function(){ toast('이 브라우저에선 안 돼요'); });
 }
-function found(id, tut, t){
+function found(id, tut, t, bonus){
   var FX=window.HuntFX, q=tut?H.tutorial.filter(function(x){return x.id===id;})[0]:null;
   var name = tut ? q.name : TYPE[t]+' '+(+id.slice(1));
   var sub = t==='mission' ? '미션 성공!' : (t==='cos' ? '코스어 보물!' : '보물 발견!');
@@ -374,7 +401,7 @@ function found(id, tut, t){
   if (FX){ FX.start(); FX.buzz([20,60,20]);
     setTimeout(function(){ var c=FX.center(s.querySelector('.imap')); FX.burst(c.x,c.y,24,'spark',{sp:8,life:55}); FX.sfx('pop',.5); },850);
     setTimeout(function(){ FX.shake(s,8,300); FX.sfx('boom',.35); FX.buzz(40); },1050); }
-  var z={id:id, tut:tut, name:name};
+  var z={id:id, tut:tut, name:name, bonus:bonus};
   setTimeout(function(){ (Math.random()<0.5 ? battle : quiz)(z); }, 2100);
 }
 function scan(){
@@ -424,6 +451,7 @@ function quiz(z){
   }; });
 }
 function foundZone(z){
+  if (LIVE) return setTimeout(function(){ openChest(null, z.bonus); },900);   // 서버가 이미 기록함
   S.found[z.id]=Date.now(); var bonus=false;
   if (!z.tut){ S.adv=Math.max(0,S.adv-1); if (S.adv%H.advFinds===0){ S.boxes+=H.advBonus; bonus=true; } }
   save(); setTimeout(function(){ openChest(null, bonus); },900);
@@ -431,8 +459,15 @@ function foundZone(z){
 
 /* ---------- 상자 열기 ---------- */
 function openChest(fromPack, bonus){
-  var res=rollBox(), tier=res.tier, gold=tier==='gold', FX=window.HuntFX, T=[], done=false;
-  var code=grant(res);   // 결과는 먼저 저장(중간에 나가도 상품 유지)
+  if (!LIVE){ var r0=rollBox(); return playChest(r0, grant(r0), fromPack, bonus); }   // 연습: 폰 안에서
+  scene('<h3 class="shout">상자 가져오는 중…</h3>');
+  api('santaOpen',{pid:S.pid}).then(function(v){
+    sync(v); var r=v.result;
+    playChest({kind:r.kind, id:r.id, name:r.name, tier:r.kind==='upper'?'gold':'wood'}, r.code, fromPack, bonus);
+  }, function(e){ toast(e.message); endScene(); });
+}
+function playChest(res, code, fromPack, bonus){
+  var tier=res.tier, gold=tier==='gold', FX=window.HuntFX, T=[], done=false;
   function later(f,ms){ T.push(setTimeout(f,ms)); }
   var s=scene('<div class="cine top"></div><div class="cine bot"></div><div class="beam" id="bm"></div><div class="glow" id="gl"></div><button class="skip" id="sk">건너뛰기</button><h3 class="shout" id="sh">눌러서 열기!</h3><div class="peek"><img class="pface" src="'+rita('pirate_face')+'" alt=""><img class="chest drop" id="ch" src="img/chest_wood_closed.webp" alt=""></div><div class="taps" id="tp"><i></i><i></i><i></i></div>'+(fromPack?'<div class="left">남은 상자 '+S.boxes+'</div>':''));
   s.classList.remove('legend');
@@ -491,7 +526,7 @@ function openChest(fromPack, bonus){
       '<h3 class="slam">'+esc(res.name)+'</h3>'+(LIVE?'<div class="code up">'+code+'</div><p class="up">부스에서 코드 보여 주기</p>':'<div class="code up">연습</div><p class="up">12.12 오전 10시 오픈</p>')+
       (bonus?'<p class="up" style="color:#FFE27A;font-weight:900">모험 완료! 보너스 상자 +'+H.advBonus+'</p>':'')+(fromPack && S.boxes>0 ? '<button class="btn late" id="nx">다음 ('+S.boxes+')</button>' : '<button class="btn late" id="nx">확인</button>');
     if (FX) later(function(){ var r=s.querySelector('.reveal'); if(!r) return; var c2=FX.center(r); FX.flash('#FFFFFF',200); FX.burst(c2.x,c2.y,gold?30:16,'spark',{sp:7,life:50}); FX.sfx('pop',.4); FX.buzz(20); if(gold) FX.rain(1800); },560);
-    $('nx').onclick=function(){ if (fromPack && S.boxes>0){ S.boxes--; save(); openChest(true); } else endScene(); };
+    $('nx').onclick=function(){ if (fromPack && S.boxes>0){ if (!LIVE){ S.boxes--; save(); } openChest(true); } else endScene(); };
   }
 }
 
@@ -505,7 +540,7 @@ document.addEventListener('click', function(e){
     var nk=($('nick').value||'').trim(); if(!nk) return toast('닉네임을 적어 주세요');
     S.nick=nk; save();
     if (!LIVE){ S.pass=true; save(); toast('연습 시작!'); return render(); }
-    return staffSheet('보물찾기 체험 '+won(D.passPrice), '스태프 확인', function(){ S.pass=true; save(); toast('시작!'); render(); });
+    return staffSheet('보물찾기 체험 '+won(D.passPrice), '스태프 확인', function(pin){ return needPid().then(function(pid){ return api('santaBuy',{pid:pid, kind:'pass', pin:pin}); }).then(function(v){ sync(v); toast('시작!'); render(); }); });
   }
   if (a==='scan') return scan();
   if (a==='typeCode') return typeCode();
@@ -513,16 +548,17 @@ document.addEventListener('click', function(e){
     var price=D.packPrice, adv=t.dataset.kind==='adv';
     var give=function(){ S.packs++; if (adv) S.adv+=H.advFinds; else S.boxes+=D.packBoxes; save(); if (adv) tab='home'; render(); toast(adv?'모험 시작! 보물 '+H.advFinds+'개':'상자 +'+D.packBoxes); };
     if (!LIVE) return give();
-    return staffSheet((adv?'모험 ':'딸깍 ')+won(price), '스태프 확인', give);
+    return staffSheet((adv?'모험 ':'딸깍 ')+won(price), '스태프 확인', function(pin){ return needPid().then(function(pid){ return api('santaBuy',{pid:pid, kind:adv?'adv':'click', pin:pin}); }).then(function(v){ sync(v); if (adv) tab='home'; render(); toast(adv?'모험 시작! 보물 '+H.advFinds+'개':'상자 +'+D.packBoxes); }); });
   }
-  if (a==='open'){ if(S.boxes<=0) return; S.boxes--; save(); return openChest(true); }
-  if (a==='giveAll') return staffSheet('지급 완료','스태프 확인', function(){ S.picks.forEach(function(p){ if(!p.prac) p.given=true; }); save(); render(); });
+  if (a==='open'){ if(S.boxes<=0) return; if (!LIVE){ S.boxes--; save(); } return openChest(true); }
+  if (a==='giveAll') return staffSheet('상품 받기','스태프 확인', function(pin){ return api('santaGive',{pid:S.pid, pin:pin}).then(function(v){ sync(v); render(); toast(v.given+'개 지급 완료'); }); });
 });
 $('sheet').addEventListener('click', function(e){ if(e.target===this) closeSheet(); });
 
 // QR 이 주소 형태(…/santa/?z=SLIM)로 찍혀 들어온 경우
 var qz=new URLSearchParams(location.search).get('z');
 render();
+if (LIVE && S.pid) api('santaState',{pid:S.pid}).then(function(v){ sync(v); if (!$('scene').classList.contains('on')) render(); }, function(){});
 if (qz && S.pass){ history.replaceState(null,'',location.pathname); arrive(qz); }
 })();
 </script>
