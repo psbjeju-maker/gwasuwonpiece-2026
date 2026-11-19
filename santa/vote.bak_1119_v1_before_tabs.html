@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>랜플댄 신청곡 투표</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'Paperlogy';src:url(img/Paperlogy-8ExtraBold.ttf) format('truetype');font-weight:800 900;font-display:swap}
+/* 디자인 시스템: 전술 UI풍(레퍼런스: 연회색 패널 + 차콜 바 + 파랑·노랑 포인트 + 각진 모서리). 장식 없이 색과 모양으로만 */
+:root{--ch:#262A30;--ch2:#32373F;--bl:#17A0F6;--bl-d:#0C80CF;--yl:#F4C20D;--pn:#F4F5F7;--ink:#1B1F24;--dim:#7A828C;--ln:#D3D8DE;--ok:#18B26B;--red:#E5334A;
+  --cut:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px))}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;color:var(--ink);font-family:Pretendard,system-ui,sans-serif;background:#DADEE4 repeating-linear-gradient(135deg,transparent 0 7px,rgba(255,255,255,.35) 7px 8px)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+.pl{font-family:Paperlogy,Pretendard,sans-serif;font-weight:800}
+
+/* 상단 바: 차콜 + 자원 칩 */
+header{position:sticky;top:0;z-index:5;background:var(--ch);color:#fff;padding:calc(8px + env(safe-area-inset-top,0px)) 14px 8px;border-bottom:2px solid #11141A}
+header .in{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px}
+header img{height:22px}
+header .t{font-weight:800;font-size:14px;flex:1;min-width:0;white-space:nowrap}
+.res{display:flex;align-items:center;gap:6px;background:#15181D;padding:5px 10px 5px 8px;font-weight:800;font-size:13px;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px))}
+.res i{display:block;width:8px;height:8px;background:var(--bl)}
+.res.v i{background:var(--yl)}
+.res b{font-variant-numeric:tabular-nums}
+header .who{display:none}
+
+/* 히어로: 차콜 패널 */
+.hero{background:var(--ch2) repeating-linear-gradient(135deg,transparent 0 9px,rgba(255,255,255,.03) 9px 10px);color:#fff;padding:22px 16px 34px}
+.hero .in{max-width:520px;margin:0 auto}
+.hero .eyebrow{display:flex;align-items:center;gap:8px;font-weight:800;font-size:11px;letter-spacing:2px;color:#9FB0C2}
+.hero .eyebrow:before{content:'';width:10px;height:10px;background:var(--yl)}
+.hero h1{margin:10px 0 0;font-family:Paperlogy,Pretendard,sans-serif;font-weight:800;font-size:clamp(40px,13vw,60px);line-height:1;letter-spacing:-2.5px}
+.hero h1 em{display:block;font-style:normal;color:var(--bl)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.chip{background:#1B1F25;color:#DCE3EA;font-weight:700;font-size:12px;padding:7px 12px;border-left:3px solid var(--bl)}
+.chip.y{border-left-color:var(--yl)}
+
+/* 본문 패널 */
+.wrap{max-width:520px;margin:-18px auto 0;padding:0 12px calc(130px + env(safe-area-inset-bottom,0px));position:relative;z-index:2}
+.panel{background:var(--pn);padding:6px 14px 18px;box-shadow:0 8px 24px -12px rgba(0,0,0,.5);clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)}
+h2{display:flex;align-items:center;gap:9px;margin:22px 0 12px;font-weight:900;font-size:17px;letter-spacing:-.3px}
+h2:before{content:'';width:10px;height:10px;background:var(--yl);flex:none}
+h2 .live{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:1.5px;color:#fff;background:var(--ok);padding:3px 8px}
+h2 .live:before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin-right:6px;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.3}}
+
+/* 순위 */
+ol.rank{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}
+ol.rank li{position:relative;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--ln);padding:11px 12px 15px 12px;overflow:hidden}
+ol.rank .bar{position:absolute;left:0;bottom:0;height:4px;background:var(--bl);z-index:0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+ol.rank li>*:not(.bar){position:relative;z-index:1}
+ol.rank .n{flex:none;min-width:34px;height:26px;padding:0 6px;background:#4A5360;color:#fff;font-family:Paperlogy,Pretendard,sans-serif;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px))}
+ol.rank .nm{flex:1;min-width:0;font-weight:800;font-size:15px;line-height:1.25}
+ol.rank .nm small{display:block;font-size:11px;color:var(--dim);font-weight:700;margin-top:2px;letter-spacing:.2px}
+ol.rank .sc{font-family:Paperlogy,Pretendard,sans-serif;font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+ol.rank .sc:after{content:'표';font-family:Pretendard,sans-serif;font-size:11px;font-weight:700;color:var(--dim);margin-left:2px}
+/* 1~3위 */
+ol.rank li.p1,ol.rank li.p2,ol.rank li.p3{padding:16px 12px 19px}
+ol.rank li.p1 .n,ol.rank li.p2 .n,ol.rank li.p3 .n{min-width:44px;height:34px;font-size:20px}
+ol.rank li.p1{background:#FFF8DC}
+ol.rank li.p1 .n{background:var(--yl);color:#3C2C00}
+ol.rank li.p2 .n{background:#8E99A8}
+ol.rank li.p3 .n{background:#C98B57}
+ol.rank li.p1 .nm{font-size:19px}ol.rank li.p1 .sc{font-size:28px}
+ol.rank li.p2 .nm,ol.rank li.p3 .nm{font-size:17px}ol.rank li.p2 .sc,ol.rank li.p3 .sc{font-size:23px}
+/* 30위 안: 왼쪽 노란 띠 + 빛이 지나간다 */
+ol.rank li.top{box-shadow:inset 4px 0 0 var(--yl)}
+ol.rank li.top:after{content:'';position:absolute;top:0;bottom:0;left:-40%;width:28%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);transform:skewX(-20deg);animation:sheen 3.2s ease-in-out infinite;pointer-events:none;z-index:2}
+ol.rank li.top:nth-child(3n):after{animation-delay:.9s}
+ol.rank li.top:nth-child(3n+1):after{animation-delay:1.8s}
+@keyframes sheen{0%{left:-40%}55%,100%{left:130%}}
+ol.rank li.cutline{display:flex;align-items:center;gap:10px;background:var(--ch);color:#fff;padding:9px 12px;font-weight:800;font-size:12px;letter-spacing:.5px;box-shadow:none}
+ol.rank li.cutline:before{content:'';width:8px;height:8px;background:var(--yl)}
+ol.rank li.cutline:after{display:none}
+ol.rank li.out{opacity:.7}
+ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;color:#fff;background:var(--ok);padding:2px 6px;margin-left:6px;vertical-align:middle}
+.empty{background:#fff;color:var(--dim);font-weight:700;padding:26px 16px;text-align:center}
+@media (prefers-reduced-motion:reduce){ol.rank li.top:after{animation:none;display:none}}
+
+/* 내 투표: 5칸 슬롯 */
+.tray{margin-bottom:12px}
+.tray .tt{font-weight:800;font-size:12px;color:var(--dim);margin-bottom:8px;letter-spacing:.3px}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.slot{position:relative;min-height:92px;padding:8px 6px;background:var(--ch);color:#fff;font-weight:800;font-size:11px;line-height:1.25;display:flex;flex-direction:column;justify-content:flex-end;word-break:keep-all;overflow:hidden;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
+.slot:before{content:attr(data-n);position:absolute;left:6px;top:5px;font-family:Paperlogy,Pretendard,sans-serif;font-size:18px;color:var(--yl)}
+.slot span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.slot.empty{background:#C9CFD7;color:#fff}
+.slot.empty:before{content:'+';left:50%;top:50%;transform:translate(-50%,-50%);font-size:30px;color:#fff;font-weight:400}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:0 -14px 4px;padding:2px 14px 10px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;font-weight:800;font-size:13px;padding:9px 16px;background:#E3E7EC;color:var(--dim);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.tab.on{background:var(--bl);color:#fff}
+.series{font-weight:900;font-size:13px;color:var(--ink);margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+.series:before{content:'';width:6px;height:14px;background:var(--bl)}
+.songs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.song{position:relative;display:flex;align-items:center;gap:8px;width:100%;min-height:58px;text-align:left;padding:10px 38px 10px 12px;background:#fff;border:1px solid var(--ln);font-weight:700;font-size:14px;line-height:1.3;word-break:keep-all;transition:transform .08s}
+.song:active{transform:scale(.97)}
+.song .box{position:absolute;right:10px;top:50%;margin-top:-10px;width:20px;height:20px;background:#E3E7EC}
+.song.on{background:#E7F5FE;border-color:var(--bl);box-shadow:inset 3px 0 0 var(--bl)}
+.song.on .box{background:var(--bl)}
+.song.on .box:after{content:'';position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(40deg)}
+.song.off{opacity:.4}
+.login{display:block;width:100%;padding:16px;font-size:16px;font-weight:900;background:var(--ch);color:#fff;border-bottom:4px solid #0E1013;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+.login:active{transform:translateY(2px)}
+.done{font-weight:800;font-size:14px;color:var(--ok);margin:0 0 10px}
+
+/* 하단 바 */
+.bar-fix{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--ch);border-top:2px solid #11141A;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+.bar-fix .in{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.bar-fix .cnt{flex:1;font-weight:800;font-size:13px;color:#9FB0C2}
+.bar-fix .cnt b{font-family:Paperlogy,Pretendard,sans-serif;font-weight:800;font-size:28px;color:var(--yl);margin-right:2px}
+.bar-fix .go{background:var(--bl);color:#fff;font-weight:900;font-size:16px;padding:14px 30px;border-bottom:4px solid var(--bl-d);clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));transition:transform .08s}
+.bar-fix .go:active{transform:translateY(2px)}
+.bar-fix .go[disabled]{opacity:.35}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--ch);color:#fff;font-weight:800;padding:11px 18px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;border-left:4px solid var(--yl)}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header><div class="in"><img src="img/mhlogo.png" alt=""><div class="t">산타왔수다</div><span class="res"><i></i><b id="stV">0</b>명</span><span class="res v"><i></i><b id="stP">0</b>표</span><div class="who" id="who"></div></div></header>
+<section class="hero"><div class="in">
+  <div class="eyebrow">RANDOM PLAY DANCE</div>
+  <h1>랜플댄<em>신청곡 투표</em></h1>
+  <div class="chips"><span class="chip y">12/13(일)</span><span class="chip">1인 5곡</span><span class="chip">상위 30곡 선곡</span><span class="chip">12/10(목) 마감</span></div>
+</div></section>
+<div class="wrap"><div class="panel">
+  <h2>실시간 순위<span class="live">LIVE</span></h2>
+  <ol class="rank" id="rank"><li class="empty">불러오는 중</li></ol>
+
+  <h2>내 투표</h2>
+  <div id="ballot"></div>
+</div></div>
+<div class="bar-fix" id="bar" hidden><div class="in"><div class="cnt"><b id="cnt">0</b>/ 5 선택</div><button class="go" id="go">투표하기</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* 곡 목록 — 신청곡 댓글 집계(2026-11-19). id 는 바꾸지 말 것(투표 기록이 id로 저장됨) */
+var SONGS=[
+ ['프리파라',[['p01','후와리'],['p02','Make it!'],['p03','프리티 프리즘 파라다이스'],['p04','해피면럭키'],['p05','NO D&D CODE'],['p06','리얼라이즈 드림퍼레이드'],['p07','리버시블링'],['p08','프리파라폴리스'],['p09','레디스마일'],['p10','카리스마트걸'],['p11','트라이앵글스타'],['p12','어메이징캐슬'],['p13','슈거리스바이프랜드']]],
+ ['아이엠스타',[['i01','오리지널스타'],['i02','아이엠스타'],['i03','패션체크'],['i04','다이아몬드해피'],['i05','해피크레센도'],['i06','렛츠아이엠스타'],['i07','무브온나우'],['i08','마이스타웨이'],['i09','미소짓는선캐쳐']]],
+ ['샤이닝스타',[['s01','샤이닝스타'],['s02','섬데이'],['s03','드림드림드림']]],
+ ['러브라이브',[['l01','스타트대쉬'],['l02','우리들은 지금 속에서'],['l03','솔져게임'],['l04','G선상의 신데렐라'],['l05','스노우하레이션']]],
+ ['우마무스메',[['u01','우마뾰이 전설'],['u02','매니슈키라슈슈']]],
+ ['보컬로이드·프로세카',[['v01','신의 뜻대로'],['v02','동화가 된다면 좋을텐데'],['v03','루카루카 나이트 피버'],['v04','테토의 브레인롯'],['v05','크림소다의 샹들리에'],['v06','드리밍 츄츄'],['v07','히이라기 마그네이트'],['v08','비터 초코 데코레이션'],['v09','천년 살고있어'],['v10','오페라! 스페이스! 오페라!'],['v11','변덕쟁이 메르시'],['v12','세계를 비추는 테트라드'],['v13','데빌이 아닌걸'],['v14','FUN!'],['v15','헬로 세카이'],['v16','처단하겠다AAAAA!'],['v17','빙그레^^조사대의 테마'],['v18','톤데모 원더즈'],['v19','킬러 (More More Jump!)'],['x06','뛰어나가! 원더뾰이 (원더랜즈×쇼타임)']]],
+ ['J-POP',[['j01','아이돌 (요아소비)'],['j02','코이 (호시노 겐)'],['j03','사랑을 전하고 싶다던가 (아이묭)'],['x07','나, 아이돌 선언 (허니웍스)'],['x08','B코마치 리벤지']]],
+ ['기타',[['x01','큐티스트릿'],['x02','죠죠 갱댄스'],['x03','포켓몬 포케댄스'],['x04','파자마 파티즈'],['x05','아이돌 신예대 (모어모어점프)']]]
+];
+/* 마감 2026-12-10 23:59:59 KST. 규칙(firestore.rules)의 마감과 같이 고칠 것 */
+var CLOSE_AT=new Date('2026-12-10T23:59:59+09:00');
+function isClosed(){return Date.now()>=CLOSE_AT.getTime()}
+var MAX=5,TOP=30,ALL={},LIST=[];
+SONGS.forEach(function(g){g[1].forEach(function(s){ALL[s[0]]={id:s[0],name:s[1],series:g[0]};LIST.push(ALL[s[0]])})});
+
+var $=function(i){return document.getElementById(i)};
+var db,auth,user=null,counts={},voters=0,myPicks=[],sel=[],saved=false,votes={},tabSel='전체';
+var DEMO=/[?&]demo=/.test(location.search);
+/* 내가 이미 투표했는지: 집계 스냅샷(votes)에서 내 uid 문서를 찾는다. 로그인·스냅샷 어느 쪽이 먼저 와도 맞게 */
+function syncMine(){
+  if(!user||saved)return;
+  var m=votes[user.uid];
+  if(m){saved=true;myPicks=m.filter(function(id){return ALL[id]});renderBallot()}
+}
+
+function toast(t){var e=$('toast');e.textContent=t;e.className='toast on';setTimeout(function(){e.className='toast'},2200)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+function renderRank(){
+  var total=0;for(var k in counts)total+=counts[k];
+  $('stV').textContent=voters;$('stP').textContent=total;
+  var arr=LIST.map(function(s){return{s:s,c:counts[s.id]||0}});
+  arr.sort(function(a,b){return b.c-a.c||(a.s.id<b.s.id?-1:1)});
+  var max=arr[0]?arr[0].c:0;
+  if(!voters){$('rank').innerHTML='<li class="empty">아직 투표가 없어요. 첫 투표를 해 주세요</li>';return}
+  var h='';
+  arr.forEach(function(r,i){
+    if(i===TOP)h+='<li class="cutline">여기까지 30곡 선곡</li>';
+    var w=max?Math.round(r.c/max*100):0, mine=myPicks.indexOf(r.s.id)>=0, inTop=i<TOP&&r.c>0;
+    var cls=(i<3&&r.c>0?'p'+(i+1)+' ':'')+(mine?'mine ':'')+(inTop?'top':i>=TOP?'out':'');
+    h+='<li class="'+cls+'"><div class="bar" style="width:'+w+'%"></div><span class="n">'+(i+1)+'</span><span class="nm">'+esc(r.s.name)+'<small>'+esc(r.s.series)+'</small></span><span class="sc">'+r.c+'</span></li>';
+  });
+  $('rank').innerHTML=h;
+}
+
+function trayHtml(ids,title){
+  var h='<div class="tray"><div class="tt">'+title+'</div><div class="slots">';
+  for(var i=0;i<MAX;i++){
+    if(ids[i])h+='<div class="slot" data-n="'+(i+1)+'"><span>'+esc(ALL[ids[i]].name)+'</span></div>';
+    else h+='<div class="slot empty"></div>';
+  }
+  return h+'</div></div>';
+}
+
+function renderBallot(){
+  var el=$('ballot');
+  if(isClosed()&&!saved){$('bar').hidden=true;el.innerHTML='<p class="done">투표가 끝났어요</p>';return}
+  if(!user){
+    el.innerHTML='<button class="login" id="login">구글로 로그인하고 투표</button>';
+    $('login').onclick=login;$('bar').hidden=true;return;
+  }
+  if(saved){ /* 한 번 투표하면 확정: 수정 불가, 고른 곡만 보여준다 */
+    $('bar').hidden=true;
+    el.innerHTML='<p class="done">투표 완료 · 수정할 수 없어요</p>'+trayHtml(myPicks,'내가 고른 곡 (투표 완료)');
+    return;
+  }
+  var h=trayHtml(sel,'내가 고른 곡 · '+sel.length+' / '+MAX);
+  h+='<div class="tabs" id="tabs">';
+  ['전체'].concat(SONGS.map(function(g){return g[0]})).forEach(function(t){h+='<button class="tab'+(t===tabSel?' on':'')+'" data-t="'+esc(t)+'">'+esc(t)+'</button>'});
+  h+='</div>';
+  SONGS.forEach(function(g){
+    if(tabSel!=='전체'&&tabSel!==g[0])return;
+    h+='<div class="series">'+esc(g[0])+'</div><div class="songs">';
+    g[1].forEach(function(s){
+      var on=sel.indexOf(s[0])>=0, off=!on&&sel.length>=MAX;
+      h+='<button class="song'+(on?' on':'')+(off?' off':'')+'" data-id="'+s[0]+'"><span>'+esc(s[1])+'</span><span class="box"></span></button>';
+    });
+    h+='</div>';
+  });
+  el.innerHTML=h;
+  [].forEach.call(el.querySelectorAll('.song'),function(b){b.onclick=function(){pick(b.dataset.id)}});
+  [].forEach.call(el.querySelectorAll('.tab'),function(b){b.onclick=function(){tabSel=b.dataset.t;renderBallot()}});
+  $('bar').hidden=false;updateBar();
+}
+function updateBar(){
+  $('cnt').textContent=sel.length;
+  var g=$('go');g.disabled=!sel.length;g.textContent='투표하기';
+}
+function pick(id){
+  var i=sel.indexOf(id);
+  if(i>=0)sel.splice(i,1);
+  else{if(sel.length>=MAX){toast('5곡까지만 고를 수 있어요');return}sel.push(id)}
+  renderBallotLight();
+}
+function renderBallotLight(){ /* 스크롤 위치 유지: 목록은 그대로 두고 상태만 갱신 */
+  [].forEach.call(document.querySelectorAll('.song'),function(b){
+    var on=sel.indexOf(b.dataset.id)>=0;
+    b.className='song'+(on?' on':'')+(!on&&sel.length>=MAX?' off':'');
+  });
+  var t=document.querySelector('.tray');
+  if(t){var d=document.createElement('div');d.innerHTML=trayHtml(sel,'내가 고른 곡 · '+sel.length+' / '+MAX);t.parentNode.replaceChild(d.firstChild,t)}
+  updateBar();
+}
+
+function login(){
+  var p=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(p).catch(function(e){
+    if(e&&e.code==='auth/popup-blocked')auth.signInWithRedirect(p);
+    else if(!e||e.code!=='auth/popup-closed-by-user')toast('로그인에 실패했어요');
+  });
+}
+
+function save(){
+  if(!user||!sel.length)return;
+  var b=$('go');b.disabled=true;
+  var T=firebase.firestore.FieldValue.serverTimestamp();
+  var batch=db.batch();
+  batch.set(db.collection('santaVotes').doc(user.uid),{picks:sel.slice(),at:T});
+  batch.set(db.collection('santaVoters').doc(user.uid),{email:user.email,name:user.displayName||'',at:T});
+  batch.commit().then(function(){saved=true;myPicks=sel.slice();toast('투표 완료');renderBallot();renderRank()})
+   .catch(function(e){console.error(e);toast(e&&e.code==='permission-denied'?'이미 투표했거나 저장할 수 없어요':'저장에 실패했어요. 다시 눌러 주세요');b.disabled=false});
+}
+
+function start(){
+  var SDK='https://www.gstatic.com/firebasejs/10.12.2/';
+  function load(u){return new Promise(function(r,j){var s=document.createElement('script');s.src=u;s.onload=r;s.onerror=j;document.head.appendChild(s)})}
+  load(SDK+'firebase-app-compat.js').then(function(){return Promise.all([load(SDK+'firebase-auth-compat.js'),load(SDK+'firebase-firestore-compat.js')])}).then(function(){
+    firebase.initializeApp({apiKey:'AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts',authDomain:'psbjeju-kuji.firebaseapp.com',projectId:'psbjeju-kuji',appId:'1:627012765686:web:41178983d00eb37fd029d7'});
+    db=firebase.firestore();auth=firebase.auth();
+    /* 실시간 집계: 투표 문서가 바뀔 때마다 다시 세서 순위를 위로 올린다 */
+    db.collection('santaVotes').onSnapshot(function(snap){
+      var c={},n=0;votes={};
+      snap.forEach(function(d){
+        n++;var p=d.data().picks||[];votes[d.id]=p;
+        p.forEach(function(id){if(ALL[id])c[id]=(c[id]||0)+1});
+      });
+      counts=c;voters=n;
+      syncMine();renderRank();
+    },function(e){console.error(e);$('rank').innerHTML='<li class="empty">순위를 불러오지 못했어요</li>'});
+    auth.onAuthStateChanged(function(u){
+      user=u;saved=false;myPicks=[];sel=[];
+      $('who').textContent=u?(u.displayName||u.email):'';
+      syncMine();renderBallot();renderRank();
+    });
+  }).catch(function(e){console.error(e);$('rank').innerHTML='<li class="empty">연결에 실패했어요. 새로고침해 주세요</li>'});
+}
+$('go').onclick=save;
+if(DEMO){ /* ?demo=1 미리보기: 가짜 집계로 디자인만 확인 (?demo=out 은 로그아웃 상태, ?demo=done 은 투표 완료 상태) */
+  var seed=7,rnd=function(){seed=(seed*9301+49297)%233280;return seed/233280};
+  LIST.forEach(function(s,i){counts[s.id]=Math.max(0,Math.round(34*Math.exp(-i/14)*(0.55+rnd()*0.9))-(i>45?3:0))});
+  voters=37;
+  if(!/demo=out/.test(location.search)){user={uid:'demo',displayName:'미리보기',email:''};$('who').textContent='미리보기';
+    if(/demo=done/.test(location.search)){saved=true;myPicks=['p02','i02','l05','v01','j01']}else sel=['p02','l05']}
+  renderBallot();renderRank();
+}else{renderBallot();start()}
+</script>
+</body>
+</html>

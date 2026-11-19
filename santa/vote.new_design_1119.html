@@ -115,6 +115,20 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
 .note{margin:14px 0 0;padding:12px 14px;background:#FFF4CE;border-left:4px solid var(--yl);font-weight:700;font-size:13px;line-height:1.5}
 .note button{display:inline-block;margin-top:8px;padding:8px 14px;background:var(--ch);color:#fff;font-weight:800;font-size:13px}
 .done{font-weight:800;font-size:14px;color:var(--ok);margin:14px 0 10px}
+.warn{margin:14px 0 0;padding:12px 14px;background:#FFF4CE;border-left:5px solid var(--yl);font-weight:800;font-size:14px;line-height:1.45}
+.warn b{background:var(--ch);color:var(--yl);padding:1px 7px;margin:0 2px}
+/* 확정 시트: 투표는 1번뿐이라 누르기 전에 한 번 더 묻는다 */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(15,18,22,.66);display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{width:100%;max-width:520px;background:var(--pn);padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,0 100%)}
+.sheet h3{margin:0 0 4px;font-weight:900;font-size:21px;letter-spacing:-.5px}
+.sheet .sub{margin:0 0 12px;font-weight:800;font-size:14px;color:var(--red)}
+.sheet ol{list-style:none;margin:0 0 14px;padding:0;border-top:2px solid var(--ink)}
+.sheet li{display:flex;gap:12px;align-items:center;background:#fff;padding:10px 12px;border-bottom:1px solid var(--ln);font-weight:800;font-size:15px}
+.sheet li i{font-style:normal;font-family:Paperlogy,Pretendard,sans-serif;color:var(--bl);font-size:17px;width:20px}
+.sheet .row{display:flex;gap:10px}
+.sheet .row button{flex:1;padding:15px;font-weight:900;font-size:16px}
+.sheet .no{background:#D5DAE1;color:var(--ink)}
+.sheet .yes{background:var(--bl);color:#fff;border-bottom:4px solid var(--bl-d);flex:1.4!important}
 
 /* 하단 바 */
 .bar-fix{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--ch);border-top:2px solid #11141A;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
@@ -133,7 +147,7 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
 <section class="hero"><div class="in">
   <div class="eyebrow">RANDOM PLAY DANCE</div>
   <h1>랜플댄<em>신청곡 투표</em></h1>
-  <div class="chips"><span class="chip y">12/13(일)</span><span class="chip">1인 5곡</span><span class="chip">상위 30곡 선곡</span><span class="chip">12/10(목) 마감</span></div>
+  <div class="chips"><span class="chip y">5곡 · 단 1번</span><span class="chip">12/13(일)</span><span class="chip">상위 30곡 선곡</span><span class="chip">12/10(목) 마감</span></div>
 </div></section>
 <nav class="tabsbar"><div class="in"><button class="tb on" data-t="rank" id="tbRank"><span class="ld"></span>순위</button><button class="tb" data-t="vote" id="tbVote">투표<em id="tbN">0/5</em></button></div></nav>
 <div class="wrap"><div class="panel">
@@ -141,6 +155,7 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
   <section id="secVote" hidden><div id="ballot"></div></section>
 </div></div>
 <div class="bar-fix" id="bar" hidden><div class="in"><div class="cnt"><b id="cnt">0</b><span id="cntT">/ 5 선택</span></div><button class="go" id="go">투표하기</button></div></div>
+<div class="sheet" id="sheet" hidden><div class="box"><h3>이 5곡으로 투표할까요?</h3><p class="sub" id="shSub">한 번 투표하면 수정할 수 없어요</p><ol id="shList"></ol><div class="row"><button class="no" id="shNo">다시 고르기</button><button class="yes" id="shYes">투표 확정</button></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -223,7 +238,8 @@ function renderBallot(){
     el.innerHTML='<p class="done">투표 완료 · 수정할 수 없어요</p>'+miniHtml(myPicks,'내가 고른 곡',false).replace('class="mini"','class="mini" style="position:static;border:0;padding-left:0;padding-right:0"');
     updateBar();return;
   }
-  var h=miniHtml(sel,'내가 고른 곡 <b>'+sel.length+' / '+MAX+'</b>',true);
+  var h='<div class="warn">5곡을 골라 <b>단 1번</b>만 투표할 수 있어요. 투표하면 수정할 수 없어요.</div>';
+  h+=miniHtml(sel,'내가 고른 곡 <b>'+sel.length+' / '+MAX+'</b>',true);
   h+='<div class="chips2">';
   ['전체'].concat(SONGS.map(function(g){return g[0]})).forEach(function(t){h+='<button class="fc'+(t===filt?' on':'')+'" data-t="'+esc(t)+'">'+esc(t)+'</button>'});
   h+='</div>';
@@ -308,7 +324,16 @@ function save(){
   batch.commit().then(function(){saved=true;myPicks=sel.slice();toast('투표 완료');renderBallot();renderRank();setTab('rank')})
    .catch(function(e){console.error(e);toast(e&&e.code==='permission-denied'?'이미 투표했거나 저장할 수 없어요':'저장에 실패했어요. 다시 눌러 주세요');b.disabled=false});
 }
-$('go').onclick=function(){if(tab==='rank'&&!saved){setTab('vote');return}save()};
+function openSheet(){
+  if(!sel.length)return;
+  $('shList').innerHTML=sel.map(function(id,i){return '<li><i>'+(i+1)+'</i>'+esc(ALL[id].name)+'</li>'}).join('');
+  $('shSub').textContent=sel.length<MAX?(MAX-sel.length)+'곡 남았어요. 이대로 투표하면 수정할 수 없어요':'한 번 투표하면 수정할 수 없어요';
+  $('sheet').hidden=false;
+}
+$('shNo').onclick=function(){$('sheet').hidden=true};
+$('shYes').onclick=function(){$('sheet').hidden=true;save()};
+$('sheet').onclick=function(e){if(e.target===this)this.hidden=true};
+$('go').onclick=function(){if(tab==='rank'&&!saved){setTab('vote');return}openSheet()};
 [].forEach.call(document.querySelectorAll('.tb'),function(b){b.onclick=function(){setTab(b.dataset.t)}});
 
 function start(){
