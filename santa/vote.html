@@ -83,6 +83,9 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
 .empty{background:#fff;color:var(--dim);font-weight:700;padding:26px 16px;text-align:center}
 @media (prefers-reduced-motion:reduce){ol.rank li.top:after{animation:none;display:none}}
 
+.quota{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.quota span{background:#1B1F25;color:#DCE3EA;font-weight:700;font-size:12px;padding:6px 10px;border-left:3px solid var(--yl)}
+.quota b{color:var(--yl);margin-left:5px;font-weight:900}
 /* 투표 탭: 5칸 슬롯이 위에 붙어 따라온다 */
 .mini{position:sticky;top:calc(var(--hh) + var(--tb) + 3px);z-index:4;background:var(--pn);margin:0 -14px;padding:10px 14px 8px;border-bottom:1px solid var(--ln)}
 .mini .tt{display:flex;justify-content:space-between;font-weight:800;font-size:12px;color:var(--dim);margin-bottom:6px}
@@ -147,11 +150,11 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
 <section class="hero"><div class="in">
   <div class="eyebrow">RANDOM PLAY DANCE</div>
   <h1>랜플댄<em>신청곡 투표</em></h1>
-  <div class="chips"><span class="chip y">5곡 · 단 1번</span><span class="chip">12/13(일)</span><span class="chip">상위 30곡 선곡</span><span class="chip">11/23(월) 마감</span></div>
+  <div class="chips"><span class="chip y">5곡 · 단 1번</span><span class="chip">12/13(일)</span><span class="chip">장르별 30곡 선곡</span><span class="chip">11/23(월) 마감</span></div>
 </div></section>
 <nav class="tabsbar"><div class="in"><button class="tb on" data-t="rank" id="tbRank"><span class="ld"></span>순위</button><button class="tb" data-t="vote" id="tbVote">투표<em id="tbN">0/5</em></button></div></nav>
 <div class="wrap"><div class="panel">
-  <section id="secRank"><h2>실시간 순위<span class="live">LIVE</span></h2><ol class="rank" id="rank"><li class="empty">불러오는 중</li></ol></section>
+  <section id="secRank"><h2>실시간 순위<span class="live">LIVE</span></h2><div class="quota" id="quota"></div><ol class="rank" id="rank"><li class="empty">불러오는 중</li></ol></section>
   <section id="secVote" hidden><div id="ballot"></div></section>
 </div></div>
 <div class="bar-fix" id="bar" hidden><div class="in"><div class="cnt"><b id="cnt">0</b><span id="cntT">/ 5 선택</span></div><button class="go" id="go">투표하기</button></div></div>
@@ -174,6 +177,9 @@ var SONGS=[
 var CLOSE_AT=new Date('2026-11-23T23:59:59+09:00');
 function isClosed(){return Date.now()>=CLOSE_AT.getTime()}
 var MAX=5,TOP=30,ALL={},LIST=[];
+/* 장르별 선곡 수(합계 30). 장르 안에서 득표 상위 N곡이 선곡 */
+var CAP={'프리파라':4,'아이엠스타':4,'샤이닝스타':2,'러브라이브':2,'우마무스메':1,'보컬로이드·프로세카':10,'J-POP':5,'기타':2};
+var CAPN={'보컬로이드·프로세카':'보카로'};
 SONGS.forEach(function(g){g[1].forEach(function(s){ALL[s[0]]={id:s[0],name:s[1],series:g[0]};LIST.push(ALL[s[0]])})});
 
 var $=function(i){return document.getElementById(i)};
@@ -192,6 +198,7 @@ function syncMine(){
 
 /* ── 순위 ── */
 function renderRank(){
+  var q=$('quota');if(q&&!q.innerHTML)q.innerHTML=Object.keys(CAP).map(function(g){return '<span>'+esc(CAPN[g]||g)+'<b>'+CAP[g]+'</b></span>'}).join('');
   var total=0;for(var k in counts)total+=counts[k];
   $('stV').textContent=voters;$('stP').textContent=total;
   updateCounts();
@@ -199,12 +206,12 @@ function renderRank(){
   arr.sort(function(a,b){return b.c-a.c||(a.s.id<b.s.id?-1:1)});
   var max=arr[0]?arr[0].c:0;
   if(!voters){$('rank').innerHTML='<li class="empty">아직 투표가 없어요. 첫 투표를 해 주세요</li>';return}
-  var h='';
+  var h='',gi={};
   arr.forEach(function(r,i){
-    if(i===TOP)h+='<li class="cutline">여기까지 30곡 선곡</li>';
-    var w=max?Math.round(r.c/max*100):0, mine=myPicks.indexOf(r.s.id)>=0, inTop=i<TOP&&r.c>0;
-    var cls=(i<3&&r.c>0?'p'+(i+1)+' ':'')+(mine?'mine ':'')+(inTop?'top':i>=TOP?'out':'');
-    h+='<li class="'+cls+'"><div class="bar" style="width:'+w+'%"></div><span class="n">'+(i+1)+'</span><span class="nm">'+esc(r.s.name)+'<small>'+esc(r.s.series)+'</small></span><span class="sc">'+r.c+'</span></li>';
+    var g=r.s.series;gi[g]=(gi[g]||0)+1;
+    var w=max?Math.round(r.c/max*100):0, mine=myPicks.indexOf(r.s.id)>=0, inTop=gi[g]<=(CAP[g]||0)&&r.c>0;
+    var cls=(i<3&&r.c>0?'p'+(i+1)+' ':'')+(mine?'mine ':'')+(inTop?'top':'out');
+    h+='<li class="'+cls+'"><div class="bar" style="width:'+w+'%"></div><span class="n">'+(i+1)+'</span><span class="nm">'+esc(r.s.name)+'<small>'+esc(g)+(inTop?' · 선곡':'')+'</small></span><span class="sc">'+r.c+'</span></li>';
   });
   $('rank').innerHTML=h;
 }
