@@ -168,6 +168,14 @@ nav button.on img{filter:none}
 .btn.late{animation:fadeUp .4s 1.3s both}
 .tag.slam{animation:slam .45s .35s both}
 @media (prefers-reduced-motion:reduce){.rise,.chest.drop,.imap,.inm,.isub,.slam,.up,.late{animation-duration:.01s!important}}
+.buy{display:grid;grid-template-columns:1fr auto;gap:10px 12px;align-items:center;border:2px solid var(--navy);background:#fff;padding:14px;margin:0 0 10px}
+.buy .bt{display:flex;flex-direction:column;gap:2px}
+.buy .k{align-self:flex-start;background:var(--navy);color:#fff;font-size:12px;font-weight:900;padding:3px 8px;margin-bottom:4px}
+.buy.adv .k{background:var(--org)}
+.buy .bt b{font-size:20px;font-weight:900}.buy .bt i{font-style:normal;font-size:14px;font-weight:800;color:var(--org)}
+.buy .bp{font-size:22px;font-weight:900}
+.buy .btn{grid-column:1/-1;padding:13px}
+.advleft{text-align:center;font-weight:800;margin:4px 0 12px}.advleft b{color:var(--org);font-size:20px}
 .sheet{position:fixed;inset:0;z-index:30;background:rgba(8,36,22,.6);display:none;align-items:flex-end;justify-content:center}
 .sheet.on{display:flex}
 .sheet .bx{background:#fff;width:100%;max-width:480px;border-top:4px solid var(--navy);padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))}
@@ -205,9 +213,9 @@ nav button.on img{filter:none}
 <div class="sheet" id="sheet"><div class="bx" id="sheetBox"></div></div>
 <div class="toast" id="toast"></div>
 
-<script src="data.js"></script>
+<script src="data.js?v=1119c"></script>
 <script src="../mqscan.js"></script>
-<script src="hunt-fx.js"></script>
+<script src="hunt-fx.js?v=1119c"></script>
 <script>
 (function(){
 'use strict';
@@ -224,9 +232,9 @@ if (!LIVE && !S.mode){ S.mode='practice'; save(); }
 var tab = 'home';
 
 function load(fresh){
-  var d = null; if (fresh) return { nick:'', pass:false, found:{}, boxes:0, packs:0, cards:{}, picks:[], seq:0 };
+  var d = null; if (fresh) return { nick:'', pass:false, found:{}, boxes:0, packs:0, adv:0, cards:{}, picks:[], seq:0 };
   try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e){}
-  return d || { nick:'', pass:false, found:{}, boxes:0, packs:0, cards:{}, picks:[], seq:0 };
+  return d || { nick:'', pass:false, found:{}, boxes:0, packs:0, adv:0, cards:{}, picks:[], seq:0 };
 }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 function $(id){ return document.getElementById(id); }
@@ -283,26 +291,35 @@ function viewEntry(){
 function viewSched(){
   return '<div class="sched">'+D.schedule.map(function(s){ return '<div><b>'+esc(s.t)+'</b>'+esc(s.name)+'</div>'; }).join('')+'</div>';
 }
+var H=D.hunt, TYPE={venue:'행사장',booth:'부스 보물',cos:'코스어 보물',mission:'부스 미션'};
+function qType(id){ return id[0]==='t' ? H.tutorial.filter(function(q){return q.id===id;})[0].type : ({b:'booth',c:'cos',m:'mission'})[id[0]]; }
 function foundCount(){ return Object.keys(S.found).length; }
+function tutDone(){ return H.tutorial.filter(function(q){ return S.found[q.id]; }).length; }
+function advDone(t){ return Object.keys(S.found).filter(function(id){ return id[0]!=='t' && qType(id)===t; }).length; }
 function viewHome(){
-  var n=foundCount(), all=D.zones.length;
-  var msg = n<all ? '<b>QR</b> 찍고 상자 열기!'
-                  : '다 찾았어요!';
-  return '<div class="ptitle">Treasure <em>Hunt</em></div>'+guide(n<all?'2':'main', msg)+
-  '<div class="stat"><div><b>'+n+' / '+all+'</b><span>찾은 보물</span></div><div><b>'+S.picks.filter(function(p){return !p.given;}).length+'</b><span>받을 상품</span></div></div>'+
-  (n<all?'<button class="btn" data-act="scan">QR 찍기</button><div style="height:8px"></div><button class="btn ghost" data-act="typeCode">코드 입력</button>':'<button class="btn" data-tab-go="box">딸깍 상자</button>')+
-  '<h2>힌트</h2><div class="zones">'+D.zones.map(function(z){
-    var f=S.found[z.id];
-    return '<div class="zone'+(f?' done':'')+'"><div class="no">0'+(D.zones.indexOf(z)+1)+'</div><div><div class="n">'+esc(z.name)+'</div><div class="h">'+esc(z.hint)+'</div></div><img src="img/chest_'+(f?'wood_open':'wood_closed')+'.webp" alt=""></div>';
+  var td=tutDone(), tn=H.tutorial.length, tutLeft=td<tn;
+  var msg = tutLeft ? '<b>QR</b> 찍고 상자 열기!' : (S.adv>0 ? '<b>모험</b> 남은 보물 '+S.adv+'개' : '이제 <b>모험</b>!');
+  var canScan = tutLeft || S.adv>0;
+  return '<div class="ptitle">Treasure <em>Hunt</em></div>'+guide(tutLeft?'2':'main', msg)+
+  '<div class="stat"><div><b>'+foundCount()+' / 50</b><span>찾은 보물</span></div><div><b>'+S.picks.filter(function(p){return !p.given;}).length+'</b><span>받을 상품</span></div></div>'+
+  (canScan?'<button class="btn" data-act="scan">QR 찍기</button><div style="height:8px"></div><button class="btn ghost" data-act="typeCode">코드 입력</button>':'<button class="btn" data-tab-go="box">모험 떠나기</button>')+
+  '<h2>체험 '+td+' / '+tn+'</h2><div class="zones">'+H.tutorial.map(function(q,i){
+    var f=S.found[q.id];
+    return '<div class="zone'+(f?' done':'')+'"><div class="no">0'+(i+1)+'</div><div><div class="n">'+esc(q.name)+'</div><div class="h">'+esc(q.hint)+'</div></div><img src="img/chest_'+(f?'wood_open':'wood_closed')+'.webp" alt=""></div>';
+  }).join('')+'</div>'+
+  '<h2>모험 '+(foundCount()-td)+' / 45</h2><div class="zones">'+Object.keys(H.adv).map(function(t,i){
+    var a=H.adv[t], d=advDone(t);
+    return '<div class="zone'+(d>=a.n?' done':'')+'"><div class="no">'+String.fromCharCode(65+i)+'</div><div><div class="n">'+esc(a.name)+'</div><div class="h">'+d+' / '+a.n+'</div></div><img src="img/chest_'+(d?'gold_open':'gold_closed')+'.webp" alt=""></div>';
   }).join('')+'</div>'+
   '<h2>귤 자르기</h2><a class="catchgo" href="catch.html"><span class="x">CHRISTMAS<br>UPDATE</span><b>Tangerine <em>Cut</em></b><i>13:00 랭킹전</i></a>'+
   '<h2>오늘 일정</h2>'+viewSched()+'<div class="chk"></div>';
 }
 function viewBox(){
   return '<div class="ptitle">Bonus <em>Box</em></div>'+guide('Q','<b>보물찾기 한 번 더!</b>')+
-  '<div class="boxhero"><img src="img/chest_gold_closed.webp" alt=""><div class="r"><div class="headline" style="margin:0">상자 <em>'+D.packBoxes+'개</em></div><p>피규어·굿즈가 나와요!</p></div></div>'+
-  '<div class="pricebar"><div class="b"><span>딸깍 보물찾기</span><b>'+D.packPrice.toLocaleString('ko-KR')+'<small>원</small></b></div></div>'+
-  (S.boxes>0?'<button class="btn" data-act="open">열기 ('+S.boxes+')</button>':'<button class="btn" data-act="askPack">구매</button>')+
+  (S.boxes>0?'<button class="btn" data-act="open">상자 열기 ('+S.boxes+')</button><div style="height:14px"></div>':'')+
+  '<div class="buy"><div class="bt"><span class="k">딸깍</span><b>상자 '+D.packBoxes+'개</b><i>바로 열기</i></div><div class="bp">'+won(D.packPrice)+'</div><button class="btn" data-act="askPack" data-kind="click">구매</button></div>'+
+  '<div class="buy adv"><div class="bt"><span class="k">모험</span><b>보물 '+H.advFinds+'개 찾기</b><i>+ 상자 '+H.advBonus+'개 더</i></div><div class="bp">'+won(D.packPrice)+'</div><button class="btn" data-act="askPack" data-kind="adv">구매</button></div>'+
+  (S.adv>0?'<div class="advleft">모험 남은 보물 <b>'+S.adv+'</b></div>':'')+
   '<div class="figure"><img src="img/card/heart_A.webp" alt=""><div><b>같은 무늬 A~K 13장</b> 모으면<br><em>피규어</em> 교환!</div></div>'+
   '<div class="stat"><div><b>10개</b><span>하루 선착순</span></div><div><b>'+esc(D.board.exchange)+'</b><span>부스 교환소</span></div></div><div class="chk"></div>';
 }
@@ -324,18 +341,35 @@ function staffSheet(title, desc, onOk){
 function closeSheet(){ $('sheet').classList.remove('on'); }
 
 /* ---------- 구역 도착 → 조우 ---------- */
-function arrive(code){
-  code=String(code||'').trim().toUpperCase();
-  var z=D.zones.filter(function(z){ return z.code===code || code.indexOf('Z='+z.code)>=0; })[0];
-  if (!z) return toast('보물 QR이 아니에요');
-  if (S.found[z.id]) return toast(z.name+'은 이미 찾았어요');
-  if (foundCount()>=D.passBoxes) return toast('보물 '+D.passBoxes+'개를 다 찾았어요');
-  var FX=window.HuntFX, n=D.zones.indexOf(z)+1;
-  var s=scene('<div class="cine top"></div><div class="cine bot"></div><div class="intro"><img class="imap" src="img/ui/ic_map.webp" alt=""><div class="ino">보물 0'+n+'</div><div class="inm">'+esc(z.name)+'</div><div class="isub">보물 발견!</div></div>');
+function today(){ var d=new Date(Date.now()+9*3600e3); return d.toISOString().slice(0,10); }
+function sha(t){
+  if (!(window.crypto&&crypto.subtle)) return Promise.reject();
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then(function(b){ return Array.from(new Uint8Array(b)).map(function(x){ return ('0'+x.toString(16)).slice(-2); }).join('').slice(0,20); });
+}
+function arrive(raw){
+  raw=String(raw||'').trim();
+  var m=raw.match(/[?&]z=([A-Za-z0-9]+)/); var code=(m?m[1]:raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if (!code) return;
+  sha(H.salt+code).then(function(h){
+    var days = LIVE ? [today()] : Object.keys(H.codes);   // 연습 땐 이틀 코드 모두 허용
+    var id=null; days.forEach(function(d){ if (!id && H.codes[d] && H.codes[d][h]) id=H.codes[d][h]; });
+    if (!id) return toast('보물 QR이 아니에요');
+    if (S.found[id]) return toast('이미 찾은 보물이에요');
+    var tut=id[0]==='t', t=qType(id);
+    if (!tut && S.adv<=0){ tab='box'; render(); return toast('모험을 사면 열 수 있어요'); }
+    found(id, tut, t);
+  }, function(){ toast('이 브라우저에선 안 돼요'); });
+}
+function found(id, tut, t){
+  var FX=window.HuntFX, q=tut?H.tutorial.filter(function(x){return x.id===id;})[0]:null;
+  var name = tut ? q.name : TYPE[t]+' '+(+id.slice(1));
+  var sub = t==='mission' ? '미션 성공!' : (t==='cos' ? '코스어 보물!' : '보물 발견!');
+  var s=scene('<div class="cine top"></div><div class="cine bot"></div><div class="intro"><img class="imap" src="img/ui/ic_map.webp" alt=""><div class="ino">'+(tut?'체험':'모험')+'</div><div class="inm">'+esc(name)+'</div><div class="isub">'+sub+'</div></div>');
   s.classList.remove('legend');
   if (FX){ FX.start(); FX.buzz([20,60,20]);
     setTimeout(function(){ var c=FX.center(s.querySelector('.imap')); FX.burst(c.x,c.y,24,'spark',{sp:8,life:55}); FX.sfx('pop',.5); },850);
     setTimeout(function(){ FX.shake(s,8,300); FX.sfx('boom',.35); FX.buzz(40); },1050); }
+  var z={id:id, tut:tut, name:name};
   setTimeout(function(){ (Math.random()<0.5 ? battle : quiz)(z); }, 2100);
 }
 function scan(){
@@ -384,10 +418,14 @@ function quiz(z){
     setTimeout(function(){ s.innerHTML='<h3>'+(ok?'정답!':'땡!')+'</h3><p>상자 획득!</p>'; foundZone(z); },900);
   }; });
 }
-function foundZone(z){ S.found[z.id]=Date.now(); save(); setTimeout(function(){ openChest(null); },900); }
+function foundZone(z){
+  S.found[z.id]=Date.now(); var bonus=false;
+  if (!z.tut){ S.adv=Math.max(0,S.adv-1); if (S.adv%H.advFinds===0){ S.boxes+=H.advBonus; bonus=true; } }
+  save(); setTimeout(function(){ openChest(null, bonus); },900);
+}
 
 /* ---------- 상자 열기 ---------- */
-function openChest(fromPack){
+function openChest(fromPack, bonus){
   var res=rollBox(), tier=res.tier, gold=tier==='gold', FX=window.HuntFX, T=[], done=false;
   var code=grant(res);   // 결과는 먼저 저장(중간에 나가도 상품 유지)
   function later(f,ms){ T.push(setTimeout(f,ms)); }
@@ -446,7 +484,7 @@ function openChest(fromPack){
     s.innerHTML='<div class="cine top" style="animation:none"></div><div class="cine bot" style="animation:none"></div><div class="glow on'+(gold?' gold':' white')+'"></div>'+
       (gold?'<div class="band"></div><span class="tag slam">전설 상자</span>':'')+img+
       '<h3 class="slam">'+esc(res.name)+'</h3>'+(LIVE?'<div class="code up">'+code+'</div><p class="up">부스에서 코드 보여 주기</p>':'<div class="code up">연습</div><p class="up">12.12 오전 10시 오픈</p>')+
-      (fromPack && S.boxes>0 ? '<button class="btn late" id="nx">다음 ('+S.boxes+')</button>' : '<button class="btn late" id="nx">확인</button>');
+      (bonus?'<p class="up" style="color:#FFE27A;font-weight:900">모험 완료! 보너스 상자 +'+H.advBonus+'</p>':'')+(fromPack && S.boxes>0 ? '<button class="btn late" id="nx">다음 ('+S.boxes+')</button>' : '<button class="btn late" id="nx">확인</button>');
     if (FX) later(function(){ var r=s.querySelector('.reveal'); if(!r) return; var c2=FX.center(r); FX.flash('#FFFFFF',200); FX.burst(c2.x,c2.y,gold?30:16,'spark',{sp:7,life:50}); FX.sfx('pop',.4); FX.buzz(20); if(gold) FX.rain(1800); },560);
     $('nx').onclick=function(){ if (fromPack && S.boxes>0){ S.boxes--; save(); openChest(true); } else endScene(); };
   }
@@ -467,9 +505,10 @@ document.addEventListener('click', function(e){
   if (a==='scan') return scan();
   if (a==='typeCode') return typeCode();
   if (a==='askPack'){
-    var price=D.packPrice;
-    if (!LIVE){ S.packs++; S.boxes+=D.packBoxes; save(); render(); return toast('연습 상자 +'+D.packBoxes); }
-    return staffSheet('상자 '+D.packBoxes+'개 '+won(price), '스태프 확인', function(){ S.packs++; S.boxes+=D.packBoxes; save(); render(); toast('상자 +'+D.packBoxes); });
+    var price=D.packPrice, adv=t.dataset.kind==='adv';
+    var give=function(){ S.packs++; if (adv) S.adv+=H.advFinds; else S.boxes+=D.packBoxes; save(); if (adv) tab='home'; render(); toast(adv?'모험 시작! 보물 '+H.advFinds+'개':'상자 +'+D.packBoxes); };
+    if (!LIVE) return give();
+    return staffSheet((adv?'모험 ':'딸깍 ')+won(price), '스태프 확인', give);
   }
   if (a==='open'){ if(S.boxes<=0) return; S.boxes--; save(); return openChest(true); }
   if (a==='giveAll') return staffSheet('지급 완료','스태프 확인', function(){ S.picks.forEach(function(p){ if(!p.prac) p.given=true; }); save(); render(); });

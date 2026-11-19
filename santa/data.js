@@ -3,21 +3,29 @@
 window.SANTA = {
   eventName: '산타왔수다',
   passPrice: 3000,       // 보물찾기 체험 = 보물찾기 5번 (할인 판매)
-  packPrice: 5000,       // 딸깍 보물찾기 = 보물찾기 5번 더 (직접 안 찾아도 상자 열기)
+  packPrice: 5000,       // 딸깍(상자 5개 바로) 또는 모험(어려운 보물 5개 찾기 + 상자 1) — 같은 가격
   packBoxes: 5,
   passBoxes: 5,
   // 행사 시작 — 이 시각 전까지는 결제 없이 연습, 이 시각이 되면 폰 기록을 한 번 지우고 결제(스태프 확인)해야 열린다
   eventStart: '2026-12-12T10:00:00+09:00',
   staffCode: '1225',      // 시제품용 스태프 확인 코드. 서버 연결 때 PIN 로그인으로 교체
 
-  // 보물 구역 5곳 — QR 에는 code 가 들어간다(QR 밑에도 같은 글자 인쇄)
-  zones: [
-    { id: 'z1', code: 'SLIM', name: '1구역', hint: '메이커앤하비 부스 근처' },
-    { id: 'z2', code: 'FROG', name: '2구역', hint: '무대 앞 기둥 뒤' },
-    { id: 'z3', code: 'GOBL', name: '3구역', hint: '귤 자르기 랭킹판 옆' },
-    { id: 'z4', code: 'BONE', name: '4구역', hint: '방탈출 입구 오른쪽' },
-    { id: 'z5', code: 'BATS', name: '5구역', hint: '포토존 뒤' },
-  ],
+  // 보물 QR 50개 (하루마다 코드가 다름, 실제 코드는 D:\노트북\Desktop\_post_santa_booth\qr\qr_codes.csv — 공개 파일엔 암호화 값만)
+  // 체험 = 쉬운 5개(행사장 3 · 코스어 1 · 미션 1). 모험 = 어려운 45개 중 5개 찾기 + 보너스 상자 1
+  hunt: {
+    tutorial: [
+      { id: 't1', type: 'venue',   name: '행사장 1', hint: '입구 안내판' },
+      { id: 't2', type: 'venue',   name: '행사장 2', hint: '메이커앤하비 부스 앞' },
+      { id: 't3', type: 'venue',   name: '행사장 3', hint: '포토존' },
+      { id: 't4', type: 'cos',     name: '코스어',   hint: '산타 모자 코스어에게 "보물 있어요?"' },
+      { id: 't5', type: 'mission', name: '부스 미션', hint: '메이커앤하비 부스 가위바위보' },
+    ],
+    adv: { booth: { name: '부스 보물', n: 27 }, cos: { name: '코스어 보물', n: 9 }, mission: { name: '부스 미션', n: 9 } },
+    advFinds: 5,   // 모험 1번 = 보물 5개
+    advBonus: 1,   // 5개 다 찾으면 상자 +1
+    salt: 'santa-2026|',
+    codes: {"2026-12-12":{"934c247d64bb5a129b09":"t1","e7117d76b82e07138579":"t2","3e1a44bfb4b2fa37e3b4":"t3","25ba3ef4f944e92e1afc":"t4","346b617a0434ca6f1d65":"t5","d0cf82d37dff83225ab4":"b01","e1bdbf9d7ffb6e94976c":"b02","08ef3df9d1d7c4f5aab6":"b03","69565b2743da55e177ca":"b04","02f489d9b4462d098637":"b05","9f2498f9ded51a83c1db":"b06","7e718122b04fbd4dd0b2":"b07","ebe0e98624249556fd9e":"b08","d087258f35a3337229aa":"b09","5d1cfb0161e9643c62db":"b10","6103c48733ac892f44a5":"b11","8229d23f83a2830a4754":"b12","6307608383a0e75d69a6":"b13","bc3af77fede711542907":"b14","db9d26272cec070340ed":"b15","432e053f4e5fa2d38f72":"b16","863d419df857b9a937d0":"b17","efc1f82477cbd2de4710":"b18","0445c40c16ba31a06bb5":"b19","2f2c4bcd4cf41bf91f78":"b20","e3827bfd0447b8dec4f7":"b21","de6feed7693fd585dfa2":"b22","abffb762a1ef84fd01c0":"b23","a98a1bcbf574051392a4":"b24","ebcadc7c194ab1da2b8a":"b25","e543fc4371e064241900":"b26","7901065876adc27d2afd":"b27","1a621d80794ddc20306a":"c01","068c1a21cca4e0eb9f22":"c02","f06c9cc82984a2c7d892":"c03","8cfc6f3ec8b3fb613976":"c04","410f9e2731b505e43344":"c05","3828058b3a91f848db77":"c06","0337173db9b8b6c13b09":"c07","e1421f78ca2eca390d87":"c08","871ad89b33a85193fe47":"c09","c238b75f829a8daed2e2":"m01","420fe52bb70f18f274a6":"m02","10778a04f444f6e78ccd":"m03","e4c852a0b5df321b4b71":"m04","3eaaa47fffacb1b383e2":"m05","bf7edc5bcd0b24320d04":"m06","8bac800d51d8c4954e78":"m07","5d9074ac4fa4c76f8b38":"m08","819ab0a29d3e64900381":"m09"},"2026-12-13":{"e22877d92f66a0924dc4":"t1","e9340acdc86b1cbca67e":"t2","d71c20567ef007a0d84e":"t3","6ec2d2bf3d14f7394e73":"t4","6622ea1a1f1d1445e583":"t5","b73c05d5225df253dfa1":"b01","63e8a48757d5ead93789":"b02","0b64792161a1e4def3e2":"b03","b5a5e5384aca91aafeaf":"b04","1128fef71094aee32239":"b05","330cc4c64a0529e26819":"b06","bec9785beded86a393a6":"b07","6ec0a158bdcda96d3206":"b08","f6efea72e8588c9a5a58":"b09","44c0c15bfdf5fcf66826":"b10","73c05da42cb114e744e4":"b11","87a4b8529aaf25e84dc6":"b12","928f1003c69c728f611f":"b13","4539d33cd6fe84742a2f":"b14","9fd1ca170dcb8010b052":"b15","ff29bf4f63ea86398183":"b16","c71a74255aabf5ba6b46":"b17","a94bb38771c2fdd64d5e":"b18","b6db993e89ed494a0f10":"b19","5b75c0c5052bfa3491fa":"b20","dd38931757009fdf29cd":"b21","91a09f7780f33752c292":"b22","48b0bc474312bc84f65f":"b23","601bfdfe8b48db291030":"b24","1c41f08be0703c84eb4d":"b25","f6551beea18d004e43a2":"b26","d968d21b0ab5e33fc216":"b27","5cf717126194b3df8bd1":"c01","6c9a6588708741d4d6af":"c02","3589c53a92a43af0a4cb":"c03","f422f8be38c19fbab539":"c04","18d80a81b08fce2f0efc":"c05","7c7e4e8c054d0d597ca7":"c06","459d71b7282d5a914f89":"c07","1012d7ba32c295c8be7e":"c08","9dca11623143f082f4e8":"c09","39d8d6b2ba7defeb5e3a":"m01","1fea059d52c9b2bce12a":"m02","f1c212c2266b0a57bef3":"m03","fd58e7de90ed925efe6f":"m04","0165edf0991bb4ecd6dc":"m05","c156307324b13439583c":"m06","afb1935ce41af4a2947b":"m07","0dad1ade16c4dd7529bf":"m08","32a0c044934ab0da5f5f":"m09"}},
+  },
 
   // 구역마다 퀴즈 또는 몬스터가 나온다 (어느 쪽이든 상자는 받는다)
   quiz: [
