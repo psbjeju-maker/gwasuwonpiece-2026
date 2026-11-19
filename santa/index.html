@@ -198,6 +198,11 @@ nav button.on img{filter:none}
 .prac b{background:var(--navy);color:#fff;padding:3px 8px;font-size:13px;letter-spacing:1px}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;font-weight:800;font-size:15px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.on{opacity:1}
+
+/* 진짜 금색 (금속 그라데이션 + 빛 지나감) */
+.pricebar .b b,.figure em{background:linear-gradient(110deg,transparent 38%,rgba(255,255,255,.9) 50%,transparent 62%) 200% 0/250% 100% no-repeat,linear-gradient(180deg,#FFF4B8 0%,#F7D35E 26%,#C98F14 52%,#F4CC58 72%,#9E6C0A 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));animation:goldsheen 3.2s ease-in-out infinite}
+.dmg,.shout.up2{background:linear-gradient(180deg,#FFF4B8 0%,#F7D35E 26%,#C98F14 52%,#F4CC58 72%,#9E6C0A 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+@keyframes goldsheen{0%,55%{background-position:200% 0,0 0}100%{background-position:-100% 0,0 0}}
 </style>
 </head>
 <body>
