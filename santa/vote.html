@@ -147,7 +147,7 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
 <section class="hero"><div class="in">
   <div class="eyebrow">RANDOM PLAY DANCE</div>
   <h1>랜플댄<em>신청곡 투표</em></h1>
-  <div class="chips"><span class="chip y">5곡 · 단 1번</span><span class="chip">12/13(일)</span><span class="chip">상위 30곡 선곡</span><span class="chip">12/10(목) 마감</span></div>
+  <div class="chips"><span class="chip y">5곡 · 단 1번</span><span class="chip">12/13(일)</span><span class="chip">상위 30곡 선곡</span><span class="chip">11/23(월) 마감</span></div>
 </div></section>
 <nav class="tabsbar"><div class="in"><button class="tb on" data-t="rank" id="tbRank"><span class="ld"></span>순위</button><button class="tb" data-t="vote" id="tbVote">투표<em id="tbN">0/5</em></button></div></nav>
 <div class="wrap"><div class="panel">
@@ -170,8 +170,8 @@ var SONGS=[
  ['J-POP',[['j01','아이돌 (요아소비)'],['j02','코이 (호시노 겐)'],['j03','사랑을 전하고 싶다던가 (아이묭)'],['x07','나, 아이돌 선언 (허니웍스)'],['x08','B코마치 리벤지']]],
  ['기타',[['x01','큐티스트릿'],['x02','죠죠 갱댄스'],['x03','포켓몬 포케댄스'],['x04','파자마 파티즈'],['x05','아이돌 신예대 (모어모어점프)']]]
 ];
-/* 마감 2026-12-10 23:59:59 KST. 규칙(firestore.rules)의 마감과 같이 고칠 것 */
-var CLOSE_AT=new Date('2026-12-10T23:59:59+09:00');
+/* 마감 2026-11-23 23:59:59 KST. 규칙(firestore.rules)의 마감과 같이 고칠 것 */
+var CLOSE_AT=new Date('2026-11-23T23:59:59+09:00');
 function isClosed(){return Date.now()>=CLOSE_AT.getTime()}
 var MAX=5,TOP=30,ALL={},LIST=[];
 SONGS.forEach(function(g){g[1].forEach(function(s){ALL[s[0]]={id:s[0],name:s[1],series:g[0]};LIST.push(ALL[s[0]])})});
