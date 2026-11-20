@@ -331,7 +331,7 @@ function viewBox(){
   (S.boxes>0?'<button class="btn hug" data-act="open">상자 열기 '+S.boxes+'</button>':'')+
   '<div class="buys"><div class="buy"><span class="k">딸깍</span><b>상자 '+D.packBoxes+'</b><div class="bp">'+won(D.packPrice)+'</div><button class="btn" data-act="askPack" data-kind="click">구매</button></div>'+
   '<div class="buy adv"><span class="k">모험</span><b>QR '+H.advFinds+' + 상자 '+H.advBonus+'</b><div class="bp">'+won(D.packPrice)+'</div><button class="btn" data-act="askPack" data-kind="adv">구매</button></div></div>'+
-  '<div class="figure"><img src="img/card/heart_A.webp" alt=""><div><b>같은 무늬 13장</b> → <em>피규어</em><small>하루 10개</small></div></div><div class="chk"></div>';
+  '<div class="figure"><img src="img/fig/luffy.webp" alt="" style="width:auto;height:84px;transform:none"><div><b>같은 무늬 13장</b> → <em>피규어</em><small>하루 10개</small></div></div><div class="chk"></div>';
 }
 function viewPick(){
   var list=S.picks.filter(function(p){return !p.given;}).concat(S.picks.filter(function(p){return p.given;}));
@@ -535,7 +535,10 @@ function playChest(res, code, fromPack, bonus){
   function showResult(){
     if (done) return; done=true; T.forEach(clearTimeout); T=[];
     if (gold) s.classList.add('legend');
-    var img = res.kind==='card' ? '<img class="reveal rise" src="'+cardImg('back')+'" alt="">' : '<img class="reveal rise" style="box-shadow:none;width:200px" src="img/chest_gold_open.webp" alt="">';
+    var FIG=['frieren','luffy','madoka'];   // 반프레스토 피규어 누끼(블로그 11월 입고분)
+    var img = res.kind==='card' ? '<img class="reveal rise" src="'+cardImg('back')+'" alt="">'
+      : res.id==='figure' ? '<img class="reveal rise" style="box-shadow:none;width:auto;height:240px;filter:drop-shadow(0 0 24px rgba(255,214,90,.75))" src="img/fig/'+FIG[Math.floor(Math.random()*FIG.length)]+'.webp" alt="">'
+      : '<img class="reveal rise" style="box-shadow:none;width:200px" src="img/chest_gold_open.webp" alt="">';
     s.innerHTML='<div class="cine top" style="animation:none"></div><div class="cine bot" style="animation:none"></div><div class="glow on'+(gold?' gold':' white')+'"></div>'+
       (gold?'<div class="band"></div><span class="tag slam">전설 상자</span>':'')+img+
       '<h3 class="slam">'+esc(res.name)+'</h3>'+(LIVE?'<div class="code up">'+code+'</div><p class="up">부스에서 코드 보여 주기</p>':'<div class="code up">연습</div><p class="up">12.12 오전 10시 오픈</p>')+
