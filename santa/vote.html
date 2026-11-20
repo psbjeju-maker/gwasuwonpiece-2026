@@ -83,6 +83,25 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
 .empty{background:#fff;color:var(--dim);font-weight:700;padding:26px 16px;text-align:center}
 @media (prefers-reduced-motion:reduce){ol.rank li.top:after{animation:none;display:none}}
 
+.rv{display:flex;margin:0 0 12px;border:2px solid var(--ink)}
+.rv button{flex:1;border:0;background:#fff;color:var(--ink);font:800 14px Pretendard,sans-serif;padding:11px 0;cursor:pointer}
+.rv button.on{background:var(--ink);color:#fff}
+.gh{display:flex;align-items:center;gap:8px;background:var(--ch);color:#fff;padding:10px 12px;font-weight:800;font-size:15px;margin-top:16px}
+.gh:first-child{margin-top:0}
+.gh em{font-style:normal;margin-left:auto;background:var(--yl);color:#3C2C00;font-weight:900;font-size:12px;padding:3px 8px}
+.gv{list-style:none;margin:0;padding:0}
+.gv li{position:relative;display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--ln);padding:11px 12px}
+.gv li.win{background:#FFF8DC;box-shadow:inset 5px 0 0 var(--yl)}
+.gv li.win .nm{font-size:16px}
+.gv li.lose{opacity:.6}
+.gv .n{flex:none;min-width:28px;height:24px;background:#4A5360;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.gv li.win .n{background:var(--yl);color:#3C2C00}
+.gv .nm{flex:1;min-width:0;font-weight:800;font-size:15px;line-height:1.25}
+.gv .tag{flex:none;background:var(--ok);color:#fff;font-weight:800;font-size:11px;padding:3px 7px}
+.gv .sc{flex:none;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.gv .sc:after{content:'표';font-size:11px;font-weight:700;color:var(--dim);margin-left:2px}
+.gv li.cut{background:var(--ink);color:#fff;font-weight:800;font-size:11px;padding:6px 12px;opacity:1}
+.gv li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;color:#fff;background:var(--bl);padding:2px 6px;margin-left:6px;vertical-align:middle}
 .quota{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
 .quota span{background:#1B1F25;color:#DCE3EA;font-weight:700;font-size:12px;padding:6px 10px;border-left:3px solid var(--yl)}
 .quota b{color:var(--yl);margin-left:5px;font-weight:900}
@@ -154,7 +173,7 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
 </div></section>
 <nav class="tabsbar"><div class="in"><button class="tb on" data-t="rank" id="tbRank"><span class="ld"></span>순위</button><button class="tb" data-t="vote" id="tbVote">투표<em id="tbN">0/5</em></button></div></nav>
 <div class="wrap"><div class="panel">
-  <section id="secRank"><h2>실시간 순위<span class="live">LIVE</span></h2><div class="quota" id="quota"></div><ol class="rank" id="rank"><li class="empty">불러오는 중</li></ol></section>
+  <section id="secRank"><h2>실시간 순위<span class="live">LIVE</span></h2><div class="quota" id="quota"></div><div class="rv"><button class="on" data-v="g">장르별 선곡</button><button data-v="a">전체 순위</button></div><div id="gview"></div><ol class="rank" id="rank" style="display:none"><li class="empty">불러오는 중</li></ol></section>
   <section id="secVote" hidden><div id="ballot"></div></section>
 </div></div>
 <div class="bar-fix" id="bar" hidden><div class="in"><div class="cnt"><b id="cnt">0</b><span id="cntT">/ 5 선택</span></div><button class="go" id="go">투표하기</button></div></div>
@@ -205,7 +224,20 @@ function renderRank(){
   var arr=LIST.map(function(s){return{s:s,c:counts[s.id]||0}});
   arr.sort(function(a,b){return b.c-a.c||(a.s.id<b.s.id?-1:1)});
   var max=arr[0]?arr[0].c:0;
-  if(!voters){$('rank').innerHTML='<li class="empty">아직 투표가 없어요. 첫 투표를 해 주세요</li>';return}
+  if(!voters){$('rank').innerHTML='<li class="empty">아직 투표가 없어요. 첫 투표를 해 주세요</li>';$('gview').innerHTML='<div class="empty">아직 투표가 없어요. 첫 투표를 해 주세요</div>';return}
+  /* 장르별 선곡: 장르마다 상위 N곡에 '선곡' 표시와 컷라인 */
+  var gh='';
+  Object.keys(CAP).forEach(function(g){
+    var rows=arr.filter(function(r){return r.s.series===g});
+    gh+='<div class="gh">'+esc(CAPN[g]||g)+'<em>상위 '+CAP[g]+'곡 선곡</em></div><ul class="gv">';
+    rows.forEach(function(r,j){
+      var win=j<CAP[g]&&r.c>0, mine=myPicks.indexOf(r.s.id)>=0;
+      if(j===CAP[g]&&rows.length>CAP[g])gh+='<li class="cut">여기까지 선곡</li>';
+      gh+='<li class="'+(win?'win':'lose')+(mine?' mine':'')+'"><span class="n">'+(j+1)+'</span><span class="nm">'+esc(r.s.name)+'</span>'+(win?'<span class="tag">선곡</span>':'')+'<span class="sc">'+r.c+'</span></li>';
+    });
+    gh+='</ul>';
+  });
+  $('gview').innerHTML=gh;
   var h='',gi={};
   arr.forEach(function(r,i){
     var g=r.s.series;gi[g]=(gi[g]||0)+1;
@@ -366,6 +398,10 @@ function start(){
     });
   }).catch(function(e){console.error(e);$('rank').innerHTML='<li class="empty">연결에 실패했어요. 새로고침해 주세요</li>'});
 }
+[].forEach.call(document.querySelectorAll('.rv button'),function(b){b.onclick=function(){
+  [].forEach.call(document.querySelectorAll('.rv button'),function(x){x.classList.toggle('on',x===b)});
+  var g=b.dataset.v==='g';$('gview').style.display=g?'':'none';$('rank').style.display=g?'none':'';
+}});
 if(DEMO){ /* ?demo=1 미리보기: 가짜 집계로 디자인만 확인 (?demo=out 로그아웃, ?demo=done 투표 완료, &tab=vote 투표 탭) */
   var seed=7,rnd=function(){seed=(seed*9301+49297)%233280;return seed/233280};
   LIST.forEach(function(s,i){counts[s.id]=Math.max(0,Math.round(34*Math.exp(-i/14)*(0.55+rnd()*0.9))-(i>45?3:0))});
