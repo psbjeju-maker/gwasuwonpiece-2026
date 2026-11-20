@@ -232,7 +232,9 @@ function renderRank(){
     var rows=arr.filter(function(r){return r.s.series===g});
     /* 동점 규칙: 컷라인(CAP번째) 득표와 같은 곡은 모두 선곡(그 장르 곡 수가 늘어남) */
     var cut=rows[CAP[g]-1]?rows[CAP[g]-1].c:0, extra=0, rk=0, prev=-1;
-    rows.forEach(function(r,j){if(r.c!==prev){rk=j+1;prev=r.c}r.rk=rk;r.win=cut>0&&r.c>=cut;r.tie=r.win&&j>=CAP[g];if(r.tie){extra++;tieIn[r.s.id]=1}});
+    rows.forEach(function(r,j){if(r.c!==prev){rk=j+1;prev=r.c}r.rk=rk;r.win=cut>0&&r.c>=cut;if(r.win&&j>=CAP[g]){extra++;tieIn[r.s.id]=1}});
+    var over=rows.filter(function(r){return r.win}).length>CAP[g];
+    rows.forEach(function(r){r.tie=over&&r.win&&r.c===cut});
     gh+='<div class="gh">'+esc(CAPN[g]||g)+'<em>상위 '+CAP[g]+'곡 선곡'+(extra?' (+'+extra+' 동점)':'')+'</em></div><ul class="gv">';
     var cutDone=false;
     rows.forEach(function(r,j){
