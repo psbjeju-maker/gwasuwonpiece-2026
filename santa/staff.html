@@ -7,93 +7,175 @@
 <title>보물찾기 스태프</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
 <style>
-:root{--navy:#0F4A2E;--org:#C8102E;--dim:#6B7186;--line:#D9DCE6;--ok:#2E9E6A}
+:root{--navy:#0F4A2E;--org:#C8102E;--dim:#6B7186;--line:#D9DCE6;--ok:#2E9E6A;--cream:#FBF6EC}
 *{box-sizing:border-box}
-html,body{margin:0;background:#FBF6EC;color:var(--navy);font-family:Pretendard,system-ui,sans-serif}
-header{background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;font-weight:900;font-size:18px}
-main{max-width:520px;margin:0 auto;padding:16px}
-.tabs{display:flex;gap:0;margin-bottom:14px}
-.tabs button{flex:1;border:2px solid var(--navy);background:#fff;color:var(--navy);font:inherit;font-weight:900;font-size:17px;padding:13px}
-.tabs button.on{background:var(--navy);color:#fff}
-input{width:100%;font:inherit;font-size:22px;font-weight:800;letter-spacing:3px;padding:14px;border:2px solid var(--navy);border-radius:0;background:#fff;color:var(--navy);text-transform:uppercase}
+html,body{margin:0;background:var(--cream);color:var(--navy);font-family:Pretendard,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+header{background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;font-weight:900;font-size:18px;display:flex;justify-content:space-between;align-items:center}
+header button{background:none;border:0;color:#fff;opacity:.7;font:inherit;font-size:14px}
+main{max-width:520px;margin:0 auto;padding:16px 16px 90px}
+input{width:100%;font:inherit;font-size:24px;font-weight:800;letter-spacing:3px;padding:14px;border:2px solid var(--navy);border-radius:0;background:#fff;color:var(--navy);text-transform:uppercase}
 input:focus{outline:none;border-color:var(--org)}
-.btn{display:block;width:100%;border:0;padding:16px;margin-top:10px;font:inherit;font-size:19px;font-weight:900;background:var(--org);color:#fff}
-.panel{background:#fff;border:2px solid var(--navy);padding:16px;margin-top:14px}
-.big{font-size:26px;font-weight:900;margin:4px 0 8px}
-.tag{display:inline-block;padding:3px 10px;font-weight:900;color:#fff;background:var(--ok)}
-.tag.no{background:var(--org)}
-.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:17px;font-weight:700}
-.row:last-child{border-bottom:0}
-.row b{font-weight:900}
-.dim{color:var(--dim);font-size:14px;font-weight:700}
-.hide{display:none}
+.btn{display:block;width:100%;border:0;padding:17px;margin-top:10px;font:inherit;font-size:20px;font-weight:900;background:var(--org);color:#fff}
+.btn:disabled{opacity:.4}
+.btn.navy{background:var(--navy)}
+.btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--navy);padding:15px}
+.btn.huge{padding:46px 10px;font-size:30px;margin-top:6px}
+.who{background:var(--navy);color:#fff;padding:16px;margin-bottom:14px}
+.who b{display:block;font-size:30px;font-weight:900;line-height:1.1}
+.who span{font-size:15px;opacity:.75;font-weight:700}
+h3{font-size:14px;font-weight:900;color:var(--dim);margin:18px 0 6px;letter-spacing:1px}
+.pay{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pay .btn{margin:0;padding:16px 4px;font-size:18px;line-height:1.2}
+.pay .btn small{display:block;font-size:14px;opacity:.85}
+.item{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--navy);padding:10px 12px;margin-bottom:8px}
+.item .nm{flex:1;font-weight:900;font-size:18px}
+.item .cd{display:block;font-size:13px;color:var(--dim);letter-spacing:1px}
+.item .btn{width:auto;margin:0;padding:12px 18px;font-size:17px}
+.none{color:var(--dim);font-weight:800;padding:6px 0}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--navy);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));font-weight:900;font-size:17px;text-align:center;cursor:pointer}
+.bar .more{display:none;text-align:left;font-size:16px;margin-top:8px}
+.bar.open .more{display:block}
+.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
+.dim{color:var(--dim)}
+.hide{display:none!important}
+.ask{position:fixed;inset:0;background:rgba(8,36,22,.6);display:flex;align-items:flex-end;z-index:9}
+.ask .bx{background:#fff;width:100%;padding:24px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+.ask .q{font-size:26px;font-weight:900;text-align:center;margin-bottom:8px}
+.ask .q em{font-style:normal;color:var(--org)}
+.toast{position:fixed;left:50%;top:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:14px 22px;font-weight:900;font-size:18px;opacity:0;transition:.2s;z-index:10;pointer-events:none}
+.toast.on{opacity:1}
+.toast.bad{background:var(--org)}
 </style>
 </head>
 <body>
-<header>보물찾기 스태프</header>
+<header>보물찾기 스태프<button id="out" class="hide">나가기</button></header>
 <main>
   <section id="login">
     <input id="pin" type="password" inputmode="numeric" placeholder="스태프 PIN" autocomplete="off">
     <button class="btn" id="go">들어가기</button>
   </section>
-  <section id="app" class="hide">
-    <div class="tabs"><button data-t="chk" class="on">상품 주기</button><button data-t="st">오늘</button></div>
-    <div id="chk">
-      <input id="code" maxlength="6" placeholder="상품 코드 6자리" autocomplete="off">
-      <button class="btn" id="look">찾기</button>
-      <div id="res"></div>
-    </div>
-    <div id="st" class="hide"><div id="stats"></div><p class="dim" id="upd"></p></div>
+
+  <section id="home" class="hide">
+    <button class="btn huge" id="scan">손님 QR 찍기</button>
+    <button class="btn ghost" id="byCode">상품 코드로</button>
+    <div id="codeBox" class="hide"><div style="height:10px"></div><input id="code" maxlength="6" placeholder="코드 6자리" autocomplete="off"><button class="btn navy" id="look">찾기</button></div>
+    <div id="codeRes"></div>
+  </section>
+
+  <section id="guest" class="hide">
+    <div class="who"><b id="gNick"></b><span id="gSub"></span></div>
+    <h3>결제</h3><div class="pay" id="pay"></div>
+    <h3>상품</h3><div id="items"></div>
+    <h3>피규어 교환</h3><div id="swap"></div>
+    <button class="btn ghost" id="next" style="margin-top:22px">다음 손님</button>
   </section>
 </main>
+<div class="bar hide" id="bar"><div id="barLine">…</div><div class="more" id="barMore"></div></div>
+<div class="ask hide" id="ask"><div class="bx"><div class="q" id="askQ"></div><button class="btn" id="askOk">받았어요</button><button class="btn ghost" id="askNo">취소</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js?v=1120a"></script>
+<script src="../mqscan.js"></script>
 <script>
-var API='https://asia-northeast3-psbjeju-kuji.cloudfunctions.net/';
-var PIN='', $=function(i){ return document.getElementById(i); }, timer=null;
-var KIND={pass:'체험',click:'딸깍',adv:'모험'};
+(function(){
+var API='https://asia-northeast3-psbjeju-kuji.cloudfunctions.net/', KEY='santa_staff_pin';
+var D=window.SANTA||{}, $=function(i){ return document.getElementById(i); };
+var PIN='', G=null, busy=false;
+var PRICE={pass:D.passPrice||3000, click:D.packPrice||5000, adv:D.packPrice||5000}, NAME={pass:'체험',click:'딸깍',adv:'모험'};
+
 function api(fn,data){
+  data.pin=PIN;
   return fetch(API+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:data})})
     .then(function(r){ return r.json(); }, function(){ throw new Error('인터넷 연결을 확인해 주세요'); })
     .then(function(j){ if (j.error) throw new Error(j.error.message||'다시 해 주세요'); return j.result; });
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function won(n){ return (n||0).toLocaleString('ko-KR')+'원'; }
+function tid(){ var a=new Uint8Array(12); crypto.getRandomValues(a); return Array.prototype.map.call(a,function(x){ return ('0'+x.toString(16)).slice(-2); }).join(''); }
+function toast(m,bad){ var t=$('toast'); t.textContent=m; t.className='toast on'+(bad?' bad':''); clearTimeout(toast.h); toast.h=setTimeout(function(){ t.className='toast'; },2000); if (navigator.vibrate) navigator.vibrate(bad?[60,40,60]:40); }
+function show(id){ ['login','home','guest'].forEach(function(s){ $(s).classList.toggle('hide', s!==id); }); $('bar').classList.toggle('hide', id==='login'); $('out').classList.toggle('hide', id==='login'); }
+
+/* 돈·실물이 오가는 버튼만 한 번 더 묻는다 */
+function ask(q, ok){
+  $('askQ').innerHTML=q; $('ask').classList.remove('hide');
+  $('askOk').onclick=function(){ $('ask').classList.add('hide'); ok(); };
+  $('askNo').onclick=function(){ $('ask').classList.add('hide'); };
+}
+/* 누르는 동안 모든 버튼 잠금 → 두 번 눌림 방지 (서버도 tid 로 한 번만 처리) */
+function run(p, done){
+  if (busy) return; busy=true; document.querySelectorAll('main .btn').forEach(function(b){ b.disabled=true; });
+  p.then(function(r){ busy=false; document.querySelectorAll('main .btn').forEach(function(b){ b.disabled=false; }); done(r); },
+         function(e){ busy=false; toast(e.message,true); document.querySelectorAll('main .btn').forEach(function(b){ b.disabled=false; }); });
+}
+
+/* 로그인: 이 폰에 14시간 기억 */
+function saved(){ try { var v=JSON.parse(localStorage.getItem(KEY)||'null'); return v && v.until>Date.now() ? v.pin : ''; } catch(e){ return ''; } }
+function login(pin){
+  PIN=pin; $('go').textContent='확인 중…';
+  stats().then(function(){ try { localStorage.setItem(KEY, JSON.stringify({pin:pin, until:Date.now()+14*3600e3})); } catch(e){} show('home'); },
+    function(e){ PIN=''; $('go').textContent='들어가기'; show('login'); toast(e.message,true); try { localStorage.removeItem(KEY); } catch(x){} });
+}
+$('go').onclick=function(){ var p=$('pin').value.trim(); if (p) login(p); };
+$('pin').onkeydown=function(e){ if (e.key==='Enter') $('go').onclick(); };
+$('out').onclick=function(){ try { localStorage.removeItem(KEY); } catch(e){} PIN=''; $('pin').value=''; $('go').textContent='들어가기'; show('login'); };
+
+/* 아래 띠: 오늘 현황 한 줄, 누르면 펼침 */
 function stats(){
-  return api('santaStats',{pin:PIN}).then(function(v){
-    var h='<div class="panel"><div class="dim">'+esc(v.day)+' 매출</div><div class="big">'+won(v.won)+'</div>';
-    ['pass','click','adv'].forEach(function(k){ h+='<div class="row"><span>'+KIND[k]+'</span><b>'+(v.sales[k]||0)+'건</b></div>'; });
-    h+='</div><div class="panel"><div class="dim">상위 상품 (나온 수 / 하루 한도)</div>';
-    Object.keys(v.limits).forEach(function(k){ h+='<div class="row"><span>'+esc((v.names||{})[k]||k)+'</span><b>'+(v.stock[k]||0)+' / '+v.limits[k]+'</b></div>'; });
-    $('stats').innerHTML=h+'</div>';
-    $('upd').textContent=new Date().toLocaleTimeString('ko-KR')+'';
+  return api('santaStats',{}).then(function(v){
+    var sw=(v.stock&&v.stock.swap)||0;
+    $('barLine').textContent='오늘 '+won(v.won)+' · 피규어 교환 남은 '+Math.max(0,(v.swapDaily||0)-sw);
+    var h=['pass','click','adv'].map(function(k){ return '<div class="row"><span>'+NAME[k]+'</span><b>'+(v.sales[k]||0)+'건</b></div>'; }).join('');
+    Object.keys(v.limits).forEach(function(k){ h+='<div class="row"><span>'+esc((v.names||{})[k]||k)+' 당첨</span><b>'+((v.stock||{})[k]||0)+' / '+v.limits[k]+'</b></div>'; });
+    $('barMore').innerHTML=h;
   });
 }
-$('go').onclick=function(){
-  PIN=$('pin').value.trim(); if (!PIN) return;
-  $('go').textContent='확인 중…';
-  stats().then(function(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); $('code').focus(); },
-    function(e){ $('go').textContent='들어가기'; alertBox(e.message); });
-};
-function alertBox(m){ var p=document.createElement('p'); p.className='dim'; p.style.color='#C8102E'; p.textContent=m; var l=$('login'); if (l.lastChild.tagName==='P') l.removeChild(l.lastChild); l.appendChild(p); }
-$('look').onclick=function(){
-  var c=$('code').value.trim().toUpperCase(); if (c.length<6) return;
-  $('res').innerHTML='<div class="panel dim">확인 중…</div>';
-  api('santaCheck',{code:c, pin:PIN}).then(show, fail);
-};
-function show(v){
-  $('res').innerHTML='<div class="panel"><div class="dim">'+esc(v.nick)+' · '+esc(v.day)+'</div><div class="big">'+esc(v.name)+'</div>'+
-    (v.given?'<span class="tag">받음</span>':'<button class="btn" id="give">지급</button>')+'</div>';
-  if (!v.given) $('give').onclick=function(){ this.textContent='…'; api('santaGive',{code:v.code, pin:PIN}).then(function(r){ show(r); $('code').value=''; $('code').focus(); }, fail); };
+$('bar').onclick=function(){ this.classList.toggle('open'); };
+setInterval(function(){ if (PIN) stats().catch(function(){}); },30000);
+
+/* 손님 QR */
+function scan(){
+  if (!window.MQScan) return toast('카메라를 쓸 수 없어요',true);
+  MQScan.open({ hint:'손님 QR', parse:function(t){ var m=/SANTA-P:([a-f0-9]{32})/.exec(t||''); return m?m[1]:''; }, badHint:'손님 앱의 QR을 찍어 주세요', onToken:open });
 }
-function fail(e){ $('res').innerHTML='<div class="panel"><div class="big" style="color:#C8102E">'+esc(e.message)+'</div></div>'; }
-$('code').onkeydown=function(e){ if (e.key==='Enter') $('look').onclick(); };
-$('pin').onkeydown=function(e){ if (e.key==='Enter') $('go').onclick(); };
-document.querySelectorAll('.tabs button').forEach(function(b){
-  b.onclick=function(){
-    document.querySelectorAll('.tabs button').forEach(function(x){ x.classList.toggle('on', x===b); });
-    $('chk').classList.toggle('hide', b.dataset.t!=='chk'); $('st').classList.toggle('hide', b.dataset.t!=='st');
-    clearInterval(timer); if (b.dataset.t==='st'){ stats().catch(function(){}); timer=setInterval(function(){ stats().catch(function(){}); },30000); }
-  };
+function open(pid){ run(api('santaPeek',{pid:pid}), function(v){ G=v; draw(); show('guest'); }); }
+function refresh(msg){ return api('santaPeek',{pid:G.pid}).then(function(v){ G=v; draw(); if (msg) toast(msg); stats().catch(function(){}); }); }
+
+function draw(){
+  $('gNick').textContent=G.nick;
+  var left=(G.picks||[]).filter(function(p){ return !p.given; });
+  $('gSub').textContent='#'+G.pid.slice(-4)+' · '+(G.pass?'체험 중':'체험 전')+(G.boxes?' · 상자 '+G.boxes:'')+(G.adv?' · 모험 '+G.adv:'');
+  var kinds=G.pass?['click','adv']:['pass','click','adv'];
+  $('pay').style.gridTemplateColumns='repeat('+kinds.length+',1fr)';
+  $('pay').innerHTML=kinds.map(function(k){ return '<button class="btn'+(k==='pass'?'':' navy')+'" data-buy="'+k+'">'+NAME[k]+'<small>'+won(PRICE[k])+'</small></button>'; }).join('');
+  $('items').innerHTML=left.length ? left.map(function(p){
+      return '<div class="item"><div class="nm">'+esc(p.name)+'<span class="cd">'+esc(p.code)+'</span></div><button class="btn" data-give="'+esc(p.code)+'">지급</button></div>';
+    }).join('')+(left.length>1?'<button class="btn navy" data-giveall="1">전부 지급 '+left.length+'</button>':'') : '<div class="none">없음</div>';
+  $('swap').innerHTML='<button class="btn ghost" data-swap="1"'+(G.swapLeft?'':' disabled')+'>같은 무늬 13장 → 피규어 <small class="dim">(남은 '+G.swapLeft+')</small></button>';
+}
+$('guest').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if (!b || b.disabled) return;
+  if (b.dataset.buy){ var k=b.dataset.buy, t=tid();
+    return ask(NAME[k]+' <em>'+won(PRICE[k])+'</em><br>받았나요?', function(){ run(api('santaBuy',{pid:G.pid, kind:k, tid:t}).then(function(){ return refresh(NAME[k]+' 완료'); }), function(){}); }); }
+  if (b.dataset.give) return run(api('santaGive',{code:b.dataset.give}).then(function(){ return refresh('지급 완료'); }), function(){});
+  if (b.dataset.giveall) return run(api('santaGive',{pid:G.pid}).then(function(r){ return refresh(r.given+'개 지급 완료'); }), function(){});
+  if (b.dataset.swap){ var s=tid();
+    return ask('같은 무늬 <em>13장</em><br>받았나요?', function(){ run(api('santaSwap',{pid:G.pid, tid:s}).then(function(){ return refresh('피규어 교환 완료'); }), function(){}); }); }
 });
+$('next').onclick=function(){ G=null; show('home'); scan(); };
+$('scan').onclick=scan;
+
+/* QR 이 안 될 때: 상품 코드로 지급 */
+$('byCode').onclick=function(){ $('codeBox').classList.toggle('hide'); $('code').focus(); };
+function codeCard(v){
+  $('codeRes').innerHTML='<div class="item" style="margin-top:12px"><div class="nm">'+esc(v.name)+'<span class="cd">'+esc(v.nick)+' · '+esc(v.code)+'</span></div>'+
+    (v.given?'<b style="color:var(--ok)">받음</b>':'<button class="btn" id="giveC">지급</button>')+'</div>';
+  if (!v.given) $('giveC').onclick=function(){ run(api('santaGive',{code:v.code}), function(r){ codeCard(r); toast('지급 완료'); $('code').value=''; }); };
+}
+$('look').onclick=function(){ var c=$('code').value.trim().toUpperCase(); if (c.length<6) return; run(api('santaCheck',{code:c}), codeCard); };
+$('code').onkeydown=function(e){ if (e.key==='Enter') $('look').onclick(); };
+
+var p0=saved(); if (p0) login(p0); else show('login');
+})();
 </script>
 </body>
 </html>

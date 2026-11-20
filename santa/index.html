@@ -210,6 +210,7 @@ nav button.on img{filter:none}
 .buys .buy b{font-size:19px;font-weight:900}
 .buys .buy .btn{width:100%}
 .figure small{display:block;font-size:13px;opacity:.8}
+.myqr{text-align:center}.myqr b{display:block;font-size:26px;font-weight:900}.myqr img{width:78%;max-width:300px;image-rendering:pixelated;margin:10px auto;display:block}.myqr p{font-weight:900;font-size:18px;margin:0 0 14px;color:var(--org)}
 .empty{font-size:22px;font-weight:900;text-align:center;padding:40px 0 20px;color:var(--dim)}
 /* 진짜 금색 (금속 그라데이션 + 빛 지나감) */
 .pricebar .b b,.figure em{background:linear-gradient(110deg,transparent 38%,rgba(255,255,255,.9) 50%,transparent 62%) 200% 0/250% 100% no-repeat,linear-gradient(180deg,#FFFDE8 0%,#FFE989 24%,#F5C845 52%,#FFE580 72%,#E0AE2C 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));animation:goldsheen 3.2s ease-in-out infinite}
@@ -232,6 +233,7 @@ nav button.on img{filter:none}
 
 <script src="data.js?v=1119f"></script>
 <script src="../mqscan.js"></script>
+<script src="../qr.js"></script>
 <script src="hunt-fx.js?v=1119f"></script>
 <script>
 (function(){
@@ -355,15 +357,27 @@ function sync(v){
   save();
 }
 function needPid(){ return S.pid ? Promise.resolve(S.pid) : api('santaJoin',{nick:S.nick}).then(function(r){ S.pid=r.pid; save(); return r.pid; }); }
-/* 스태프가 손님 폰에서 PIN 입력 → onOk(pin) 은 Promise 를 돌려준다 */
-function staffSheet(title, desc, onOk){
-  $('sheetBox').innerHTML='<h4>'+title+'</h4><p>'+desc+'</p><input id="sc" type="password" inputmode="numeric" placeholder="스태프 PIN" autocomplete="off"><div style="height:12px"></div><div class="row"><button class="btn ghost" data-act="closeSheet">취소</button><button class="btn navy" id="scOk">확인</button></div>';
-  $('sheet').classList.add('on'); setTimeout(function(){ $('sc').focus(); },50);
-  var busy=false;
-  $('scOk').onclick=function(){
-    var pin=$('sc').value.trim(); if (!pin || busy) return; busy=true; $('scOk').textContent='확인 중…';
-    Promise.resolve(onOk(pin)).then(function(){ closeSheet(); }, function(e){ busy=false; $('scOk').textContent='확인'; toast(e.message||'다시 해 주세요'); });
-  };
+/* 내 QR: 스태프 폰이 찍어서 결제·지급. 손님 폰엔 PIN 없음. 바뀌면 자동으로 닫힘 */
+function snap(){ return {pass:S.pass, boxes:S.boxes, adv:S.adv, left:S.picks.filter(function(p){return !p.given;}).length}; }
+function myQR(){
+  needPid().then(function(pid){
+    var q=qrcode(0,'M'); q.addData('SANTA-P:'+pid); q.make();
+    $('sheetBox').innerHTML='<div class="myqr"><b>'+esc(S.nick)+'</b><img src="'+q.createDataURL(8,2)+'" alt=""><p>스태프에게 보여 주세요</p></div><button class="btn ghost" data-act="closeSheet">닫기</button>';
+    $('sheet').classList.add('on');
+    clearInterval(myQR.t);
+    myQR.t=setInterval(function(){
+      if (!$('sheet').classList.contains('on')) return clearInterval(myQR.t);
+      var a=snap();
+      api('santaState',{pid:pid}).then(function(v){
+        sync(v); var b=snap(), m='';
+        if (b.pass && !a.pass) m='시작!';
+        else if (b.adv>a.adv){ m='모험 시작! 보물 '+(b.adv-a.adv)+'개'; tab='home'; }
+        else if (b.boxes>a.boxes) m='상자 +'+(b.boxes-a.boxes);
+        else if (b.left<a.left) m='받기 완료';
+        if (m){ clearInterval(myQR.t); closeSheet(); render(); toast(m); }
+      }, function(){});
+    },2500);
+  }, function(e){ toast(e.message); });
 }
 function closeSheet(){ $('sheet').classList.remove('on'); }
 
@@ -540,7 +554,7 @@ document.addEventListener('click', function(e){
     var nk=($('nick').value||'').trim(); if(!nk) return toast('닉네임을 적어 주세요');
     S.nick=nk; save();
     if (!LIVE){ S.pass=true; save(); toast('연습 시작!'); return render(); }
-    return staffSheet('보물찾기 체험 '+won(D.passPrice), '스태프 확인', function(pin){ return needPid().then(function(pid){ return api('santaBuy',{pid:pid, kind:'pass', pin:pin}); }).then(function(v){ sync(v); toast('시작!'); render(); }); });
+    return myQR();
   }
   if (a==='scan') return scan();
   if (a==='typeCode') return typeCode();
@@ -548,10 +562,10 @@ document.addEventListener('click', function(e){
     var price=D.packPrice, adv=t.dataset.kind==='adv';
     var give=function(){ S.packs++; if (adv) S.adv+=H.advFinds; else S.boxes+=D.packBoxes; save(); if (adv) tab='home'; render(); toast(adv?'모험 시작! 보물 '+H.advFinds+'개':'상자 +'+D.packBoxes); };
     if (!LIVE) return give();
-    return staffSheet((adv?'모험 ':'딸깍 ')+won(price), '스태프 확인', function(pin){ return needPid().then(function(pid){ return api('santaBuy',{pid:pid, kind:adv?'adv':'click', pin:pin}); }).then(function(v){ sync(v); if (adv) tab='home'; render(); toast(adv?'모험 시작! 보물 '+H.advFinds+'개':'상자 +'+D.packBoxes); }); });
+    return myQR();
   }
   if (a==='open'){ if(S.boxes<=0) return; if (!LIVE){ S.boxes--; save(); } return openChest(true); }
-  if (a==='giveAll') return staffSheet('상품 받기','스태프 확인', function(pin){ return api('santaGive',{pid:S.pid, pin:pin}).then(function(v){ sync(v); render(); toast(v.given+'개 지급 완료'); }); });
+  if (a==='giveAll') return myQR();
 });
 $('sheet').addEventListener('click', function(e){ if(e.target===this) closeSheet(); });
 
