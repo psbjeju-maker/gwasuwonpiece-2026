@@ -98,6 +98,7 @@ ol.rank li.mine .nm:after{content:'내 투표';font-size:10px;font-weight:800;co
 .gv li.win .n{background:var(--yl);color:#3C2C00}
 .gv .nm{flex:1;min-width:0;font-weight:800;font-size:15px;line-height:1.25}
 .gv .tag{flex:none;background:var(--ok);color:#fff;font-weight:800;font-size:11px;padding:3px 7px}
+.gv .tag.tie{background:#E8761A}
 .gv .sc{flex:none;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
 .gv .sc:after{content:'표';font-size:11px;font-weight:700;color:var(--dim);margin-left:2px}
 .gv li.cut{background:var(--ink);color:#fff;font-weight:800;font-size:11px;padding:6px 12px;opacity:1}
@@ -226,14 +227,18 @@ function renderRank(){
   var max=arr[0]?arr[0].c:0;
   if(!voters){$('rank').innerHTML='<li class="empty">아직 투표가 없어요. 첫 투표를 해 주세요</li>';$('gview').innerHTML='<div class="empty">아직 투표가 없어요. 첫 투표를 해 주세요</div>';return}
   /* 장르별 선곡: 장르마다 상위 N곡에 '선곡' 표시와 컷라인 */
-  var gh='';
+  var gh='',tieIn={};
   Object.keys(CAP).forEach(function(g){
     var rows=arr.filter(function(r){return r.s.series===g});
-    gh+='<div class="gh">'+esc(CAPN[g]||g)+'<em>상위 '+CAP[g]+'곡 선곡</em></div><ul class="gv">';
+    /* 동점 규칙: 컷라인(CAP번째) 득표와 같은 곡은 모두 선곡(그 장르 곡 수가 늘어남) */
+    var cut=rows[CAP[g]-1]?rows[CAP[g]-1].c:0, extra=0, rk=0, prev=-1;
+    rows.forEach(function(r,j){if(r.c!==prev){rk=j+1;prev=r.c}r.rk=rk;r.win=cut>0&&r.c>=cut;r.tie=r.win&&j>=CAP[g];if(r.tie){extra++;tieIn[r.s.id]=1}});
+    gh+='<div class="gh">'+esc(CAPN[g]||g)+'<em>상위 '+CAP[g]+'곡 선곡'+(extra?' (+'+extra+' 동점)':'')+'</em></div><ul class="gv">';
+    var cutDone=false;
     rows.forEach(function(r,j){
-      var win=j<CAP[g]&&r.c>0, mine=myPicks.indexOf(r.s.id)>=0;
-      if(j===CAP[g]&&rows.length>CAP[g])gh+='<li class="cut">여기까지 선곡</li>';
-      gh+='<li class="'+(win?'win':'lose')+(mine?' mine':'')+'"><span class="n">'+(j+1)+'</span><span class="nm">'+esc(r.s.name)+'</span>'+(win?'<span class="tag">선곡</span>':'')+'<span class="sc">'+r.c+'</span></li>';
+      var mine=myPicks.indexOf(r.s.id)>=0;
+      if(!r.win&&!cutDone&&j>0){cutDone=true;gh+='<li class="cut">여기까지 선곡</li>'}
+      gh+='<li class="'+(r.win?'win':'lose')+(mine?' mine':'')+'"><span class="n">'+r.rk+'</span><span class="nm">'+esc(r.s.name)+'</span>'+(r.win?'<span class="tag'+(r.tie?' tie':'')+'">'+(r.tie?'동점 선곡':'선곡')+'</span>':'')+'<span class="sc">'+r.c+'</span></li>';
     });
     gh+='</ul>';
   });
@@ -241,7 +246,7 @@ function renderRank(){
   var h='',gi={};
   arr.forEach(function(r,i){
     var g=r.s.series;gi[g]=(gi[g]||0)+1;
-    var w=max?Math.round(r.c/max*100):0, mine=myPicks.indexOf(r.s.id)>=0, inTop=gi[g]<=(CAP[g]||0)&&r.c>0;
+    var w=max?Math.round(r.c/max*100):0, mine=myPicks.indexOf(r.s.id)>=0, inTop=(gi[g]<=(CAP[g]||0)&&r.c>0)||!!tieIn[r.s.id];
     var cls=(i<3&&r.c>0?'p'+(i+1)+' ':'')+(mine?'mine ':'')+(inTop?'top':'out');
     h+='<li class="'+cls+'"><div class="bar" style="width:'+w+'%"></div><span class="n">'+(i+1)+'</span><span class="nm">'+esc(r.s.name)+'<small>'+esc(g)+(inTop?' · 선곡':'')+'</small></span><span class="sc">'+r.c+'</span></li>';
   });
