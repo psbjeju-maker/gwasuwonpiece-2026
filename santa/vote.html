@@ -246,7 +246,7 @@ function renderRank(){
     });
     gh+='</ul>';
   });
-  $('gview').innerHTML=(anyTie?'<p class="tn">동점은 마감 때 랜덤으로 선곡해요</p>':'')+gh;
+  $('gview').innerHTML=(anyTie?'<p class="tn">동점은 마감 때 랜덤으로 선곡 돼요</p>':'')+gh;
   var h='',gi={};
   arr.forEach(function(r,i){
     var g=r.s.series;gi[g]=(gi[g]||0)+1;
