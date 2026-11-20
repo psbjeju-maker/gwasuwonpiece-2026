@@ -4,7 +4,8 @@
    카메라: BarcodeDetector 가 있으면 그걸, 없으면 jsqr.js 를 그때 불러 쓴다. */
 (function () {
   'use strict';
-  var css = '.mqs{position:fixed;inset:0;z-index:9000;background:#000;display:flex;align-items:center;justify-content:center}' +
+  var css = '.mqs[hidden]{display:none!important}' + /* 11-20: hidden 이 display:flex 에 덮여 찍은 뒤 검은 화면이 남던 문제 */
+    '.mqs{position:fixed;inset:0;z-index:9000;background:#000;display:flex;align-items:center;justify-content:center}' +
     '.mqs video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}' +
     '.mqs__f{position:relative;width:min(68vw,300px);aspect-ratio:1;border-radius:18px;box-shadow:0 0 0 100vmax rgba(0,0,0,.5);border:4px solid var(--color-accent,#F5B331)}' +
     '.mqs__h{position:absolute;left:20px;right:20px;top:calc(18px + env(safe-area-inset-top,0px));color:#fff;text-align:center;font-size:16px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6)}' +
