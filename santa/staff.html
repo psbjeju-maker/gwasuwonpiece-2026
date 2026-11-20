@@ -37,7 +37,9 @@ h3{font-size:14px;font-weight:900;color:var(--dim);margin:18px 0 6px;letter-spac
 .bar.open .more{display:block}
 .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
 .dim{color:var(--dim)}
-.hide{display:none!important}
+.hide,[hidden]{display:none!important}
+.wait{position:fixed;inset:0;background:rgba(251,246,236,.92);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;z-index:8}
+header small{font-size:11px;opacity:.5;margin-left:6px;font-weight:700}
 .ask{position:fixed;inset:0;background:rgba(8,36,22,.6);display:flex;align-items:flex-end;z-index:9}
 .ask .bx{background:#fff;width:100%;padding:24px 18px calc(18px + env(safe-area-inset-bottom,0px))}
 .ask .q{font-size:26px;font-weight:900;text-align:center;margin-bottom:8px}
@@ -48,7 +50,7 @@ h3{font-size:14px;font-weight:900;color:var(--dim);margin:18px 0 6px;letter-spac
 </style>
 </head>
 <body>
-<header>보물찾기 스태프<button id="out" class="hide">나가기</button></header>
+<header><span>보물찾기 스태프<small>v1120b</small></span><button id="out" class="hide">나가기</button></header>
 <main>
   <section id="login">
     <input id="pin" type="password" inputmode="numeric" placeholder="스태프 PIN" autocomplete="off">
@@ -72,21 +74,25 @@ h3{font-size:14px;font-weight:900;color:var(--dim);margin:18px 0 6px;letter-spac
 </main>
 <div class="bar hide" id="bar"><div id="barLine">…</div><div class="more" id="barMore"></div></div>
 <div class="ask hide" id="ask"><div class="bx"><div class="q" id="askQ"></div><button class="btn" id="askOk">받았어요</button><button class="btn ghost" id="askNo">취소</button></div></div>
+<div class="wait hide" id="wait">확인 중…</div>
 <div class="toast" id="toast"></div>
 
 <script src="data.js?v=1120a"></script>
-<script src="../mqscan.js?v=1120"></script>
+<script src="../mqscan.js?v=1120b"></script>
 <script>
 (function(){
 var API='https://asia-northeast3-psbjeju-kuji.cloudfunctions.net/', KEY='santa_staff_pin';
 var D=window.SANTA||{}, $=function(i){ return document.getElementById(i); };
 var PIN='', G=null, busy=false;
+window.addEventListener('error', function(e){ toast('오류: '+(e.message||'알 수 없음'), true); });
+window.addEventListener('unhandledrejection', function(e){ toast('오류: '+((e.reason&&e.reason.message)||e.reason), true); });
 var PRICE={pass:D.passPrice||3000, click:D.packPrice||5000, adv:D.packPrice||5000}, NAME={pass:'체험',click:'딸깍',adv:'모험'};
 
 function api(fn,data){
   data.pin=PIN;
-  return fetch(API+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:data})})
-    .then(function(r){ return r.json(); }, function(){ throw new Error('인터넷 연결을 확인해 주세요'); })
+  var ac=window.AbortController?new AbortController():null, to=setTimeout(function(){ if (ac) ac.abort(); },12000);
+  return fetch(API+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:data}),signal:ac?ac.signal:undefined})
+    .then(function(r){ clearTimeout(to); return r.json(); }, function(){ clearTimeout(to); throw new Error('인터넷 연결을 확인해 주세요'); })
     .then(function(j){ if (j.error) throw new Error(j.error.message||'다시 해 주세요'); return j.result; });
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -103,9 +109,10 @@ function ask(q, ok){
 }
 /* 누르는 동안 모든 버튼 잠금 → 두 번 눌림 방지 (서버도 tid 로 한 번만 처리) */
 function run(p, done){
-  if (busy) return; busy=true; document.querySelectorAll('main .btn').forEach(function(b){ b.disabled=true; });
-  p.then(function(r){ busy=false; document.querySelectorAll('main .btn').forEach(function(b){ b.disabled=false; }); done(r); },
-         function(e){ busy=false; toast(e.message,true); document.querySelectorAll('main .btn').forEach(function(b){ b.disabled=false; }); });
+  busy=true; $('wait').classList.remove('hide');
+  function end(){ busy=false; $('wait').classList.add('hide'); }
+  p.then(function(r){ end(); try { done(r); } catch(e){ toast('오류: '+e.message,true); } },
+         function(e){ end(); toast(e.message,true); });
 }
 
 /* 로그인: 이 폰에 14시간 기억 */
@@ -135,9 +142,11 @@ setInterval(function(){ if (PIN) stats().catch(function(){}); },30000);
 /* 손님 QR */
 function scan(){
   if (!window.MQScan) return toast('카메라를 쓸 수 없어요',true);
+  document.querySelectorAll('.mqs').forEach(function(m){ m.style.display=''; });
   MQScan.open({ hint:'손님 QR', parse:function(t){ var m=/SANTA-P:([a-f0-9]{32})/.exec(t||''); return m?m[1]:''; }, badHint:'손님 앱의 QR을 찍어 주세요', onToken:open });
 }
-function open(pid){ run(api('santaPeek',{pid:pid}), function(v){ G=v; draw(); show('guest'); }); }
+function killScan(){ try { MQScan.stop(); } catch(e){} document.querySelectorAll('.mqs').forEach(function(m){ m.hidden=true; m.style.display='none'; }); }
+function open(pid){ killScan(); run(api('santaPeek',{pid:pid}), function(v){ G=v; draw(); show('guest'); }); }
 function refresh(msg){ return api('santaPeek',{pid:G.pid}).then(function(v){ G=v; draw(); if (msg) toast(msg); stats().catch(function(){}); }); }
 
 function draw(){
