@@ -54,15 +54,13 @@ window.SANTA = {
     { id: 'goods', name: '랜덤 굿즈', chance: 0.012 },
   ],
 
-  // 부스 노트북 현황판(board.html) — 세트 완성 피규어는 하루 10개 선착순 (11-18 BM 확정안)
-  board: { figureDaily: 10, exchange: '4장 → 1장' },
+  // 부스 노트북 현황판(board.html) — 숫자·명단은 서버(santaStats)에서 가져옴
 
   // 귤 자르기 크리스마스판(catch.html) — 연습은 폰마다 하루 2번, 랭킹전은 정해진 시각부터 몇 분만
-  catchGame: { practice: 2, rankAt: '13:00', rankMin: 5, collection: 'santaCatch' },
+  catchGame: { practice: 2, rankAt: '13:00', rankMin: 5, collection: 'santaCatch', prize: '1위 랜덤 굿즈' },   // 날마다 랭킹전 1위, 부스에서 닉네임 확인 후 지급
 
   schedule: [
     { t: '13:00', name: '귤 자르기 랭킹전', note: '연습 2번 후 5분 승부' },
-    { t: '14:00', name: '새 게임 랭킹전', note: '연습 2번' },
     { t: '14:00~', name: '방탈출', note: '상시 운영' },
     { t: '15:00', name: '무대 투표', note: '폰으로 투표' },
     { t: '16:00', name: '마감', note: '16:30까지 상품 수령' },

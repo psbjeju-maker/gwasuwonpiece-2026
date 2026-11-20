@@ -29,6 +29,8 @@ header a{color:#fff;font-size:13px;opacity:.85;text-decoration:none}
 .status .b span{font-size:16px;font-weight:700}
 .status .b b{font-size:32px;font-weight:900;color:#F2C14E;letter-spacing:-1px;font-variant-numeric:tabular-nums}
 .status.live .t{background:var(--red)}
+.prize{margin:-4px 0 12px;font-weight:800;font-size:15px;color:var(--org)}
+#board .bp{font-size:2vw;font-weight:900;color:var(--org);margin-top:1.2vh}
 .btn{display:block;width:100%;padding:17px;font-size:19px;font-weight:900;letter-spacing:1px;background:var(--org);color:#fff}
 .btn:active{opacity:.85}
 .btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--navy);padding:15px}
@@ -142,6 +144,7 @@ body.catch-on{overflow:hidden}
   </div>
 
   <div class="status" id="status"><div class="t" id="stT">랭킹전</div><div class="b"><span id="stS">오늘</span><b id="stB">13:00</b></div></div>
+  <div class="prize" id="prize"></div>
 
   <input id="nick" maxlength="10" placeholder="닉네임" autocomplete="off">
   <div class="row">
@@ -187,6 +190,7 @@ body.catch-on{overflow:hidden}
     <div class="bt">귤<br><em>자르기</em></div>
     <div class="qr"><img src="img/catch-qr.png" alt="" onerror="this.parentNode.style.display='none'">QR 찍고 도전!</div>
     <div class="bs" id="bStatus"><div class="t" id="bT">랭킹전</div><div class="b"><span id="bS">오늘</span><b id="bB">13:00</b></div></div>
+    <div class="bp" id="bPrize"></div>
   </div>
   <div class="r">
     <div class="lbl">순위</div>
@@ -197,12 +201,13 @@ body.catch-on{overflow:hidden}
   <button id="bClose">닫기</button>
 </div>
 
-<script src="data.js?v=1119e"></script>
+<script src="data.js?v=1120c"></script>
 <script src="catch-xmas.js?v=1119d"></script>
 <script>
 (function(){
 'use strict';
 var D=window.SANTA, C=D.catchGame;
+if (C.prize){ document.getElementById('prize').textContent=C.prize; document.getElementById('bPrize').textContent=C.prize; }
 var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function norm(s){return String(s||'').trim().toLowerCase()}

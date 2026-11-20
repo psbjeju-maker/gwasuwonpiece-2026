@@ -56,13 +56,13 @@ html,body{margin:0;height:100%;background:#FBF6EC;color:var(--navy);font-family:
   </div>
   <div class="right">
     <div>
-      <div class="lbl">오늘 남은 피규어 · A~K 13장</div>
+      <div class="lbl">오늘 남은 피규어</div>
       <div class="big" id="bigN"><b id="left">10</b><span id="total">/ 10</span></div>
       <div class="endtag" id="endTag">오늘 교환 종료</div>
     </div>
-    <div class="ex"><span>교환소</span><b id="exTxt">4장 → 1장</b></div>
+    <div class="ex"><span>교환소</span><b id="exTxt">같은 무늬 13장 → 피규어</b></div>
     <div class="two">
-      <div><div class="lbl">세트 완성</div><div class="list" id="sets"></div></div>
+      <div><div class="lbl">피규어 교환</div><div class="list" id="sets"></div></div>
       <div><div class="lbl">상자 당첨</div><div class="list" id="wins"></div></div>
     </div>
   </div>
@@ -70,40 +70,24 @@ html,body{margin:0;height:100%;background:#FBF6EC;color:var(--navy);font-family:
 </div>
 
 <div class="win" id="win"><div class="k" id="winK">피규어 당첨!</div><div class="n" id="winN"></div><div class="p" id="winP"></div></div>
-<div class="staff" id="staff"><h4 id="staffH">피규어 당첨</h4><input id="staffIn" placeholder="닉네임" maxlength="12"><p>Enter 확인 · Esc 취소</p></div>
-<div class="help">2 세트 완성 · 1 상자 당첨 · 0 되돌리기</div>
+<div class="staff" id="staff"><h4>스태프 PIN</h4><input id="staffIn" type="password" inputmode="numeric" autocomplete="off"><p id="staffP">Enter</p></div>
+<div class="help" id="help"></div>
 
-<script src="data.js?v=1119c"></script>
+<script src="data.js?v=1120c"></script>
 <script>
 (function(){
 'use strict';
-var D = window.SANTA, B = D.board;
-/* 세트 완성 피규어는 하루 10개 선착순 — 날짜가 바뀌면 새로 센다. 상자 당첨(상위상)은 기록만, 10개에서 안 뺀다 */
-function today(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
-var KEY = 'santa_board_v2_'+today();
-var S = load();
-function load(){ var d=null; try{ d=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){} return d||{ log:[] }; }
-function setsDone(){ return S.log.filter(function(x){return x.type==='set';}).length; }
-function leftN(){ return Math.max(0, B.figureDaily - setsDone()); }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+/* 숫자·명단은 서버(santaStats)에서. 스태프 폰과 같은 PIN 기억(santa_staff_pin)을 쓴다 */
+var API='https://asia-northeast3-psbjeju-kuji.cloudfunctions.net/', PK='santa_staff_pin';
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function hm(t){ var d=new Date(t); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
-
-function render(){
-  var n=leftN();
-  $('left').textContent = n;
-  $('total').textContent = '/ '+B.figureDaily;
-  $('bigN').classList.toggle('over', n===0);
-  $('endTag').classList.toggle('on', n===0);
-  $('exTxt').textContent = B.exchange;
-  var row=function(x){ return '<div>'+esc(x.nick)+'<span>'+hm(x.at)+'</span></div>'; };
-  var w=S.log.filter(function(x){return x.type==='box';}).slice(-6).reverse();
-  var s=S.log.filter(function(x){return x.type==='set';}).slice(-6).reverse();
-  $('wins').innerHTML = w.length ? w.map(row).join('') : '<div class="no">아직 없어요</div>';
-  $('sets').innerHTML = s.length ? s.map(row).join('') : '<div class="no">아직 없어요</div>';
+function getPin(){ try{ var o=JSON.parse(localStorage.getItem(PK)||'null'); if (o && o.until>Date.now()) return o.pin; }catch(e){} return ''; }
+function setPin(p){ try{ localStorage.setItem(PK, JSON.stringify({pin:p, until:Date.now()+14*3600e3})); }catch(e){} }
+function api(fn,data){
+  return fetch(API+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:data})})
+    .then(function(r){ return r.json(); }).then(function(j){ if (j.error) { var e=new Error(j.error.message||'오류'); e.status=j.error.status; throw e; } return j.result; });
 }
-
 
 /* 종소리 (파일 없이 합성) */
 var ac=null;
@@ -121,37 +105,43 @@ function bell(n){
     }
   }catch(e){}
 }
-
-function showWin(type,nick){
-  $('winK').textContent = type==='set' ? '세트 완성!' : '피규어 당첨!';
-  $('winN').textContent = nick;
-  $('winP').textContent = type==='set' ? (leftN() ? '오늘 남은 피규어 '+leftN() : '오늘 피규어 끝!') : '';
+function showWin(k,nick,p){
+  $('winK').textContent=k; $('winN').textContent=nick; $('winP').textContent=p;
   $('win').classList.add('on'); bell(4);
   clearTimeout(showWin.h); showWin.h=setTimeout(function(){ $('win').classList.remove('on'); }, 7000);
 }
 
-var mode=null;
-function ask(type){
-  mode=type; $('staffH').textContent = type==='set' ? '세트 완성' : '피규어 당첨';
-  $('staffIn').value=''; $('staff').classList.add('on'); $('staffIn').focus();
+var seen=null;   // 처음 불러온 건 축하 안 함
+function render(st){
+  var used=(st.stock&&st.stock.swap)||0, n=Math.max(0, st.swapDaily-used);
+  $('left').textContent=n; $('total').textContent='/ '+st.swapDaily;
+  $('bigN').classList.toggle('over', n===0); $('endTag').classList.toggle('on', n===0);
+  var row=function(x){ return '<div>'+esc(x.nick)+'<span>'+hm(x.at)+'</span></div>'; };
+  $('sets').innerHTML = st.swaps.length ? st.swaps.map(row).join('') : '<div class="no">아직 없어요</div>';
+  $('wins').innerHTML = st.wins.length ? st.wins.map(row).join('') : '<div class="no">아직 없어요</div>';
+  var key=function(x){ return x.at+x.nick; }, all=st.swaps.map(function(x){return ['s',x];}).concat(st.wins.map(function(x){return ['w',x];}));
+  if (seen){
+    var fresh=all.filter(function(a){ return !seen[key(a[1])]; });
+    if (fresh.length){ var f=fresh[0]; if (f[0]==='s') showWin('피규어 교환!', f[1].nick, n ? '오늘 남은 피규어 '+n : '오늘 피규어 끝!'); else showWin(f[1].name+' 당첨!', f[1].nick, ''); }
+  }
+  seen={}; all.forEach(function(a){ seen[key(a[1])]=1; });
+  $('help').textContent=hm(Date.now())+' 업데이트';
 }
+function load(){
+  var pin=getPin(); if (!pin) return askPin();
+  api('santaStats',{pin:pin, recent:true}).then(render, function(e){
+    if (e.status==='PERMISSION_DENIED'){ try{ localStorage.removeItem(PK); }catch(x){} return askPin('PIN이 틀려요'); }
+    $('help').textContent='연결 확인 중…';
+  });
+}
+function askPin(msg){ $('staffP').textContent=msg||'Enter'; $('staffIn').value=''; $('staff').classList.add('on'); $('staffIn').focus(); }
 $('staffIn').addEventListener('keydown',function(e){
-  if (e.key==='Enter'){ var n=this.value.trim(); if(!n) return;
-    if (mode==='set' && leftN()===0){ $('staff').classList.remove('on'); mode=null; return; }
-    S.log.push({type:mode,nick:n,at:Date.now()}); save(); render();
-    $('staff').classList.remove('on'); showWin(mode,n); mode=null; e.stopPropagation(); }
-  if (e.key==='Escape'){ $('staff').classList.remove('on'); mode=null; }
-});
-document.addEventListener('keydown',function(e){
-  if (mode) return;
-  if (e.key==='1'){ e.preventDefault(); ask('box'); }
-  else if (e.key==='2'){ e.preventDefault(); ask('set'); }
-  else if (e.key==='0' && S.log.length){ S.log.pop(); save(); render(); }
-  else if (e.key==='Escape') $('win').classList.remove('on');
+  if (e.key!=='Enter') return; var p=this.value.trim(); if (!p) return;
+  setPin(p); $('staff').classList.remove('on'); load();
 });
 $('win').onclick=function(){ $('win').classList.remove('on'); };
-
-render();
+document.addEventListener('keydown',function(e){ if (e.key==='Escape') $('win').classList.remove('on'); });
+load(); setInterval(function(){ if (!$('staff').classList.contains('on')) load(); }, 10000);
 })();
 </script>
 </body>
