@@ -79,7 +79,7 @@ textarea{width:100%;height:170px;font:inherit;font-size:14px;padding:10px;border
 (function(){
   var FIREBASE={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
   var COL="gwasuwonpiece_applications";
-  var DEF_OK="[메이커앤하비 산타왔수다]\n{부스명}님, 부스로 선정되셨습니다!\n\n일시: 12/12(토)·13(일)\n장소: 중문 컨벤션 제2센터\n사전 설치: 12/11(금) 가능\n부스비: {금액}원\n입금 방법: (여기에 입력)\n\n문의는 이 번호로 답장 주세요.";
+  var DEF_OK="[메이커앤하비 산타왔수다]\n{부스명}님, 부스로 선정되셨습니다!\n\n일시: 12/12(토)·13(일)\n장소: 중문 컨벤션 제2센터\n사전 설치: 12/11(금) 가능\n부스비: {금액}원 (입금 방법은 입장 후 안내)\n\n아래 톡방으로 입장해 주세요.\nhttps://open.kakao.com/o/gQkKalYi\n입장 시 이름은 \"부스명/구분\"으로 부탁드려요.\n(구분: 피규어·체험·프라모델·2차창작·코스 등)\n예) 산타판매점/굿즈, 피규어 판매\n공지방이라 행사 외 대화는 자제 부탁드려요🤗";
   var DEF_NO="[메이커앤하비 산타왔수다]\n{부스명}님, 신청해 주셔서 감사합니다.\n이번에는 모집 정원이 차서 함께하지 못하게 되었습니다.\n다음 기회에 꼭 모시겠습니다.";
   var db=null;
   try{var app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE);db=firebase.firestore(app);}catch(e){}
@@ -92,9 +92,9 @@ textarea{width:100%;height:170px;font:inherit;font-size:14px;padding:10px;border
   function when(iso){var d=new Date(iso);if(isNaN(d))return"";return (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
   function status(r){return r.status||"pending"}
 
-  $("msgOk").value=ls("santa_msg_ok_1116")||DEF_OK;
+  $("msgOk").value=ls("santa_msg_ok_1123")||DEF_OK;
   $("msgNo").value=ls("santa_msg_no_1116")||DEF_NO;
-  $("msgOk").addEventListener("input",function(){ls("santa_msg_ok_1116",this.value);render()});
+  $("msgOk").addEventListener("input",function(){ls("santa_msg_ok_1123",this.value);render()});
   $("msgNo").addEventListener("input",function(){ls("santa_msg_no_1116",this.value);render()});
 
   function smsHref(r){
