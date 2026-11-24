@@ -102,7 +102,7 @@ button:disabled{opacity:.6}
     <div><dt>사전설치</dt><dd>12월 11일(금) 가능<small>신청서에서 사전설치 여부를 골라 주세요</small></dd></div>
   </dl>
 
-  <div class="closed" id="closed">신청이 마감되었습니다. (접수 기간 11/16~11/29)</div>
+  <div class="closed" id="closed">부스 신청이 마감되었습니다. 신청해 주셔서 감사합니다.</div>
 
   <form id="f" novalidate>
     <div class="f"><label class="t" for="booth">부스명<span class="req">*</span></label>
@@ -190,7 +190,7 @@ setInterval(window.santaRefresh,15000);
 (function(){
   /* ── 행사 설정: 확정되면 여기만 고치세요 ── */
   var EVENT_DATE="12월 12일(토) · 13일(일)";            // 예: "12월 20일(토) · 21일(일)"  (비워두면 '행사일 확정 후 안내')
-  var CLOSE_AT="2026-11-29T23:59:59+09:00";
+  var CLOSE_AT="2026-11-24T00:00:00+09:00";
   var EXTRA_FROM="2026-11-23T00:00:00+09:00";   // 이 시각부터 "추가 모집"으로 표기
   var isExtra=Date.now()>=new Date(EXTRA_FROM).getTime();              // 예: "2026-12-10T23:59:00+09:00"  (비워두면 마감 없음)
 
