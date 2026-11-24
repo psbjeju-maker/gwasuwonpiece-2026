@@ -87,7 +87,7 @@ button:disabled{opacity:.6}
   </header>
 
   <div class="cap" id="cap" aria-live="polite">
-    <div class="row"><span>실시간 신청 현황</span><span><b id="capUsed">-</b> / 2 테이블</span></div>
+    <div class="row"><span>실시간 신청 현황</span><span><b id="capUsed">-</b> / 3 테이블</span></div>
     <div class="bar"><i id="capBar"></i></div>
     <small id="capMsg">현황을 불러오는 중입니다…</small>
   </div>
@@ -162,7 +162,7 @@ button:disabled{opacity:.6}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {getFirestore,collection,query,where,getCountFromServer} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-const CAP=2;
+const CAP=3;
 const cfg={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
 const db=getFirestore(initializeApp(cfg,"santa-count"));
 const col=collection(db,"gwasuwonpiece_applications");
@@ -232,7 +232,7 @@ setInterval(window.santaRefresh,15000);
     mark("fItems",!ok[3]);mark("fTables",!ok[4]);mark("fSetup",!ok[5]);mark("fCat",!ok[6]);
     if(ok.indexOf(false)>=0)return;
     if(!db){fail(CONTACT);return;}
-    var over=false,beforeUsed=0;if(window.santaRefresh){var cur=await window.santaRefresh();if(cur){beforeUsed=cur.used;over=(cur.used+parseInt(tables,10))>2;}}
+    var over=false,beforeUsed=0;if(window.santaRefresh){var cur=await window.santaRefresh();if(cur){beforeUsed=cur.used;over=(cur.used+parseInt(tables,10))>3;}}
 
     if(over){fail("죄송합니다. 방금 자리가 줄어 선택하신 테이블 수가 남아 있지 않습니다. 현황을 확인하고 다시 신청해 주세요.");return;}
     var p=digits(phone);
