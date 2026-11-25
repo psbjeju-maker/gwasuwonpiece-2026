@@ -79,7 +79,7 @@ button{font:inherit;cursor:pointer;border:0}
     <canvas id="cv"></canvas>
     <div class="hud"><div class="sec" id="sec">20</div><div class="bar"><i id="tbar"></i></div><div class="score" id="score">0점</div></div>
     <div class="goal" id="goal"></div>
-    <div class="hint" id="hint">선물을 모아요!<br>해골은 피하고<br>시계는 시간 +3초</div>
+    <div class="hint" id="hint">선물을 모아요!<br>해골은 −4점!<br>시계는 시간 +2초</div>
   </section>
 
   <!-- 2 미션 결과 -->
@@ -144,9 +144,9 @@ function confetti(n){ var cs=['#C8102E','#F2B705','#2E9E6A','#2F7BE0','#fff']; f
 function pop(ids){ ids.forEach(function(i){ var e=$(i); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }); }
 
 /* ───────── 미션: 점수 모으기 ─────────
-   선물 +1점 · 금색 선물 +3점 · 해골 −3점 · 시계 시간 +3초
+   선물 +1점 · 금색 선물 +3점 · 해골 −4점 · 시계 시간 +2초
    T1점 이상이면 1번 뽑기, T2점 이상이면 2번 뽑기 */
-var QS=new URLSearchParams(location.search), T1=+QS.get('need')||20, T2=+QS.get('need2')||32, DUR=+QS.get('t')||20;
+var QS=new URLSearchParams(location.search), T1=+QS.get('need')||20, T2=+QS.get('need2')||35, DUR=+QS.get('t')||20;
 $('s0sub').innerHTML='<em>'+T1+'점</em> 이면 1번<br><em>'+T2+'점</em> 이면 2번 뽑기!';
 var cv=$('cv'),ctx=cv.getContext('2d'),W=0,H=0,DPR=1,G=null;
 var COLORS=['#E5252A','#2E9E6A','#2F7BE0','#F2B705','#B04BD6','#FF7A2B'];
@@ -173,17 +173,17 @@ function loop(now){
   else { G.left-=dt; G.el+=dt; }
   var pg=Math.min(1,G.el/DUR);   // 진행도: 갈수록 빠르고 해골이 많아진다
   if(G.started){ G.spawn-=dt; if(G.spawn<=0){
-    G.spawn=.5-.22*pg; var r=Math.random(), kind='gift';
-    if(r<.2+.1*pg) kind='skull'; else if(r<.2+.1*pg+.06) kind='clock'; else if(r<.2+.1*pg+.06+.09) kind='gold';
-    G.items.push({x:30+Math.random()*(W-60),y:-30,v:(230+200*pg)*(.85+Math.random()*.3),s:kind==='gold'?46:38,c:kind==='gold'?'#F2B705':COLORS[(Math.random()*COLORS.length)|0],kind:kind,r:Math.random()*.6-.3,vr:Math.random()*2-1});
+    G.spawn=.42-.2*pg; var r=Math.random(), kind='gift';
+    var sk=.3+.14*pg; if(r<sk) kind='skull'; else if(r<sk+.04) kind='clock'; else if(r<sk+.04+.08) kind='gold';
+    G.items.push({x:30+Math.random()*(W-60),y:-30,v:(280+280*pg)*(.85+Math.random()*.3),s:kind==='gold'?46:38,c:kind==='gold'?'#F2B705':COLORS[(Math.random()*COLORS.length)|0],kind:kind,r:Math.random()*.6-.3,vr:Math.random()*2-1});
   } }
-  G.bx+=(G.tx-G.bx)*Math.min(1,dt*16); var bw=Math.min(104,W*.26), by=H-92; G.sq=Math.max(0,G.sq-dt*5);
+  G.bx+=(G.tx-G.bx)*Math.min(1,dt*16); var bw=Math.min(84,W*.21), by=H-92; G.sq=Math.max(0,G.sq-dt*5);
   for(var i=G.items.length-1;i>=0;i--){ var it=G.items[i]; it.y+=it.v*dt; it.r+=it.vr*dt;
     if(it.y>by-bw*.15&&it.y<by+bw*.3&&Math.abs(it.x-G.bx)<bw*.5+it.s*.25){
       G.sq=1;
-      if(it.kind==='clock'){ G.left+=3; G.fx.push({x:it.x,y:by-bw*.2,t:0,txt:'+3초',col:'#7dffc4'}); if(navigator.vibrate) try{navigator.vibrate(20);}catch(e){} }
+      if(it.kind==='clock'){ G.left+=2; G.fx.push({x:it.x,y:by-bw*.2,t:0,txt:'+2초',col:'#7dffc4'}); if(navigator.vibrate) try{navigator.vibrate(20);}catch(e){} }
       else {
-        var add=it.kind==='skull'?-3:(it.kind==='gold'?3:1); G.score=Math.max(0,G.score+add); $('score').textContent=G.score+'점'; $('goal').innerHTML=goalHtml(G.score);
+        var add=it.kind==='skull'?-4:(it.kind==='gold'?3:1); G.score=Math.max(0,G.score+add); $('score').textContent=G.score+'점'; $('goal').innerHTML=goalHtml(G.score);
         if(navigator.vibrate) try{navigator.vibrate(add<0?[40,30,40]:12);}catch(e){}
         G.fx.push({x:it.x,y:by-bw*.2,t:0,txt:(add>0?'+':'')+add,col:add<0?'#ff6b6b':(it.kind==='gold'?'#F2B705':'#fff')});
         if(!G.t1&&G.score>=T1){ G.t1=true; toast('1번 뽑기 달성!'); }
