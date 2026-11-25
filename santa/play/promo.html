@@ -75,7 +75,7 @@ button{font:inherit;cursor:pointer;border:0}
   <section class="scr" id="sg">
     <canvas id="cv"></canvas>
     <div class="hud"><div class="bar"><i id="tbar"></i></div><div class="score" id="score">0/5</div></div>
-    <div class="hint" id="hint">선물 5개를 받아요!<br>손가락으로 움직여요</div>
+    <div class="hint" id="hint">선물 <span id="hn">5</span>개를 받아요!<br>손가락으로 움직여요</div>
   </section>
 
   <!-- 2 미션 결과 -->
@@ -137,7 +137,7 @@ $('startArt').innerHTML=SANTA;
 function confetti(n){ var cs=['#C8102E','#F2B705','#2E9E6A','#2F7BE0','#fff']; for(var i=0;i<(n||46);i++){ var d=document.createElement('i'); d.className='conf'; d.style.left=Math.random()*100+'vw'; d.style.background=cs[i%cs.length]; d.style.animationDuration=(1.6+Math.random()*1.6)+'s'; d.style.animationDelay=Math.random()*.4+'s'; document.body.appendChild(d); setTimeout(function(x){x.remove();},3800,d); } }
 
 /* ───────── 미션: 선물 5개 받기 (15초) ───────── */
-var NEED=5, DUR=+(new URLSearchParams(location.search).get('t'))||15;
+var QS=new URLSearchParams(location.search), NEED=+QS.get('need')||5, DUR=+QS.get('t')||15; $('hn').textContent=NEED;
 var cv=$('cv'),ctx=cv.getContext('2d'),W=0,H=0,DPR=1,G=null;
 var COLORS=['#E5252A','#2E9E6A','#2F7BE0','#F2B705','#B04BD6','#FF7A2B'];
 function resize(){ DPR=Math.min(window.devicePixelRatio||1,2); W=cv.clientWidth; H=cv.clientHeight; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
