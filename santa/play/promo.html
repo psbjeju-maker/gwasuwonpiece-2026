@@ -113,6 +113,7 @@ button{font:inherit;cursor:pointer;border:0}
       <p id="rMsg"></p>
     </div>
     <button class="big" id="bMore" style="display:none">한 번 더 뽑기!</button>
+    <button class="big" id="bGame" style="display:none;margin-top:12px;background:#0F4A2E;box-shadow:0 6px 0 #082c1b">게임 한 번 더!</button>
   </section>
 
 </div>
@@ -221,11 +222,13 @@ function endGame(sc){
   $('bMNext').disabled=true;
   api('promoMission',{pid:PID,tier:tier}).then(function(r){
     $('mArt').innerHTML=STAR; $('mArt').firstChild.style.cssText='width:min(52vw,220px);height:auto';
-    $('mTitle').innerHTML=tier===2?'대단해요!<br><em>'+sc+'점</em>':'미션 <em>성공!</em>'; $('mSub').innerHTML=sc+'점 · 뽑기 <em>'+r.allow+'번</em>';
+    $('mTitle').innerHTML=tier===2?'대단해요!<br><em>'+sc+'점</em>':'미션 <em>성공!</em>'; $('mSub').innerHTML=sc+'점 · 뽑기 <em>'+r.picksLeft+'번</em>';
     $('bMNext').textContent='번호 뽑으러 가기!'; $('bMNext').disabled=false; $('bMNext').onclick=goBoard; pop(['mArt','mTitle','mSub']); show('s1'); confetti(tier===2?90:40);
   }).catch(function(e){
     $('bMNext').disabled=false;
-    if(e.status==='NOT_FOUND'){ lsSet('santa_promo_pid',''); PID=''; toast('처음부터 다시 해요'); show('s0'); } else { toast(e.message); startGame(); }
+    if(e.status==='NOT_FOUND'){ lsSet('santa_promo_pid',''); PID=''; toast('처음부터 다시 해요'); show('s0'); }
+    else if(e.status==='FAILED_PRECONDITION'){ toast(e.message); api('promoBoard',{pid:PID}).then(function(b){ if(b.mine&&b.mine.picks.length) showResult(b.mine); else goBoard(); }).catch(function(){ show('s0'); }); }
+    else { toast(e.message); startGame(); }
   });
 }
 
@@ -268,7 +271,7 @@ function doPick(){
 }
 function showResult(r){
   picking=false; clearInterval(poll);
-  var ps=r.picks||[], win=null;
+  var ps=r.picks||[], win=null, last=ps[ps.length-1], gl=r.gameLeft||0;
   ps.forEach(function(k){ if(k.win) win=k; });
   picksLeft=r.picksLeft||0;
   $('rNo').textContent=ps.map(function(k){return k.n+'번';}).join(' · ');
@@ -276,15 +279,20 @@ function showResult(r){
     $('rTitle').innerHTML='<em>'+win.name+'</em> 당첨!!';
     $('rCode').innerHTML='<div class="code pop">'+win.code+'</div>';
     $('rMsg').textContent='이 화면을 보여주고 피규어 받아요!'; confetti(90);
+  } else if(last&&last.retry&&gl>0){
+    $('rTitle').innerHTML='<em>게임 한 번 더!</em>'; $('rCode').innerHTML='';
+    $('rMsg').textContent='게임 한 번 더 하면 뽑기가 또 생겨요!'; confetti(40);
   } else {
     $('rTitle').innerHTML='<em>꽝!</em>'; $('rCode').innerHTML='';
     $('rMsg').textContent='그날 와서 더 좋은 상품 뽑아요!';
   }
   $('bMore').style.display=picksLeft>0?'block':'none'; $('bMore').textContent='한 번 더 뽑기! ('+picksLeft+'번)';
+  $('bGame').style.display=gl>0?'block':'none';
   pop(['rNo','rTitle']); show('s4');
 }
 $('bPick').onclick=doPick;
 $('bMore').onclick=goBoard;
+$('bGame').onclick=startGame;
 
 /* ───────── 시작 ───────── */
 $('bStart').onclick=function(){
