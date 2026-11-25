@@ -146,8 +146,8 @@ function pop(ids){ ids.forEach(function(i){ var e=$(i); e.classList.remove('pop'
 /* ───────── 미션: 점수 모으기 ─────────
    선물 +1점 · 금색 선물 +3점 · 해골 −4점 · 시계 시간 +2초
    T1점 이상이면 1번 뽑기, T2점 이상이면 2번 뽑기 */
-var QS=new URLSearchParams(location.search), T1=+QS.get('need')||20, T2=+QS.get('need2')||35, DUR=+QS.get('t')||20;
-$('s0sub').innerHTML='<em>'+T1+'점</em> 이면 1번<br><em>'+T2+'점</em> 이면 2번 뽑기!';
+var QS=new URLSearchParams(location.search), T1=+QS.get('need')||20, T2=+QS.get('need2')||35, DUR=+QS.get('t')||20, PRACTICE=QS.get('practice')==='1';
+$('s0sub').innerHTML='<em>'+T1+'점</em> 이면 1번<br><em>'+T2+'점</em> 이면 2번 뽑기!'+(PRACTICE?'<br><span style="font-size:20px;opacity:.7">연습 중 · 몇 번이든 해요</span>':'');
 var cv=$('cv'),ctx=cv.getContext('2d'),W=0,H=0,DPR=1,G=null;
 var COLORS=['#E5252A','#2E9E6A','#2F7BE0','#F2B705','#B04BD6','#FF7A2B'];
 function resize(){ DPR=Math.min(window.devicePixelRatio||1,2); W=cv.clientWidth; H=cv.clientHeight; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
@@ -207,6 +207,12 @@ function loop(now){
 }
 function endGame(sc){
   var tier=sc>=T2?2:(sc>=T1?1:0);
+  if(PRACTICE){
+    $('mArt').innerHTML=tier?STAR:SKULL; $('mArt').firstChild.style.cssText='width:min(46vw,190px);height:auto';
+    $('mTitle').innerHTML=tier===2?'2번 뽑기!<br><em>'+sc+'점</em>':tier===1?'1번 뽑기!<br><em>'+sc+'점</em>':'아깝다!<br><em>'+sc+'점</em>';
+    $('mSub').innerHTML='연습 중이라 뽑기는 안 해요';
+    $('bMNext').textContent='다시 도전!'; $('bMNext').onclick=startGame; pop(['mArt','mTitle','mSub']); show('s1'); if(tier) confetti(tier===2?90:40); return;
+  }
   if(!tier){
     $('mArt').innerHTML=SKULL; $('mArt').firstChild.style.cssText='width:min(46vw,190px);height:auto';
     $('mTitle').innerHTML='아깝다!<br><em>'+sc+'점</em>'; $('mSub').innerHTML=T1+'점 이상이면 뽑기!';
@@ -283,11 +289,11 @@ $('bMore').onclick=goBoard;
 /* ───────── 시작 ───────── */
 $('bStart').onclick=function(){
   $('bStart').disabled=true;
-  var go=PID?Promise.resolve():api('promoJoin',{}).then(function(r){ PID=r.pid; lsSet('santa_promo_pid',PID); });
+  var go=(PRACTICE||PID)?Promise.resolve():api('promoJoin',{}).then(function(r){ PID=r.pid; lsSet('santa_promo_pid',PID); });
   go.then(function(){ $('bStart').disabled=false; startGame(); }).catch(function(e){ $('bStart').disabled=false; toast(e.message); });
 };
 /* 이미 뽑은 폰이면 결과를, 뽑기 권리만 있으면 번호판을 바로 보여준다 */
-if(PID) api('promoBoard',{pid:PID}).then(function(b){
+if(PID&&!PRACTICE) api('promoBoard',{pid:PID}).then(function(b){
   if(!b.mine) return;
   if(b.mine.picks.length) showResult(b.mine); else goBoard();
 }).catch(function(){});
