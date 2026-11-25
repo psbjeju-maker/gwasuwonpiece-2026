@@ -17,35 +17,38 @@ button{font:inherit;cursor:pointer;border:0}
 .big{width:100%;max-width:360px;height:76px;border-radius:38px;background:var(--r);color:#fff;font-size:30px;font-weight:800;box-shadow:0 6px 0 #8c0b20;transition:transform .08s;flex:none}
 .big:active{transform:translateY(5px);box-shadow:0 1px 0 #8c0b20}
 .big:disabled{opacity:.5}
-.small{margin-top:14px;background:none;color:var(--g);font-size:17px;font-weight:800;opacity:.7;padding:8px 14px}
 .title{font-size:46px;line-height:1.05;font-weight:800;letter-spacing:-2px;text-align:center;margin:0}
 .title em{font-style:normal;color:var(--r)}
 .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:0}
 .mid svg{width:min(64vw,260px);height:auto}
 .bounce{animation:bob 1.1s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-.sub{font-size:24px;font-weight:800;text-align:center;margin:8px 0 0;line-height:1.3}
+.sub{font-size:24px;font-weight:800;text-align:center;margin:8px 0 0;line-height:1.35}
+.sub em{font-style:normal;color:var(--r)}
 /* 게임 */
 #sg{padding:0;background:#0F4A2E}
 #cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
-.hud{position:absolute;left:0;right:0;top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:12px;padding:0 16px;pointer-events:none}
+.hud{position:absolute;left:0;right:0;top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:10px;padding:0 14px;pointer-events:none}
 .bar{flex:1;height:16px;border-radius:8px;background:rgba(255,255,255,.25);overflow:hidden}
 .bar i{display:block;height:100%;width:100%;background:var(--gold);border-radius:8px}
-.score{color:#fff;font-size:28px;font-weight:800;min-width:118px;text-align:right}
-.hint{position:absolute;left:0;right:0;bottom:30%;text-align:center;color:#fff;font-size:28px;font-weight:800;pointer-events:none;text-shadow:0 3px 0 rgba(0,0,0,.25);transition:opacity .4s;line-height:1.3}
+.sec{color:#fff;font-size:28px;font-weight:800;min-width:56px}
+.score{color:#fff;font-size:28px;font-weight:800;min-width:84px;text-align:right}
+.goal{position:absolute;left:0;right:0;top:calc(46px + env(safe-area-inset-top,0px));text-align:center;color:rgba(255,255,255,.75);font-size:19px;font-weight:800;pointer-events:none}
+.goal b{font-weight:800;color:rgba(255,255,255,.75)}
+.goal b.on{color:var(--gold)}
+.hint{position:absolute;left:0;right:0;bottom:30%;text-align:center;color:#fff;font-size:28px;font-weight:800;pointer-events:none;text-shadow:0 3px 0 rgba(0,0,0,.25);transition:opacity .4s;line-height:1.35}
 /* 번호판 */
 #s2{padding:calc(12px + env(safe-area-inset-top,0px)) 0 0}
 .top{width:100%;text-align:center;padding:0 16px 8px}
 .top b{font-size:34px;letter-spacing:-1px}
 .top b em{font-style:normal;color:var(--r)}
-.top span{display:block;font-size:17px;opacity:.7;margin-top:2px}
+.top span{display:block;font-size:18px;opacity:.75;margin-top:2px}
 .grid{flex:1;min-height:0;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(6,1fr);gap:7px;padding:6px 14px 14px;align-content:start}
 .t{height:50px;border-radius:12px;background:#fff;border:2px solid #d8d2c2;font-size:19px;font-weight:800;color:var(--g);display:flex;align-items:center;justify-content:center}
 .t.x{background:#e6e1d3;border-color:#e6e1d3;color:#b7b09c;text-decoration:line-through}
 .t.sel{background:var(--r);border-color:var(--r);color:#fff;transform:scale(1.08)}
 .bot{width:100%;padding:12px 20px calc(18px + env(safe-area-inset-bottom,0px));background:var(--cream);box-shadow:0 -6px 14px rgba(15,74,46,.12);display:flex;justify-content:center}
 /* 결과 */
-.num{font-size:120px;line-height:1;font-weight:800;letter-spacing:-4px;color:var(--r)}
 .shake{animation:sh .28s ease-in-out infinite}
 @keyframes sh{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
 .pop{animation:pop .55s cubic-bezier(.2,1.6,.4,1) both}
@@ -57,7 +60,7 @@ button{font:inherit;cursor:pointer;border:0}
 .code{font-size:56px;letter-spacing:6px;font-weight:800;background:#fff;border:4px dashed var(--r);border-radius:18px;padding:6px 18px;margin:8px 0;color:var(--g);-webkit-user-select:auto;user-select:auto}
 .conf{position:fixed;top:-20px;width:10px;height:14px;z-index:9;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
-.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--g);color:#fff;padding:12px 20px;border-radius:24px;font-size:20px;font-weight:800;z-index:20;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);background:var(--r);color:#fff;padding:12px 20px;border-radius:24px;font-size:22px;font-weight:800;z-index:20;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center;white-space:nowrap}
 .toast.on{opacity:1}
 </style>
 </head>
@@ -67,26 +70,27 @@ button{font:inherit;cursor:pointer;border:0}
   <!-- 0 시작 -->
   <section class="scr on" id="s0">
     <h1 class="title" style="margin-top:6px">산타 <em>번호</em><br>뽑기!</h1>
-    <div class="mid"><div class="bounce" id="startArt"></div><p class="sub">20점 달성하면<br>500개 번호 중 골라요!</p></div>
+    <div class="mid"><div class="bounce" id="startArt"></div><p class="sub" id="s0sub"></p></div>
     <button class="big" id="bStart">미션 시작!</button>
   </section>
 
   <!-- 1 미션 게임 -->
   <section class="scr" id="sg">
     <canvas id="cv"></canvas>
-    <div class="hud"><div class="bar"><i id="tbar"></i></div><div class="score" id="score">0/5</div></div>
-    <div class="hint" id="hint"><span id="hn">20</span>점 달성하면 성공!<br>검은 석탄은 피해요!</div>
+    <div class="hud"><div class="sec" id="sec">20</div><div class="bar"><i id="tbar"></i></div><div class="score" id="score">0점</div></div>
+    <div class="goal" id="goal"></div>
+    <div class="hint" id="hint">선물을 모아요!<br>해골은 피하고<br>시계는 시간 +3초</div>
   </section>
 
   <!-- 2 미션 결과 -->
   <section class="scr" id="s1">
-    <div class="mid"><div class="pop" id="mArt"></div><p class="title pop" id="mTitle" style="margin-top:12px"></p></div>
+    <div class="mid"><div class="pop" id="mArt"></div><p class="title pop" id="mTitle" style="margin-top:12px"></p><p class="sub pop" id="mSub"></p></div>
     <button class="big" id="bMNext"></button>
   </section>
 
   <!-- 3 번호판 -->
   <section class="scr" id="s2">
-    <div class="top"><b>남은 번호 <em id="left">500</em></b><span>번호를 골라요</span></div>
+    <div class="top"><b>남은 번호 <em id="left">500</em></b><span id="leftSub">번호를 골라요</span></div>
     <div class="grid" id="grid"></div>
     <div class="bot"><button class="big" id="bPick">아무 번호나 뽑기!</button></div>
   </section>
@@ -108,6 +112,7 @@ button{font:inherit;cursor:pointer;border:0}
       <span>중문 컨벤션 제2센터</span>
       <p id="rMsg"></p>
     </div>
+    <button class="big" id="bMore" style="display:none">한 번 더 뽑기!</button>
   </section>
 
 </div>
@@ -125,7 +130,7 @@ function api(fn,data){
     .then(function(j){ if(j.error){ var e=new Error(j.error.message||'다시 해 주세요'); e.status=j.error.status; throw e; } return j.result; },
           function(){ throw new Error('인터넷 연결을 확인해 주세요'); });
 }
-var tt; function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tt); tt=setTimeout(function(){t.classList.remove('on');},2200); }
+var tt; function toast(m,ms){ var t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tt); tt=setTimeout(function(){t.classList.remove('on');},ms||2200); }
 function lsGet(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
 function lsSet(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
 
@@ -133,22 +138,30 @@ function lsSet(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
 var SANTA='<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="112" r="58" fill="#FFD9B8"/><path d="M42 112Q38 196 100 196Q162 196 158 112Q132 140 100 132Q68 140 42 112Z" fill="#fff" stroke="#e6e6e6" stroke-width="3"/><ellipse cx="80" cy="130" rx="24" ry="13" fill="#fff" stroke="#e6e6e6" stroke-width="3"/><ellipse cx="120" cy="130" rx="24" ry="13" fill="#fff" stroke="#e6e6e6" stroke-width="3"/><circle cx="100" cy="118" r="8" fill="#F0A58A"/><circle cx="80" cy="102" r="6" fill="#222"/><circle cx="120" cy="102" r="6" fill="#222"/><circle cx="82" cy="100" r="2" fill="#fff"/><circle cx="122" cy="100" r="2" fill="#fff"/><circle cx="66" cy="120" r="9" fill="#FF8F8F" opacity=".55"/><circle cx="134" cy="120" r="9" fill="#FF8F8F" opacity=".55"/><path d="M40 82Q52 10 122 14Q152 16 162 44Q168 64 160 82Z" fill="#C8102E"/><rect x="30" y="72" width="140" height="24" rx="12" fill="#fff" stroke="#e6e6e6" stroke-width="3"/><circle cx="160" cy="40" r="15" fill="#fff" stroke="#e6e6e6" stroke-width="3"/></svg>';
 var BOX='<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="86" width="140" height="100" rx="10" fill="#C8102E"/><rect x="92" y="86" width="16" height="100" fill="#F2B705"/><rect x="22" y="62" width="156" height="34" rx="10" fill="#E5252A"/><rect x="92" y="62" width="16" height="34" fill="#F2B705"/><path d="M100 62Q62 14 52 46Q50 62 100 62Z" fill="#F2B705"/><path d="M100 62Q138 14 148 46Q150 62 100 62Z" fill="#F2B705"/><circle cx="100" cy="62" r="9" fill="#d99a00"/></svg>';
 var STAR='<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 14l24 56 60 6-45 40 14 60-53-32-53 32 14-60-45-40 60-6z" fill="#F2B705" stroke="#d99a00" stroke-width="6" stroke-linejoin="round"/></svg>';
+var SKULL='<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 22C58 22 34 52 34 90c0 24 12 40 28 50v28h76v-28c16-10 28-26 28-50 0-38-24-68-66-68z" fill="#f4f4f4" stroke="#bbb" stroke-width="4"/><ellipse cx="74" cy="92" rx="17" ry="20" fill="#222"/><ellipse cx="126" cy="92" rx="17" ry="20" fill="#222"/><path d="M100 112l-9 18h18z" fill="#222"/><path d="M78 168v-18M100 168v-18M122 168v-18" stroke="#999" stroke-width="5"/></svg>';
 $('startArt').innerHTML=SANTA;
 function confetti(n){ var cs=['#C8102E','#F2B705','#2E9E6A','#2F7BE0','#fff']; for(var i=0;i<(n||46);i++){ var d=document.createElement('i'); d.className='conf'; d.style.left=Math.random()*100+'vw'; d.style.background=cs[i%cs.length]; d.style.animationDuration=(1.6+Math.random()*1.6)+'s'; d.style.animationDelay=Math.random()*.4+'s'; document.body.appendChild(d); setTimeout(function(x){x.remove();},3800,d); } }
+function pop(ids){ ids.forEach(function(i){ var e=$(i); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }); }
 
-/* ───────── 미션: 선물 5개 받기 (15초) ───────── */
-var QS=new URLSearchParams(location.search), NEED=+QS.get('need')||20, DUR=+QS.get('t')||20; $('hn').textContent=NEED; var sm=document.querySelector('#s0 .sub'); if(sm) sm.innerHTML=NEED+'점 달성하면<br>500개 번호 중 골라요!';
+/* ───────── 미션: 점수 모으기 ─────────
+   선물 +1점 · 금색 선물 +3점 · 해골 −3점 · 시계 시간 +3초
+   T1점 이상이면 1번 뽑기, T2점 이상이면 2번 뽑기 */
+var QS=new URLSearchParams(location.search), T1=+QS.get('need')||20, T2=+QS.get('need2')||32, DUR=+QS.get('t')||20;
+$('s0sub').innerHTML='<em>'+T1+'점</em> 이면 1번<br><em>'+T2+'점</em> 이면 2번 뽑기!';
 var cv=$('cv'),ctx=cv.getContext('2d'),W=0,H=0,DPR=1,G=null;
 var COLORS=['#E5252A','#2E9E6A','#2F7BE0','#F2B705','#B04BD6','#FF7A2B'];
 function resize(){ DPR=Math.min(window.devicePixelRatio||1,2); W=cv.clientWidth; H=cv.clientHeight; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
 window.addEventListener('resize',function(){ if(G) resize(); });
 function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function gift(x,y,s,c,rot){ ctx.save(); ctx.translate(x,y); ctx.rotate(rot||0); ctx.fillStyle=c; rr(-s/2,-s/2,s,s,s*.14); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillRect(-s*.07,-s/2,s*.14,s); ctx.fillRect(-s/2,-s*.07,s,s*.14); ctx.beginPath(); ctx.arc(-s*.16,-s*.5,s*.15,0,6.3); ctx.arc(s*.16,-s*.5,s*.15,0,6.3); ctx.fill(); ctx.restore(); }
+function skull(x,y,rot){ ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.fillStyle='#f4f4f4'; ctx.beginPath(); ctx.arc(0,-3,19,0,6.3); ctx.fill(); ctx.fillRect(-11,8,22,13); ctx.fillStyle='#222'; ctx.beginPath(); ctx.arc(-7,-3,5.5,0,6.3); ctx.arc(7,-3,5.5,0,6.3); ctx.fill(); ctx.beginPath(); ctx.moveTo(0,4); ctx.lineTo(-3.5,10); ctx.lineTo(3.5,10); ctx.fill(); ctx.strokeStyle='#999'; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(-5,13); ctx.lineTo(-5,21); ctx.moveTo(0,13); ctx.lineTo(0,21); ctx.moveTo(5,13); ctx.lineTo(5,21); ctx.stroke(); ctx.restore(); }
+function clock(x,y,rot){ ctx.save(); ctx.translate(x,y); ctx.rotate(rot*.4); ctx.fillStyle='#35c98e'; ctx.beginPath(); ctx.arc(0,0,22,0,6.3); ctx.fill(); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,17,0,6.3); ctx.fill(); ctx.strokeStyle='#0F4A2E'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-11); ctx.moveTo(0,0); ctx.lineTo(8,4); ctx.stroke(); ctx.restore(); }
 function bag(x,y,w,sq){ ctx.save(); ctx.translate(x,y); ctx.scale(1+sq*.1,1-sq*.12); ctx.fillStyle='#C8102E'; ctx.beginPath(); ctx.moveTo(-w/2,-w*.12); ctx.quadraticCurveTo(-w*.62,w*.5,-w*.3,w*.55); ctx.lineTo(w*.3,w*.55); ctx.quadraticCurveTo(w*.62,w*.5,w/2,-w*.12); ctx.closePath(); ctx.fill(); ctx.fillStyle='#fff'; rr(-w*.56,-w*.22,w*1.12,w*.2,w*.1); ctx.fill(); ctx.fillStyle='#F2B705'; ctx.beginPath(); ctx.arc(0,w*.22,w*.1,0,6.3); ctx.fill(); ctx.restore(); }
+function goalHtml(sc){ return '<b class="'+(sc>=T1?'on':'')+'">'+T1+'점 1번</b> · <b class="'+(sc>=T2?'on':'')+'">'+T2+'점 2번</b> 뽑기'; }
 function startGame(){
   show('sg'); resize();
-  G={left:DUR,score:0,bx:W/2,tx:W/2,sq:0,items:[],fx:[],spawn:0,last:performance.now(),run:true,started:false,wait:0};
-  $('score').textContent='0/'+NEED+'점'; $('tbar').style.width='100%'; $('hint').style.opacity=1;
+  G={left:DUR,el:0,score:0,bx:W/2,tx:W/2,sq:0,items:[],fx:[],spawn:0,last:performance.now(),run:true,started:false,wait:0,t1:false,t2:false};
+  $('score').textContent='0점'; $('tbar').style.width='100%'; $('sec').textContent=DUR; $('goal').innerHTML=goalHtml(0); $('hint').style.opacity=1;
   requestAnimationFrame(loop);
 }
 function pt(e){ var r=cv.getBoundingClientRect(); return e.clientX-r.left; }
@@ -157,45 +170,61 @@ function loop(now){
   if(!G||!G.run) return;
   var dt=Math.min((now-G.last)/1000,.05); G.last=now;
   if(!G.started){ G.wait+=dt; if(G.wait>1.5){ G.started=true; $('hint').style.opacity=0; } }
-  else G.left-=dt;
-  if(G.started){ G.spawn-=dt; if(G.spawn<=0){ var pg=1-G.left/DUR; G.spawn=.52-.22*pg; var coal=Math.random()<.24, gold=!coal&&Math.random()<.1; G.items.push({x:30+Math.random()*(W-60),y:-30,v:(220+190*pg)*(.85+Math.random()*.3),s:gold?46:38,c:coal?'#262626':gold?'#F2B705':COLORS[(Math.random()*COLORS.length)|0],gold:gold,coal:coal,r:Math.random()*.6-.3,vr:Math.random()*2-1}); } }
+  else { G.left-=dt; G.el+=dt; }
+  var pg=Math.min(1,G.el/DUR);   // 진행도: 갈수록 빠르고 해골이 많아진다
+  if(G.started){ G.spawn-=dt; if(G.spawn<=0){
+    G.spawn=.5-.22*pg; var r=Math.random(), kind='gift';
+    if(r<.2+.1*pg) kind='skull'; else if(r<.2+.1*pg+.06) kind='clock'; else if(r<.2+.1*pg+.06+.09) kind='gold';
+    G.items.push({x:30+Math.random()*(W-60),y:-30,v:(230+200*pg)*(.85+Math.random()*.3),s:kind==='gold'?46:38,c:kind==='gold'?'#F2B705':COLORS[(Math.random()*COLORS.length)|0],kind:kind,r:Math.random()*.6-.3,vr:Math.random()*2-1});
+  } }
   G.bx+=(G.tx-G.bx)*Math.min(1,dt*16); var bw=Math.min(104,W*.26), by=H-92; G.sq=Math.max(0,G.sq-dt*5);
   for(var i=G.items.length-1;i>=0;i--){ var it=G.items[i]; it.y+=it.v*dt; it.r+=it.vr*dt;
     if(it.y>by-bw*.15&&it.y<by+bw*.3&&Math.abs(it.x-G.bx)<bw*.5+it.s*.25){
-      var add=it.coal?-2:(it.gold?3:1); G.score=Math.max(0,G.score+add); G.sq=1; $('score').textContent=Math.min(G.score,NEED)+'/'+NEED+'점'; if(navigator.vibrate) try{navigator.vibrate(it.coal?[40,30,40]:12);}catch(e){}
-      G.fx.push({x:it.x,y:by-bw*.2,t:0,txt:(add>0?'+':'')+add,gold:it.gold,bad:it.coal});
-      for(var k=0;k<7;k++) G.fx.push({x:it.x,y:by,t:0,dx:(Math.random()-.5)*260,dy:-Math.random()*220-60,c:it.c,p:1});
+      G.sq=1;
+      if(it.kind==='clock'){ G.left+=3; G.fx.push({x:it.x,y:by-bw*.2,t:0,txt:'+3초',col:'#7dffc4'}); if(navigator.vibrate) try{navigator.vibrate(20);}catch(e){} }
+      else {
+        var add=it.kind==='skull'?-3:(it.kind==='gold'?3:1); G.score=Math.max(0,G.score+add); $('score').textContent=G.score+'점'; $('goal').innerHTML=goalHtml(G.score);
+        if(navigator.vibrate) try{navigator.vibrate(add<0?[40,30,40]:12);}catch(e){}
+        G.fx.push({x:it.x,y:by-bw*.2,t:0,txt:(add>0?'+':'')+add,col:add<0?'#ff6b6b':(it.kind==='gold'?'#F2B705':'#fff')});
+        if(!G.t1&&G.score>=T1){ G.t1=true; toast('1번 뽑기 달성!'); }
+        if(!G.t2&&G.score>=T2){ G.t2=true; toast('2번 뽑기 달성!!'); }
+      }
+      for(var k=0;k<7;k++) G.fx.push({x:it.x,y:by,t:0,dx:(Math.random()-.5)*260,dy:-Math.random()*220-60,c:it.kind==='skull'?'#ddd':it.c,p:1});
       G.items.splice(i,1); }
     else if(it.y>H+40) G.items.splice(i,1); }
   ctx.clearRect(0,0,W,H);
   var gr=ctx.createLinearGradient(0,0,0,H); gr.addColorStop(0,'#0F4A2E'); gr.addColorStop(1,'#2a8a5a'); ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
   ctx.fillStyle='rgba(255,255,255,.55)'; for(var s=0;s<26;s++){ var sx=(s*97+now*.012*(1+s%3))%W, sy=(s*53+now*.03*(1+s%4))%H; ctx.beginPath(); ctx.arc(sx,sy,2+s%3,0,6.3); ctx.fill(); }
   ctx.fillStyle='#eef6ef'; ctx.fillRect(0,H-70,W,70);
-  G.items.forEach(function(it){ if(it.coal){ ctx.save(); ctx.translate(it.x,it.y); ctx.rotate(it.r); ctx.fillStyle='#262626'; ctx.beginPath(); ctx.moveTo(-19,4); ctx.lineTo(-9,-17); ctx.lineTo(10,-15); ctx.lineTo(20,2); ctx.lineTo(8,18); ctx.lineTo(-12,16); ctx.closePath(); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.25)'; ctx.fillRect(-8,-9,9,4); ctx.restore(); } else gift(it.x,it.y,it.s,it.c,it.r); });
+  G.items.forEach(function(it){ if(it.kind==='skull') skull(it.x,it.y,it.r); else if(it.kind==='clock') clock(it.x,it.y,it.r); else gift(it.x,it.y,it.s,it.c,it.r); });
   bag(G.bx,by,bw,G.sq);
   for(var j=G.fx.length-1;j>=0;j--){ var f=G.fx[j]; f.t+=dt;
     if(f.p){ f.x+=f.dx*dt; f.y+=(f.dy+f.t*500)*dt; ctx.globalAlpha=Math.max(0,1-f.t*2); ctx.fillStyle=f.c; ctx.fillRect(f.x-4,f.y-4,8,8); ctx.globalAlpha=1; if(f.t>.5) G.fx.splice(j,1); }
-    else { ctx.globalAlpha=Math.max(0,1-f.t*1.6); ctx.font='800 '+(f.gold?40:30)+'px Paperlogy,sans-serif'; ctx.textAlign='center'; ctx.fillStyle=f.bad?'#ff6b6b':f.gold?'#F2B705':'#fff'; ctx.fillText(f.txt,f.x,f.y-f.t*70); ctx.globalAlpha=1; if(f.t>.62) G.fx.splice(j,1); } }
-  $('tbar').style.width=Math.max(0,G.left/DUR*100)+'%';
-  if(G.score>=NEED){ G.run=false; G=null; setTimeout(missionWin,400); return; }
-  if(G.left<=0){ G.run=false; G=null; setTimeout(missionLose,300); return; }
+    else { ctx.globalAlpha=Math.max(0,1-f.t*1.6); ctx.font='800 34px Paperlogy,sans-serif'; ctx.textAlign='center'; ctx.fillStyle=f.col; ctx.fillText(f.txt,f.x,f.y-f.t*70); ctx.globalAlpha=1; if(f.t>.62) G.fx.splice(j,1); } }
+  $('tbar').style.width=Math.max(0,Math.min(100,G.left/DUR*100))+'%'; $('sec').textContent=Math.max(0,Math.ceil(G.left));
+  if(G.left<=0){ var sc=G.score; G.run=false; G=null; setTimeout(function(){ endGame(sc); },350); return; }
   requestAnimationFrame(loop);
 }
-function missionWin(){
-  $('mArt').innerHTML=STAR; $('mArt').firstChild.style.cssText='width:min(56vw,230px);height:auto';
-  $('mTitle').innerHTML='미션 <em>성공!</em>'; $('bMNext').textContent='번호 뽑으러 가기!'; $('bMNext').onclick=goBoard;
-  ['mArt','mTitle'].forEach(function(i){ var e=$(i); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); });
-  show('s1'); confetti(40);
-}
-function missionLose(){
-  $('mArt').innerHTML=BOX; $('mArt').firstChild.style.cssText='width:min(50vw,200px);height:auto';
-  $('mTitle').innerHTML='아깝다!<br>한 번 더!'; $('bMNext').textContent='다시 도전!'; $('bMNext').onclick=startGame;
-  ['mArt','mTitle'].forEach(function(i){ var e=$(i); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); });
-  show('s1');
+function endGame(sc){
+  var tier=sc>=T2?2:(sc>=T1?1:0);
+  if(!tier){
+    $('mArt').innerHTML=SKULL; $('mArt').firstChild.style.cssText='width:min(46vw,190px);height:auto';
+    $('mTitle').innerHTML='아깝다!<br><em>'+sc+'점</em>'; $('mSub').innerHTML=T1+'점 이상이면 뽑기!';
+    $('bMNext').textContent='다시 도전!'; $('bMNext').onclick=startGame; pop(['mArt','mTitle','mSub']); show('s1'); return;
+  }
+  $('bMNext').disabled=true;
+  api('promoMission',{pid:PID,tier:tier}).then(function(r){
+    $('mArt').innerHTML=STAR; $('mArt').firstChild.style.cssText='width:min(52vw,220px);height:auto';
+    $('mTitle').innerHTML=tier===2?'대단해요!<br><em>'+sc+'점</em>':'미션 <em>성공!</em>'; $('mSub').innerHTML=sc+'점 · 뽑기 <em>'+r.allow+'번</em>';
+    $('bMNext').textContent='번호 뽑으러 가기!'; $('bMNext').disabled=false; $('bMNext').onclick=goBoard; pop(['mArt','mTitle','mSub']); show('s1'); confetti(tier===2?90:40);
+  }).catch(function(e){
+    $('bMNext').disabled=false;
+    if(e.status==='NOT_FOUND'){ lsSet('santa_promo_pid',''); PID=''; toast('처음부터 다시 해요'); show('s0'); } else { toast(e.message); startGame(); }
+  });
 }
 
 /* ───────── 번호판 ───────── */
-var PID=lsGet('santa_promo_pid')||'', taken={}, sel=0, total=500, poll=null, picking=false;
+var PID=lsGet('santa_promo_pid')||'', taken={}, sel=0, total=500, poll=null, picking=false, picksLeft=1;
 function paint(){
   var g=$('grid'), html='';
   if(!g.children.length){ for(var i=1;i<=total;i++) html+='<button class="t" data-n="'+i+'">'+i+'</button>'; g.innerHTML=html; }
@@ -203,14 +232,15 @@ function paint(){
   Array.prototype.forEach.call(g.children,function(b){ var n=+b.dataset.n, x=!!taken[n]; if(x) cnt++; b.classList.toggle('x',x); b.disabled=x; b.classList.toggle('sel',n===sel&&!x); });
   if(sel&&taken[sel]) sel=0;
   $('left').textContent=total-cnt;
+  $('leftSub').textContent='번호를 골라요 · 뽑기 '+picksLeft+'번 남음';
   $('bPick').textContent=sel?sel+'번 뽑기!':'아무 번호나 뽑기!';
 }
 function loadBoard(){
-  return api('promoBoard',{pid:PID}).then(function(b){ total=b.total; taken={}; b.taken.forEach(function(n){taken[n]=1;}); paint(); return b; });
+  return api('promoBoard',{pid:PID}).then(function(b){ total=b.total; taken={}; b.taken.forEach(function(n){taken[n]=1;}); if(b.mine) picksLeft=b.mine.picksLeft; paint(); return b; });
 }
 $('grid').addEventListener('click',function(e){ var b=e.target.closest('.t'); if(!b||b.disabled) return; var n=+b.dataset.n; sel=(sel===n?0:n); paint(); });
 function goBoard(){
-  show('s2'); sel=0; loadBoard().catch(function(e){ toast(e.message); });
+  show('s2'); sel=0; $('bPick').disabled=false; loadBoard().catch(function(e){ toast(e.message); });
   clearInterval(poll); poll=setInterval(function(){ if(!$('s2').classList.contains('on')) return; loadBoard().catch(function(){}); },4000);
 }
 
@@ -223,26 +253,32 @@ function doPick(){
     var d=Math.max(0,1300-(Date.now()-t0)); setTimeout(function(){ showResult(r); },d);
   }).catch(function(e){
     picking=false; $('bPick').disabled=false; clearInterval(poll);
-    if(e.status==='ALREADY_EXISTS'){ toast('앗, 방금 다른 사람이 뽑았어요!'); } else if(e.status==='NOT_FOUND'){ lsSet('santa_promo_pid',''); PID=''; toast('처음부터 다시 해요'); show('s0'); return; } else toast(e.message);
+    if(e.status==='ALREADY_EXISTS') toast('앗, 방금 다른 사람이 뽑았어요!');
+    else if(e.status==='NOT_FOUND'){ lsSet('santa_promo_pid',''); PID=''; toast('처음부터 다시 해요'); show('s0'); return; }
+    else if(e.status==='FAILED_PRECONDITION'){ toast('미션을 먼저 해요'); show('s0'); return; }
+    else toast(e.message);
     goBoard();
   });
 }
 function showResult(r){
   picking=false; clearInterval(poll);
-  $('rNo').textContent=r.n+'번';
-  if(r.win){
-    $('rTitle').innerHTML='<em>'+r.name+'</em> 당첨!!';
-    $('rCode').innerHTML='<div class="code pop">'+r.code+'</div><p class="sub" style="margin:0">이 화면을 보여주고 피규어 받아요!</p>';
-    $('rMsg').textContent='이 화면은 닫지 마세요!'; confetti(90);
+  var ps=r.picks||[], win=null;
+  ps.forEach(function(k){ if(k.win) win=k; });
+  picksLeft=r.picksLeft||0;
+  $('rNo').textContent=ps.map(function(k){return k.n+'번';}).join(' · ');
+  if(win){
+    $('rTitle').innerHTML='<em>'+win.name+'</em> 당첨!!';
+    $('rCode').innerHTML='<div class="code pop">'+win.code+'</div>';
+    $('rMsg').textContent='이 화면을 보여주고 피규어 받아요!'; confetti(90);
   } else {
-    $('rTitle').innerHTML='<em>꽝!</em>';
-    $('rCode').innerHTML='';
+    $('rTitle').innerHTML='<em>꽝!</em>'; $('rCode').innerHTML='';
     $('rMsg').textContent='그날 와서 더 좋은 상품 뽑아요!';
   }
-  ['rNo','rTitle'].forEach(function(i){ var e=$(i); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); });
-  show('s4');
+  $('bMore').style.display=picksLeft>0?'block':'none'; $('bMore').textContent='한 번 더 뽑기! ('+picksLeft+'번)';
+  pop(['rNo','rTitle']); show('s4');
 }
 $('bPick').onclick=doPick;
+$('bMore').onclick=goBoard;
 
 /* ───────── 시작 ───────── */
 $('bStart').onclick=function(){
@@ -250,8 +286,11 @@ $('bStart').onclick=function(){
   var go=PID?Promise.resolve():api('promoJoin',{}).then(function(r){ PID=r.pid; lsSet('santa_promo_pid',PID); });
   go.then(function(){ $('bStart').disabled=false; startGame(); }).catch(function(e){ $('bStart').disabled=false; toast(e.message); });
 };
-/* 이미 뽑은 폰이면 결과를 다시 보여준다 */
-if(PID) api('promoBoard',{pid:PID}).then(function(b){ if(b.mine) showResult(b.mine); }).catch(function(){});
+/* 이미 뽑은 폰이면 결과를, 뽑기 권리만 있으면 번호판을 바로 보여준다 */
+if(PID) api('promoBoard',{pid:PID}).then(function(b){
+  if(!b.mine) return;
+  if(b.mine.picks.length) showResult(b.mine); else goBoard();
+}).catch(function(){});
 document.addEventListener('touchmove',function(e){ if(!e.target.closest('.grid')) e.preventDefault(); },{passive:false});
 })();
 </script>
