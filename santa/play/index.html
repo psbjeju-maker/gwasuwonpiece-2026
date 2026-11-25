@@ -191,16 +191,17 @@ function bag(x,y,w,sq){
   ctx.restore();
 }
 function startGame(){
-  resize();
+  show('sg'); resize();
   G={t:0,left:20,score:0,bx:W/2,tx:W/2,sq:0,items:[],fx:[],spawn:0,last:performance.now(),run:true,started:false};
   $('score').textContent='0'; $('tbar').style.width='100%'; $('hint').style.opacity=1;
-  show('sg'); requestAnimationFrame(loop);
+  requestAnimationFrame(loop);
 }
 function pt(e){ var r=cv.getBoundingClientRect(); return (e.touches?e.touches[0].clientX:e.clientX)-r.left; }
 ['pointerdown','pointermove'].forEach(function(n){ cv.addEventListener(n,function(e){ if(!G) return; G.tx=pt(e); G.started=true; $('hint').style.opacity=0; e.preventDefault(); },{passive:false}); });
 function loop(now){
   if(!G||!G.run) return;
   var dt=Math.min((now-G.last)/1000,.05); G.last=now;
+  if(!G.started){ G.wait=(G.wait||0)+dt; if(G.wait>1.5){ G.started=true; $('hint').style.opacity=0; } }
   if(G.started){ G.left-=dt; G.t+=dt; }
   var prog=1-G.left/20;
   /* 생성 */
