@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="robots" content="noindex">
+<script>
+/* 카톡·인스타·네이버 등 앱 안 브라우저에서 열리면 바로 크롬(안드로이드)·사파리(아이폰)로 옮긴다.
+   앱 안 브라우저는 카메라·사진 저장을 막는 경우가 많다. */
+(function(){
+  var ua=navigator.userAgent||'', u=location.href;
+  if(/[?&]noredir=1/.test(u)) return;
+  var inapp=/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\//i.test(ua);
+  if(!inapp) return;
+  if(/Android/i.test(ua)){
+    location.href='intent://'+u.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(u+(u.indexOf('?')>-1?'&':'?')+'noredir=1')+';end';
+  } else if(/KAKAOTALK/i.test(ua)){
+    location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(u);
+  }
+})();
+</script>
 <title>산타 선물 받기</title>
 <style>
 @font-face{font-family:Paperlogy;src:url(../img/Paperlogy-8ExtraBold.ttf);font-weight:800}
@@ -106,7 +121,7 @@ button{font:inherit;cursor:pointer;border:0}
   <!-- 6 사진 완성 -->
   <section class="scr" id="s4">
     <div class="shotbox"><img id="shotImg" alt=""></div>
-    <p class="tip" style="margin:8px 0 10px;font-size:20px">엄마 아빠에게 보여줘요!</p>
+    <p class="tip" id="saveTip" style="margin:8px 0 10px;font-size:20px">엄마 아빠에게 보여줘요!<br><span style="font-size:16px;opacity:.7">저장이 안 되면 사진을 꾹 눌러요</span></p>
     <button class="big green" id="bSave">저장하기</button>
     <button class="small" id="bRe">다시 찍기</button>
   </section>
@@ -280,9 +295,14 @@ function capture(){
 }
 function save(){
   if(!shotBlob) return;
-  var f; try{ f=new File([shotBlob],'산타왔수다.jpg',{type:'image/jpeg'}); }catch(e){}
-  if(f&&navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f]}).catch(function(){}); return; }
-  var a=document.createElement('a'); a.href=URL.createObjectURL(shotBlob); a.download='산타왔수다.jpg'; document.body.appendChild(a); a.click(); a.remove();
+  var ua=navigator.userAgent||'', ios=/iPhone|iPad|iPod/i.test(ua);
+  var f; try{ f=new File([shotBlob],'santa.jpg',{type:'image/jpeg'}); }catch(e){}
+  /* 아이폰: 공유창의 "이미지 저장"이 가장 확실하다 */
+  if(ios&&f&&navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f]}).catch(function(){}); return; }
+  /* 안드로이드·PC: 바로 내려받는다 */
+  var url=URL.createObjectURL(shotBlob), a=document.createElement('a'); a.href=url; a.download='santa.jpg'; document.body.appendChild(a); a.click();
+  setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); },4000);
+  var t=$('saveTip'); if(t){ t.textContent='저장했어요! 갤러리·다운로드에서 봐요'; }
 }
 
 /* ───────── 버튼 ───────── */
