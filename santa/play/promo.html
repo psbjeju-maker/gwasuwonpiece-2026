@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="robots" content="noindex">
+<script>
+/* 카톡·인스타·네이버 등 앱 안 브라우저에서 열리면 바로 크롬(안드로이드)·사파리(아이폰)로 옮긴다.
+   앱 안 브라우저는 카메라·사진 저장을 막는 경우가 많다. */
+(function(){
+  var ua=navigator.userAgent||'', u=location.href;
+  if(/[?&]noredir=1/.test(u)) return;
+  var inapp=/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\//i.test(ua);
+  if(!inapp) return;
+  if(/Android/i.test(ua)){
+    location.href='intent://'+u.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(u+(u.indexOf('?')>-1?'&':'?')+'noredir=1')+';end';
+  } else if(/KAKAOTALK/i.test(ua)){
+    location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(u);
+  }
+})();
+</script>
 <title>산타 번호 뽑기</title>
 <style>
 @font-face{font-family:Paperlogy;src:url(../img/Paperlogy-8ExtraBold.ttf);font-weight:800}
