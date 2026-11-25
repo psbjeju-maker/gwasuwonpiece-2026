@@ -232,7 +232,7 @@ function showResult(r){
   $('rNo').textContent=r.n+'번';
   if(r.win){
     $('rTitle').innerHTML='<em>'+r.name+'</em> 당첨!!';
-    $('rCode').innerHTML='<div class="code pop">'+r.code+'</div><p class="sub" style="margin:0">스태프에게 이 화면을 보여줘요</p>';
+    $('rCode').innerHTML='<div class="code pop">'+r.code+'</div><p class="sub" style="margin:0">이 화면을 보여주고 피규어 받아요!</p>';
     $('rMsg').textContent='이 화면은 닫지 마세요!'; confetti(90);
   } else {
     $('rTitle').innerHTML='<em>꽝!</em>';
