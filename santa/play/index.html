@@ -22,93 +22,132 @@
 <title>산타 선물 받기</title>
 <style>
 @font-face{font-family:Paperlogy;src:url(../img/Paperlogy-8ExtraBold.ttf);font-weight:800}
-:root{--g:#0F4A2E;--r:#C8102E;--cream:#FBF6EC;--gold:#F2B705}
+:root{--g:#0F4A2E;--r:#E8384F;--cream:#FFF8EA;--gold:#FFC62E;--navy:#2B2F6B}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{margin:0;height:100%;background:var(--cream);font-family:Paperlogy,Pretendard,system-ui,sans-serif;color:var(--g);overflow:hidden;overscroll-behavior:none}
+html,body{margin:0;height:100%;background:var(--cream);font-family:Paperlogy,Pretendard,system-ui,sans-serif;font-weight:800;color:var(--navy);overflow:hidden;overscroll-behavior:none}
 button{font:inherit;cursor:pointer;border:0}
-#app{position:fixed;inset:0;max-width:480px;margin:0 auto;background:var(--cream)}
-.scr{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(22px + env(safe-area-inset-bottom,0px))}
+#app{position:fixed;inset:0;max-width:480px;margin:0 auto;background:var(--cream);overflow:hidden}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(22px + env(safe-area-inset-bottom,0px));background:radial-gradient(circle at 12% 18%,#FFE1EA 0 38px,transparent 39px),radial-gradient(circle at 90% 30%,#DDF3FF 0 52px,transparent 53px),radial-gradient(circle at 8% 66%,#E4F7DC 0 30px,transparent 31px),radial-gradient(circle at 92% 72%,#FFF0BD 0 26px,transparent 27px),var(--cream)}
 .scr.on{display:flex}
-.big{width:100%;max-width:360px;height:76px;border-radius:38px;background:var(--r);color:#fff;font-size:30px;font-weight:800;box-shadow:0 6px 0 #8c0b20;transition:transform .08s}
-.big:active{transform:translateY(5px);box-shadow:0 1px 0 #8c0b20}
-.big.green{background:var(--g);box-shadow:0 6px 0 #082c1b}
-.small{margin-top:14px;background:none;color:var(--g);font-size:17px;font-weight:800;opacity:.7;padding:8px 14px}
-.title{font-size:46px;line-height:1.05;font-weight:800;letter-spacing:-2px;text-align:center;margin:0}
+.big{width:100%;max-width:360px;height:74px;border-radius:37px;background:var(--r);color:#fff;font-size:30px;font-weight:800;box-shadow:0 6px 0 #a51d33;transition:transform .08s;flex:none}
+.big:active{transform:translateY(5px) scale(.98);box-shadow:0 1px 0 #a51d33}
+.big.green{background:#22A77A;box-shadow:0 6px 0 #14714f}
+.big.blue{background:#3E8BFF;box-shadow:0 6px 0 #2560bd;margin-top:14px;height:62px;font-size:25px}
+.small{margin-top:12px;background:none;color:var(--navy);font-size:18px;font-weight:800;opacity:.7;padding:6px 14px;flex:none}
+.title{font-size:48px;line-height:1.08;font-weight:800;letter-spacing:-2px;text-align:center;margin:0}
 .title em{font-style:normal;color:var(--r)}
 .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:0}
-.mid svg{width:min(72vw,300px);height:auto;filter:drop-shadow(0 8px 0 rgba(15,74,46,.12))}
 .bounce{animation:bob 1.1s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes bob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-14px) scale(.98,1.02)}}
+.bounce svg{width:min(70vw,290px,40vh);height:auto;display:block}
+#snd{position:absolute;right:12px;top:calc(10px + env(safe-area-inset-top,0px));width:46px;height:46px;border-radius:23px;background:#fff;box-shadow:0 3px 0 rgba(43,47,107,.18);z-index:8;display:flex;align-items:center;justify-content:center;padding:0}
+#app.playing #snd,#app.nosnd #snd{display:none}
+.best{font-size:21px;margin:0 0 14px;min-height:26px}
+.best em{font-style:normal;color:var(--r)}
 /* 게임 */
-#sg{padding:0;background:linear-gradient(#0F4A2E,#1d6b44 60%,#e9f1ea 60.1%)}
+#sg{padding:0}
 #cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
-.hud{position:absolute;left:0;right:0;top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:12px;padding:0 16px;pointer-events:none}
-.bar{flex:1;height:16px;border-radius:8px;background:rgba(255,255,255,.25);overflow:hidden}
-.bar i{display:block;height:100%;width:100%;background:var(--gold);border-radius:8px}
-.score{color:#fff;font-size:30px;font-weight:800;min-width:72px;text-align:right}
-.hint{position:absolute;left:0;right:0;bottom:30%;text-align:center;color:#fff;font-size:30px;font-weight:800;pointer-events:none;text-shadow:0 3px 0 rgba(0,0,0,.25);transition:opacity .4s}
-/* 상자 */
-.box{width:min(64vw,260px);height:min(64vw,260px);position:relative;animation:shake .5s ease-in-out infinite;cursor:pointer}
-@keyframes shake{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-.cnt{font-size:34px;font-weight:800;text-align:center;margin:0 0 6px}
-.cnt em{font-style:normal;color:var(--r)}
-/* 결과 */
-.name{font-size:54px;font-weight:800;letter-spacing:-2px;margin:2px 0 0;color:var(--r)}
+.hud{position:absolute;left:0;right:0;top:calc(12px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:10px;padding:0 14px;pointer-events:none}
+.sec{width:52px;height:52px;border-radius:26px;background:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;flex:none}
+.sec.hurry{background:var(--r);color:#fff;animation:beat .5s ease-in-out infinite}
+@keyframes beat{50%{transform:scale(1.18)}}
+.bar{flex:1;height:18px;border-radius:9px;background:rgba(255,255,255,.6);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--gold);border-radius:9px}
+.score{background:#fff;border-radius:26px;height:52px;min-width:104px;padding:0 14px;font-size:30px;display:flex;align-items:center;justify-content:center;flex:none}
+.bump{animation:bump .22s ease-out}
+@keyframes bump{40%{transform:scale(1.22)}}
+.hint{position:absolute;left:0;right:0;bottom:31%;text-align:center;color:#fff;font-size:30px;pointer-events:none;text-shadow:0 3px 0 rgba(43,47,107,.45);transition:opacity .3s}
+.count{position:absolute;left:0;right:0;top:34%;text-align:center;color:#fff;font-size:120px;line-height:1;pointer-events:none;text-shadow:0 8px 0 rgba(43,47,107,.35)}
+/* 점수 + 상자 */
+.lbl{font-size:26px;margin:4px 0 0}
+.pts{font-size:min(112px,15vh);line-height:1;color:var(--r);margin:0;letter-spacing:-3px}
+.pts small{font-size:.34em;letter-spacing:0;color:var(--navy);margin-left:4px}
+.stars{display:flex;gap:8px;align-items:flex-end;margin:6px 0 2px;height:70px;flex:none}
+.stars i{width:58px;height:58px;display:block}
+.stars i:nth-child(2){width:70px;height:70px}
+.stars svg{width:100%;height:100%;display:block}
+.stars i.on{animation:pop .5s cubic-bezier(.2,1.8,.4,1) both}
+.rank{font-size:30px;margin:4px 0 0;min-height:36px}
+.new{display:inline-block;background:var(--r);color:#fff;border-radius:18px;padding:4px 16px;font-size:20px;margin-top:4px;visibility:hidden}
+.new.on{visibility:visible;animation:pop .5s cubic-bezier(.2,1.8,.4,1) both}
+.box{width:min(46vw,200px,23vh);height:min(46vw,200px,23vh);position:relative;animation:shake .6s ease-in-out infinite;cursor:pointer;flex:none}
+.box svg{width:100%;height:100%;overflow:visible}
+.box.opening{animation:shake .12s linear infinite}
+.box .lid{transition:transform .3s cubic-bezier(.2,1.5,.4,1),opacity .3s .15s}
+.box.burst .lid{transform:translateY(-110px) rotate(-24deg);opacity:0}
+@keyframes shake{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
 .pop{animation:pop .55s cubic-bezier(.2,1.6,.4,1) both}
 @keyframes pop{0%{transform:scale(.2) rotate(-12deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
-.info{width:100%;max-width:360px;background:var(--g);color:#fff;border-radius:22px;padding:14px 16px;text-align:center;margin:10px 0 14px}
-.info b{display:block;font-size:30px;letter-spacing:-1px;color:var(--gold)}
-.info span{display:block;font-size:19px;margin-top:2px}
-.info p{margin:8px 0 0;font-size:18px;font-weight:800;border-top:2px dashed rgba(255,255,255,.3);padding-top:8px}
-.conf{position:fixed;top:-20px;width:10px;height:14px;z-index:9;pointer-events:none;animation:fall linear forwards}
-@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+/* 결과 */
+.friend{position:relative;cursor:pointer}
+.friend svg{width:min(60vw,250px,31vh);height:auto;display:block}
+.friend.hop{animation:hop .5s ease-out}
+@keyframes hop{30%{transform:translateY(-22px) scale(.96,1.05)}60%{transform:translateY(0) scale(1.06,.94)}}
+.name{font-size:min(46px,6.4vh);letter-spacing:-2px;margin:4px 0 0;color:var(--r);text-align:center}
+.meta{font-size:19px;margin:2px 0 0;opacity:.75}
+.info{width:100%;max-width:360px;background:var(--g);color:#fff;border-radius:20px;padding:10px 14px;text-align:center;margin:8px 0 12px;flex:none}
+.info b{display:block;font-size:25px;letter-spacing:-1px;color:var(--gold)}
+.info span{display:block;font-size:17px;margin-top:2px}
+.info p{margin:6px 0 0;font-size:17px;border-top:2px dashed rgba(255,255,255,.3);padding-top:6px}
+.conf{position:fixed;top:-24px;z-index:9;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),112vh) rotate(720deg)}}
+.spark{position:fixed;z-index:10;pointer-events:none;animation:spark .8s cubic-bezier(.15,.7,.3,1) forwards}
+@keyframes spark{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}70%{opacity:1}100%{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1) rotate(200deg);opacity:0}}
+.flash{position:fixed;inset:0;background:#fff;z-index:11;pointer-events:none;animation:fl .35s ease-out forwards}
+@keyframes fl{from{opacity:.85}to{opacity:0}}
 /* 사진 */
-.cam{position:relative;width:100%;max-width:420px;aspect-ratio:6/7;border-radius:22px;overflow:hidden;background:#123;flex:none}
+.cam{position:relative;width:min(100%,420px,calc((100vh - 190px) * .857));aspect-ratio:6/7;border-radius:22px;overflow:hidden;background:#123;flex:none}
 .cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .cam svg.ov{position:absolute;inset:0;width:100%;height:100%}
-.cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--cream)}
+.cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#DDF3FF}
 .cam .ph svg{width:80%}
-.shot{width:100%;max-width:340px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.25);flex:none;-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
 .shotbox{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
-.shotbox img{max-height:100%;max-width:340px;width:auto;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.25);-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
-.tip{font-size:22px;font-weight:800;margin:10px 0}
+.shotbox img{max-height:100%;max-width:100%;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.25);-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
+.tip{font-size:22px;margin:10px 0}
 </style>
 </head>
 <body>
 <div id="app">
+  <button id="snd" aria-label="소리 켜고 끄기"></button>
 
   <!-- 1 시작 -->
   <section class="scr on" id="s0">
-    <h1 class="title" style="margin-top:6px">산타 <em>선물</em><br>받기!</h1>
+    <h1 class="title" style="margin-top:44px">산타 <em>선물</em><br>받기!</h1>
     <div class="mid"><div class="bounce" id="startArt"></div></div>
+    <p class="best" id="s0best"></p>
     <button class="big" id="bStart">시작!</button>
   </section>
 
   <!-- 2 게임 -->
   <section class="scr" id="sg">
     <canvas id="cv"></canvas>
-    <div class="hud"><div class="bar"><i id="tbar"></i></div><div class="score" id="score">0</div></div>
+    <div class="hud"><div class="sec" id="sec">10</div><div class="bar"><i id="tbar"></i></div><div class="score" id="score">0</div></div>
+    <div class="count" id="count"></div>
     <div class="hint" id="hint">손가락으로 움직여요!</div>
   </section>
 
-  <!-- 3 상자 -->
+  <!-- 3 점수 + 상자 -->
   <section class="scr" id="s1">
-    <p class="cnt" style="margin-top:10px">선물 <em id="gn">0</em>개!</p>
+    <p class="lbl">내 점수</p>
+    <p class="pts"><span id="pts">0</span><small>점</small></p>
+    <div class="stars" id="stars"></div>
+    <p class="rank" id="rank"></p>
+    <span class="new" id="newRec">새 기록!</span>
     <div class="mid"><div class="box" id="boxArt"></div></div>
-    <button class="big" id="bOpen">열기!</button>
+    <button class="big" id="bOpen">선물 열기!</button>
+    <button class="small" id="bRetry">다시 도전</button>
   </section>
 
   <!-- 4 결과 -->
   <section class="scr" id="s2">
-    <div class="mid" style="flex:none;margin-top:6px"><div class="pop" id="resArt"></div></div>
-    <p class="name pop" id="resName"></p>
+    <div class="mid"><div class="friend" id="resArt"></div><p class="name" id="resName"></p><p class="meta" id="resMeta"></p></div>
     <div class="info">
       <b>12월 12일(토)~13일(일)</b>
       <span>중문 컨벤션 제2센터</span>
       <p>그날 와서 뽑기 해요!</p>
     </div>
     <button class="big" id="bPhoto">사진 찍기!</button>
-    <button class="small" id="bAgain">한 번 더</button>
+    <button class="big blue" id="bAgain">한 번 더!</button>
   </section>
 
   <!-- 5 사진 찍기 -->
@@ -123,200 +162,14 @@ button{font:inherit;cursor:pointer;border:0}
     <div class="shotbox"><img id="shotImg" alt=""></div>
     <p class="tip" id="saveTip" style="margin:8px 0 10px;font-size:20px">엄마 아빠에게 보여줘요!<br><span style="font-size:16px;opacity:.7">저장이 안 되면 사진을 꾹 눌러요</span></p>
     <button class="big green" id="bSave">저장하기</button>
+    <button class="big blue" id="bAgain2">한 번 더!</button>
     <button class="small" id="bRe">다시 찍기</button>
   </section>
 
 </div>
 
-<script>
-(function(){
-'use strict';
-var $=function(i){return document.getElementById(i);};
-function show(id){ document.querySelectorAll('.scr').forEach(function(s){s.classList.toggle('on',s.id===id);}); }
-
-/* ───────── 캐릭터 그림 (SVG) ───────── */
-var EYES='<circle cx="80" cy="102" r="6" fill="#222"/><circle cx="120" cy="102" r="6" fill="#222"/><circle cx="82" cy="100" r="2" fill="#fff"/><circle cx="122" cy="100" r="2" fill="#fff"/>';
-var CHEEK='<circle cx="66" cy="120" r="9" fill="#FF8F8F" opacity=".55"/><circle cx="134" cy="120" r="9" fill="#FF8F8F" opacity=".55"/>';
-var CHAR={
-  santa:{name:'산타',svg:'<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'+
-    '<circle cx="100" cy="112" r="58" fill="#FFD9B8"/>'+
-    '<path d="M42 112Q38 196 100 196Q162 196 158 112Q132 140 100 132Q68 140 42 112Z" fill="#fff" stroke="#e6e6e6" stroke-width="3"/>'+
-    '<ellipse cx="80" cy="130" rx="24" ry="13" fill="#fff" stroke="#e6e6e6" stroke-width="3"/><ellipse cx="120" cy="130" rx="24" ry="13" fill="#fff" stroke="#e6e6e6" stroke-width="3"/>'+
-    '<circle cx="100" cy="118" r="8" fill="#F0A58A"/>'+EYES+CHEEK+
-    '<path d="M40 82Q52 10 122 14Q152 16 162 44Q168 64 160 82Z" fill="#C8102E"/>'+
-    '<rect x="30" y="72" width="140" height="24" rx="12" fill="#fff" stroke="#e6e6e6" stroke-width="3"/>'+
-    '<circle cx="160" cy="40" r="15" fill="#fff" stroke="#e6e6e6" stroke-width="3"/></svg>'},
-  rudolph:{name:'루돌프',svg:'<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'+
-    '<g stroke="#7a4a1f" stroke-width="9" stroke-linecap="round" fill="none"><path d="M70 66L56 24M56 24L40 12M60 42L76 26"/><path d="M130 66L144 24M144 24L160 12M140 42L124 26"/></g>'+
-    '<ellipse cx="38" cy="86" rx="16" ry="24" fill="#A5693A" transform="rotate(-25 38 86)"/><ellipse cx="162" cy="86" rx="16" ry="24" fill="#A5693A" transform="rotate(25 162 86)"/>'+
-    '<circle cx="100" cy="116" r="60" fill="#A5693A"/>'+
-    '<ellipse cx="100" cy="140" rx="34" ry="26" fill="#E2B07A"/>'+EYES+CHEEK+
-    '<circle cx="100" cy="132" r="14" fill="#E5252A"/><circle cx="95" cy="127" r="4" fill="#fff" opacity=".7"/>'+
-    '<path d="M86 156Q100 166 114 156" stroke="#5a3515" stroke-width="4" fill="none" stroke-linecap="round"/></svg>'},
-  snowman:{name:'눈사람',svg:'<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'+
-    '<circle cx="100" cy="158" r="46" fill="#fff" stroke="#d6e4ee" stroke-width="3"/>'+
-    '<circle cx="100" cy="104" r="52" fill="#fff" stroke="#d6e4ee" stroke-width="3"/>'+
-    '<path d="M48 84Q54 22 100 22Q146 22 152 84Z" fill="#2E9E6A"/><rect x="44" y="76" width="112" height="22" rx="11" fill="#fff" stroke="#d6e4ee" stroke-width="3"/><circle cx="100" cy="20" r="13" fill="#fff" stroke="#d6e4ee" stroke-width="3"/>'+
-    EYES.replace(/cy="102"/g,'cy="112"').replace(/cy="100"/g,'cy="110"')+CHEEK.replace(/cy="120"/g,'cy="128"')+
-    '<path d="M100 120L136 128L100 136Z" fill="#F08A24"/>'+
-    '<rect x="52" y="146" width="96" height="20" rx="10" fill="#C8102E"/><rect x="118" y="156" width="20" height="40" rx="8" fill="#C8102E"/>'+
-    '<circle cx="100" cy="180" r="5" fill="#333"/><circle cx="100" cy="196" r="5" fill="#333"/></svg>'}
-};
-var KEYS=['santa','rudolph','snowman'];
-
-/* 사진용 장식 (300x350, 얼굴은 가운데) */
-var ACC={
-  santa:'<path d="M58 96Q66 14 150 20Q214 24 232 70Q240 86 240 98L58 98Z" fill="#C8102E"/><rect x="44" y="86" width="212" height="30" rx="15" fill="#fff" stroke="#e2e2e2" stroke-width="3"/><circle cx="232" cy="44" r="20" fill="#fff" stroke="#e2e2e2" stroke-width="3"/>'+
-        '<path d="M66 228Q70 322 150 332Q230 322 234 228Q196 270 150 262Q104 270 66 228Z" fill="#fff" stroke="#e2e2e2" stroke-width="3"/>',
-  rudolph:'<g stroke="#7a4a1f" stroke-width="12" stroke-linecap="round" fill="none"><path d="M96 92L74 30M74 30L50 12M82 58L104 36"/><path d="M204 92L226 30M226 30L250 12M218 58L196 36"/></g>'+
-        '<circle cx="150" cy="208" r="20" fill="#E5252A"/><circle cx="143" cy="201" r="6" fill="#fff" opacity=".7"/>',
-  snowman:'<path d="M66 96Q72 14 150 14Q228 14 234 96Z" fill="#2E9E6A"/><rect x="56" y="88" width="188" height="30" rx="15" fill="#fff" stroke="#e2e2e2" stroke-width="3"/><circle cx="150" cy="12" r="18" fill="#fff" stroke="#e2e2e2" stroke-width="3"/>'+
-        '<rect x="34" y="296" width="232" height="40" rx="20" fill="#C8102E"/><rect x="190" y="318" width="34" height="30" rx="10" fill="#C8102E"/>'
-};
-function accSvg(k,guide,w,h){
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 350"'+(w?' width="'+w+'" height="'+h+'"':' class="ov"')+'>'+
-    (guide?'<ellipse cx="150" cy="178" rx="74" ry="98" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="10 10" opacity=".85"/>':'')+ACC[k]+'</svg>';
-}
-
-/* 상자 그림 */
-$('boxArt').innerHTML='<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">'+
-  '<rect x="30" y="86" width="140" height="100" rx="10" fill="#C8102E"/><rect x="92" y="86" width="16" height="100" fill="#F2B705"/>'+
-  '<rect x="22" y="62" width="156" height="34" rx="10" fill="#E5252A"/><rect x="92" y="62" width="16" height="34" fill="#F2B705"/>'+
-  '<path d="M100 62Q62 14 52 46Q50 62 100 62Z" fill="#F2B705"/><path d="M100 62Q138 14 148 46Q150 62 100 62Z" fill="#F2B705"/><circle cx="100" cy="62" r="9" fill="#d99a00"/></svg>';
-$('startArt').innerHTML=CHAR.santa.svg;
-
-/* ───────── 게임: 선물 와르르 ───────── */
-var cv=$('cv'),ctx=cv.getContext('2d'),W=0,H=0,DPR=1;
-function resize(){ DPR=Math.min(window.devicePixelRatio||1,2); W=cv.clientWidth; H=cv.clientHeight; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
-window.addEventListener('resize',resize);
-var COLORS=['#E5252A','#2E9E6A','#2F7BE0','#F2B705','#B04BD6','#FF7A2B'];
-var G=null, DUR=+(new URLSearchParams(location.search).get('t'))||20;
-function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
-function gift(x,y,s,c,rot){
-  ctx.save(); ctx.translate(x,y); ctx.rotate(rot||0);
-  ctx.fillStyle=c; rr(-s/2,-s/2,s,s,s*.14); ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillRect(-s*.07,-s/2,s*.14,s); ctx.fillRect(-s/2,-s*.07,s,s*.14);
-  ctx.beginPath(); ctx.arc(-s*.16,-s*.5,s*.15,0,6.3); ctx.arc(s*.16,-s*.5,s*.15,0,6.3); ctx.fill(); ctx.restore();
-}
-function bag(x,y,w,sq){
-  ctx.save(); ctx.translate(x,y); ctx.scale(1+sq*.1,1-sq*.12);
-  ctx.fillStyle='#C8102E'; ctx.beginPath(); ctx.moveTo(-w/2,-w*.12); ctx.quadraticCurveTo(-w*.62,w*.5,-w*.3,w*.55); ctx.lineTo(w*.3,w*.55); ctx.quadraticCurveTo(w*.62,w*.5,w/2,-w*.12); ctx.closePath(); ctx.fill();
-  ctx.fillStyle='#fff'; rr(-w*.56,-w*.22,w*1.12,w*.2,w*.1); ctx.fill();
-  ctx.fillStyle='#F2B705'; ctx.beginPath(); ctx.arc(0,w*.22,w*.1,0,6.3); ctx.fill();
-  ctx.restore();
-}
-function startGame(){
-  show('sg'); resize();
-  G={t:0,left:DUR,score:0,bx:W/2,tx:W/2,sq:0,items:[],fx:[],spawn:0,last:performance.now(),run:true,started:false};
-  $('score').textContent='0'; $('tbar').style.width='100%'; $('hint').style.opacity=1;
-  requestAnimationFrame(loop);
-}
-function pt(e){ var r=cv.getBoundingClientRect(); return (e.touches?e.touches[0].clientX:e.clientX)-r.left; }
-['pointerdown','pointermove'].forEach(function(n){ cv.addEventListener(n,function(e){ if(!G) return; G.tx=pt(e); G.started=true; $('hint').style.opacity=0; e.preventDefault(); },{passive:false}); });
-function loop(now){
-  if(!G||!G.run) return;
-  var dt=Math.min((now-G.last)/1000,.05); G.last=now;
-  if(!G.started){ G.wait=(G.wait||0)+dt; if(G.wait>1.5){ G.started=true; $('hint').style.opacity=0; } }
-  if(G.started){ G.left-=dt; G.t+=dt; }
-  var prog=1-G.left/DUR;
-  /* 생성 */
-  if(G.started){ G.spawn-=dt; if(G.spawn<=0){ G.spawn=.62-.3*prog; var gold=Math.random()<.1; G.items.push({x:30+Math.random()*(W-60),y:-30,v:(190+130*prog)*(.85+Math.random()*.3),s:gold?46:38,c:gold?'#F2B705':COLORS[(Math.random()*COLORS.length)|0],gold:gold,r:Math.random()*.6-.3,vr:Math.random()*2-1}); } }
-  /* 움직임 */
-  G.bx+=(G.tx-G.bx)*Math.min(1,dt*16); var bw=Math.min(120,W*.3), by=H-92;
-  G.sq=Math.max(0,G.sq-dt*5);
-  for(var i=G.items.length-1;i>=0;i--){ var it=G.items[i]; it.y+=it.v*dt; it.r+=it.vr*dt;
-    if(it.y>by-bw*.15 && it.y<by+bw*.3 && Math.abs(it.x-G.bx)<bw*.5+it.s*.25){
-      var add=it.gold?3:1; G.score+=add; G.sq=1; $('score').textContent=G.score; if(navigator.vibrate) try{navigator.vibrate(12);}catch(e){}
-      G.fx.push({x:it.x,y:by-bw*.2,t:0,txt:'+'+add,gold:it.gold});
-      for(var k=0;k<7;k++) G.fx.push({x:it.x,y:by,t:0,dx:(Math.random()-.5)*260,dy:-Math.random()*220-60,c:it.c,p:1});
-      G.items.splice(i,1); }
-    else if(it.y>H+40) G.items.splice(i,1); }
-  /* 그리기 */
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#0F4A2E'; ctx.fillRect(0,0,W,H);
-  var gr=ctx.createLinearGradient(0,0,0,H); gr.addColorStop(0,'#0F4A2E'); gr.addColorStop(1,'#2a8a5a'); ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='rgba(255,255,255,.55)'; for(var s=0;s<26;s++){ var sx=(s*97+now*.012*(1+s%3))%W, sy=(s*53+now*.03*(1+s%4))%H; ctx.beginPath(); ctx.arc(sx,sy,2+s%3,0,6.3); ctx.fill(); }
-  ctx.fillStyle='#eef6ef'; ctx.fillRect(0,H-70,W,70);
-  G.items.forEach(function(it){ gift(it.x,it.y,it.s,it.c,it.r); });
-  bag(G.bx,by,bw,G.sq);
-  for(var j=G.fx.length-1;j>=0;j--){ var f=G.fx[j]; f.t+=dt;
-    if(f.p){ f.x+=f.dx*dt; f.y+=(f.dy+f.t*500)*dt; ctx.globalAlpha=Math.max(0,1-f.t*2); ctx.fillStyle=f.c; ctx.fillRect(f.x-4,f.y-4,8,8); ctx.globalAlpha=1; if(f.t>.5) G.fx.splice(j,1); }
-    else { ctx.globalAlpha=Math.max(0,1-f.t*1.6); ctx.font='800 '+(f.gold?40:30)+'px Paperlogy,sans-serif'; ctx.textAlign='center'; ctx.fillStyle=f.gold?'#F2B705':'#fff'; ctx.fillText(f.txt,f.x,f.y-f.t*70); ctx.globalAlpha=1; if(f.t>.62) G.fx.splice(j,1); } }
-  $('tbar').style.width=Math.max(0,G.left/DUR*100)+'%';
-  if(G.left<=0){ G.run=false; var sc=G.score; G=null; setTimeout(function(){ toBox(sc); },350); return; }
-  requestAnimationFrame(loop);
-}
-
-/* ───────── 상자 → 결과 ───────── */
-var lastKey='',cur='santa',stream=null,shotBlob=null;
-function toBox(n){ $('gn').textContent=n; show('s1'); }
-function confetti(){ var cs=['#C8102E','#F2B705','#2E9E6A','#2F7BE0','#fff']; for(var i=0;i<46;i++){ var d=document.createElement('i'); d.className='conf'; d.style.left=Math.random()*100+'vw'; d.style.background=cs[i%cs.length]; d.style.animationDuration=(1.6+Math.random()*1.6)+'s'; d.style.animationDelay=Math.random()*.4+'s'; document.body.appendChild(d); setTimeout(function(x){x.remove();},3800,d); } }
-function reveal(){
-  var pool=KEYS.filter(function(k){return k!==lastKey;}); cur=pool[(Math.random()*pool.length)|0]; lastKey=cur;
-  $('resArt').innerHTML=CHAR[cur].svg; $('resArt').firstChild.style.cssText='width:min(56vw,240px);height:auto';
-  $('resName').textContent=CHAR[cur].name+' 등장!';
-  ['resArt','resName'].forEach(function(i){ var e=$(i); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); });
-  show('s2'); confetti();
-}
-
-/* ───────── 사진 ───────── */
-function stopCam(){ if(stream){ stream.getTracks().forEach(function(t){t.stop();}); stream=null; } }
-function openCam(){
-  show('s3'); $('camTip').textContent='얼굴을 가운데 맞춰요';
-  var cam=$('cam'); cam.innerHTML='';
-  function fallback(){ cam.innerHTML='<div class="ph">'+CHAR[cur].svg+'</div>'; $('camTip').textContent='사진 대신 카드로 만들어요'; }
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ fallback(); return; }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:1280}},audio:false}).then(function(s){
-    stream=s; var v=document.createElement('video'); v.setAttribute('playsinline',''); v.muted=true; v.autoplay=true; v.srcObject=s; cam.appendChild(v); v.play().catch(function(){});
-    cam.insertAdjacentHTML('beforeend',accSvg(cur,true));
-  }).catch(fallback);
-}
-function loadImg(src){ return new Promise(function(res){ var i=new Image(); i.onload=function(){res(i);}; i.onerror=function(){res(null);}; i.src=src; }); }
-function svgImg(svg){ return loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)); }
-function capture(){
-  var v=document.querySelector('#cam video'), PW=900, PH=1050, BH=230;
-  var c=document.createElement('canvas'); c.width=PW; c.height=PH+BH; var x=c.getContext('2d');
-  var ready=(document.fonts&&document.fonts.load)?document.fonts.load('800 60px Paperlogy'):Promise.resolve();
-  Promise.all([ready, svgImg(accSvg(cur,false,PW,PH)), v?Promise.resolve(null):svgImg(CHAR[cur].svg.replace('<svg ','<svg width="700" height="700" ')), loadImg('../img/mhlogo.png')]).then(function(r){
-    if(v&&v.videoWidth){
-      var vw=v.videoWidth, vh=v.videoHeight, tr=PW/PH, sw=vw, sh=vw/tr; if(sh>vh){ sh=vh; sw=vh*tr; }
-      x.save(); x.translate(PW,0); x.scale(-1,1); x.drawImage(v,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,PW,PH); x.restore();
-    } else { x.fillStyle='#FBF6EC'; x.fillRect(0,0,PW,PH); if(r[2]) x.drawImage(r[2],100,160,700,700); }
-    if(r[1]) x.drawImage(r[1],0,0,PW,PH);
-    x.fillStyle='#0F4A2E'; x.fillRect(0,PH,PW,BH);
-    x.fillStyle='#C8102E'; x.fillRect(0,PH,PW,8);
-    x.textAlign='center'; x.textBaseline='alphabetic';
-    x.fillStyle='#fff'; x.font='800 84px Paperlogy,sans-serif'; x.fillText('산타왔수다',PW/2,PH+104);
-    x.fillStyle='#F2B705'; x.font='800 46px Paperlogy,sans-serif'; x.fillText('12월 12일(토)~13일(일)',PW/2,PH+160);
-    x.fillStyle='#fff'; x.font='800 34px Paperlogy,sans-serif'; x.fillText('중문 컨벤션 제2센터',PW/2,PH+206);
-    if(r[3]){ var lh=64, lw=r[3].width*lh/r[3].height; x.drawImage(r[3],PW-lw-26,PH+22,lw,lh); }
-    c.toBlob(function(b){ shotBlob=b; $('shotImg').src=URL.createObjectURL(b); stopCam(); show('s4'); },'image/jpeg',.92);
-  });
-}
-function save(){
-  if(!shotBlob) return;
-  var ua=navigator.userAgent||'', ios=/iPhone|iPad|iPod/i.test(ua);
-  var f; try{ f=new File([shotBlob],'santa.jpg',{type:'image/jpeg'}); }catch(e){}
-  /* 아이폰: 공유창의 "이미지 저장"이 가장 확실하다 */
-  if(ios&&f&&navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f]}).catch(function(){}); return; }
-  /* 안드로이드·PC: 바로 내려받는다 */
-  var url=URL.createObjectURL(shotBlob), a=document.createElement('a'); a.href=url; a.download='santa.jpg'; document.body.appendChild(a); a.click();
-  setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); },4000);
-  var t=$('saveTip'); if(t){ t.textContent='저장했어요! 갤러리·다운로드에서 봐요'; }
-}
-
-/* ───────── 버튼 ───────── */
-$('bStart').onclick=startGame;
-$('bOpen').onclick=reveal;
-$('boxArt').onclick=reveal;
-$('bAgain').onclick=startGame;
-$('bPhoto').onclick=openCam;
-$('bShot').onclick=capture;
-$('bSave').onclick=save;
-$('bRe').onclick=openCam;
-document.addEventListener('visibilitychange',function(){ if(document.hidden) stopCam(); });
-document.addEventListener('touchmove',function(e){ if(e.target.tagName!=='IMG') e.preventDefault(); },{passive:false});
-})();
-</script>
+<script src="chars.js?v=1128"></script>
+<script src="sound.js?v=1128"></script>
+<script src="game.js?v=1128"></script>
 </body>
 </html>
