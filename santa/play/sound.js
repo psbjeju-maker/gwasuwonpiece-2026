@@ -38,6 +38,8 @@ var SFX={
   ding:function(i){ var f=[880,1175,1568][i]||1568; tone(f,.35,'sine',.28); tone(f*2,.3,'sine',.09,.02); },
   drum:function(){ for(var i=0;i<14;i++) noise(.06,.12+i*.014,i*.055,500+i*60); },
   open:function(){ noise(.25,.35,0,2600); tone(300,.25,'triangle',.25,0,1200); [1047,1319,1568,2093,1568,2093].forEach(function(f,i){ tone(f,.24,'triangle',.18,.12+i*.09); }); },
+  bad:function(){ tone(220,.22,'sawtooth',.2,0,70); noise(.16,.2,0,300); },
+  lose:function(){ [523,440,349].forEach(function(f,i){ tone(f,i===2?.45:.18,'triangle',.22,i*.18); }); },
   boing:function(){ tone(300,.28,'sine',.28,0,820); },
   shutter:function(){ noise(.05,.5,0,3200); noise(.07,.4,.09,1500); }
 };
