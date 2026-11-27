@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>산타왔수다 셔틀버스 신청 · 메이커앤하비</title>
-<meta property="og:title" content="산타왔수다 셔틀버스 신청">
+<title>산타왔수다 셔틀버스·물품 보관소 신청 · 메이커앤하비</title>
+<meta property="og:title" content="산타왔수다 셔틀버스·물품 보관소 신청">
 <meta property="og:description" content="12월 12일(토)·13일(일) 중문 컨벤션 제2센터 · 하루 왕복 10,000원">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -96,6 +96,7 @@ button:disabled{opacity:.6}
   <header class="hero">
     <img class="logo" src="mhlogo.png" alt="Maker&amp;Hobby 메이커앤하비">
     <h1>산타왔수다<br>셔틀버스 신청</h1>
+    <div class="sub">물품 보관소만도 신청 가능</div>
     <div class="sub">12월 12일(토) · 13일(일) 중문 컨벤션 제2센터</div>
     <div class="price">하루 왕복 10,000원</div>
   </header>
@@ -114,17 +115,17 @@ button:disabled{opacity:.6}
     <li><b>18:05</b>남녕고</li>
     <li><b>18:20</b>제주시청 도착</li></ul></section>
 
-  <div class="closed" id="closed">버스 신청이 마감되었습니다.</div>
+  <div class="closed" id="closed">신청이 마감되었습니다.</div>
 
   <form id="f" novalidate>
-    <div class="f" id="fDays"><span class="t">탑승 날짜<span class="req">*</span></span>
+    <div class="f" id="fDays"><span class="t">셔틀버스 탑승 날짜</span>
       <div class="opts">
         <label><input type="checkbox" name="d12" value="12"><span>12월 12일(토)<small id="left12">선착순 30명</small></span></label>
         <label><input type="checkbox" name="d13" value="13"><span>12월 13일(일)<small id="left13">선착순 30명</small></span></label>
       </div>
-      <p class="err">탑승 날짜를 선택해 주세요.</p></div>
+      <p class="err">셔틀버스나 물품 보관소 중 하나는 선택해 주세요.</p></div>
 
-    <div class="f" id="fStop"><span class="t">탑승 장소<span class="req">*</span></span>
+    <div class="f" id="fStop"><span class="t">탑승 장소 (셔틀버스 신청 시)</span>
       <div class="opts">
         <label><input type="radio" name="stop" value="제주시청"><span>제주시청 09:15</span></label>
         <label><input type="radio" name="stop" value="남녕고"><span>남녕고 정문 09:30</span></label>
@@ -140,26 +141,26 @@ button:disabled{opacity:.6}
       <p class="hint">1인 1신청입니다. 본인 번호를 적어 주세요.</p>
       <p class="err">휴대폰 번호를 정확히 입력해 주세요.</p></div>
 
-    <div class="f"><span class="t">물품 보관소 (선택)</span>
-      <p class="hint" style="margin:0 0 8px">하루 2,000원 정액이며 탈의실 이용이 포함됩니다. 버스비와 같이 결제할 수 있습니다.</p>
+    <div class="f"><span class="t">물품 보관소</span>
+      <p class="hint" style="margin:0 0 8px">하루 2,000원 정액이며 탈의실 이용이 포함됩니다. 버스비랑 같이 결제 가능하고, 물품 보관소만도 신청 가능합니다.</p>
       <div class="opts">
-        <label class="off"><input type="checkbox" name="l12" disabled><span>12일 물품 보관소 +2,000원</span></label>
-        <label class="off"><input type="checkbox" name="l13" disabled><span>13일 물품 보관소 +2,000원</span></label>
+        <label><input type="checkbox" name="l12"><span>12일 물품 보관소 +2,000원</span></label>
+        <label><input type="checkbox" name="l13"><span>13일 물품 보관소 +2,000원</span></label>
       </div></div>
 
     <div class="total"><span>결제 금액</span><b id="fee">0원</b></div>
 
     <div class="f" id="fAgree"><label class="agree"><input type="checkbox" name="agree">개인정보 수집·이용에 동의합니다</label>
-      <p class="hint">이름·전화번호는 버스 안내에만 사용하고 행사 후 1개월 안에 파기합니다.</p>
+      <p class="hint">이름·전화번호는 신청 안내에만 사용하고 행사 후 1개월 안에 파기합니다.</p>
       <p class="err">동의가 필요합니다.</p></div>
 
-    <button type="submit" id="btn">버스 신청하기</button>
+    <button type="submit" id="btn">신청하기</button>
     <p class="note">12월 6일(일) 마감 · 결제 방법은 문자로 안내해 드립니다</p>
     <div class="msg" id="msg"></div>
   </form>
 
   <div class="done" id="done">
-    <h2>셔틀버스 신청이 완료되었습니다</h2>
+    <h2>신청이 완료되었습니다</h2>
     <div class="code" id="code">—</div>
     <p id="doneMsg"></p>
   </div>
@@ -188,11 +189,9 @@ button:disabled{opacity:.6}
     });
   }
   function days(){return ["12","13"].filter(function(k){return f["d"+k].checked;});}
-  function lockers(){return days().filter(function(k){return f["l"+k].checked;});}
+  function lockers(){return ["12","13"].filter(function(k){return f["l"+k].checked;});}
   function total(){return days().length*FARE+lockers().length*LOCKER;}
-  /* 보관소는 버스를 신청한 날짜만 고를 수 있다 */
   function fee(){
-    ["12","13"].forEach(function(k){var on=f["d"+k].checked,l=f["l"+k];l.disabled=!on;if(!on)l.checked=false;l.parentNode.classList.toggle("off",!on);});
     $("fee").textContent=total().toLocaleString()+"원";
   }
   function paint(n){
@@ -207,18 +206,18 @@ button:disabled{opacity:.6}
   if(db)count().then(paint).catch(function(){});
 
   function digits(v){return String(v).replace(/\D/g,"");}
-  function fail(html){btn.disabled=false;btn.textContent="버스 신청하기";msg.innerHTML=html;msg.classList.add("show");}
+  function fail(html){btn.disabled=false;btn.textContent="신청하기";msg.innerHTML=html;msg.classList.add("show");}
   var CONTACT="신청이 되지 않았습니다. 인터넷 연결을 확인하고 다시 눌러 주세요. 계속 안 되면 <a href='https://litt.ly/psb_jeju'>메이커앤하비 SNS</a>로 DM 주시거나 <a href='tel:064-742-0083'>064-742-0083</a>으로 전화 주세요.";
 
   f.addEventListener("submit",function(e){
     e.preventDefault();msg.classList.remove("show");
     var ds=days(),stop=f.stop.value||"",nm=f.nm.value.trim(),p=digits(f.phone.value);
-    var checks=[[$("fDays"),!ds.length],[$("fStop"),!stop],[f.nm.parentNode,!nm],
+    var checks=[[$("fDays"),!ds.length&&!lockers().length],[$("fStop"),ds.length>0&&!stop],[f.nm.parentNode,!nm],
       [f.phone.parentNode,!/^01[016789]\d{7,8}$/.test(p)],[$("fAgree"),!f.agree.checked]];
     checks.forEach(function(c){c[0].classList.toggle("bad",c[1]);});
     if(checks.some(function(c){return c[1];})){var x=f.querySelector(".f.bad");if(x)x.scrollIntoView({behavior:"smooth",block:"center"});return;}
     if(!db){fail(CONTACT);return;}
-    btn.disabled=true;btn.textContent="자리 확인 중…";
+    btn.disabled=true;btn.textContent="접수하는 중…";
     var ref=db.collection(COL).doc("santabus_"+p);
     ref.get().then(function(s){
       if(s.exists)throw{dup:s.data()||{}};
@@ -226,13 +225,17 @@ button:disabled{opacity:.6}
     }).then(function(n){
       var full=ds.filter(function(k){return n[k]>=CAP;});
       if(full.length){paint(n);throw{full:full};}
-      var dayTxt=ds.map(function(k){return k+"일";}).join("·");
+      function txt(a){return a.map(function(k){return k+"일";}).join("·");}
+      var lk=lockers(),lines=[];
+      if(!ds.length)stop="";
+      if(ds.length)lines.push("셔틀버스 "+txt(ds)+" · "+stop+" "+(stop==="남녕고"?"09:30":"09:15")+" 탑승");
+      if(lk.length)lines.push("물품 보관소 "+txt(lk));
       var data={type:TYPE,event:"산타왔수다 셔틀버스",status:"pending",createdAt:new Date().toISOString(),
-        name:nm,phone:p,days:ds,stop:stop,lockers:lockers(),fee:total(),code:"BUS-"+p.slice(-4),
-        teamName:"🚌 산타 셔틀버스 "+nm,zone:dayTxt+" · "+stop+" 탑승 · 보관소 "+(lockers().map(function(k){return k+"일";}).join("·")||"없음")+" · "+total().toLocaleString()+"원"};
+        name:nm,phone:p,days:ds,stop:stop,lockers:lk,fee:total(),code:"BUS-"+p.slice(-4),
+        teamName:(ds.length?"🚌 산타 셔틀버스 ":"🧳 산타 물품 보관소 ")+nm,zone:lines.join(" / ")+" · "+total().toLocaleString()+"원"};
       return ref.set(data).then(function(){
         f.hidden=true;$("code").textContent=data.code;
-        $("doneMsg").innerHTML="<b>12월 "+dayTxt+"</b> · "+stop+" "+(stop==="남녕고"?"09:30":"09:15")+" 탑승"+(data.lockers.length?" · 물품 보관소 "+data.lockers.map(function(k){return k+"일";}).join("·"):"")+"<br>결제 금액 "+data.fee.toLocaleString()+"원<br>결제 방법은 문자로 안내해 드립니다.";
+        $("doneMsg").innerHTML=lines.join("<br>")+"<br>결제 금액 "+data.fee.toLocaleString()+"원<br>결제 방법은 문자로 안내해 드립니다.";
         $("done").classList.add("on");window.scrollTo(0,0);
         try{fetch(KAKAO,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(data)}).catch(function(){});}catch(x){}
       });
