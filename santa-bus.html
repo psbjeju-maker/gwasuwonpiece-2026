@@ -141,7 +141,14 @@ button:disabled{opacity:.6}
       <p class="hint">1인 1신청입니다. 본인 번호를 적어 주세요.</p>
       <p class="err">휴대폰 번호를 정확히 입력해 주세요.</p></div>
 
-    <div class="total"><span>버스비</span><b id="fee">0원</b></div>
+    <div class="f"><span class="t">물품 보관소 (선택)</span>
+      <p class="hint" style="margin:0 0 8px">하루 2,000원 정액이며 탈의실 이용이 포함됩니다. 버스비와 같이 결제할 수 있습니다.</p>
+      <div class="opts">
+        <label class="off"><input type="checkbox" name="l12" disabled><span>12일 물품 보관소 +2,000원</span></label>
+        <label class="off"><input type="checkbox" name="l13" disabled><span>13일 물품 보관소 +2,000원</span></label>
+      </div></div>
+
+    <div class="total"><span>결제 금액</span><b id="fee">0원</b></div>
 
     <div class="f" id="fAgree"><label class="agree"><input type="checkbox" name="agree">개인정보 수집·이용에 동의합니다</label>
       <p class="hint">이름·전화번호는 버스 안내에만 사용하고 행사 후 1개월 안에 파기합니다.</p>
@@ -163,7 +170,7 @@ button:disabled{opacity:.6}
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
 (function(){
-  var CAP=30, FARE=10000, CLOSE_AT="2026-12-06T23:59:59+09:00";
+  var CAP=30, FARE=10000, LOCKER=2000, CLOSE_AT="2026-12-06T23:59:59+09:00";
   var FIREBASE={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
   var COL="gwasuwonpiece_applications",TYPE="santabus";
   var KAKAO="https://script.google.com/macros/s/AKfycbyU9PKs_J3ObrkRQ2AQr3jGLONxq6T_VIB0LnIkSBNAC42dRcyPIk2EjXmRUIJG5qyWoA/exec";
@@ -182,7 +189,13 @@ button:disabled{opacity:.6}
     });
   }
   function days(){return ["12","13"].filter(function(k){return f["d"+k].checked;});}
-  function fee(){$("fee").textContent=(days().length*FARE).toLocaleString()+"원";}
+  function lockers(){return days().filter(function(k){return f["l"+k].checked;});}
+  function total(){return days().length*FARE+lockers().length*LOCKER;}
+  /* 보관소는 버스를 신청한 날짜만 고를 수 있다 */
+  function fee(){
+    ["12","13"].forEach(function(k){var on=f["d"+k].checked,l=f["l"+k];l.disabled=!on;if(!on)l.checked=false;l.parentNode.classList.toggle("off",!on);});
+    $("fee").textContent=total().toLocaleString()+"원";
+  }
   function paint(n){
     ["12","13"].forEach(function(k){
       var left=Math.max(0,CAP-n[k]),box=f["d"+k];
@@ -216,11 +229,11 @@ button:disabled{opacity:.6}
       if(full.length){paint(n);throw{full:full};}
       var dayTxt=ds.map(function(k){return k+"일";}).join("·");
       var data={type:TYPE,event:"산타왔수다 셔틀버스",status:"pending",createdAt:new Date().toISOString(),
-        name:nm,phone:p,days:ds,stop:stop,fee:ds.length*FARE,code:"BUS-"+p.slice(-4),
-        teamName:"🚌 산타 셔틀버스 "+nm,zone:dayTxt+" · "+stop+" 탑승 · "+(ds.length*FARE).toLocaleString()+"원"};
+        name:nm,phone:p,days:ds,stop:stop,lockers:lockers(),fee:total(),code:"BUS-"+p.slice(-4),
+        teamName:"🚌 산타 셔틀버스 "+nm,zone:dayTxt+" · "+stop+" 탑승 · 보관소 "+(lockers().map(function(k){return k+"일";}).join("·")||"없음")+" · "+total().toLocaleString()+"원"};
       return ref.set(data).then(function(){
         f.hidden=true;$("code").textContent=data.code;
-        $("doneMsg").innerHTML="<b>12월 "+dayTxt+"</b> · "+stop+" "+(stop==="남녕고"?"09:30":"09:15")+" 탑승<br>버스비 "+data.fee.toLocaleString()+"원<br>결제 방법은 문자로 안내해 드립니다.";
+        $("doneMsg").innerHTML="<b>12월 "+dayTxt+"</b> · "+stop+" "+(stop==="남녕고"?"09:30":"09:15")+" 탑승"+(data.lockers.length?" · 물품 보관소 "+data.lockers.map(function(k){return k+"일";}).join("·"):"")+"<br>결제 금액 "+data.fee.toLocaleString()+"원<br>결제 방법은 문자로 안내해 드립니다.";
         $("done").classList.add("on");window.scrollTo(0,0);
         try{fetch(KAKAO,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(data)}).catch(function(){});}catch(x){}
       });
