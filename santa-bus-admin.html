@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>산타왔수다 셔틀버스 신청 관리 · 메이커앤하비</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--cobalt:#1f6b45;--navy:#134a2e;--bg:#eef4fb;--ink:#0d2547;--mute:#5b6b82;--line:#c9d7ea;--ok:#2e8b57;--no:#c0392b;--wait:#d17a00}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif;line-height:1.5;-webkit-text-size-adjust:100%}
+header{background:var(--navy);color:#fff;padding:16px 16px 14px}
+header h1{font-size:19px;font-weight:800}
+header p{font-size:13px;opacity:.75;margin-top:2px}
+main{max-width:640px;margin:0 auto;padding:14px 14px 60px}
+.sum{display:flex;gap:8px;margin-bottom:12px}
+.sum div{flex:1;background:#fff;border-radius:12px;padding:10px 6px;text-align:center;box-shadow:0 2px 8px #0d254712}
+.sum b{display:block;font-size:22px;color:var(--cobalt)}
+.sum span{font-size:12px;color:var(--mute)}
+.bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab{flex:1;min-width:64px;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 4px;font:inherit;font-weight:700;font-size:14px;color:var(--mute);cursor:pointer}
+.tab.on{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+.tools{display:flex;gap:8px;margin-bottom:12px}
+.btn{border:0;border-radius:10px;background:var(--cobalt);color:#fff;padding:10px 14px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.ghost{background:#fff;color:var(--cobalt);border:1.5px solid var(--cobalt)}
+.btn.sm{padding:8px 11px;font-size:13px}
+.btn.ok{background:var(--ok)}.btn.no{background:var(--no)}.btn.wt{background:#fff;color:var(--mute);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.5}
+details{background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:12px;box-shadow:0 2px 8px #0d254712}
+summary{font-weight:800;cursor:pointer}
+details label{display:block;font-weight:700;font-size:13px;margin:12px 0 4px;color:var(--mute)}
+textarea{width:100%;height:170px;font:inherit;font-size:14px;padding:10px;border:1.5px solid var(--line);border-radius:10px}
+.hint{font-size:12px;color:var(--mute);margin-top:4px}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px #0d254712}
+.top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.top b{font-size:17px}
+.code{margin-left:auto;font-size:12px;color:var(--mute)}
+.pill{font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;color:#fff}
+.pill.accepted{background:var(--ok)}.pill.rejected{background:var(--no)}.pill.pending{background:var(--wait)}
+.pill.over{background:#8a2be2}
+.pill.exp{background:#fff;color:var(--cobalt);border:1.5px solid var(--cobalt)}
+.row{font-size:14px;margin-top:6px;color:var(--mute)}
+.row a{color:var(--cobalt);font-weight:700;text-decoration:none}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.sent{font-size:12px;font-weight:700;color:var(--ok);align-self:center}
+.empty,.status{text-align:center;color:var(--mute);padding:30px 10px}
+.status.bad{color:var(--no)}
+.sum{flex-wrap:wrap}
+.sum div{min-width:30%}
+.pill.late{background:var(--no)}.pill.refund{background:#8a2be2}
+</style>
+</head>
+<body>
+<header>
+  <h1>산타왔수다 셔틀버스 신청 관리</h1>
+  <p>12/12(토)·13(일) · 하루 30석 · 보관소 하루 2,000원</p>
+</header>
+<main>
+  <div class="sum" id="sum"></div>
+  <div class="bar" id="tabs"></div>
+  <div class="tools">
+    <button class="btn ghost sm" id="reload" type="button">새로고침</button>
+    <button class="btn ghost sm" id="csv" type="button">CSV 내려받기</button>
+  </div>
+
+  <details>
+    <summary>문자 문구 (수정 가능)</summary>
+    <label for="msgPay">입금 안내 문자</label>
+    <textarea id="msgPay"></textarea>
+    <label for="msgOk">확정 문자</label>
+    <textarea id="msgOk"></textarea>
+    <label for="msgNo">취소 문자</label>
+    <textarea id="msgNo"></textarea>
+    <p class="hint">{이름}, {신청}, {금액} 자리에 신청 내용이 들어갑니다. 입금 안내 문자의 [계좌번호]는 실제 계좌로 바꿔 주세요. 고친 문구는 이 폰(브라우저)에 저장됩니다.</p>
+  </details>
+
+  <div id="list"><div class="status">불러오는 중…</div></div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  var FIREBASE={apiKey:"AIzaSyBqmT2UBPpbSixiyju8CCpONoNnov959Ts",authDomain:"psbjeju-kuji.firebaseapp.com",projectId:"psbjeju-kuji",storageBucket:"psbjeju-kuji.firebasestorage.app",messagingSenderId:"627012765686",appId:"1:627012765686:web:41178983d00eb37fd029d7"};
+  var COL="gwasuwonpiece_applications",EVENT="산타왔수다 셔틀버스",CAP=30;
+  var DEF={
+    pay:"[메이커앤하비 산타왔수다]\n{이름}님, 신청 내용을 안내드립니다.\n\n{신청}\n결제 금액: {금액}\n입금 계좌: [계좌번호]\n\n이 문자를 받고 2일 안에 입금해야 신청이 확정됩니다.\n12/9(수)까지 취소하면 전액 환불해 드리고, 12/10(목)부터는 환불되지 않습니다.",
+    ok:"[메이커앤하비 산타왔수다]\n{이름}님, 입금이 확인되어 신청이 확정되었습니다.\n\n{신청}\n\n버스를 타시면 출발 10분 전까지 와 주세요.",
+    no:"[메이커앤하비 산타왔수다]\n{이름}님, 아래 신청이 취소되었습니다.\n\n{신청}\n\n문의는 이 번호로 답장 주세요."};
+  var BOX={pay:"msgPay",ok:"msgOk",no:"msgNo"},KIND={pending:"pay",accepted:"ok",rejected:"no"};
+  var db=null;
+  try{var app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE);db=firebase.firestore(app);}catch(e){}
+
+  var rows=[],filter="all";
+  var $=function(id){return document.getElementById(id)};
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  function fmtPhone(p){p=String(p||"").replace(/\D/g,"");return p.replace(/^(\d{3})(\d{3,4})(\d{4})$/,"$1-$2-$3")}
+  function when(iso){var d=new Date(iso);if(!iso||isNaN(d))return"";return (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+  function status(r){return r.status||"pending"}
+  function won(n){return Number(n||0).toLocaleString()+"원"}
+  function days(a){return (a||[]).map(function(d){return d+"일"}).join("·")}
+  function lines(r){
+    var a=[];
+    if((r.days||[]).length)a.push("셔틀버스 "+days(r.days)+" · "+r.stop+" "+(r.stop==="남녕고"?"09:30":"09:15")+" 탑승");
+    if((r.lockers||[]).length)a.push("물품 보관소 "+days(r.lockers));
+    return a;
+  }
+  /* 입금 안내 문자를 보낸 날부터 2일째 밤까지 입금이 없으면 기한 지남 */
+  function late(r){
+    if(status(r)!=="pending"||r.smsSent!=="pending"||!r.smsSentAt)return false;
+    var d=new Date(r.smsSentAt);d.setDate(d.getDate()+2);d.setHours(23,59,59,999);
+    return Date.now()>d.getTime();
+  }
+  function needRefund(r){return status(r)==="rejected"&&!!r.paidAt&&!r.refundedAt}
+
+  Object.keys(BOX).forEach(function(k){
+    var el=$(BOX[k]),key="bus_msg_"+k+"_1127";
+    el.value=ls(key)||DEF[k];
+    el.addEventListener("input",function(){ls(key,this.value);render()});
+  });
+
+  function smsHref(r){
+    var body=$(BOX[KIND[status(r)]]).value.split("{이름}").join(r.name||"").split("{신청}").join(lines(r).join("\n")).split("{금액}").join(won(r.fee));
+    return "sms:"+String(r.phone||"").replace(/\D/g,"")+"?&body="+encodeURIComponent(body);
+  }
+
+  var T=[
+    ["all","전체",function(){return true}],
+    ["pending","입금 대기",function(r){return status(r)==="pending"}],
+    ["late","기한 지남",late],
+    ["accepted","확정",function(r){return status(r)==="accepted"}],
+    ["rejected","취소",function(r){return status(r)==="rejected"}],
+    ["refund","환불 필요",needRefund],
+    ["d12","12일 버스",function(r){return status(r)!=="rejected"&&(r.days||[]).indexOf("12")>=0}],
+    ["d13","13일 버스",function(r){return status(r)!=="rejected"&&(r.days||[]).indexOf("13")>=0}]];
+
+  function render(){
+    var live=rows.filter(function(r){return status(r)!=="rejected"});
+    var sum=[];
+    ["12","13"].forEach(function(k){
+      var bus=live.filter(function(r){return (r.days||[]).indexOf(k)>=0});
+      var city=bus.filter(function(r){return r.stop==="제주시청"}).length;
+      sum.push([k+"일 버스",bus.length+"/"+CAP,"시청 "+city+" · 남녕고 "+(bus.length-city)]);
+    });
+    sum.push(["입금 확정액",won(live.filter(function(r){return status(r)==="accepted"}).reduce(function(s,r){return s+Number(r.fee||0)},0)),""]);
+    ["12","13"].forEach(function(k){sum.push([k+"일 보관소",live.filter(function(r){return (r.lockers||[]).indexOf(k)>=0}).length+"명",""])});
+    $("sum").innerHTML=sum.map(function(x){return"<div><b>"+x[1]+"</b><span>"+x[0]+(x[2]?"<br>"+x[2]:"")+"</span></div>"}).join("");
+    $("tabs").innerHTML=T.map(function(t){return'<button type="button" class="tab'+(filter===t[0]?" on":"")+'" data-f="'+t[0]+'">'+t[1]+" "+rows.filter(t[2]).length+"</button>"}).join("");
+    var test=T.filter(function(t){return t[0]===filter})[0][2];
+    var list=rows.filter(test);
+    if(!list.length){$("list").innerHTML='<div class="empty">해당하는 신청이 없습니다.</div>';return}
+    $("list").innerHTML=list.map(function(r){
+      var st=status(r),label={pending:"입금 대기",accepted:"확정",rejected:"취소"}[st];
+      var sentSame=r.smsSent===st,name={pending:"입금 안내",accepted:"확정",rejected:"취소"}[st];
+      var id=esc(r._id);
+      var sms='<a class="btn sm'+(st==="rejected"?" no":"")+'" data-sms="'+id+'" href="'+esc(smsHref(r))+'">'+name+' 문자 보내기</a>'+
+        '<button type="button" class="btn sm wt" data-sent="'+id+'">'+(sentSame?"발송 취소":"발송함 체크")+'</button>'+(sentSame?'<span class="sent">문자 발송함 '+esc(when(r.smsSentAt))+'</span>':"");
+      return '<div class="card"><div class="top"><b>'+esc(r.name||"이름 없음")+'</b>'+
+        '<span class="pill '+st+'">'+label+'</span>'+(late(r)?'<span class="pill late">기한 지남</span>':'')+(needRefund(r)?'<span class="pill refund">환불 필요</span>':'')+
+        '<span class="code">'+esc(r.code||"")+" · "+esc(when(r.createdAt))+'</span></div>'+
+        lines(r).map(function(l){return'<div class="row">'+esc(l)+'</div>'}).join("")+
+        '<div class="row">결제 금액 <b style="color:var(--ink)">'+won(r.fee)+'</b></div>'+
+        '<div class="row">전화 <a href="tel:'+esc(String(r.phone||"").replace(/\D/g,""))+'">'+esc(fmtPhone(r.phone))+'</a></div>'+
+        (st==="rejected"&&r.paidAt?'<div class="row">입금 확인 '+esc(when(r.paidAt))+' · 취소 '+esc(when(r.statusAt))+(r.refundedAt?' · 환불 완료 '+esc(when(r.refundedAt)):'')+'</div>':'')+
+        '<div class="acts">'+
+        '<button type="button" class="btn sm ok" data-st="accepted" data-id="'+id+'">입금 확정</button>'+
+        '<button type="button" class="btn sm wt" data-st="pending" data-id="'+id+'">대기로</button>'+
+        '<button type="button" class="btn sm no" data-st="rejected" data-id="'+id+'">취소 처리</button>'+
+        (needRefund(r)?'<button type="button" class="btn sm wt" data-refund="'+id+'">환불 완료</button>':'')+'</div>'+
+        '<div class="acts">'+sms+'</div></div>';
+    }).join("");
+  }
+
+  function load(){
+    if(!db){$("list").innerHTML='<div class="status bad">서버에 연결되지 않았습니다. 인터넷을 확인하고 새로고침해 주세요.</div>';return}
+    $("list").innerHTML='<div class="status">불러오는 중…</div>';
+    db.collection(COL).where("event","==",EVENT).get().then(function(snap){
+      rows=[];snap.forEach(function(d){var r=d.data();if(r.name!=="시험(무시)")rows.push(Object.assign({_id:d.id},r))});
+      rows.sort(function(a,b){return String(a.createdAt).localeCompare(String(b.createdAt))});
+      render();
+    }).catch(function(){$("list").innerHTML='<div class="status bad">불러오지 못했습니다. 잠시 뒤 새로고침해 주세요.</div>'});
+  }
+
+  function save(id,patch,btn){
+    if(btn)btn.disabled=true;
+    return db.collection(COL).doc(id).set(patch,{merge:true}).then(function(){
+      rows.forEach(function(r){if(r._id===id)Object.assign(r,patch)});render();
+    }).catch(function(){if(btn)btn.disabled=false;alert("저장하지 못했습니다. 인터넷을 확인하고 다시 눌러 주세요.")});
+  }
+  function find(id){return rows.filter(function(x){return x._id===id})[0]}
+
+  document.addEventListener("click",function(e){
+    var a=e.target.closest("a[data-sms]");
+    if(a){
+      var x=find(a.dataset.sms);
+      if(x&&status(x)==="pending"&&$("msgPay").value.indexOf("[계좌번호]")>=0){e.preventDefault();alert("'문자 문구'에서 [계좌번호]를 실제 계좌로 바꿔 주세요.")}
+      return;
+    }
+    var t=e.target.closest("button");if(!t)return;
+    if(t.dataset.f){filter=t.dataset.f;render();return}
+    if(t.dataset.st){
+      var r=find(t.dataset.id);if(!r||status(r)===t.dataset.st)return;
+      /* 취소하면 좌석이 풀린다. 취소했던 신청을 되살릴 때는 남은 좌석을 확인한다 */
+      if(status(r)==="rejected"){
+        var full=(r.days||[]).filter(function(k){return rows.filter(function(o){return status(o)!=="rejected"&&(o.days||[]).indexOf(k)>=0}).length>=CAP});
+        if(full.length){alert(days(full)+" 버스는 좌석이 모두 찼습니다.");return}
+      }
+      var now=new Date().toISOString(),patch={status:t.dataset.st,statusAt:now};
+      if(t.dataset.st==="accepted"){patch.paidAt=r.paidAt||now;patch.refundedAt=""}
+      if(t.dataset.st==="pending"){patch.paidAt="";patch.refundedAt=""}
+      save(r._id,patch,t);return;
+    }
+    if(t.dataset.refund){save(t.dataset.refund,{refundedAt:new Date().toISOString()},t);return}
+    if(t.dataset.sent){
+      var s=find(t.dataset.sent);if(!s)return;
+      var st=status(s);
+      save(s._id,s.smsSent===st?{smsSent:"",smsSentAt:""}:{smsSent:st,smsSentAt:new Date().toISOString()},t);
+    }
+  });
+  $("reload").addEventListener("click",load);
+  $("csv").addEventListener("click",function(){
+    if(!rows.length){alert("내려받을 신청이 없습니다.");return}
+    var cols=["code","status","name","phone","days","stop","lockers","fee","createdAt","paidAt","refundedAt","smsSent","smsSentAt"];
+    var q=function(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"'};
+    var csv="\ufeff"+cols.join(",")+"\n"+rows.map(function(r){return cols.map(function(c){return q(c==="phone"?fmtPhone(r[c]):(c==="days"||c==="lockers")?days(r[c]):r[c])}).join(",")}).join("\n");
+    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+    a.download="산타왔수다_셔틀버스신청_"+new Date().toISOString().slice(0,10)+".csv";a.click();
+  });
+  load();
+})();
+</script>
+</body>
+</html>
