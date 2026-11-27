@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="robots" content="noindex">
+<title>도전 번호 만들기</title>
+<style>
+@font-face{font-family:Paperlogy;src:url(../img/Paperlogy-8ExtraBold.ttf);font-weight:800}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#FFF8EA;color:#2B2F6B;font-family:Paperlogy,Pretendard,system-ui,sans-serif;font-weight:800}
+main{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;align-items:center;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px))}
+h1{font-size:30px;margin:0}
+.mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;text-align:center}
+#num{font-size:min(120px,31vw);letter-spacing:6px;color:#E8384F;line-height:1}
+#note{font-size:21px;margin-top:12px;line-height:1.5}
+input{width:100%;max-width:300px;height:66px;border-radius:18px;border:3px solid #E4DCC6;font:inherit;font-size:34px;text-align:center;color:inherit;background:#fff}
+button{font:inherit;width:100%;max-width:360px;height:84px;border:0;border-radius:42px;background:#E8384F;color:#fff;font-size:32px;box-shadow:0 6px 0 #a51d33;cursor:pointer}
+button:active{transform:translateY(5px);box-shadow:0 1px 0 #a51d33}
+button:disabled{opacity:.5}
+</style>
+</head>
+<body>
+<main>
+  <h1>도전 번호</h1>
+  <div class="mid">
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" hidden>
+    <div id="num"></div>
+    <div id="note"></div>
+  </div>
+  <button id="make">번호 만들기</button>
+</main>
+<script>
+(function(){
+'use strict';
+var API='https://asia-northeast3-psbjeju-kuji.cloudfunctions.net/';
+var $=function(i){return document.getElementById(i);};
+var pin=''; try{ pin=localStorage.getItem('santa_code_pin')||''; }catch(e){}
+function askPin(msg){ pin=''; $('pin').hidden=false; $('pin').value=''; $('num').textContent=''; $('note').textContent=msg||'처음 한 번만 PIN을 넣어요'; }
+if(!pin) askPin();
+$('make').onclick=function(){
+  var p=pin||$('pin').value.trim();
+  if(!p){ $('note').textContent='PIN을 넣어요'; return; }
+  var b=$('make'); b.disabled=true;
+  fetch(API+'promoIssue',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:{pin:p}})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      b.disabled=false;
+      if(j.error){ if(j.error.status==='PERMISSION_DENIED'){ try{localStorage.removeItem('santa_code_pin');}catch(e){} askPin(j.error.message); } else $('note').textContent=j.error.message; return; }
+      pin=p; try{ localStorage.setItem('santa_code_pin',p); }catch(e){}
+      $('pin').hidden=true; $('num').textContent=j.result.code;
+      $('note').innerHTML='한 번만 쓸 수 있어요<br>'+j.result.minutes+'분 안에 넣기';
+      b.textContent='새 번호 만들기';
+    })
+    .catch(function(){ b.disabled=false; $('note').textContent='인터넷 연결을 확인해 주세요'; });
+};
+})();
+</script>
+</body>
+</html>
