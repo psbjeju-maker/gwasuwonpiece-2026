@@ -318,13 +318,14 @@ function figOf(code){ var h=0; String(code).split('').forEach(function(c){ h=(h*
 function showResult(r,quiet){
   picking=false; clearInterval(poll);
   var ps=r.picks||[], win=null, last=ps[ps.length-1];
-  ps.forEach(function(k){ if(k.win) win=k; });
+  ps.forEach(function(k){ if(k.win&&(!win||k.name==='피규어')) win=k; });
   picksLeft=r.picksLeft||0; gameLeft=r.gameLeft||0; mineNow={picks:ps};
   var justWin=last&&last.win;
   draw(); $('rArt').innerHTML=CHARS.face(cur); $('rArt').firstChild.style.cssText='width:min(40vw,170px,20vh)';
   $('rNo').textContent=ps.map(function(k){return k.n+'번';}).slice(-4).join(' · ');
   $('rCode').innerHTML=win?'<div class="code pop">'+win.code+'</div>':'';
-  if(win){ var f=figOf(win.code); $('rArt').innerHTML='<img src="fig/'+f[0]+'.jpg" alt="" style="width:min(62vw,250px,30vh);border-radius:18px;border:4px solid #fff;box-shadow:0 6px 18px rgba(0,0,0,.25)">';
+  if(win&&win.name!=='피규어'){ $('rTitle').innerHTML='<em>간식</em> 당첨!'; $('rMsg').textContent='이 화면을 보여주고 간식 받아요!'; }
+  else if(win){ var f=figOf(win.code); $('rArt').innerHTML='<img src="fig/'+f[0]+'.jpg" alt="" style="width:min(62vw,250px,30vh);border-radius:18px;border:4px solid #fff;box-shadow:0 6px 18px rgba(0,0,0,.25)">';
     $('rTitle').innerHTML='<em>'+f[1]+'</em><br>피규어 당첨!!'; $('rMsg').textContent='이 화면을 보여주고 피규어 받아요!'; }
   else if(last&&last.retry&&gameLeft>0){ $('rTitle').innerHTML='<em>게임 한 번 더!</em>'; $('rMsg').textContent='게임 한 번 더 하면 뽑기가 또 생겨요!'; }
   else { $('rTitle').innerHTML='<em>꽝!</em>'; $('rMsg').textContent='그날 와서 더 좋은 상품 뽑아요!'; }
