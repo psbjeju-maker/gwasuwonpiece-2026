@@ -310,6 +310,11 @@ function doPick(){
     goBoard();
   });
 }
+/* 당첨 피규어: 반프레스토 15종 중 하나. 상품 코드로 정해서 다시 열어도 같은 피규어 */
+var FIGS=[['luffy','원피스 몽키 D 루피'],['zoro','원피스 롤로노아 조로'],['sanji','원피스 상디'],['shanks','원피스 샹크스'],['buggy','원피스 버기'],
+['enel','원피스 에넬'],['gojo','주술회전 고죠 사토루'],['aizen','블리치 아이젠 소스케'],['hitsu','블리치 히츠가야 토시로'],['broly','드래곤볼 브로리'],
+['itachi','나루토 우치하 이타치'],['zenitsu','귀멸의 칼날 젠이츠'],['rem','Re:제로 렘'],['rimuru','전생슬 리무루'],['frieren','장송의 프리렌']];
+function figOf(code){ var h=0; String(code).split('').forEach(function(c){ h=(h*31+c.charCodeAt(0))>>>0; }); return FIGS[h%FIGS.length]; }
 function showResult(r,quiet){
   picking=false; clearInterval(poll);
   var ps=r.picks||[], win=null, last=ps[ps.length-1];
@@ -319,7 +324,8 @@ function showResult(r,quiet){
   draw(); $('rArt').innerHTML=CHARS.face(cur); $('rArt').firstChild.style.cssText='width:min(40vw,170px,20vh)';
   $('rNo').textContent=ps.map(function(k){return k.n+'번';}).slice(-4).join(' · ');
   $('rCode').innerHTML=win?'<div class="code pop">'+win.code+'</div>':'';
-  if(win){ $('rTitle').innerHTML='<em>'+win.name+'</em> 당첨!!'; $('rMsg').textContent='이 화면을 보여주고 피규어 받아요!'; }
+  if(win){ var f=figOf(win.code); $('rArt').innerHTML='<img src="fig/'+f[0]+'.jpg" alt="" style="width:min(62vw,250px,30vh);border-radius:18px;border:4px solid #fff;box-shadow:0 6px 18px rgba(0,0,0,.25)">';
+    $('rTitle').innerHTML='<em>'+f[1]+'</em><br>피규어 당첨!!'; $('rMsg').textContent='이 화면을 보여주고 피규어 받아요!'; }
   else if(last&&last.retry&&gameLeft>0){ $('rTitle').innerHTML='<em>게임 한 번 더!</em>'; $('rMsg').textContent='게임 한 번 더 하면 뽑기가 또 생겨요!'; }
   else { $('rTitle').innerHTML='<em>꽝!</em>'; $('rMsg').textContent='그날 와서 더 좋은 상품 뽑아요!'; }
   $('bMore').style.display=picksLeft>0?'block':'none'; $('bMore').textContent='한 번 더 뽑기! ('+picksLeft+'번)';
