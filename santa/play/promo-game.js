@@ -204,7 +204,7 @@ var PID=lsGet('santa_promo_pid')||'', mineNow=null, taken={}, sel=0, total=500, 
 function reset(){ lsSet('santa_promo_pid',''); PID=''; mineNow=null; gameLeft=1; picksLeft=0; toast('처음부터 다시 해요'); goHome(); }
 function paintHome(){
   $('s0sub').innerHTML='<em>'+T1+'점</em> 이면 1번<br><em>'+T2+'점</em> 이면 2번 뽑기!'+(PRACTICE?'<br><span style="font-size:19px;opacity:.7">연습 중 · 몇 번이든 해요</span>':'');
-  $('bStart').textContent=(!PRACTICE&&picksLeft>0)?'번호 뽑으러 가기!':(PRACTICE||gameLeft>0)?'미션 시작!':'번호 넣고 한 번 더!';
+  $('bStart').textContent=(!PRACTICE&&picksLeft>0)?'번호 뽑으러 가기!':(PRACTICE||gameLeft>0)?'미션 시작!':'사진 찍고 한 번 더!';
   if(!PRACTICE&&picksLeft>0) $('bStart').textContent='번호 뽑으러 가기!';
   $('bMine').style.display=mineNow&&mineNow.picks.length?'block':'none';
 }
@@ -217,7 +217,7 @@ function beginGame(){
   .catch(function(e){
     starting=false;
     if(e.status==='NOT_FOUND'){ reset(); return; }
-    if(e.status==='FAILED_PRECONDITION'){ gameLeft=0; openCode(); return; }
+    if(e.status==='FAILED_PRECONDITION'){ gameLeft=0; toast('사진을 보여주면 번호를 드려요'); goHome(); return; }
     toast(e.message);
   });
 }
@@ -229,7 +229,7 @@ function endGame(sc){
   draw(); $('mArt').innerHTML=CHARS.face(cur); $('mArt').firstChild.style.cssText='width:min(46vw,190px,24vh)';
   $('pts').textContent='0'; $('mTitle').textContent=''; $('mSub').textContent=''; btn.style.visibility='hidden'; btn.disabled=false; show('s1');
   function next(text,fn){ btn.textContent=text; btn.onclick=tap(fn); btn.style.visibility='visible'; }
-  function again(){ if(PRACTICE||gameLeft>0) next('다시 도전!',beginGame); else next('번호 넣고 한 번 더!',openCode); }
+  function again(){ if(PRACTICE||gameLeft>0) next('다시 도전!',beginGame); else next('사진 찍고 한 번 더!',newShot); }
   function done(){
     if(!tier){ $('mTitle').innerHTML='아깝다!'; $('mSub').innerHTML=T1+'점 이상이면 뽑기!'; repop($('mTitle')); SND.play('lose'); again(); return; }
     SND.play('open'); confetti(tier===2?90:50); burst($('mArt'),22,180);
@@ -406,25 +406,25 @@ function redeem(){
   if(PRACTICE){ goHome(); return; }
   var join=PID?Promise.resolve():api('promoJoin',{}).then(function(r){ PID=r.pid; lsSet('santa_promo_pid',PID); });
   join.then(function(){ return api('promoRedeem',{pid:PID,code:code}); }).then(function(r){
-    sending=false; gameLeft=r.gameLeft; SND.play('open'); confetti(50); toast('도전권을 받았어요!'); beginGame();
+    sending=false; gameLeft=r.gameLeft; picksLeft=r.picksLeft; SND.play('open'); confetti(50); toast('한 번 더 뽑아요!'); goBoard();
   }).catch(function(e){ if(e.status==='NOT_FOUND') reset(); else wrongCode(e.message); });
 }
 
 /* ───────── 버튼 ───────── */
 function tap(fn){ return function(){ SND.wake(); SND.play('tap'); fn(); }; }
 $('bStart').onclick=tap(function(){
-  if(!PRACTICE&&picksLeft>0) goBoard(); else if(PRACTICE||gameLeft>0) beginGame(); else openCode();
+  if(!PRACTICE&&picksLeft>0) goBoard(); else if(PRACTICE||gameLeft>0) beginGame(); else newShot();
 });
 $('bMine').onclick=tap(function(){ api('promoBoard',{pid:PID}).then(function(b){ take(b); if(b.mine) showResult(b.mine,true); }).catch(function(e){ toast(e.message); }); });
 $('bPick').onclick=doPick;
 $('bMore').onclick=tap(goBoard);
 $('bGame').onclick=tap(beginGame);
-$('bExtra').onclick=tap(openCode);
+$('bExtra').onclick=tap(newShot);
 $('bShot').onclick=capture;
 $('bToCode').onclick=tap(openCode);
 $('bSave').onclick=save;
 $('bRe').onclick=tap(openCam);
-$('bBackShot').onclick=tap(goHome);
+$('bBackShot').onclick=tap(function(){ show('s6'); });
 $('rArt').onclick=$('mArt').onclick=function(){ var e=this; e.classList.remove('pop','hop'); void e.offsetWidth; e.classList.add('hop'); SND.wake(); SND.play('boing'); burst(e,12,140); };
 $('snd').innerHTML=SND.icon();
 $('snd').onclick=function(){ SND.toggle(); this.innerHTML=SND.icon(); };
